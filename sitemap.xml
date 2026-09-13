@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://o-brasil-muda-de-imposto.vercel.app/</loc>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
-  </url>
+<url><loc>https://o-brasil-muda-de-imposto.vercel.app/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+<url><loc>https://o-brasil-muda-de-imposto.vercel.app/reforma-tributaria-2026.html</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+<url><loc>https://o-brasil-muda-de-imposto.vercel.app/ibs-cbs.html</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+<url><loc>https://o-brasil-muda-de-imposto.vercel.app/split-payment-capital-de-giro.html</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+<url><loc>https://o-brasil-muda-de-imposto.vercel.app/simples-nacional-reforma-tributaria.html</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+<url><loc>https://o-brasil-muda-de-imposto.vercel.app/transicao-reforma-tributaria-2033.html</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+<url><loc>https://o-brasil-muda-de-imposto.vercel.app/sobre-wagner-rubim-rangel.html</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
 </urlset>
