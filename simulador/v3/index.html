@@ -12,6 +12,7 @@
 <link rel="stylesheet" href="/simulador/v3/responsive.css">
 <link rel="stylesheet" href="/simulador/v3/enhanced-mobile.css">
 <link rel="stylesheet" href="/simulador/v3/diagnosis.css">
+<link rel="stylesheet" href="/simulador/v3/field-state.css">
 </head>
 <body>
 <header class="topbar"><div class="topinner"><a class="brand" href="/"><div><strong>O Brasil muda de imposto</strong><span>Simulador Empresarial da Reforma Tributária · V3</span></div></a><div class="topactions"><button class="linkbtn" id="printBtn" type="button">Imprimir relatório</button><a class="homebtn" href="/">Voltar ao site</a></div></div></header>
@@ -19,6 +20,6 @@
 <main class="page"><section class="hero"><div><div class="kicker">Ferramenta educativa de apoio à decisão</div><h1>Não compare só imposto. Compare <em>imposto, crédito, margem e caixa.</em></h1><p>O V3 separa a decisão de curto prazo em 2027 da posição estrutural em 2033, calcula a evolução anual da transição e mostra quando o ganho de crédito do cliente PJ pode ou não justificar uma carga própria maior.</p></div><div class="heroStats"><div><b>4</b><span>modelos comparados</span></div><div><b>7</b><span>anos de transição</span></div><div><b>5</b><span>efeitos analisados</span></div></div></section><div id="setupMount"></div><div id="resultsMount" hidden></div></main>
 <footer><div><strong>O Brasil muda de imposto</strong><span>Wagner Rubim Rangel · Homo Fictor Edições Independentes</span></div><p>Ferramenta educativa. Não substitui planejamento tributário, parecer contábil ou jurídico.</p></footer>
 <script>
-(async()=>{const [a,b]=await Promise.all([fetch('/simulador/v3/partials/setup.html').then(r=>r.text()),fetch('/simulador/v3/partials/results.html').then(r=>r.text())]);document.getElementById('setupMount').innerHTML=a;document.getElementById('resultsMount').innerHTML=b;for(const name of ['data.js','cnpj.js','models.js','risk-cash.js','render.js','enhanced-results.js','diagnosis.js','boot.js'])await new Promise((ok,fail)=>{const s=document.createElement('script');s.src='/simulador/v3/'+name;s.onload=ok;s.onerror=fail;document.body.appendChild(s)})})().catch(err=>{console.error(err);document.getElementById('setupMount').innerHTML='<section class="panel"><h2>Não foi possível carregar o simulador.</h2><p>Atualize a página e tente novamente.</p></section>'});
+(async()=>{const [a,b]=await Promise.all([fetch('/simulador/v3/partials/setup.html').then(r=>r.text()),fetch('/simulador/v3/partials/results.html').then(r=>r.text())]);document.getElementById('setupMount').innerHTML=a;document.getElementById('resultsMount').innerHTML=b;for(const name of ['data.js','field-state.js','cnpj.js','models.js','risk-cash.js','render.js','enhanced-results.js','diagnosis.js','boot.js'])await new Promise((ok,fail)=>{const s=document.createElement('script');s.src='/simulador/v3/'+name;s.onload=ok;s.onerror=fail;document.body.appendChild(s)})})().catch(err=>{console.error(err);document.getElementById('setupMount').innerHTML='<section class="panel"><h2>Não foi possível carregar o simulador.</h2><p>Atualize a página e tente novamente.</p></section>'});
 </script>
 </body></html>
