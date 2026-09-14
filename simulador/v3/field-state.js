@@ -1,4 +1,4 @@
-const fieldStateIds=['activity','simpleStatus','meiStatus','annex','monthlyRevenue','rbt12','monthlyPayroll','factorMode','b2bPct','purchasesPct','eligibleCreditPct','regularSuppliersPct','mixFull','mix30','mix40','mix60','mixZero','fullCbs','fullIbs','cashReserve','financeRate','splitPct','floatDays','refundDays','capturePct','hybridCompliance','fullCompliance','legacyRate','realProfitMargin'];
+const fieldStateIds=['activity','simpleStatus','meiStatus','annex','monthlyRevenue','rbt12','monthlyPayroll','factorMode','b2bPct','purchasesPct','eligibleCreditPct','regularSuppliersPct','mixFull','mix30','mix40','mix60','mixZero','fullCbs','fullIbs','cashAndEquivalents','liquidInvestments','cashReserve','currentAssets','currentLiabilities','workingCapitalNet','interestExpense','debtStart','debtEnd','debtAverage','dreMonths','financeRateMode','financeRate','splitPct','floatDays','refundDays','capturePct','hybridCompliance','fullCompliance','legacyRate','realProfitMargin'];
 
 function fieldStateContainer(id){
  const el=$(id);return el?.closest('.field,.mix')||null;
@@ -36,11 +36,11 @@ function updateFieldCompletion(){
 function insertFieldLegend(){
  const first=$('setupMount')?.querySelector('.panel');if(!first||$('fieldStateLegend'))return;
  const legend=document.createElement('div');legend.id='fieldStateLegend';legend.className='fieldStateLegend';
- legend.innerHTML=`<div class="fieldLegendText"><strong>Preenchimento guiado</strong><span><i class="legendDot pending"></i> amarelo: falta revisar ou confirmar</span><span><i class="legendDot complete"></i> verde: preenchido ou confirmado</span></div><div class="fieldCompletion"><b id="fieldCompletionText">0 campos confirmados</b><div><i id="fieldCompletionBar"></i></div></div>`;
+ legend.innerHTML=`<div class="fieldLegendText"><strong>Preenchimento guiado</strong><span><i class="legendDot pending"></i> amarelo: falta revisar ou confirmar</span><span><i class="legendDot complete"></i> verde: preenchido, calculado ou sugerido</span></div><div class="fieldCompletion"><b id="fieldCompletionText">0 campos confirmados</b><div><i id="fieldCompletionBar"></i></div></div>`;
  const anchor=first.querySelector('.sectionTitle');anchor?.insertAdjacentElement('afterend',legend);
 }
 function resetAutoFieldStates(){
- ['activity','simpleStatus','meiStatus','annex','legacyRate'].forEach(id=>markFieldPending(id));
+ ['activity','simpleStatus','meiStatus','annex','factorMode','b2bPct','eligibleCreditPct','regularSuppliersPct','mixFull','mix30','mix40','mix60','mixZero','legacyRate'].forEach(id=>markFieldPending(id));
 }
 function initFieldStates(){
  insertFieldLegend();
@@ -52,6 +52,8 @@ function initFieldStates(){
   const confirm=()=>markFieldComplete(id);
   el.addEventListener('input',confirm);el.addEventListener('change',confirm);
  });
+ ['cashReserve','workingCapitalNet','debtAverage'].forEach(id=>markFieldDerived(id,'CALCULADO'));
+ ['fullCbs','fullIbs'].forEach(id=>markFieldAuto(id,'PREMISSA'));
  const cnpj=$('cnpj');if(cnpj&&!cnpj.dataset.fieldStateBound){
   cnpj.dataset.fieldStateBound='1';cnpj.addEventListener('input',()=>{const raw=cnpj.value.replace(/[^A-Z0-9]/gi,'');const box=fieldStateContainer('cnpj');if(box){box.classList.remove('state-complete','state-auto','state-derived');box.classList.add('state-pending');const b=fieldStateBadge(box);if(b)b.textContent=raw.length===14?'BUSCAR':'REVISAR'};resetAutoFieldStates();updateFieldCompletion()});
   setFieldState('cnpj','pending','REVISAR');
@@ -59,9 +61,9 @@ function initFieldStates(){
  updateFieldCompletion();
 }
 
-function enableV31Import(){
- if(document.getElementById('v31ImportModule'))return;
+function enableV32Import(){
+ if(document.getElementById('v32ImportModule'))return;
  const css=document.createElement('link');css.rel='stylesheet';css.href='/simulador/v3/import.css';document.head.appendChild(css);
- const s=document.createElement('script');s.id='v31ImportModule';s.src='/simulador/v3/import.js';s.onload=()=>{if(typeof initDocumentImport==='function')initDocumentImport();const p=document.getElementById('importPanel'),g=document.getElementById('diagnosisGate');if(p&&g)g.parentNode.insertBefore(p,g);const b=document.querySelector('.brand span');if(b)b.textContent='Simulador Empresarial da Reforma Tributária · V3.1'};document.body.appendChild(s)
+ const s=document.createElement('script');s.id='v32ImportModule';s.src='/simulador/v3/import.js';s.onload=()=>{if(typeof initDocumentImport==='function')initDocumentImport();const p=document.getElementById('importPanel'),g=document.getElementById('diagnosisGate');if(p&&g)g.parentNode.insertBefore(p,g);const b=document.querySelector('.brand span');if(b)b.textContent='Simulador Empresarial da Reforma Tributária · V3.2'};document.body.appendChild(s)
 }
-setTimeout(enableV31Import,0);
+setTimeout(enableV32Import,0);
