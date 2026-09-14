@@ -58,3 +58,10 @@ function initFieldStates(){
  }
  updateFieldCompletion();
 }
+
+function enableV31Import(){
+ if(document.getElementById('v31ImportModule'))return;
+ const css=document.createElement('link');css.rel='stylesheet';css.href='/simulador/v3/import.css';document.head.appendChild(css);
+ const s=document.createElement('script');s.id='v31ImportModule';s.src='/simulador/v3/import.js';s.onload=()=>{if(typeof initDocumentImport==='function')initDocumentImport();const p=document.getElementById('importPanel'),g=document.getElementById('diagnosisGate');if(p&&g)g.parentNode.insertBefore(p,g);const b=document.querySelector('.brand span');if(b)b.textContent='Simulador Empresarial da Reforma Tributária · V3.1'};document.body.appendChild(s)
+}
+setTimeout(enableV31Import,0);
