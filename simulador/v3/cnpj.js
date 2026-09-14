@@ -22,13 +22,14 @@ async function lookupCnpj(){
  status.className='status';status.textContent='Consulta iniciada. Aguarde alguns instantes.';if($('companyCard'))$('companyCard').hidden=true;setLookupBusy(true);
  try{
   const payload=await queryCnpj(raw);
-  const elapsed=Date.now()-started;if(elapsed<850)await new Promise(resolve=>setTimeout(resolve,850-elapsed));
-  if($('lookupWorkTitle'))$('lookupWorkTitle').textContent='Empresa localizada. Recalculando os cenários...';
-  if($('lookupWorkText'))$('lookupWorkText').textContent='Aplicando CNAE, enquadramento sugerido e premissas da empresa ao simulador.';
-  companyData=payload.data;fillCompany(companyData);calculate();await new Promise(resolve=>setTimeout(resolve,250));
-  status.className='status ok';status.textContent=`Dados encontrados em ${payload.provider||'base pública'}. Confirme o enquadramento antes de decidir.`
+  const elapsed=Date.now()-started;if(elapsed<1300)await new Promise(resolve=>setTimeout(resolve,1300-elapsed));
+  if($('lookupWorkTitle'))$('lookupWorkTitle').textContent='Empresa localizada. Preenchendo os dados encontrados...';
+  if($('lookupWorkText'))$('lookupWorkText').textContent='Aplicando CNAE, situação do Simples, MEI e enquadramento sugerido.';
+  companyData=payload.data;fillCompany(companyData);calculate();await new Promise(resolve=>setTimeout(resolve,450));
+  if(typeof markFieldAuto==='function')markFieldAuto('cnpj','CONSULTADO');
+  status.className='status ok';status.textContent=`Dados encontrados em ${payload.provider||'base pública'}. Os campos verdes foram preenchidos ou sugeridos automaticamente; revise os amarelos.`
  }catch(err){
-  const elapsed=Date.now()-started;if(elapsed<650)await new Promise(resolve=>setTimeout(resolve,650-elapsed));
+  const elapsed=Date.now()-started;if(elapsed<800)await new Promise(resolve=>setTimeout(resolve,800-elapsed));
   status.className='status bad';status.textContent=err?.name==='AbortError'?'A consulta demorou além do esperado. Tente novamente.':(err.message||'Falha na consulta.')
  }finally{setLookupBusy(false);calculate()}
 }
@@ -42,4 +43,7 @@ function fillCompany(d){
  if($('meiStatus'))$('meiStatus').value=d.opcao_pelo_mei===true?'yes':d.opcao_pelo_mei===false?'no':'unknown';
  cnaeSuggestion=inferActivity(d.cnae_fiscal,d.cnae_fiscal_descricao);$('annex').value=cnaeSuggestion.annex;$('annexHint').textContent=`Sugestão: Anexo ${cnaeSuggestion.annex}. Confiança ${cnaeSuggestion.confidence}. ${cnaeSuggestion.reason}.`;
  const kind=cnaeSuggestion.kind;if(kind==='service')numSet('legacyRate',5);else if(kind==='commerce'||kind==='industry')numSet('legacyRate',10);applyFactorR();
+ if(typeof markFieldAuto==='function'){
+  markFieldAuto('activity');markFieldAuto('simpleStatus');markFieldAuto('meiStatus');markFieldAuto('annex','SUGERIDO');markFieldDerived('legacyRate','SUGERIDO');
+ }
 }
