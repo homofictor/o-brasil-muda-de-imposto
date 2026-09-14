@@ -78,11 +78,11 @@ async function generateDiagnosis(){
  validation.hidden=true;validation.innerHTML='';
  window.diagnosisRunning=true;window.diagnosisDirty=false;
  const btn=$('generateDiagnosisBtn'),work=$('diagnosisWork'),done=$('diagnosisDone'),mount=$('resultsMount'),result=$('resultado'),print=$('printBtn');
- if(btn){btn.disabled=true;btn.classList.add('working');btn.querySelector('span').textContent='Gerando diagnóstico...';btn.querySelector('small').textContent='Aguarde enquanto os cenários são processados';}
+ if(btn){btn.disabled=true;btn.classList.add('working');btn.querySelector('span').textContent='Gerando diagnóstico...';btn.querySelector('small').textContent='A análise levará alguns segundos para consolidar todos os cenários';}
  if(mount)mount.hidden=true;if(result)result.hidden=false;if(print)print.hidden=true;
  if(done)done.hidden=true;if(work)work.hidden=false;
  renderDiagnosisSteps(0,-1);if($('diagnosisProgressBar'))$('diagnosisProgressBar').style.width='0%';if($('diagnosisProgressText'))$('diagnosisProgressText').textContent='0%';
- const durations=[420,470,460,520,500,420];
+ const durations=[900,1100,1100,1300,1300,1000];
  try{
   for(let i=0;i<diagnosisStageData.length;i++){
    setDiagnosisProgress(i);
@@ -91,12 +91,12 @@ async function generateDiagnosis(){
   }
   renderDiagnosisSteps(-1,diagnosisStageData.length-1);
   if($('diagnosisProgressBar'))$('diagnosisProgressBar').style.width='100%';if($('diagnosisProgressText'))$('diagnosisProgressText').textContent='100%';
-  calculate();await diagnosisDelay(220);
+  calculate();await diagnosisDelay(450);
   window.diagnosisGenerated=true;window.diagnosisDirty=false;
   if(work)work.hidden=true;if(mount)mount.hidden=false;if(result){result.hidden=false;result.classList.remove('diagnosisReveal');void result.offsetWidth;result.classList.add('diagnosisReveal')};if(print)print.hidden=false;
   if(done){const now=new Date();done.hidden=false;done.className='diagnosisDone ready';done.textContent=`Diagnóstico gerado às ${now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}. Altere qualquer premissa para gerar uma nova análise.`}
   if(btn){btn.disabled=false;btn.classList.remove('working');btn.querySelector('span').textContent='Atualizar diagnóstico';btn.querySelector('small').textContent='Reprocessar com as premissas atuais';}
-  setTimeout(()=>result?.scrollIntoView({behavior:'smooth',block:'start'}),80);
+  setTimeout(()=>result?.scrollIntoView({behavior:'smooth',block:'start'}),100);
  }catch(err){
   console.error(err);if(work)work.hidden=true;validation.hidden=false;validation.textContent='Não foi possível concluir o diagnóstico. Revise os dados e tente novamente.';if(btn){btn.disabled=false;btn.classList.remove('working');btn.querySelector('span').textContent='Tentar novamente';btn.querySelector('small').textContent='Processar cenários e recomendações';}
  }finally{window.diagnosisRunning=false}
