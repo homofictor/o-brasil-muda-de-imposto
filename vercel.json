@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/assets/book-mockup.webp",
+      "destination": "https://folhadoes.com/wp-content/uploads/2026/08/image-68-400x600.png"
+    },
+    {
+      "source": "/assets/autor-livro.webp",
+      "destination": "https://folhadoes.com/wp-content/uploads/2026/08/arte-da-capa-da-mat-ria-do-site-1000-x-750-px-2026-08-31t094611-674.jpg"
+    }
+  ]
+}
