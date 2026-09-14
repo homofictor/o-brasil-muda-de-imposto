@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Simulador IBS/CBS v2 | O Brasil muda de imposto</title>
+<meta name="description" content="Protótipo v2 do simulador de impactos da Reforma Tributária com automações por CNPJ, CNAE, BP e DRE.">
+<style>
+:root{--navy:#0b2748;--blue:#0d5ea6;--line:#d9e2ec;--bg:#f5f8fb;--green:#0d7a43;--greenbg:#edf8f1;--amber:#9b6500;--amberbg:#fff7df;--text:#10243d;--muted:#5c6f84;--white:#fff}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--text)}main{max-width:1280px;margin:0 auto;padding:24px}.hero{background:linear-gradient(135deg,#0b2748,#164f83);color:#fff;border-radius:20px;padding:28px;margin-bottom:18px}.hero h1{margin:0 0 8px;font-size:30px}.hero p{margin:0;color:#dbe9f6}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px;margin:16px 0;box-shadow:0 4px 18px rgba(18,44,76,.04)}.section-title{display:flex;align-items:center;gap:10px;margin-bottom:16px}.n{width:34px;height:34px;border-radius:9px;background:var(--navy);color:#fff;display:grid;place-items:center;font-weight:800}.section-title h2{margin:0;font-size:22px}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}.c3{grid-column:span 3}.c4{grid-column:span 4}.c6{grid-column:span 6}.c12{grid-column:span 12}@media(max-width:900px){.c3,.c4,.c6{grid-column:span 12}}
+.field{display:flex;flex-direction:column;gap:6px}.labelrow{display:flex;justify-content:space-between;gap:8px;align-items:center}.field label{font-size:13px;font-weight:750}.field small{font-size:11px;color:var(--muted);line-height:1.35}.inputwrap{display:flex;border:1px solid #b8c6d6;border-radius:10px;background:#fff;overflow:hidden}.inputwrap.auto{border-color:#94d3ae;background:var(--greenbg)}.inputwrap.review{border-color:#e6ba58;background:var(--amberbg)}.prefix,.suffix{padding:11px 10px;color:#60748a;background:rgba(255,255,255,.45);font-size:12px;display:flex;align-items:center}.inputwrap input,.inputwrap select{width:100%;border:0;background:transparent;padding:11px 12px;font-size:15px;outline:none;color:var(--text)}.badge{font-size:9px;font-weight:800;letter-spacing:.04em;border-radius:999px;padding:4px 7px;white-space:nowrap}.auto-b{background:#dff3e6;color:#11633a}.review-b{background:#f7e1a6;color:#815600}.locked-b{background:#e6edf5;color:#37516d}.status{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.pill{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 10px;font-size:12px}.pill.ok{background:var(--greenbg);border-color:#b7dfc7;color:#145e39}.info{margin-top:12px;padding:12px 14px;border-radius:10px;background:#eef5fb;border:1px solid #cfe1f0;color:#31536f;font-size:13px}.warn{background:#fff7df;border-color:#f0d48b;color:#765000}.metric{background:#f8fbfe;border:1px solid #dde7f0;border-radius:12px;padding:14px}.metric b{font-size:22px;display:block;margin-top:3px}.metric span{font-size:11px;color:var(--muted)}.row-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.btn{border:0;border-radius:10px;padding:11px 15px;font-weight:800;cursor:pointer}.primary{background:var(--navy);color:white}.secondary{background:#eaf1f7;color:var(--navy)}.treatment{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #eef2f6}.treatment:last-child{border-bottom:0}.muted{color:var(--muted)}.footer-note{font-size:12px;color:var(--muted);margin:18px 4px 36px}
+</style>
+</head>
+<body>
+<main>
+<section class="hero"><h1>Simulador IBS/CBS v2</h1><p>O sistema estima primeiro. O usuário revisa apenas o que conhece melhor do que os dados disponíveis.</p></section>
+
+<section class="card">
+  <div class="section-title"><div class="n">01</div><h2>Empresa e enquadramento</h2></div>
+  <div class="grid">
+    <div class="field c4"><div class="labelrow"><label>CNPJ</label><span class="badge review-b">CONSULTAR</span></div><div class="inputwrap review"><input id="cnpj" placeholder="00.000.000/0000-00"></div><small>Consulta cadastral automática. Se a API não responder, os campos permanecem editáveis.</small></div>
+    <div class="field c4"><div class="labelrow"><label>Empresa</label><span class="badge auto-b">AUTO</span></div><div class="inputwrap auto"><input id="razao" placeholder="Razão social"></div></div>
+    <div class="field c4"><div class="labelrow"><label>CNAE principal</label><span class="badge auto-b">AUTO</span></div><div class="inputwrap auto"><input id="cnae" placeholder="25.11-0/00"></div><small id="atividadeHelp">A atividade será usada para estimar B2B, crédito e fornecedores.</small></div>
+    <div class="field c4"><label>Descrição da atividade</label><div class="inputwrap auto"><input id="atividade" placeholder="Descrição CNAE"></div></div>
+    <div class="field c4"><label>RBT12</label><div class="inputwrap auto"><span class="prefix">R$</span><input id="rbt12" type="number" step="0.01" value="10068691.91"></div></div>
+    <div class="field c4"><div class="labelrow"><label>Situação no Simples</label><span class="badge auto-b">AUTOMÁTICO</span></div><div class="inputwrap auto"><select id="simples"><option value="nao">Não optante</option><option value="sim">Optante</option><option value="historico">Optante apenas no período histórico</option></select></div><small id="simplesHelp">Definido automaticamente quando o faturamento inviabiliza a opção.</small></div>
+  </div>
+  <div class="row-actions"><button class="btn primary" id="consultarCnpj">Consultar CNPJ</button><button class="btn secondary" id="recalcular">Recalcular estimativas</button></div>
+  <div id="simplesAviso" class="info" hidden></div>
+</section>
+
+<section class="card">
+  <div class="section-title"><div class="n">02</div><h2>Mercado, compras e crédito</h2></div>
+  <div class="grid">
+    <div class="field c3"><div class="labelrow"><label>Vendas para clientes PJ (B2B)</label><span id="b2bBadge" class="badge auto-b">SUGERIDO</span></div><div class="inputwrap auto"><input id="b2b" type="number" min="0" max="100" value="95"><span class="suffix">%</span></div><small id="b2bHelp">Estimativa pelo CNAE e perfil da atividade.</small></div>
+    <div class="field c3"><div class="labelrow"><label>Compras/insumos sobre faturamento</label><span class="badge auto-b">IMPORTADO</span></div><div class="inputwrap auto"><input id="comprasFat" type="number" min="0" max="100" step="0.1" value="26.4"><span class="suffix">%</span></div><small>Preferencialmente extraído da DRE/razão.</small></div>
+    <div class="field c3"><div class="labelrow"><label>Compras potencialmente creditáveis</label><span class="badge auto-b">SUGERIDO</span></div><div class="inputwrap auto"><input id="creditaveis" type="number" min="0" max="100" value="92"><span class="suffix">%</span></div><small id="creditHelp">Estimado conforme a estrutura típica de gastos do setor.</small></div>
+    <div class="field c3"><div class="labelrow"><label>Fornecedores no regime regular</label><span class="badge auto-b">SUGERIDO</span></div><div class="inputwrap auto"><input id="fornecedores" type="number" min="0" max="100" value="90"><span class="suffix">%</span></div><small id="fornHelp">Estimativa da parcela de compras com potencial de crédito integral.</small></div>
+  </div>
+  <div class="info">Os três percentuais são sugestões editáveis. O simulador registra a origem e a confiança da estimativa para evitar que o empresário precise conhecer detalhes tributários que normalmente não domina.</div>
+</section>
+
+<section class="card">
+  <div class="section-title"><div class="n">03</div><h2>Premissas financeiras e de transição</h2></div>
+  <div class="grid">
+    <div class="field c3"><div class="labelrow"><label>CBS plena de referência</label><span class="badge review-b">PREMISSA</span></div><div class="inputwrap review"><input id="cbs" type="number" step="0.1" value="8.8"><span class="suffix">%</span></div><small>Editável para cenários.</small></div>
+    <div class="field c3"><div class="labelrow"><label>IBS pleno de referência</label><span class="badge review-b">PREMISSA</span></div><div class="inputwrap review"><input id="ibs" type="number" step="0.1" value="17.7"><span class="suffix">%</span></div><small>Editável para cenários.</small></div>
+    <div class="field c3"><div class="labelrow"><label>Reserva financeira disponível</label><span class="badge auto-b">CALCULADO</span></div><div class="inputwrap auto"><span class="prefix">R$</span><input id="reserva" type="number" readonly></div><small>Caixa + equivalentes + aplicações de liquidez imediata.</small></div>
+    <div class="field c3"><div class="labelrow"><label>Capital de giro líquido</label><span class="badge auto-b">CALCULADO</span></div><div class="inputwrap auto"><span class="prefix">R$</span><input id="ccl" type="number" readonly></div><small>Ativo circulante − passivo circulante. Não é tratado como caixa disponível.</small></div>
+  </div>
+  <div class="grid" style="margin-top:14px">
+    <div class="field c3"><label>Caixa e equivalentes</label><div class="inputwrap auto"><span class="prefix">R$</span><input id="caixa" type="number" value="20000"></div></div>
+    <div class="field c3"><label>Aplicações de liquidez imediata</label><div class="inputwrap auto"><span class="prefix">R$</span><input id="aplicacoes" type="number" value="11504.18"></div></div>
+    <div class="field c3"><label>Ativo circulante</label><div class="inputwrap auto"><span class="prefix">R$</span><input id="ac" type="number" value="850000"></div></div>
+    <div class="field c3"><label>Passivo circulante</label><div class="inputwrap auto"><span class="prefix">R$</span><input id="pc" type="number" value="710000"></div></div>
+  </div>
+  <div class="grid" style="margin-top:14px">
+    <div class="field c3"><div class="labelrow"><label>Juros e encargos da dívida</label><span class="badge auto-b">DRE</span></div><div class="inputwrap auto"><span class="prefix">R$</span><input id="juros" type="number" value="182400"></div><small>Preferir contas de juros/encargos de empréstimos. Não usar a despesa financeira genérica quando houver detalhamento.</small></div>
+    <div class="field c3"><label>Dívida financeira inicial</label><div class="inputwrap auto"><span class="prefix">R$</span><input id="divIni" type="number" value="1000000"></div><small>Empréstimos e financiamentos CP + LP no início do período.</small></div>
+    <div class="field c3"><label>Dívida financeira final</label><div class="inputwrap auto"><span class="prefix">R$</span><input id="divFim" type="number" value="1400000"></div><small>Empréstimos e financiamentos CP + LP no fim do período.</small></div>
+    <div class="field c3"><label>Meses da DRE</label><div class="inputwrap auto"><input id="meses" type="number" min="1" max="12" value="12"><span class="suffix">meses</span></div><small>Se inferior a 12, o custo é anualizado.</small></div>
+  </div>
+  <div class="grid" style="margin-top:14px">
+    <div class="c4 metric"><span>Dívida financeira média</span><b id="divMedia">R$ 0,00</b></div>
+    <div class="c4 metric"><span>Custo médio estimado da dívida</span><b id="custoDivida">0,00% a.a.</b></div>
+    <div class="c4 metric"><span>Origem</span><b style="font-size:15px" id="custoOrigem">BP + DRE</b></div>
+  </div>
+</section>
+
+<section class="card">
+  <div class="section-title"><div class="n">04</div><h2>Composição do faturamento por tratamento do IBS/CBS</h2></div>
+  <p class="muted">Sugestão inicial por CNPJ, CNAE e atividade. Como o cClassTrib pertence à operação e não à empresa, o sistema trata esta etapa como aproximação revisável.</p>
+  <div class="treatment"><strong>Tributação integral</strong><div class="inputwrap auto"><input class="trat" id="t100" type="number" min="0" max="100" value="100"><span class="suffix">%</span></div><span class="muted">100% da alíquota</span></div>
+  <div class="treatment"><strong>Redução de 30%</strong><div class="inputwrap auto"><input class="trat" id="t70" type="number" min="0" max="100" value="0"><span class="suffix">%</span></div><span class="muted">70% da alíquota</span></div>
+  <div class="treatment"><strong>Redução de 40%</strong><div class="inputwrap auto"><input class="trat" id="t60" type="number" min="0" max="100" value="0"><span class="suffix">%</span></div><span class="muted">60% da alíquota</span></div>
+  <div class="treatment"><strong>Redução de 60%</strong><div class="inputwrap auto"><input class="trat" id="t40" type="number" min="0" max="100" value="0"><span class="suffix">%</span></div><span class="muted">40% da alíquota</span></div>
+  <div class="treatment"><strong>Redução a zero</strong><div class="inputwrap auto"><input class="trat" id="t0" type="number" min="0" max="100" value="0"><span class="suffix">%</span></div><span class="muted">0% da alíquota</span></div>
+  <div class="status"><span class="pill" id="somaTrat">Faturamento classificado: 100%</span><span class="pill" id="aliqPond">Alíquota nominal ponderada: 26,50%</span><span class="pill">Origem: CNAE + atividade</span></div>
+  <div id="tratAviso" class="info warn" hidden>A soma das participações deve ser igual a 100%.</div>
+</section>
+
+<p class="footer-note">Protótipo de trabalho. Estimativas setoriais devem ser refinadas com dados reais da empresa sempre que BP, DRE, razão, SPED ou XMLs estiverem disponíveis.</p>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const num=id=>Number($(id).value||0);
+const brl=v=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const pct=v=>v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'%';
+
+const PERFIS=[
+ {re:/^(24|25|28|29|30|33)/,nome:'indústria pesada/metalmecânica',b2b:98,cred:93,forn:94,conf:'alta'},
+ {re:/^(13)/,nome:'indústria têxtil',b2b:92,cred:91,forn:90,conf:'alta'},
+ {re:/^(10|11)/,nome:'indústria de alimentos e bebidas',b2b:72,cred:90,forn:88,conf:'média'},
+ {re:/^(46)/,nome:'comércio atacadista',b2b:96,cred:96,forn:94,conf:'alta'},
+ {re:/^(47)/,nome:'comércio varejista',b2b:12,cred:92,forn:90,conf:'média-alta'},
+ {re:/^(56)/,nome:'alimentação',b2b:10,cred:78,forn:86,conf:'média'},
+ {re:/^(62|63)/,nome:'tecnologia',b2b:82,cred:58,forn:88,conf:'média'},
+ {re:/^(69|70|71|73|74)/,nome:'serviços profissionais',b2b:88,cred:42,forn:85,conf:'média'},
+ {re:/^(41|42|43)/,nome:'construção',b2b:82,cred:74,forn:88,conf:'média'},
+ {re:/^(86|87|88)/,nome:'saúde e assistência',b2b:35,cred:45,forn:84,conf:'baixa'},
+ {re:/^(85)/,nome:'educação',b2b:18,cred:38,forn:82,conf:'baixa'}
+];
+function digitsCnae(){return $('cnae').value.replace(/\D/g,'');}
+function perfil(){const d=digitsCnae();return PERFIS.find(p=>p.re.test(d))||{nome:'perfil geral',b2b:60,cred:70,forn:85,conf:'baixa'};}
+function aplicarPerfil(){const p=perfil();$('b2b').value=p.b2b;$('creditaveis').value=p.cred;$('fornecedores').value=p.forn;$('b2bHelp').textContent=`Estimado como ${p.nome}. Confiança ${p.conf}.`;$('creditHelp').textContent=`Estrutura típica de gastos de ${p.nome}. Confiança ${p.conf}.`;$('fornHelp').textContent=`Cadeia de suprimentos típica de ${p.nome}. Confiança ${p.conf}.`;sugerirTratamento();}
+function validarSimples(){const r=num('rbt12');if(r>4800000){$('simples').value='nao';$('simples').disabled=true;$('simplesAviso').hidden=false;$('simplesAviso').textContent=`RBT12 de ${brl(r)} supera R$ 4.800.000. Para a simulação prospectiva, a empresa é tratada como não elegível ao Simples. O histórico pode ser tratado separadamente quando necessário.`;}else{$('simples').disabled=false;$('simplesAviso').hidden=true;}}
+function calcFinanceiro(){const reserva=num('caixa')+num('aplicacoes');$('reserva').value=reserva.toFixed(2);$('ccl').value=(num('ac')-num('pc')).toFixed(2);const media=(num('divIni')+num('divFim'))/2;$('divMedia').textContent=brl(media);let custo=0;if(media>0&&num('juros')>=0){const meses=Math.max(1,num('meses'));custo=(num('juros')/media)*(12/meses)*100;$('custoOrigem').textContent='BP + DRE · dívida média';}else{$('custoOrigem').textContent='Não calculado';}$('custoDivida').textContent=pct(custo);}
+function sugerirTratamento(){const d=digitsCnae();let vals=[100,0,0,0,0];if(/^(85|86|87|88)/.test(d)) vals=[35,0,0,55,10];
+if(/^(01|02|03)/.test(d)) vals=[70,0,0,20,10];
+['t100','t70','t60','t40','t0'].forEach((id,i)=>$(id).value=vals[i]);calcTrat();}
+function calcTrat(){const ids=['t100','t70','t60','t40','t0'],fatores=[1,.7,.6,.4,0];const v=ids.map(num);const soma=v.reduce((a,b)=>a+b,0);$('somaTrat').textContent=`Faturamento classificado: ${soma.toLocaleString('pt-BR',{maximumFractionDigits:1})}%`;const cheia=num('cbs')+num('ibs');const pond=v.reduce((a,x,i)=>a+x*fatores[i],0)/100*cheia;$('aliqPond').textContent=`Alíquota nominal ponderada: ${pct(pond)}`;$('tratAviso').hidden=Math.abs(soma-100)<.01;$('somaTrat').className='pill '+(Math.abs(soma-100)<.01?'ok':'');}
+async function consultarCnpj(){const raw=$('cnpj').value.replace(/\D/g,'');if(raw.length!==14){alert('Informe um CNPJ com 14 dígitos.');return;}const b=$('consultarCnpj');b.disabled=true;b.textContent='Consultando...';try{const r=await fetch(`https://brasilapi.com.br/api/cnpj/v1/${raw}`);if(!r.ok)throw new Error('consulta indisponível');const j=await r.json();$('razao').value=j.razao_social||j.nome_fantasia||'';const cp=j.cnae_fiscal||'';$('cnae').value=String(cp);$('atividade').value=j.cnae_fiscal_descricao||'';aplicarPerfil();}catch(e){alert('Não foi possível consultar o CNPJ agora. Os campos podem ser preenchidos manualmente e as estimativas continuam disponíveis.');}finally{b.disabled=false;b.textContent='Consultar CNPJ';}}
+['rbt12'].forEach(id=>$(id).addEventListener('input',validarSimples));['caixa','aplicacoes','ac','pc','juros','divIni','divFim','meses'].forEach(id=>$(id).addEventListener('input',calcFinanceiro));['cnae'].forEach(id=>$(id).addEventListener('change',aplicarPerfil));['t100','t70','t60','t40','t0','cbs','ibs'].forEach(id=>$(id).addEventListener('input',calcTrat));$('consultarCnpj').addEventListener('click',consultarCnpj);$('recalcular').addEventListener('click',()=>{validarSimples();aplicarPerfil();calcFinanceiro();calcTrat();});
+$('cnae').value='25110000';$('atividade').value='Fabricação de estruturas metálicas';aplicarPerfil();validarSimples();calcFinanceiro();calcTrat();
+</script>
+</body>
+</html>
