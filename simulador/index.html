@@ -1,1 +1,101 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Simulador da Reforma Tributária | O Brasil muda de imposto</title><meta name="description" content="Simule impactos da Reforma Tributária, IBS, CBS, Simples Nacional, split payment e necessidade de capital de giro."><meta name="robots" content="index,follow,max-image-preview:large"><link rel="canonical" href="https://o-brasil-muda-de-imposto.vercel.app/simulador/"><style>body{margin:0;font-family:Arial,sans-serif;background:#f7f8fa;color:#11223a;line-height:1.5}header{background:#173a62;color:#fff;padding:22px 20px;border-bottom:5px solid #d9a441}.wrap{max-width:1180px;margin:auto}.brand{font-size:26px;font-weight:800;margin:0}.sub{margin:4px 0 14px;opacity:.9}.nav{display:flex;gap:14px;flex-wrap:wrap}.nav a{color:#fff}.intro{padding:24px 20px 14px}.intro h1{margin:.1em 0;font-size:clamp(2rem,5vw,3.5rem)}.intro p{max-width:900px}.framewrap{max-width:1220px;margin:0 auto 30px;padding:0 12px}.frame{background:#fff;border:1px solid #dfe4ea;border-radius:14px;overflow:hidden;box-shadow:0 12px 35px rgba(17,34,58,.1)}iframe{display:block;width:100%;height:1750px;border:0;background:#fff}.actions{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}.btn{display:inline-block;background:#d9a441;color:#11223a;padding:10px 14px;border-radius:8px;text-decoration:none;font-weight:700}.ghost{background:#eef3f8}.note{font-size:12px;color:#667085}footer{background:#102640;color:#fff;padding:26px 20px}@media(max-width:700px){iframe{height:2450px}}</style></head><body><header><div class="wrap"><div class="brand">O Brasil muda de imposto</div><div class="sub">A Reforma Tributária explicada para quem precisa entender, decidir e se preparar.</div><nav class="nav"><a href="/">Início</a><a href="/reforma-tributaria-2026.html">Reforma 2026</a><a href="/ibs-cbs.html">IBS e CBS</a><a href="/split-payment-capital-de-giro.html">Split payment</a><a href="/simples-nacional-reforma-tributaria.html">Simples</a><a href="/transicao-reforma-tributaria-2033.html">Transição</a><a href="/sobre-wagner-rubim-rangel.html">Autor</a></nav></div></header><main><section class="intro"><div class="wrap"><h1>Simulador da Reforma Tributária</h1><p>Use o CNPJ para identificar automaticamente os dados cadastrais disponíveis e simule impactos tributários e financeiros, incluindo IBS/CBS, créditos, split payment e necessidade adicional de capital de giro.</p><div class="actions"><a class="btn" href="#simulador">Iniciar simulação</a><a class="btn ghost" href="https://simulador-reforma-homo-fictor.vercel.app/" target="_blank" rel="noopener">Abrir em tela cheia</a></div><p class="note">Ferramenta orientativa. Os resultados dependem do enquadramento real, da atividade, das regras vigentes e das premissas informadas.</p></div></section><section class="framewrap" id="simulador"><div class="frame"><iframe title="Simulador da Reforma Tributária" src="https://simulador-reforma-homo-fictor.vercel.app/" loading="eager" referrerpolicy="strict-origin-when-cross-origin"></iframe></div></section></main><footer><div class="wrap"><strong>O Brasil muda de imposto</strong><br>Wagner Rubim Rangel · Homo Fictor Edições Independentes</div></footer></body></html>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#651b2b" />
+<title>Simulador da Reforma Tributária | O Brasil muda de imposto</title>
+<meta name="description" content="Simulador orientativo da Reforma Tributária com consulta automática de CNPJ, Simples Nacional, Fator R, IBS, CBS, split payment e capital de giro." />
+<link rel="stylesheet" href="/simulador/style.css">
+</head>
+<body>
+<div class="modalBackdrop" id="introModal" role="dialog" aria-modal="true" aria-labelledby="introTitle">
+<div class="modal">
+<h2 id="introTitle">Antes de começar, um alinhamento rápido</h2>
+<p>Este simulador produz uma estimativa preliminar dos efeitos da Reforma Tributária sobre carga, créditos, split payment e capital de giro.</p>
+<p>Quando você informa um CNPJ, consultamos dados cadastrais públicos para reduzir o preenchimento manual. Faturamento, folha, composição das vendas e premissas financeiras continuam dependendo das informações da empresa.</p>
+<div class="checkRow"><input id="ack" type="checkbox"><label for="ack">Entendo que o resultado é orientativo e que decisões tributárias devem ser confirmadas com profissional responsável.</label></div>
+<div class="privacy">A consulta cadastral desta versão não grava o CNPJ em banco de dados. Quando o app estiver publicado, a consulta passa pelo endpoint do simulador; ao abrir o HTML localmente, a V2.1 tenta uma consulta direta à base pública como contingência.</div>
+<div class="modalActions"><button class="btn secondary" id="closeIntro">Ver sem aceitar</button><button class="btn primary" id="startBtn" disabled>Concordo e quero começar</button></div>
+</div>
+</div>
+<div class="topbar"><div class="wrap"><div class="logoBox"><div><strong style="font-size:18px;color:#173a62">O Brasil muda de imposto</strong><div class="mini">Simulador tributário e financeiro</div></div></div><div class="mini"><a href="/" style="color:#173a62;font-weight:800;text-decoration:none">Voltar ao site</a> · Simulador RTC V2.1</div></div></div>
+<section class="hero"><div class="wrap"><h1>Entenda o impacto da Reforma no seu negócio</h1><p>Informe o CNPJ e deixe o simulador preencher o que for público. Depois, complete os números que só a empresa conhece e veja carga estimada, créditos, efeito do split e necessidade adicional de capital de giro.</p><div class="badges"><span class="badge">Consulta automática de CNPJ</span><span class="badge">Fator R estimado</span><span class="badge">Simples puro e híbrido</span><span class="badge">Split payment e caixa</span></div></div></section>
+<main><div class="wrap">
+<div class="notice"><strong>Estimativa orientativa:</strong> algumas alíquotas e detalhes operacionais da transição continuam sujeitos a regulamentação e calibração. O simulador mostra as premissas usadas para que o resultado possa ser auditado.</div>
+<div class="layout">
+<section class="card">
+<div class="cardHead"><h2>Seu negócio</h2><span class="tag">Automação cadastral</span></div>
+<div class="cardBody">
+<div class="sectionTitle">Comece pelo CNPJ</div>
+<div class="field full">
+<label for="cnpj">CNPJ da empresa</label>
+<div class="cnpjRow"><input id="cnpj" inputmode="text" autocomplete="off" placeholder="00.000.000/0001-00 ou novo padrão alfanumérico"><button class="btn primary" id="lookupBtn" type="button">Buscar empresa</button></div>
+<div id="lookupStatus" class="lookupStatus">O preenchimento manual continua disponível caso a consulta não retorne algum campo.</div>
+</div>
+<div class="companyCard" id="companyCard">
+<div class="companyTitle" id="companyName">Empresa</div><div class="companyMeta" id="companyTrade">Nome fantasia</div>
+<div class="chips"><span class="chip" id="companyStatus">Situação</span><span class="chip" id="companySimple">Simples</span><span class="chip" id="companyMei">MEI</span></div>
+<div class="companyGrid"><div><b>Porte</b><span id="companySize">Não informado</span></div><div><b>Localização</b><span id="companyLocation">Não informado</span></div><div><b>Natureza jurídica</b><span id="companyNature">Não informado</span></div><div><b>Capital social</b><span id="companyCapital">Não informado</span></div></div>
+<div class="cnaeText"><b>CNAE principal:</b> <span id="companyCnae">Não informado</span></div>
+<div class="autoBox" id="autoMessage"><strong>Automação:</strong> após a consulta, o simulador sugere atividade, anexo e enquadramento que possam ser inferidos com segurança. Você pode revisar tudo.</div>
+</div>
+<div class="sectionTitle">Enquadramento e atividade</div>
+<div class="fields">
+<div class="field full"><label for="activity">CNAE principal e atividade</label><input id="activity" placeholder="Será preenchido pela consulta ou pode ser informado manualmente"><div class="hint">O CNAE é usado para sugerir o perfil tributário. A confirmação do anexo continua sendo responsabilidade do usuário.</div></div>
+<div class="field"><label for="simpleStatus">Situação no Simples Nacional</label><select id="simpleStatus"><option value="unknown">Não identificado</option><option value="yes">Optante</option><option value="no">Não optante</option></select></div>
+<div class="field"><label for="companyPorte">Porte cadastral</label><select id="companyPorte"><option value="unknown">Não identificado</option><option value="mei">MEI</option><option value="me">Microempresa</option><option value="epp">Empresa de pequeno porte</option><option value="other">Demais</option></select></div>
+<div class="field"><label for="annex">Anexo do Simples</label><select id="annex"><option value="I">Anexo I: Comércio</option><option value="II">Anexo II: Indústria</option><option value="III">Anexo III: Serviços</option><option value="IV">Anexo IV: Serviços específicos</option><option value="V">Anexo V: Serviços</option></select><div class="hint" id="annexHint">Selecione ou consulte um CNPJ para receber uma sugestão.</div></div>
+<div class="field"><label for="factorMode">Fator R</label><select id="factorMode"><option value="auto">Calcular quando aplicável</option><option value="off">Não aplicar</option></select><div class="hint" id="factorHint">O limite de 28% é usado na estimativa para atividades sujeitas ao Fator R.</div></div>
+</div>
+<div class="sectionTitle">Seus números</div>
+<div class="fields">
+<div class="field"><label for="monthlyRevenue">Faturamento médio mensal</label><input id="monthlyRevenue" type="number" min="0" step="1000" value="60000"><div class="hint">Usamos como projeção mensal e para anualizar quando você não informar a receita acumulada.</div></div>
+<div class="field"><label for="rbt12">Receita bruta acumulada em 12 meses</label><input id="rbt12" type="number" min="0" step="1000" value="720000"><div class="presetRow"><button class="preset" id="annualizeRevenue" type="button">Usar faturamento x 12</button></div></div>
+<div class="field"><label for="monthlyPayroll">Folha de pagamento média mensal</label><input id="monthlyPayroll" type="number" min="0" step="500" value="25000"><div class="hint">Usada para estimar o Fator R. Para maior precisão, futuramente usaremos folha acumulada real de 12 meses.</div></div>
+<div class="field"><label for="purchasePct">Gastos com compras e insumos</label><div class="inline"><input id="purchasePct" type="number" min="0" max="100" step="1" value="25"><span class="suffix">%</span></div></div>
+<div class="field"><label for="b2b">Vendas para outras empresas</label><div class="inline"><input id="b2b" type="number" min="0" max="100" step="1" value="15"><span class="suffix">%</span></div><div class="hint">Ajuda a medir o valor comercial dos créditos tributários para clientes PJ.</div></div>
+<div class="field"><label for="currentBuffer">Reserva de capital de giro disponível</label><input id="currentBuffer" type="number" min="0" step="1000" value="10000"></div>
+</div>
+<div class="sectionTitle">IBS, CBS e split payment</div>
+<div class="fields">
+<div class="field"><label for="regularRate">Alíquota efetiva IBS + CBS usada no cenário</label><div class="inline"><input id="regularRate" type="number" min="0" max="40" step="0.1" value="9"><span class="suffix">%</span></div><div class="hint">Premissa editável. Deve ser atualizada quando a alíquota aplicável ao caso estiver definida.</div></div>
+<div class="field"><label for="dasShare">Parcela estimada de IBS + CBS dentro do DAS</label><div class="inline"><input id="dasShare" type="number" min="0" max="100" step="0.1" value="15.5"><span class="suffix">%</span></div></div>
+<div class="field"><label for="creditEligible">Compras aptas a gerar crédito</label><div class="inline"><input id="creditEligible" type="number" min="0" max="100" step="1" value="90"><span class="suffix">%</span></div></div>
+<div class="field"><label for="rateFactor">Tratamento da operação</label><select id="rateFactor"><option value="1">Alíquota padrão: 100%</option><option value="0.7">Redução de 30%: aplica 70%</option><option value="0.6">Redução de 40%: aplica 60%</option><option value="0.4">Redução de 60%: aplica 40%</option><option value="0">Alíquota zero</option></select></div>
+<div class="field"><label for="splitPct">Recebimentos submetidos ao split</label><div class="inline"><input id="splitPct" type="number" min="0" max="100" step="1" value="15"><span class="suffix">%</span></div><div class="presetRow"><button class="preset" id="splitB2B" type="button">Usar % B2B</button><button class="preset" id="splitFull" type="button">Simular 100%</button></div></div>
+<div class="field"><label for="floatDays">Dias de liquidez tributária atualmente usados</label><input id="floatDays" type="number" min="0" max="90" step="1" value="30"><div class="hint">Quantos dias, em média, o valor do tributo permanece no caixa antes do recolhimento atual.</div></div>
+<div class="field"><label for="splitMethod">Procedimento de split simulado</label><select id="splitMethod"><option value="standard">Padrão: débito da operação</option><option value="simplified">Simplificado: percentual preestabelecido</option></select></div>
+<div class="field"><label for="simplifiedRate">Percentual no procedimento simplificado</label><div class="inline"><input id="simplifiedRate" type="number" min="0" max="40" step="0.1" value="5"><span class="suffix">%</span></div></div>
+<div class="field"><label for="refundDays">Prazo de liberação de eventual excesso</label><input id="refundDays" type="number" min="0" max="10" step="1" value="3"></div>
+</div>
+<div class="actions"><span class="live"><span class="dot"></span>Resultado atualizado automaticamente</span><button class="btn secondary" id="printBtn" type="button">Imprimir ou salvar em PDF</button></div>
+</div>
+</section>
+<aside class="card" id="resultsCard">
+<div class="cardHead"><h2>Seu diagnóstico</h2><span class="tag">Tempo real</span></div>
+<div class="cardBody">
+<div class="results">
+<div class="metric"><div class="k">Alíquota efetiva do DAS</div><div class="v" id="effRate">0,00%</div><div class="s" id="bracket">Faixa estimada</div></div>
+<div class="metric"><div class="k">Fator R estimado</div><div class="v" id="factorR">0,00%</div><div class="s" id="factorRText">Folha anualizada / RBT12</div></div>
+<div class="metric"><div class="k">Simples puro</div><div class="v" id="pureTax">R$ 0</div><div class="s">Carga mensal estimada no cenário puro</div></div>
+<div class="metric"><div class="k">Simples híbrido</div><div class="v" id="hybridTax">R$ 0</div><div class="s">DAS ajustado + IBS/CBS regular</div></div>
+<div class="metric big"><div class="k">Capital de giro adicional estimado</div><div class="v" id="workingCapital">R$ 0</div><div class="s" id="workingCapitalText">Reposição da liquidez que deixa de transitar pelo caixa.</div></div>
+<div class="metric"><div class="k">Valor segregado no mês</div><div class="v" id="grossSplit">R$ 0</div><div class="s">Pode deixar de entrar imediatamente no caixa</div></div>
+<div class="metric"><div class="k">Falta de reserva</div><div class="v" id="bufferGap">R$ 0</div><div class="s">Capital de giro estimado menos reserva informada</div></div>
+</div>
+<div class="resultSection"><div class="verdict"><strong id="eligibilityTitle">Elegibilidade</strong><span id="eligibilityText">Aguardando dados.</span></div></div>
+<div class="resultSection"><div class="barLabel"><span>Simples puro</span><strong id="pureLabel">R$ 0</strong></div><div class="bar"><div class="fill" id="pureBar" style="width:0%"></div></div><div class="barLabel"><span>Simples híbrido</span><strong id="hybridLabel">R$ 0</strong></div><div class="bar"><div class="fill alt" id="hybridBar" style="width:0%"></div></div><div class="verdict" style="margin-top:12px"><strong>Comparação tributária</strong><span id="comparisonText">Preencha os dados para comparar.</span></div></div>
+<div class="resultSection"><div class="sectionTitle">O que acontece com R$ 100 recebidos</div><div class="flowGrid"><div class="flow"><span>Cliente paga</span><b>R$ 100,00</b><span>liquidação</span></div><div class="flow"><span>Split potencial</span><b id="per100Split">R$ 0,00</b><span>segregado</span></div><div class="flow"><span>Chega ao caixa</span><b id="per100Cash">R$ 100,00</b><span>antes dos demais custos</span></div></div></div>
+<div class="resultSection"><div class="sectionTitle">Crédito potencial para clientes PJ</div><div class="results"><div class="metric"><div class="k">Simples puro</div><div class="v" id="clientCreditPure">R$ 0</div><div class="s">Estimativa da parcela transferível</div></div><div class="metric"><div class="k">Híbrido</div><div class="v" id="clientCreditHybrid">R$ 0</div><div class="s">Crédito estimado no regime regular</div></div></div></div>
+<div class="resultSection"><div class="status" id="statusLine">Revise as premissas antes de usar o resultado.</div></div>
+</div>
+</aside>
+</div>
+<details><summary>Como a automação interpreta CNAE e Fator R</summary><p>A consulta do CNPJ traz o CNAE principal. O simulador usa regras conservadoras para sugerir Comércio, Indústria ou Serviços. Para serviços que normalmente dependem do Fator R, a ferramenta estima folha anual como folha média mensal x 12 e compara com a receita dos últimos 12 meses. Resultado igual ou superior a 28% sugere Anexo III; abaixo de 28% sugere Anexo V. Alguns serviços específicos são direcionados para revisão do Anexo IV. A sugestão deve ser confirmada por profissional responsável.</p></details>
+<details><summary>Metodologia do capital de giro</summary><p>O valor segregado pelo split não é tratado automaticamente como custo novo. A ferramenta mede a perda de disponibilidade temporária do tributo no caixa e eventual retenção excedente. Capital de giro adicional = reposição do float tributário + retenção temporária excedente estimada.</p></details>
+<details class="sourceLinks"><summary>Fontes e integração cadastral</summary><p>A consulta gratuita desta versão usa o endpoint público de CNPJ da BrasilAPI, que consolida informações cadastrais da base pública. Para uso corporativo com SLA e suporte integral ao novo CNPJ alfanumérico, a arquitetura permite substituir o provedor por uma integração oficial contratada.</p><p><a href="https://brasilapi.com.br/" target="_blank" rel="noreferrer">BrasilAPI</a> | <a href="https://www.gov.br/pt-br/servicos/consultar-cadastro-nacional-de-pessoas-juridicas" target="_blank" rel="noreferrer">Receita Federal: consultar CNPJ</a> | <a href="https://www.gov.br/receitafederal/pt-br/acesso-a-informacao/acoes-e-programas/programas-e-atividades/cnpj-alfanumerico/cnpj-alfa" target="_blank" rel="noreferrer">Receita Federal: CNPJ alfanumérico</a></p></details>
+</div></main>
+<footer><div class="footerBrand"><strong>O Brasil muda de imposto · Homo Fictor Edições Independentes</strong></div><div>Ferramenta educacional de planejamento tributário e financeiro. Resultados dependem do enquadramento real, da legislação aplicável, de dados contábeis e das premissas informadas.</div></footer>
+<script src="/simulador/app.js" defer></script>
+</body></html>
