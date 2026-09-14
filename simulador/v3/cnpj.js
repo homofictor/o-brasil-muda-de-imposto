@@ -17,6 +17,7 @@ function setLookupBusy(busy,title='Consultando e preparando sua simulação...',
 }
 async function lookupCnpj(){
  const raw=$('cnpj').value.toUpperCase().replace(/[^A-Z0-9]/g,''),status=$('lookupStatus');if(raw.length!==14){status.className='status bad';status.textContent='Informe um CNPJ com 14 posições.';return}
+ if(typeof markDiagnosisDirty==='function')markDiagnosisDirty('cnpj');
  const started=Date.now();
  status.className='status';status.textContent='Consulta iniciada. Aguarde alguns instantes.';if($('companyCard'))$('companyCard').hidden=true;setLookupBusy(true);
  try{
