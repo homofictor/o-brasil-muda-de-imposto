@@ -26,21 +26,24 @@ function calculate(){
 }
 function restore(){try{const x=JSON.parse(localStorage.getItem('brmi_v3')||'{}');Object.entries(x).forEach(([id,v])=>{const el=$(id);if(!el)return;if(el.type==='checkbox')el.checked=Boolean(v);else el.value=v})}catch(_){} }
 let revenueSyncing=false,lastRevenueSource='monthly';
-function syncRevenue(source){
+function syncRevenue(source,markDerived=false){
  const toggle=$('revenueSync');if(revenueSyncing||!toggle?.checked)return;revenueSyncing=true;lastRevenueSource=source;
- if(source==='monthly'){const monthly=Math.max(0,num('monthlyRevenue'));numSet('rbt12',Math.round(monthly*12*100)/100)}
- else{const annual=Math.max(0,num('rbt12'));numSet('monthlyRevenue',Math.round((annual/12)*100)/100)}
+ if(source==='monthly'){
+  const monthly=Math.max(0,num('monthlyRevenue'));numSet('rbt12',Math.round(monthly*12*100)/100);if(markDerived&&typeof markFieldDerived==='function')markFieldDerived('rbt12');
+ }else{
+  const annual=Math.max(0,num('rbt12'));numSet('monthlyRevenue',Math.round((annual/12)*100)/100);if(markDerived&&typeof markFieldDerived==='function')markFieldDerived('monthlyRevenue');
+ }
  revenueSyncing=false;
 }
 function dirty(){if(typeof markDiagnosisDirty==='function')markDiagnosisDirty();}
 $('cnpj').addEventListener('input',e=>{e.target.value=normalizeCnpjInput(e.target.value);dirty()});
 $('lookupBtn').addEventListener('click',lookupCnpj);
-$('monthlyRevenue').addEventListener('input',()=>{syncRevenue('monthly');dirty()});
-$('rbt12').addEventListener('input',()=>{syncRevenue('annual');dirty()});
-$('revenueSync').addEventListener('change',()=>{if($('revenueSync').checked)syncRevenue(lastRevenueSource);dirty()});
+$('monthlyRevenue').addEventListener('input',()=>{if(typeof markFieldComplete==='function')markFieldComplete('monthlyRevenue');syncRevenue('monthly',true);dirty()});
+$('rbt12').addEventListener('input',()=>{if(typeof markFieldComplete==='function')markFieldComplete('rbt12');syncRevenue('annual',true);dirty()});
+$('revenueSync').addEventListener('change',()=>{if($('revenueSync').checked)syncRevenue(lastRevenueSource,true);dirty()});
 $('printBtn').addEventListener('click',()=>window.print());
 document.querySelectorAll('input,select').forEach(el=>{
  if(!['cnpj','yearRange','monthlyRevenue','rbt12','revenueSync'].includes(el.id))el.addEventListener('input',dirty);
  if(!['yearRange','monthlyRevenue','rbt12','revenueSync'].includes(el.id))el.addEventListener('change',dirty)
 });
-restore();if($('revenueSync')?.checked)syncRevenue('monthly');deadline();if(typeof initEnhancedResults==='function')initEnhancedResults();if(typeof initDiagnosisFlow==='function')initDiagnosisFlow();calculate();
+restore();if(typeof initFieldStates==='function')initFieldStates();if($('revenueSync')?.checked)syncRevenue('monthly',false);deadline();if(typeof initEnhancedResults==='function')initEnhancedResults();if(typeof initDiagnosisFlow==='function')initDiagnosisFlow();calculate();
