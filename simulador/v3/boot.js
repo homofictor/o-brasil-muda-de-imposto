@@ -1,28 +1,42 @@
 function renderActions(r,rec){
-  const acts=[];const fr=factorRValue();
-  if(cnaeSuggestion?.factorR)acts.push(`Confirmar o Fator R. A estimativa atual é ${pct1(fr)} e aponta para Anexo ${fr>=.28?'III':'V'}.`);else acts.push(`Confirmar o Anexo ${r.annex} e a segregação correta das receitas antes de formalizar qualquer opção.`);
-  if(num('b2bPct')>=40)acts.push('Mapear os principais clientes PJ e medir se a diferença de crédito influencia preço, homologação de fornecedor ou permanência na cadeia.');else acts.push('Como a participação B2B informada é menor, priorizar a comparação de carga própria e simplicidade operacional.');
-  acts.push('Classificar as receitas por cClassTrib e substituir os percentuais genéricos de redução pelos tratamentos efetivamente aplicáveis.');
-  acts.push('Separar fornecedores por regime tributário e validar quais compras realmente geram crédito integral de IBS/CBS.');
-  const c=cashMetrics(r);if(c.gap>0)acts.push(`Planejar aproximadamente ${brl.format(c.gap)} de fonte adicional de liquidez para o cenário de split payment informado.`);else acts.push('A reserva financeira informada cobre a necessidade adicional de capital de giro estimada neste cenário.');
-  if(selectedYear===2027)acts.push('Se a empresa for do Simples e quiser IBS/CBS no regime regular no primeiro semestre de 2027, observar o prazo oficial de setembro de 2026 e as regras de cancelamento.');
-  acts.push(`Validar a recomendação “${rec.title}” com contador responsável, considerando contratos, benefícios, créditos específicos, estado/município e particularidades da atividade.`);
-  $('actionList').innerHTML=acts.map(x=>`<li>${x}</li>`).join('');
+ const acts=[];const fr=factorRValue();
+ if(r.simpleEligible){
+  if(cnaeSuggestion?.factorR)acts.push(`Confirmar o Fator R. A estimativa atual é ${pct1(fr)} e aponta para Anexo ${fr>=.28?'III':'V'}.`);
+  else acts.push(`Confirmar o Anexo ${r.annex} e a segregação correta das receitas antes de formalizar qualquer opção.`);
+ }else if(r.eligibility.status==='over_limit'){
+  acts.push(`Registrar que o RBT12 de ${brl2.format(r.rbt12)} supera o teto de R$ 4,8 milhões e excluir Simples Nacional e Simples híbrido da decisão prospectiva.`);
+ }else{
+  acts.push('Confirmar a elegibilidade ao Simples antes de incluir esse regime em qualquer decisão. O simulador não o tratou como alternativa disponível.');
+ }
+ if(num('b2bPct')>=40)acts.push('Mapear os principais clientes PJ e medir se o crédito efetivamente destacado influencia preço, homologação de fornecedor ou permanência na cadeia.');
+ else acts.push('Como a participação B2B estimada é menor, priorizar carga própria, margem, caixa e simplicidade operacional.');
+ acts.push('Validar a composição das receitas por cClassTrib e substituir as estimativas setoriais pelos tratamentos efetivamente aplicáveis às operações.');
+ acts.push('Separar fornecedores por regime tributário e validar quais compras realmente geram crédito de IBS/CBS.');
+ const fm=financialMetrics();if(fm.annualRate==null&&$('financeRateMode')?.value==='auto')acts.push('Completar no BP/DRE os juros e encargos da dívida e os saldos de empréstimos/financiamentos para calcular o custo financeiro automaticamente.');
+ const c=cashMetrics(r);if(c.gap>0)acts.push(`Planejar aproximadamente ${brl.format(c.gap)} de fonte adicional de liquidez para o cenário de split payment informado.`);else acts.push('A reserva financeira calculada cobre a necessidade adicional de capital de giro estimada neste cenário.');
+ if(selectedYear===2027&&r.simpleEligible)acts.push('Se a empresa quiser IBS/CBS no regime regular no primeiro semestre de 2027, observar o prazo oficial de setembro de 2026 e as regras de cancelamento.');
+ acts.push(`Validar a recomendação “${rec.title}” com contador responsável, considerando contratos, benefícios, créditos específicos, estado/município e particularidades da atividade.`);
+ $('actionList').innerHTML=acts.map(x=>`<li>${x}</li>`).join('');
 }
-function deadline(){
-  const now=new Date();const end=new Date('2026-09-30T23:59:59-03:00');const start=new Date('2026-09-01T00:00:00-03:00');
-  if(now>=start&&now<=end){const days=Math.ceil((end-now)/86400000);$('deadlineBanner').hidden=false;$('deadlineBanner').querySelector('div').innerHTML=`<strong>Decisão para 2027 em andamento.</strong> Restam aproximadamente ${days} dia${days===1?'':'s'} para o prazo de 30/09/2026 para opção pelo regime regular de IBS/CBS no primeiro semestre de 2027.`}
+function deadline(r){
+ const banner=$('deadlineBanner');if(!banner)return;
+ if(r&&!r.simpleEligible){banner.hidden=true;return}
+ const now=new Date();const end=new Date('2026-09-30T23:59:59-03:00');const start=new Date('2026-09-01T00:00:00-03:00');
+ if(now>=start&&now<=end){const days=Math.ceil((end-now)/86400000);banner.hidden=false;banner.querySelector('div').innerHTML=`<strong>Decisão para 2027 em andamento.</strong> Restam aproximadamente ${days} dia${days===1?'':'s'} para o prazo de 30/09/2026 para opção pelo regime regular de IBS/CBS no primeiro semestre de 2027.`}
+ else banner.hidden=true;
 }
 function calculate(){
-  applyFactorR();revenueRateFactor();renderYearButtons();if($('yearRange'))$('yearRange').value=selectedYear;
-  const all=years.map(modelForYear);const r=all.find(x=>x.year===selectedYear);const rec=recommendation(r);const structural=all.find(x=>x.year===2033);const srec=recommendation(structural);
-  $('recommendationTitle').textContent=`${rec.title} em ${selectedYear}`;$('recommendationText').textContent=rec.text;
-  $('yearDecision').textContent=rec.title;$('yearReason').textContent=rec.text;
-  $('structuralDecision').textContent=srec.title;$('structuralReason').textContent=srec.text;
-  const fr=factorRValue();$('factorResult').textContent=pct1(fr);$('factorResultText').textContent=cnaeSuggestion?.factorR?(fr>=.28?'Pelas premissas, tende ao Anexo III.':'Pelas premissas, tende ao Anexo V.'):'Exibido como indicador de referência.';
-  if(typeof renderReferenceComparison==='function')renderReferenceComparison(all);
-  renderVatSummary(r);renderTimeline(all);renderModels(r,rec);renderCompetition(r);renderCash(r);renderActions(r,rec);
-  try{localStorage.setItem('brmi_v3',JSON.stringify(Object.fromEntries([...document.querySelectorAll('input,select')].filter(el=>el.id&&el.id!=='yearRange').map(el=>[el.id,el.type==='checkbox'?el.checked:el.value]))))}catch(_){}
+ if(companyData&&!sectorSuggestion){historicalSimpleReported=companyData.opcao_pelo_simples===true;sectorSuggestion=sectorProfile(companyData.cnae_fiscal,companyData.cnae_fiscal_descricao);applySectorProfile(sectorSuggestion);}
+ financialMetrics();refreshEligibilityUi();applyFactorR();revenueRateFactor();renderYearButtons();if($('yearRange'))$('yearRange').value=selectedYear;
+ const all=years.map(modelForYear);const r=all.find(x=>x.year===selectedYear);const rec=recommendation(r);const structural=all.find(x=>x.year===2033);const srec=recommendation(structural);
+ renderEligibilityBanner(r);deadline(r);
+ $('recommendationTitle').textContent=`${rec.title} em ${selectedYear}`;$('recommendationText').textContent=rec.text;
+ $('yearDecision').textContent=rec.title;$('yearReason').textContent=rec.text;
+ $('structuralDecision').textContent=srec.title;$('structuralReason').textContent=srec.text;
+ const fr=factorRValue();$('factorResult').textContent=r.simpleEligible?pct1(fr):'N/A';$('factorResultText').textContent=r.simpleEligible?(cnaeSuggestion?.factorR?(fr>=.28?'Pelas premissas, tende ao Anexo III.':'Pelas premissas, tende ao Anexo V.'):'Exibido como indicador de referência.'):'Fator R não entra na análise prospectiva quando o Simples não é alternativa confirmada.';
+ if(typeof renderReferenceComparison==='function')renderReferenceComparison(all);
+ renderVatSummary(r);renderTimeline(all);renderModels(r,rec);renderCompetition(r);renderCash(r);renderActions(r,rec);
+ try{localStorage.setItem('brmi_v3',JSON.stringify(Object.fromEntries([...document.querySelectorAll('input,select')].filter(el=>el.id&&el.id!=='yearRange'&&!['cashReserve','workingCapitalNet','debtAverage'].includes(el.id)).map(el=>[el.id,el.type==='checkbox'?el.checked:el.value]))))}catch(_){}
 }
 function restore(){try{const x=JSON.parse(localStorage.getItem('brmi_v3')||'{}');Object.entries(x).forEach(([id,v])=>{const el=$(id);if(!el)return;if(el.type==='checkbox')el.checked=Boolean(v);else el.value=v})}catch(_){} }
 let revenueSyncing=false,lastRevenueSource='monthly';
@@ -41,9 +55,10 @@ $('lookupBtn').addEventListener('click',lookupCnpj);
 $('monthlyRevenue').addEventListener('input',()=>{if(typeof markFieldComplete==='function')markFieldComplete('monthlyRevenue');syncRevenue('monthly',true);dirty()});
 $('rbt12').addEventListener('input',()=>{if(typeof markFieldComplete==='function')markFieldComplete('rbt12');syncRevenue('annual',true);dirty()});
 $('revenueSync').addEventListener('change',()=>{if($('revenueSync').checked)syncRevenue(lastRevenueSource,true);dirty()});
+$('financeRateMode')?.addEventListener('change',()=>{if($('financeRateMode').value==='manual'&&$('financeRateSource'))$('financeRateSource').textContent='Premissa manual informada pelo usuário.';dirty()});
 $('printBtn').addEventListener('click',()=>window.print());
 document.querySelectorAll('input,select').forEach(el=>{
  if(!['cnpj','yearRange','monthlyRevenue','rbt12','revenueSync'].includes(el.id))el.addEventListener('input',dirty);
  if(!['yearRange','monthlyRevenue','rbt12','revenueSync'].includes(el.id))el.addEventListener('change',dirty)
 });
-restore();if(typeof initFieldStates==='function')initFieldStates();if($('revenueSync')?.checked)syncRevenue('monthly',false);deadline();if(typeof initEnhancedResults==='function')initEnhancedResults();if(typeof initDiagnosisFlow==='function')initDiagnosisFlow();calculate();
+restore();if(typeof initFieldStates==='function')initFieldStates();if($('revenueSync')?.checked)syncRevenue('monthly',false);financialMetrics();refreshEligibilityUi();if(typeof initEnhancedResults==='function')initEnhancedResults();if(typeof initDiagnosisFlow==='function')initDiagnosisFlow();calculate();
