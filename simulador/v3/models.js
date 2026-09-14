@@ -20,7 +20,7 @@ function modelForYear(year){
  const realTotal=netVat+realIrpj+realCsll+cpp+legacy+fullCompliance,b2b=clamp(num('b2bPct')/100,0,1);
  const pureClientCredit=embedded*b2b,hybridClientCredit=grossVat*b2b,extraClientCredit=Math.max(0,hybridClientCredit-pureClientCredit);
  const selectedModels=[{key:'pure',name:'Simples Nacional 100%',total:pureTotal,tax:pureTotal,credit:pureClientCredit,compliance:0},{key:'hybrid',name:'Simples híbrido',total:hybridTotal,tax:dasWithout+netVat+annexCpp,credit:hybridClientCredit,compliance:hybridCompliance},{key:'presumed',name:'Lucro Presumido',total:presumedTotal,tax:presumedTotal-fullCompliance,credit:hybridClientCredit,compliance:fullCompliance},{key:'real',name:'Lucro Real',total:realTotal,tax:realTotal-fullCompliance,credit:hybridClientCredit,compliance:fullCompliance}];
- const isMei=companyData?.opcao_pelo_mei===true,simpleEligible=rbt12>0&&rbt12<=4800000&&$('simpleStatus').value!=='no'&&!isMei;
+ const isMei=companyData?.opcao_pelo_mei===true||$('meiStatus')?.value==='yes',simpleEligible=rbt12>0&&rbt12<=4800000&&$('simpleStatus').value!=='no'&&!isMei;
  const eligibleModels=selectedModels.filter(m=>simpleEligible||!['pure','hybrid'].includes(m.key)),taxBest=[...eligibleModels].sort((a,b)=>a.total-b.total)[0];
  const b2bSales=annualRevenue*b2b,extraHybridCost=hybridTotal-pureTotal,breakEvenCapture=b2bSales>0?Math.max(0,extraHybridCost)/b2bSales:Infinity,capture=clamp(num('capturePct')/100,0,1),adjustedHybrid=hybridTotal-extraClientCredit*capture;
  const commercialBest=simpleEligible&&adjustedHybrid<pureTotal?'hybrid':taxBest.key;
