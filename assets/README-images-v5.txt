@@ -1,1 +1,0 @@
-Imagens principais v5 serão adicionadas nesta branch para evitar reutilização de assets antigos em cache.
