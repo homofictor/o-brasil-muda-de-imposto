@@ -19,7 +19,7 @@
  const originalApplySectorProfile=window.applySectorProfile;
  window.applySectorProfile=function(profile=sectorSuggestion){originalApplySectorProfile(profile);applyBenefit(profile)};
  const originalValidate=window.validateDiagnosisInputs;
- window.validateDiagnosisInputs=function(){const errors=originalValidate();const candidate=!!sectorSuggestion?.professionalReduction30Candidate||benefitCandidate(companyData?.cnae_fiscal,companyData?.cnae_fiscal_descricao);if(candidate&&$('professionalReduction30')?.value==='review')errors.push('Confirme se a redução de 30% do IBS/CBS para profissão regulamentada é aplicável. O CNAE sozinho não comprova os requisitos do art. 127 da LC 214/2025.');return errors};
+ if(typeof originalValidate==='function')window.validateDiagnosisInputs=function(){const errors=originalValidate();const candidate=!!sectorSuggestion?.professionalReduction30Candidate||benefitCandidate(companyData?.cnae_fiscal,companyData?.cnae_fiscal_descricao);if(candidate&&$('professionalReduction30')?.value==='review')errors.push('Confirme se a redução de 30% do IBS/CBS para profissão regulamentada é aplicável. O CNAE sozinho não comprova os requisitos do art. 127 da LC 214/2025.');return errors};
 
  window.financialMetrics=function(){
   const cash=Math.max(0,num('cashAndEquivalents')),liquid=Math.max(0,num('liquidInvestments')),reserve=cash+liquid,ac=Math.max(0,num('currentAssets')),pc=Math.max(0,num('currentLiabilities')),ccl=ac-pc,start=Math.max(0,num('debtStart')),end=Math.max(0,num('debtEnd')),avg=start>0&&end>0?(start+end)/2:(end>0?end:start),interest=Math.max(0,num('interestExpense')),months=clamp(num('dreMonths')||12,1,12),annualRate=avg>0&&interest>0?(interest/avg)*(12/months):null;
@@ -32,15 +32,18 @@
   return{cash,liquid,reserve,ac,pc,ccl,start,end,avg,interest,months,annualRate};
  };
 
- const originalAnalyse=window.analyseImportDoc;
- window.analyseImportDoc=function(file,parsed){
-  const out=originalAnalyse(file,parsed);out.candidates=(out.candidates||[]).filter(x=>x.field!=='realProfitMargin');const text=parsed.text,type=detectDoc(text,parsed.rows);
-  const pretax=firstLineValue(text,[['lucro antes do irpj e csll'],['resultado antes do irpj e csll'],['lucro antes do imposto de renda'],['resultado antes dos tributos sobre o lucro']]);
-  if(pretax!=null&&type==='DRE')out.candidates.push(candidate('realAccountingProfitAnnual','Lucro contábil antes de IRPJ e CSLL',pretax,file.name,'high','Resultado contábil antes dos tributos sobre o lucro localizado na DRE.',fmtMoney(pretax)));
-  const salaries=lineValue(text,['salarios','ordenados'],['encargos']),prolabore=lineValue(text,['pro labore','pro-labore']),remuneration=(salaries||0)+(prolabore||0);
-  if(remuneration>0&&type==='DRE')out.candidates.push(candidate('monthlyCppBase','Remunerações mensais sujeitas à contribuição patronal',remuneration/12,file.name,'medium','Salários e pró-labore identificados sem somar contas genéricas de encargos. Confirme incidências e periodicidade.',fmtMoney(remuneration/12)));
-  return out;
+ window.patchAuditImportAnalyzer=function(){
+  const original=window.analyseImportDoc;if(typeof original!=='function'||original.__auditPatched)return;
+  const wrapped=function(file,parsed){
+   const out=original(file,parsed);out.candidates=(out.candidates||[]).filter(x=>x.field!=='realProfitMargin');const text=parsed.text,type=detectDoc(text,parsed.rows);
+   const pretax=firstLineValue(text,[['lucro antes do irpj e csll'],['resultado antes do irpj e csll'],['lucro antes do imposto de renda'],['resultado antes dos tributos sobre o lucro']]);
+   if(pretax!=null&&type==='DRE')out.candidates.push(candidate('realAccountingProfitAnnual','Lucro contábil antes de IRPJ e CSLL',pretax,file.name,'high','Resultado contábil antes dos tributos sobre o lucro localizado na DRE.',fmtMoney(pretax)));
+   const salaries=lineValue(text,['salarios','ordenados'],['encargos']),prolabore=lineValue(text,['pro labore','pro-labore']),remuneration=(salaries||0)+(prolabore||0);
+   if(remuneration>0&&type==='DRE')out.candidates.push(candidate('monthlyCppBase','Remunerações mensais sujeitas à contribuição patronal',remuneration/12,file.name,'medium','Salários e pró-labore identificados sem somar contas genéricas de encargos. Confirme incidências e periodicidade.',fmtMoney(remuneration/12)));
+   return out;
+  };wrapped.__auditPatched=true;window.analyseImportDoc=wrapped;
  };
+ window.patchAuditImportAnalyzer();
  $('professionalReduction30')?.addEventListener('change',()=>{applyBenefit(sectorSuggestion);if(typeof markDiagnosisDirty==='function')markDiagnosisDirty('professional-reduction')});
  if($('professionalReductionWrap'))$('professionalReductionWrap').hidden=true;
 })();
