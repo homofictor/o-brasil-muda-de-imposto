@@ -1,24 +1,3 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "alias": [
-    "obrasilmudadeimposto.com.br",
-    "www.obrasilmudadeimposto.com.br",
-    "homofictor.com.br",
-    "www.homofictor.com.br"
-  ],
-  "redirects": [
-    {
-      "source": "/:path*",
-      "has": [{ "type": "host", "value": "www.homofictor.com.br" }],
-      "destination": "https://homofictor.com.br/:path*",
-      "permanent": true
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/:path*",
-      "has": [{ "type": "host", "value": "homofictor.com.br" }],
-      "destination": "https://homo-fictor-editora.wrubim.chatgpt.site/:path*"
-    }
-  ]
+  "$schema": "https://openapi.vercel.sh/vercel.json"
 }
