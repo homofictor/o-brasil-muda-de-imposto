@@ -4,6 +4,25 @@ window.diagnosisRunning=false;
 
 function diagnosisDelay(ms){return new Promise(resolve=>setTimeout(resolve,ms))}
 
+function openDiagnosisReport(){
+ const modal=$('reportModal'),mount=$('resultsMount');
+ if(!modal||!mount||mount.hidden)return;
+ modal.hidden=false;document.body.classList.add('reportOpen');modal.scrollTop=0;
+ setTimeout(()=>$('reportCloseBtn')?.focus(),50);
+}
+function closeDiagnosisReport(){
+ const modal=$('reportModal');if(!modal)return;modal.hidden=true;document.body.classList.remove('reportOpen');
+}
+function printDiagnosisReport(){
+ if(!window.diagnosisGenerated)return;
+ openDiagnosisReport();
+ document.body.classList.add('printingReport');
+ requestAnimationFrame(()=>window.print());
+}
+window.openDiagnosisReport=openDiagnosisReport;
+window.closeDiagnosisReport=closeDiagnosisReport;
+window.printDiagnosisReport=printDiagnosisReport;
+
 function diagnosisMarkup(){
  return `<section class="panel diagnosisGate" id="diagnosisGate">
   <div class="diagnosisIntro">
@@ -65,6 +84,7 @@ function markDiagnosisDirty(reason='input'){
  window.diagnosisDirty=true;
  const mount=$('resultsMount');
  if(window.diagnosisGenerated&&mount)mount.hidden=true;
+ if(window.diagnosisGenerated)closeDiagnosisReport();
  const btn=$('generateDiagnosisBtn');
  if(btn&&!window.diagnosisRunning){
   btn.querySelector('span').textContent=window.diagnosisGenerated?'Atualizar diagnóstico':'Gerar diagnóstico';
@@ -85,7 +105,7 @@ async function generateDiagnosis(){
  window.diagnosisRunning=true;window.diagnosisDirty=false;
  const btn=$('generateDiagnosisBtn'),work=$('diagnosisWork'),done=$('diagnosisDone'),mount=$('resultsMount'),result=$('resultado'),print=$('printBtn');
  if(btn){btn.disabled=true;btn.classList.add('working');btn.querySelector('span').textContent='Gerando diagnóstico...';btn.querySelector('small').textContent='A análise levará alguns segundos para consolidar os cenários aplicáveis';}
- if(mount)mount.hidden=true;if(result)result.hidden=false;if(print)print.hidden=true;
+ closeDiagnosisReport();if(mount)mount.hidden=true;if(result)result.hidden=false;if(print)print.hidden=true;
  if(done)done.hidden=true;if(work)work.hidden=false;
  renderDiagnosisSteps(0,-1);if($('diagnosisProgressBar'))$('diagnosisProgressBar').style.width='0%';if($('diagnosisProgressText'))$('diagnosisProgressText').textContent='0%';
  const durations=[700,850,850,950,950,750];
@@ -100,9 +120,9 @@ async function generateDiagnosis(){
   calculate();await diagnosisDelay(300);
   window.diagnosisGenerated=true;window.diagnosisDirty=false;
   if(work)work.hidden=true;if(mount)mount.hidden=false;if(result){result.hidden=false;result.classList.remove('diagnosisReveal');void result.offsetWidth;result.classList.add('diagnosisReveal')};if(print)print.hidden=false;
-  if(done){const now=new Date();done.hidden=false;done.className='diagnosisDone ready';done.textContent=`Diagnóstico gerado às ${now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}. Altere qualquer premissa para gerar uma nova análise.`}
+  if(done){const now=new Date();done.hidden=false;done.className='diagnosisDone ready';done.textContent=`Diagnóstico gerado às ${now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}. O relatório foi aberto em uma janela própria para leitura e impressão.`}
   if(btn){btn.disabled=false;btn.classList.remove('working');btn.querySelector('span').textContent='Atualizar diagnóstico';btn.querySelector('small').textContent='Reprocessar com as premissas atuais';}
-  setTimeout(()=>result?.scrollIntoView({behavior:'smooth',block:'start'}),100);
+  openDiagnosisReport();
  }catch(err){
   console.error(err);if(work)work.hidden=true;validation.hidden=false;validation.textContent='Não foi possível concluir o diagnóstico. Revise os dados e tente novamente.';if(btn){btn.disabled=false;btn.classList.remove('working');btn.querySelector('span').textContent='Tentar novamente';btn.querySelector('small').textContent='Processar cenários e recomendações';}
  }finally{window.diagnosisRunning=false}
@@ -115,4 +135,9 @@ function initDiagnosisFlow(){
  const print=$('printBtn');if(print)print.hidden=true;
  renderDiagnosisSteps();
  $('generateDiagnosisBtn')?.addEventListener('click',generateDiagnosis);
+ $('reportCloseBtn')?.addEventListener('click',closeDiagnosisReport);
+ $('reportPrintBtn')?.addEventListener('click',printDiagnosisReport);
+ $('reportModal')?.addEventListener('click',e=>{if(e.target===$('reportModal'))closeDiagnosisReport()});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('reportModal')?.hidden)closeDiagnosisReport()});
+ window.addEventListener('afterprint',()=>document.body.classList.remove('printingReport'));
 }
