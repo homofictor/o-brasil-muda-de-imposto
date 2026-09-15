@@ -64,6 +64,6 @@ function initFieldStates(){
 function enableV32Import(){
  if(document.getElementById('v32ImportModule'))return;
  const css=document.createElement('link');css.rel='stylesheet';css.href='/simulador/v3/import.css';document.head.appendChild(css);
- const s=document.createElement('script');s.id='v32ImportModule';s.src='/simulador/v3/import.js';s.onload=()=>{if(typeof window.patchAuditImportAnalyzer==='function')window.patchAuditImportAnalyzer();if(typeof initDocumentImport==='function')initDocumentImport();const p=document.getElementById('importPanel'),g=document.getElementById('diagnosisGate');if(p&&g)g.parentNode.insertBefore(p,g);const b=document.querySelector('.brand span');if(b)b.textContent='Simulador Empresarial da Reforma Tributária · V3.3'};document.body.appendChild(s)
+ const s=document.createElement('script');s.id='v32ImportModule';s.src='/simulador/v3/import.js';s.onload=()=>{if(typeof window.patchAuditImportAnalyzer==='function')window.patchAuditImportAnalyzer();if(typeof initDocumentImport==='function')initDocumentImport();const p=document.getElementById('importPanel'),g=document.getElementById('diagnosisGate');if(p&&g)g.parentNode.insertBefore(p,g);const b=document.querySelector('.brand span');if(b)b.textContent='Simulador Empresarial da Reforma Tributária · V3.2'};document.body.appendChild(s)
 }
 setTimeout(enableV32Import,0);
