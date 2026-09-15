@@ -18,6 +18,33 @@ function renderActions(r,rec){
  acts.push(`Validar a recomendação “${rec.title}” com contador responsável, considerando contratos, benefícios, créditos específicos, estado/município e particularidades da atividade.`);
  $('actionList').innerHTML=acts.map(x=>`<li>${x}</li>`).join('');
 }
+
+function renderNarrative(r,rec,structural,srec){
+ const box=$('narrativeText');if(!box)return;
+ const valid=r.models.filter(m=>m.valid!==false&&Number.isFinite(m.total)).sort((a,b)=>a.total-b.total),best=valid[0],second=valid[1],pending=r.models.filter(m=>m.valid===false).map(m=>m.name),c=cashMetrics(r),b2b=clamp(num('b2bPct')/100,0,1),parts=[];
+ if(best){
+  const gap=second?Math.max(0,second.total-best.total):0;
+  parts.push(`<p><strong>Conclusão para ${r.year}.</strong> Entre os modelos considerados válidos, <strong>${best.name}</strong> apresenta o menor desembolso tributário anual estimado, de <strong>${brl2.format(best.total)}</strong>.${second?` O segundo colocado é <strong>${second.name}</strong>, com diferença de <strong>${brl2.format(gap)}</strong> por ano.`:''} O ranking considera a carga própria da empresa e os custos adicionais informados, sem descontar o crédito que pertence ao cliente.</p>`);
+ }
+ if(rec.key==='pure')parts.push(`<p><strong>Leitura tributária.</strong> O Simples Nacional 100% é a alternativa mais econômica nas premissas atuais. A principal vantagem é a menor carga própria e a simplicidade operacional. A principal cautela está nas vendas para pessoas jurídicas, porque o crédito do cliente é limitado à parcela de IBS/CBS devida no Simples.</p>`);
+ if(rec.key==='hybrid')parts.push(`<p><strong>Leitura tributária.</strong> O Simples híbrido aparece como a melhor alternativa nas premissas atuais. Isso indica que a combinação entre DAS sem IBS/CBS, créditos das aquisições e tributação regular do consumo compensou a maior complexidade operacional. Antes de qualquer opção, confirme os créditos efetivamente aproveitáveis e o custo adicional de compliance.</p>`);
+ if(rec.key==='presumed')parts.push(`<p><strong>Leitura tributária.</strong> O Lucro Presumido aparece como a melhor alternativa validada. A conclusão depende diretamente dos percentuais de presunção corretos para a atividade e da contribuição patronal informada. Despesas operacionais não reduzem as bases presumidas de IRPJ e CSLL.</p>`);
+ if(rec.key==='real')parts.push(`<p><strong>Leitura tributária.</strong> O Lucro Real aparece como a melhor alternativa validada. Essa conclusão só é confiável porque parte do lucro contábil informado ou importado e dos ajustes fiscais lançados. A qualidade da DRE e a conferência das adições, exclusões e compensações são decisivas.</p>`);
+ if(r.simpleEligible&&b2b>0){
+  if(r.extraClientCredit>0)parts.push(`<p><strong>Competitividade B2B.</strong> O regime regular de IBS/CBS entrega aproximadamente <strong>${brl2.format(r.extraClientCredit)}</strong> a mais de crédito anual aos clientes PJ em relação ao Simples puro. Esse valor não reduz o imposto da empresa. Ele só cria valor para o vendedor se for convertido em preço, margem, retenção de clientes ou volume. A participação B2B informada é de <strong>${pct1(b2b)}</strong>.</p>`);
+  else parts.push(`<p><strong>Competitividade B2B.</strong> Nas premissas atuais, a diferença de crédito entregue aos clientes PJ não altera de forma relevante a comparação. O foco deve permanecer na carga própria, margem, caixa e simplicidade operacional.</p>`);
+ }
+ if(c&&!c.notApplicable){
+  if(c.gap>0)parts.push(`<p><strong>Caixa.</strong> O cenário de split payment gera necessidade adicional de liquidez e, depois da reserva considerada, permanece um gap estimado de <strong>${brl2.format(c.gap)}</strong>. Esse valor deve ser tratado como necessidade financeira, e não como novo imposto.</p>`);
+  else parts.push(`<p><strong>Caixa.</strong> A reserva financeira considerada cobre a necessidade adicional de liquidez estimada para o cenário de split payment informado. Ainda assim, prazo de recebimento, concentração de clientes e cronograma efetivo do split devem ser monitorados.</p>`);
+ }
+ if(srec&&srec.key!==rec.key)parts.push(`<p><strong>Transição.</strong> A recomendação para ${r.year} não é a mesma da visão estrutural de 2033, quando o simulador aponta <strong>${srec.title}</strong>. Isso significa que uma decisão eficiente no curto prazo pode precisar ser revista conforme ICMS e ISS desaparecem e o IBS ganha peso.</p>`);
+ else if(srec)parts.push(`<p><strong>Transição.</strong> A alternativa recomendada em ${r.year} permanece a mesma na visão estrutural de 2033. Isso reforça a consistência do resultado, embora as diferenças de valor entre os regimes possam mudar ao longo da transição.</p>`);
+ if(pending.length)parts.push(`<p><strong>Limitações do ranking.</strong> ${pending.join(' e ')} ${pending.length>1?'não entraram':'não entrou'} no ranking por falta de dados suficientes ou por impedimento identificado. A ausência desses modelos do ranking não deve ser interpretada como prova de que seriam necessariamente piores.</p>`);
+ parts.push(`<p><strong>Recomendação prática.</strong> Use este resultado como filtro de decisão. Antes de qualquer mudança de regime, confirme enquadramento, tratamentos específicos de IBS/CBS, créditos efetivos, contribuição patronal, contratos relevantes e os dados contábeis utilizados. Se a diferença entre os primeiros colocados for pequena, simplicidade operacional, risco de erro e efeito comercial podem ser mais importantes do que a diferença tributária isolada.</p>`);
+ box.innerHTML=parts.join('');
+}
+
 function deadline(r){
  const banner=$('deadlineBanner');if(!banner)return;
  if(r&&!r.simpleEligible){banner.hidden=true;return}
@@ -35,7 +62,7 @@ function calculate(){
  $('structuralDecision').textContent=srec.title;$('structuralReason').textContent=srec.text;
  const fr=factorRValue();$('factorResult').textContent=r.simpleEligible?pct1(fr):'N/A';$('factorResultText').textContent=r.simpleEligible?(cnaeSuggestion?.factorR?(fr>=.28?'Pelas premissas, tende ao Anexo III.':'Pelas premissas, tende ao Anexo V.'):'Exibido como indicador de referência.'):'Fator R não entra na análise prospectiva quando o Simples não é alternativa confirmada.';
  if(typeof renderReferenceComparison==='function')renderReferenceComparison(all);
- renderVatSummary(r);renderTimeline(all);renderModels(r,rec);renderCompetition(r);renderCash(r);renderActions(r,rec);
+ renderVatSummary(r);renderTimeline(all);renderModels(r,rec);renderCompetition(r);renderCash(r);renderActions(r,rec);renderNarrative(r,rec,structural,srec);
  try{localStorage.setItem('brmi_v3',JSON.stringify(Object.fromEntries([...document.querySelectorAll('input,select')].filter(el=>el.id&&el.id!=='yearRange'&&!['cashReserve','workingCapitalNet','debtAverage'].includes(el.id)).map(el=>[el.id,el.type==='checkbox'?el.checked:el.value]))))}catch(_){}
 }
 function restore(){try{const x=JSON.parse(localStorage.getItem('brmi_v3')||'{}');Object.entries(x).forEach(([id,v])=>{const el=$(id);if(!el)return;if(el.type==='checkbox')el.checked=Boolean(v);else el.value=v})}catch(_){} }
@@ -56,7 +83,7 @@ $('monthlyRevenue').addEventListener('input',()=>{if(typeof markFieldComplete===
 $('rbt12').addEventListener('input',()=>{if(typeof markFieldComplete==='function')markFieldComplete('rbt12');syncRevenue('annual',true);dirty()});
 $('revenueSync').addEventListener('change',()=>{if($('revenueSync').checked)syncRevenue(lastRevenueSource,true);dirty()});
 $('financeRateMode')?.addEventListener('change',()=>{if($('financeRateMode').value==='manual'&&$('financeRateSource'))$('financeRateSource').textContent='Premissa manual informada pelo usuário.';dirty()});
-$('printBtn').addEventListener('click',()=>window.print());
+$('printBtn').addEventListener('click',()=>typeof printDiagnosisReport==='function'?printDiagnosisReport():window.print());
 document.querySelectorAll('input,select').forEach(el=>{
  if(!['cnpj','yearRange','monthlyRevenue','rbt12','revenueSync'].includes(el.id))el.addEventListener('input',dirty);
  if(!['yearRange','monthlyRevenue','rbt12','revenueSync'].includes(el.id))el.addEventListener('change',dirty)
