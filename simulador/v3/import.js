@@ -26,6 +26,8 @@ function detectDoc(text,rows){const t=normImport(text),balance=/ativo circulante
 function importStatementSections(text){const source=String(text||''),bpStart=source.search(/balan[cç]o patrimonial/i),dreStart=source.search(/demonstra[cç][aã]o\s+(?:do\s+)?resultado/i);return{balance:bpStart>=0?source.slice(bpStart,dreStart>bpStart?dreStart:undefined):source,dre:dreStart>=0?source.slice(dreStart):source}}
 function lineValue(text,labels,exclude=[]){const lines=String(text||'').split(/\r?\n/);for(const line of lines){const n=normImport(line);if(!labels.some(x=>n.includes(x))||exclude.some(x=>n.includes(x)))continue;const matches=line.match(/(?:R\$\s*)?-?\d{1,3}(?:\.\d{3})*(?:,\d{1,2})|-?\d+(?:[.,]\d{1,2})?/g)||[];const nums=matches.map(brNum).filter(Number.isFinite);if(nums.length)return nums[nums.length-1]}return null}
 function firstLineValue(text,labelGroups){for(const labels of labelGroups){const v=lineValue(text,labels);if(v!=null)return v}return null}
+function lastLineValue(text,labels,exclude=[]){const lines=String(text||'').split(/\r?\n/);let found=null;for(const line of lines){const n=normImport(line);if(!labels.some(x=>n.includes(x))||exclude.some(x=>n.includes(x)))continue;const matches=line.match(/(?:R\$\s*)?-?\d{1,3}(?:\.\d{3})*(?:,\d{1,2})|-?\d+(?:[.,]\d{1,2})?/g)||[],nums=matches.map(brNum).filter(Number.isFinite);if(nums.length)found=nums[nums.length-1]}return found}
+function lastFirstLineValue(text,labelGroups){for(const labels of labelGroups){const v=lastLineValue(text,labels);if(v!=null)return v}return null}
 
 function tabularMetrics(rows){
  if(!rows||rows.length<2)return{};let hi=-1;
@@ -40,20 +42,20 @@ function candidate(field,label,value,source,confidence,reason,display){if(!Numbe
 
 function analyseImportDoc(file,parsed){
  const text=parsed.text,type=detectDoc(text,parsed.rows),tab=tabularMetrics(parsed.rows),c=[],sections=importStatementSections(text),balanceDoc=type==='Balanço'||type==='Balanço + DRE',dreDoc=type==='DRE'||type==='Balanço + DRE',bpText=balanceDoc?sections.balance:text,dreText=dreDoc?sections.dre:text;
- const revenue=firstLineValue(dreText,[['receita bruta','receita operacional bruta','faturamento bruto','faturamento total'],['servicos prestados','vendas de mercadorias','receita de vendas'],['receitas operacionais']]);
- const costs=firstLineValue(dreText,[['cmv','cpv','csp','custo das mercadorias','custo dos produtos','custo dos servicos'],['custos das atividades empresariais'],['custos gerais','custos operacionais']]);
+ const revenue=lastFirstLineValue(text,[['receita bruta','receita operacional bruta','faturamento bruto','faturamento total'],['servicos prestados','vendas de mercadorias','receita de vendas'],['receitas operacionais']]);
+ const costs=lastFirstLineValue(text,[['cmv','cpv','csp','custo das mercadorias','custo dos produtos','custo dos servicos'],['custos das atividades empresariais'],['custos gerais','custos operacionais']]);
  const explicitCash=firstLineValue(bpText,[['caixa e equivalentes'],['disponibilidades'],['caixa bancos']]),cashBox=firstLineValue(bpText,[['caixa geral'],['caixa']]),banks=firstLineValue(bpText,[['bancos conta movimento'],['bancos c/ movimento']]),cash=explicitCash!=null?explicitCash:(((cashBox||0)+(banks||0))||null);
  const investments=firstLineValue(bpText,[['aplicacoes financeiras de liquidez imediata'],['aplicacoes de liquidez imediata'],['equivalentes de caixa'],['aplicacoes financeiras']]);
  const currentAssets=lineValue(bpText,['ativo circulante'],['total do ativo','nao circulante']);
  const currentLiabilities=lineValue(bpText,['passivo circulante'],['nao circulante']);
- const profit=lineValue(dreText,['lucro liquido','resultado liquido','resultado do exercicio']);
- const payrollCosts=lineValue(dreText,['custos com pessoal']),payrollExpenses=lineValue(dreText,['despesas com pessoal']),payroll=(payrollCosts||0)+(payrollExpenses||0)||lineValue(dreText,['folha de pagamento','salarios e encargos','pessoal e encargos']);
+ const profit=lastLineValue(text,['lucro liquido','resultado liquido','resultado do exercicio']);
+ const payrollCosts=lastLineValue(text,['custos com pessoal']),payrollExpenses=lastLineValue(text,['despesas com pessoal']),payroll=(payrollCosts||0)+(payrollExpenses||0)||lastLineValue(text,['folha de pagamento','salarios e encargos','pessoal e encargos']);
  const debtCurrent=firstLineValue(bpText,[['emprestimos e financiamentos curto prazo'],['emprestimos e financiamentos cp'],['financiamentos curto prazo']]);
  const debtLong=firstLineValue(bpText,[['emprestimos e financiamentos longo prazo'],['emprestimos e financiamentos lp'],['financiamentos longo prazo']]);
  const debtGeneric=lineValue(bpText,['emprestimos e financiamentos']);
  const debtEnd=(debtCurrent||0)+(debtLong||0)||debtGeneric;
- const interest=firstLineValue(dreText,[['juros sobre emprestimos'],['juros sobre financiamentos'],['encargos de emprestimos'],['encargos financeiros de emprestimos'],['juros e encargos da divida']]);
- const genericFinance=lineValue(dreText,['despesas financeiras'],['receitas financeiras']);
+ const interest=lastFirstLineValue(text,[['juros sobre emprestimos'],['juros sobre financiamentos'],['encargos de emprestimos'],['encargos financeiros de emprestimos'],['juros e encargos da divida']]);
+ const genericFinance=lastLineValue(text,['despesas financeiras'],['receitas financeiras']);
  if(revenue>0)c.push(candidate('rbt12','Faturamento em 12 meses (RBT12)',revenue,file.name,dreDoc||type==='Relatório de vendas'?'high':'medium',`Valor localizado em ${type}.`,fmtMoney(revenue)));
  if(cash!=null&&cash>=0&&balanceDoc)c.push(candidate('cashAndEquivalents','Caixa e equivalentes',cash,file.name,'high','Caixa/disponibilidades localizado no balanço.',fmtMoney(cash)));
  if(investments>0&&balanceDoc)c.push(candidate('liquidInvestments','Aplicações de liquidez imediata',investments,file.name,'medium','Aplicações financeiras localizadas. Confirme se possuem liquidez imediata.',fmtMoney(investments)));
