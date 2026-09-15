@@ -9,12 +9,6 @@
   "redirects": [
     {
       "source": "/:path*",
-      "has": [{ "type": "host", "value": "www.obrasilmudadeimposto.com.br" }],
-      "destination": "https://obrasilmudadeimposto.com.br/:path*",
-      "permanent": true
-    },
-    {
-      "source": "/:path*",
       "has": [{ "type": "host", "value": "www.homofictor.com.br" }],
       "destination": "https://homofictor.com.br/:path*",
       "permanent": true
