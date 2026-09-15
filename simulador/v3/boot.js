@@ -66,6 +66,7 @@ function calculate(){
  try{localStorage.setItem('brmi_v3',JSON.stringify(Object.fromEntries([...document.querySelectorAll('input,select')].filter(el=>el.id&&el.id!=='yearRange'&&!['cashReserve','workingCapitalNet','debtAverage'].includes(el.id)).map(el=>[el.id,el.type==='checkbox'?el.checked:el.value]))))}catch(_){}
 }
 function restore(){try{const x=JSON.parse(localStorage.getItem('brmi_v3')||'{}');Object.entries(x).forEach(([id,v])=>{const el=$(id);if(!el)return;if(el.type==='checkbox')el.checked=Boolean(v);else el.value=v})}catch(_){} }
+function clearAllSimulatorData(){const confirmed=window.confirm('Limpar todas as informações do simulador?\n\nEssa ação removerá os campos preenchidos, os dados da empresa, os documentos importados e o diagnóstico salvo neste navegador.');if(!confirmed)return;try{localStorage.removeItem('brmi_v3')}catch(_){}window.location.reload()}
 let revenueSyncing=false,lastRevenueSource='monthly';
 function syncRevenue(source,markDerived=false){
  const toggle=$('revenueSync');if(revenueSyncing||!toggle?.checked)return;revenueSyncing=true;lastRevenueSource=source;
@@ -84,6 +85,7 @@ $('rbt12').addEventListener('input',()=>{if(typeof markFieldComplete==='function
 $('revenueSync').addEventListener('change',()=>{if($('revenueSync').checked)syncRevenue(lastRevenueSource,true);dirty()});
 $('financeRateMode')?.addEventListener('change',()=>{if($('financeRateMode').value==='manual'&&$('financeRateSource'))$('financeRateSource').textContent='Premissa manual informada pelo usuário.';dirty()});
 $('printBtn').addEventListener('click',()=>typeof printDiagnosisReport==='function'?printDiagnosisReport():window.print());
+$('clearAllBtn')?.addEventListener('click',clearAllSimulatorData);
 document.querySelectorAll('input,select').forEach(el=>{
  if(!['cnpj','yearRange','monthlyRevenue','rbt12','revenueSync'].includes(el.id))el.addEventListener('input',dirty);
  if(!['yearRange','monthlyRevenue','rbt12','revenueSync'].includes(el.id))el.addEventListener('change',dirty)
