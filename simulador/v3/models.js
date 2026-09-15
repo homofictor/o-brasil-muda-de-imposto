@@ -13,20 +13,21 @@ function modelForYear(year){
  const acquisitions=annualRevenue*clamp(num('purchasesPct')/100,0,1),eligible=clamp(num('eligibleCreditPct')/100,0,1),regSup=clamp(num('regularSuppliersPct')/100,0,1);
  const inputCredit=acquisitions*eligible*regSup*fullRegularRate,netVat=Math.max(0,grossVat-inputCredit);
  const hybridCompliance=num('hybridCompliance')*12,fullCompliance=num('fullCompliance')*12;
- const factorRPayroll=num('monthlyPayroll')*12,annexCpp=annex==='IV'&&simpleComputable?factorRPayroll*.20:0;
+ const factorRPayroll=num('monthlyPayroll')*12,cppBaseKnown=hasFieldValue('monthlyCppBase')||factorRPayroll===0,cppBaseMonthly=Math.max(0,num('monthlyCppBase')),employerRate=clamp(num('employerRatePct')/100,0,.80),cpp=cppBaseMonthly*12*employerRate;
+ const simplePayrollValid=annex!=='IV'||cppBaseKnown,annexCpp=annex==='IV'&&simpleComputable?cpp:0;
  const pureTotal=das+annexCpp,hybridTotal=dasWithout+netVat+annexCpp+hybridCompliance;
  const kind=currentKind(),pres=migrationDefaults(kind),presumedBaseIR=annualRevenue*pres.irpjPres;
  const irpj=presumedBaseIR*.15+Math.max(0,presumedBaseIR-240000)*.10,csll=annualRevenue*pres.csllPres*.09;
- const cppBaseKnown=hasFieldValue('monthlyCppBase')||factorRPayroll===0,cppBaseMonthly=Math.max(0,num('monthlyCppBase')),employerRate=clamp(num('employerRatePct')/100,0,.80),cpp=cppBaseMonthly*12*employerRate;
  const legacy=annualRevenue*clamp(num('legacyRate')/100,0,.40)*legacyTransition(year),presumedTotal=netVat+irpj+csll+cpp+legacy+fullCompliance,presumedValid=cppBaseKnown;
  const realProfitKnown=hasFieldValue('realAccountingProfitAnnual'),accountingProfit=num('realAccountingProfitAnnual'),additions=Math.max(0,num('realAdditionsAnnual')),exclusions=Math.max(0,num('realExclusionsAnnual'));
  const adjustedBeforeLoss=Math.max(0,accountingProfit+additions-exclusions),irpjLossAvailable=Math.max(0,num('irpjLossCarryforward')),csllLossAvailable=Math.max(0,num('csllNegativeBase'));
  const irpjLossUsed=Math.min(irpjLossAvailable,adjustedBeforeLoss*.30),csllLossUsed=Math.min(csllLossAvailable,adjustedBeforeLoss*.30),realIrpjBase=Math.max(0,adjustedBeforeLoss-irpjLossUsed),realCsllBase=Math.max(0,adjustedBeforeLoss-csllLossUsed);
  const realIrpj=realProfitKnown?(realIrpjBase*.15+Math.max(0,realIrpjBase-240000)*.10):0,realCsll=realProfitKnown?realCsllBase*.09:0,realTotal=netVat+realIrpj+realCsll+cpp+legacy+fullCompliance,realValid=realProfitKnown&&cppBaseKnown;
  const b2b=clamp(num('b2bPct')/100,0,1),pureClientCredit=simpleComputable?embedded*b2b:0,regularClientCredit=grossVat*b2b,hybridClientCredit=regularClientCredit,extraClientCredit=Math.max(0,hybridClientCredit-pureClientCredit);
+ const simpleModelValid=simpleComputable&&simplePayrollValid,simpleMessage=!simpleComputable?'Simples não aplicável.':'Informe a remuneração mensal sujeita à contribuição patronal para calcular a CPP fora do DAS no Anexo IV.';
  const allModels=[
-  {key:'pure',name:'Simples Nacional 100%',total:pureTotal,tax:pureTotal,credit:pureClientCredit,compliance:0,valid:simpleComputable,validationMessage:simpleComputable?'':'Simples não aplicável.'},
-  {key:'hybrid',name:'Simples híbrido',total:hybridTotal,tax:dasWithout+netVat+annexCpp,credit:hybridClientCredit,compliance:hybridCompliance,valid:simpleComputable,validationMessage:simpleComputable?'':'Simples híbrido não aplicável.'},
+  {key:'pure',name:'Simples Nacional 100%',total:pureTotal,tax:pureTotal,credit:pureClientCredit,compliance:0,valid:simpleModelValid,validationMessage:simpleModelValid?'':simpleMessage},
+  {key:'hybrid',name:'Simples híbrido',total:hybridTotal,tax:dasWithout+netVat+annexCpp,credit:hybridClientCredit,compliance:hybridCompliance,valid:simpleModelValid,validationMessage:simpleModelValid?'':simpleMessage},
   {key:'presumed',name:'Lucro Presumido',total:presumedTotal,tax:presumedTotal-fullCompliance,credit:regularClientCredit,compliance:fullCompliance,valid:presumedValid,validationMessage:presumedValid?'':'Informe a remuneração mensal sujeita à contribuição patronal.'},
   {key:'real',name:'Lucro Real',total:realTotal,tax:realTotal-fullCompliance,credit:regularClientCredit,compliance:fullCompliance,valid:realValid,validationMessage:realValid?'':(!realProfitKnown?'Informe ou importe o lucro contábil antes de IRPJ e CSLL.':'Informe a remuneração mensal sujeita à contribuição patronal.')}
  ];
