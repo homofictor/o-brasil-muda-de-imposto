@@ -98,11 +98,12 @@
  window.patchAuditImportAnalyzer=function(){
   const original=window.analyseImportDoc;if(typeof original!=='function'||original.__auditPatched)return;
   const wrapped=function(file,parsed){
-   const out=original(file,parsed);out.candidates=(out.candidates||[]).filter(x=>x.field!=='realProfitMargin');const text=parsed.text,type=detectDoc(text,parsed.rows),months=clamp(num('dreMonths')||12,1,12);
-   const pretax=firstLineValue(text,[['lucro antes do irpj e csll'],['resultado antes do irpj e csll'],['lucro antes do imposto de renda'],['resultado antes dos tributos sobre o lucro']]);
-   if(pretax!=null&&type==='DRE'){const annualPretax=pretax*(12/months);out.candidates.push(candidate('realAccountingProfitAnnual','Lucro contábil anual antes de IRPJ e CSLL',annualPretax,file.name,'medium',`Resultado antes dos tributos sobre o lucro localizado na DRE e anualizado a partir de ${months} mês${months===1?'':'es'}. Use como ponto de partida e revise o cenário pro forma do regime.`,fmtMoney(annualPretax)))}
-   const salaries=lineValue(text,['salarios','ordenados'],['encargos']),prolabore=lineValue(text,['pro labore','pro-labore']),remuneration=(salaries||0)+(prolabore||0);
-   if(remuneration>0&&type==='DRE')out.candidates.push(candidate('monthlyCppBase','Remunerações mensais sujeitas à contribuição patronal',remuneration/months,file.name,'medium','Salários e pró-labore identificados sem somar contas genéricas de encargos. Confirme incidências e periodicidade.',fmtMoney(remuneration/months)));
+   const out=original(file,parsed);out.candidates=(out.candidates||[]).filter(x=>x&&x.field!=='realProfitMargin');const text=parsed.text,type=detectDoc(text,parsed.rows),dreDoc=type==='DRE'||type==='Balanço + DRE',months=clamp(num('dreMonths')||12,1,12),sections=typeof importStatementSections==='function'?importStatementSections(text):{dre:text},dreText=sections.dre||text;
+   let pretax=firstLineValue(dreText,[['lucro antes do irpj e csll'],['resultado antes do irpj e csll'],['lucro antes do imposto de renda'],['resultado antes dos tributos sobre o lucro']]),pretaxReason='Resultado antes dos tributos sobre o lucro localizado na DRE.';
+   if(pretax==null&&dreDoc){const netResult=lineValue(dreText,['resultado do exercicio','lucro liquido','resultado liquido']),taxProvision=lineValue(dreText,['provisao de irpj e csll','provisao para irpj e csll']);if(netResult!=null&&taxProvision!=null){pretax=netResult+Math.abs(taxProvision);pretaxReason='Resultado do exercício somado à provisão de IRPJ e CSLL identificada na DRE.'}}
+   if(pretax!=null&&dreDoc){const annualPretax=pretax*(12/months);out.candidates.push(candidate('realAccountingProfitAnnual','Lucro contábil anual antes de IRPJ e CSLL',annualPretax,file.name,'medium',`${pretaxReason} Valor anualizado a partir de ${months} mês${months===1?'':'es'}; revise antes de usar no cenário pro forma.`,fmtMoney(annualPretax)))}
+   const salaries=lineValue(dreText,['salarios','ordenados'],['encargos']),prolabore=lineValue(dreText,['pro labore','pro-labore']),remuneration=(salaries||0)+(prolabore||0);
+   if(remuneration>0&&dreDoc)out.candidates.push(candidate('monthlyCppBase','Remunerações mensais sujeitas à contribuição patronal',remuneration/months,file.name,'medium','Salários e pró-labore identificados sem somar contas genéricas de encargos. Confirme incidências e periodicidade.',fmtMoney(remuneration/months)));
    return out;
   };wrapped.__auditPatched=true;window.analyseImportDoc=wrapped;
  };
