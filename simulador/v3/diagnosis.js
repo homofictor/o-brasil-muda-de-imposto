@@ -120,7 +120,7 @@ async function generateDiagnosis(){
   calculate();await diagnosisDelay(300);
   window.diagnosisGenerated=true;window.diagnosisDirty=false;
   if(work)work.hidden=true;if(mount)mount.hidden=false;if(result){result.hidden=false;result.classList.remove('diagnosisReveal');void result.offsetWidth;result.classList.add('diagnosisReveal')};if(print)print.hidden=false;
-  if(done){const now=new Date();done.hidden=false;done.className='diagnosisDone ready';done.textContent=`Diagnóstico gerado às ${now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}. O relatório foi aberto em uma janela própria para leitura e impressão.`}
+  if(done){const now=new Date();done.hidden=false;done.className='diagnosisDone ready';done.innerHTML=`<span>Diagnóstico gerado às ${now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}. O relatório foi aberto em uma janela própria para leitura e impressão.</span><button id="reopenReportBtn" type="button">Abrir relatório novamente</button>`;$('reopenReportBtn')?.addEventListener('click',openDiagnosisReport)}
   if(btn){btn.disabled=false;btn.classList.remove('working');btn.querySelector('span').textContent='Atualizar diagnóstico';btn.querySelector('small').textContent='Reprocessar com as premissas atuais';}
   openDiagnosisReport();
  }catch(err){
