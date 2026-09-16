@@ -81,9 +81,16 @@ function inferActivity(cnae,description){
  if(prefix>=49&&prefix<=99)return{annex:'III',kind:'service',factorR:false,confidence:'baixa',reason:'atividade de serviços, sujeita a confirmação'};
  return{annex:'I',kind:'unknown',factorR:false,confidence:'baixa',reason:'atividade não classificada automaticamente'};
 }
+function legalNatureBlocksSimple(d=companyData){
+ if(!d)return false;
+ const rawCode=d.codigo_natureza_juridica??d.natureza_juridica_codigo??d.codigo_natureza??'';
+ const code=String(rawCode).replace(/\D/g,'');
+ const text=String(d.natureza_juridica||d.descricao_natureza_juridica||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase();
+ return code==='2046'||code==='2054'||text.includes('SOCIEDADE ANONIMA');
+}
 function factorRValue(){const r=num('rbt12');return r>0?(num('monthlyPayroll')*12)/r:0}
 function applyFactorR(){
- if(num('rbt12')>SIMPLES_LIMIT)return;
+ if(legalNatureBlocksSimple()||num('rbt12')>SIMPLES_LIMIT)return;
  if(cnaeSuggestion?.factorR&&$('factorMode').value==='auto'){
   $('annex').value=factorRValue()>=.28?'III':'V';
   $('annexHint').textContent=`Fator R estimado em ${pct1(factorRValue())}. Sugestão automática: Anexo ${$('annex').value}.`;
@@ -124,6 +131,7 @@ function applySectorProfile(profile=sectorSuggestion){
 
 function simpleEligibility(rbt12=num('rbt12')){
  const simple=$('simpleStatus')?.value||'unknown',isMei=companyData?.opcao_pelo_mei===true||$('meiStatus')?.value==='yes';
+ if(legalNatureBlocksSimple())return{confirmed:false,potential:false,status:'legal_nature',reason:'Sociedade anônima não pode optar pelo Simples Nacional nem se enquadrar como MEI.'};
  if(isMei)return{confirmed:false,potential:false,status:'mei',reason:'MEI possui regras próprias e não pode usar o regime híbrido.'};
  if(rbt12>SIMPLES_LIMIT)return{confirmed:false,potential:false,status:'over_limit',historical:historicalSimpleReported||simple==='yes',reason:`RBT12 de ${brl2.format(rbt12)} supera o limite de ${brl2.format(SIMPLES_LIMIT)}.`};
  if(simple==='yes')return{confirmed:true,potential:true,status:'confirmed',reason:'Opção pelo Simples informada/confirmada e faturamento dentro do limite.'};
@@ -131,9 +139,20 @@ function simpleEligibility(rbt12=num('rbt12')){
  return{confirmed:false,potential:true,status:'unknown',reason:'Situação no Simples não confirmada.'};
 }
 function refreshEligibilityUi(){
- const rbt12=num('rbt12'),e=simpleEligibility(rbt12),annex=$('annex'),factor=$('factorMode'),note=$('simpleEligibilityNote');
- if(e.status==='over_limit'){
-  if($('simpleStatus')){$('simpleStatus').value='no';$('simpleStatus').disabled=true}
+ const rbt12=num('rbt12'),e=simpleEligibility(rbt12),annex=$('annex'),factor=$('factorMode'),simple=$('simpleStatus'),mei=$('meiStatus'),note=$('simpleEligibilityNote');
+ if(e.status==='legal_nature'){
+  if(simple){simple.value='no';simple.disabled=true}
+  if(mei){mei.value='no';mei.disabled=true}
+  if(annex){annex.value='';annex.disabled=true}
+  if(factor)factor.disabled=true;
+  if($('annexHint'))$('annexHint').textContent='Não aplicável: sociedades anônimas não podem optar pelo Simples Nacional.';
+  if($('factorHint'))$('factorHint').textContent='Não aplicável: o Fator R é exclusivo de situações abrangidas pelo Simples.';
+  if(note){note.hidden=false;note.className='status';note.textContent=e.reason}
+  if($('companySimple')){$('companySimple').textContent='Simples: não permitido pela natureza jurídica';$('companySimple').className='chip bad'}
+  if($('companyMei')){$('companyMei').textContent='MEI: não permitido';$('companyMei').className='chip bad'}
+  if(typeof markFieldAuto==='function'){markFieldAuto('simpleStatus','AUTOMÁTICO');markFieldAuto('meiStatus','AUTOMÁTICO');markFieldAuto('annex','N/A');markFieldAuto('factorMode','N/A')}
+ }else if(e.status==='over_limit'){
+  if(simple){simple.value='no';simple.disabled=true}
   if(annex)annex.disabled=true;if(factor)factor.disabled=true;
   if($('annexHint'))$('annexHint').textContent='Não aplicável à análise prospectiva: faturamento acima do teto do Simples.';
   if($('factorHint'))$('factorHint').textContent='Fator R não é aplicável à análise prospectiva fora do Simples.';
@@ -141,7 +160,7 @@ function refreshEligibilityUi(){
   if($('companySimple')){$('companySimple').textContent='Simples: não elegível pelo faturamento';$('companySimple').className='chip bad'}
   if(typeof markFieldAuto==='function'){markFieldAuto('simpleStatus','AUTOMÁTICO');markFieldAuto('annex','N/A');markFieldAuto('factorMode','N/A')}
  }else{
-  if($('simpleStatus'))$('simpleStatus').disabled=false;if(annex)annex.disabled=false;if(factor)factor.disabled=false;
+  if(simple)simple.disabled=false;if(mei)mei.disabled=false;if(annex)annex.disabled=false;if(factor)factor.disabled=false;
   if(note){note.hidden=e.status==='confirmed';if(!note.hidden){note.className='status';note.textContent=e.reason}}
  }
  return e;
