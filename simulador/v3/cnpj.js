@@ -35,15 +35,30 @@ async function lookupCnpj(){
 }
 function fillCompany(d){
  $('companyCard').hidden=false;$('companyName').textContent=d.razao_social||'Razão social não informada';$('companyTrade').textContent=d.nome_fantasia?`Nome fantasia: ${d.nome_fantasia}`:'Nome fantasia não informado';
- const active=(d.descricao_situacao_cadastral||'').toUpperCase()==='ATIVA';$('companyStatus').textContent=d.descricao_situacao_cadastral||'Situação não informada';$('companyStatus').className='chip '+(active?'ok':'bad');
- $('companySimple').textContent=d.opcao_pelo_simples===true?'Simples: sim':d.opcao_pelo_simples===false?'Simples: não':'Simples: não confirmado';$('companySimple').className='chip '+(d.opcao_pelo_simples===true?'ok':'');
- $('companyMei').textContent=d.opcao_pelo_mei===true?'MEI: sim':d.opcao_pelo_mei===false?'MEI: não':'MEI: não confirmado';$('companyMei').className='chip '+(d.opcao_pelo_mei===true?'ok':'');
- $('companySize').textContent=d.porte||d.descricao_porte||'Não informado';$('companyLocation').textContent=[d.municipio,d.uf].filter(Boolean).join(' / ')||'Não informado';$('companyNature').textContent=d.natureza_juridica||'Não informado';$('companyCnae').textContent=`${cnaeFmt(d.cnae_fiscal)} · ${d.cnae_fiscal_descricao||'Descrição não informada'}`;$('activity').value=`${cnaeFmt(d.cnae_fiscal)} · ${d.cnae_fiscal_descricao||''}`;
- if(d.opcao_pelo_simples===true)$('simpleStatus').value='yes';else if(d.opcao_pelo_simples===false)$('simpleStatus').value='no';else $('simpleStatus').value='unknown';
- if($('meiStatus'))$('meiStatus').value=d.opcao_pelo_mei===true?'yes':d.opcao_pelo_mei===false?'no':'unknown';
- cnaeSuggestion=inferActivity(d.cnae_fiscal,d.cnae_fiscal_descricao);$('annex').value=cnaeSuggestion.annex;$('annexHint').textContent=`Sugestão: Anexo ${cnaeSuggestion.annex}. Confiança ${cnaeSuggestion.confidence}. ${cnaeSuggestion.reason}.`;
+ const active=(d.descricao_situacao_cadastral||'').toUpperCase()==='ATIVA',blocked=legalNatureBlocksSimple(d);
+ $('companyStatus').textContent=d.descricao_situacao_cadastral||'Situação não informada';$('companyStatus').className='chip '+(active?'ok':'bad');
+ if(blocked){
+  $('companySimple').textContent='Simples: não permitido pela natureza jurídica';$('companySimple').className='chip bad';
+  $('companyMei').textContent='MEI: não permitido';$('companyMei').className='chip bad';
+ }else{
+  $('companySimple').textContent=d.opcao_pelo_simples===true?'Simples: sim':d.opcao_pelo_simples===false?'Simples: não':'Simples: não confirmado';$('companySimple').className='chip '+(d.opcao_pelo_simples===true?'ok':'');
+  $('companyMei').textContent=d.opcao_pelo_mei===true?'MEI: sim':d.opcao_pelo_mei===false?'MEI: não':'MEI: não confirmado';$('companyMei').className='chip '+(d.opcao_pelo_mei===true?'ok':'');
+ }
+ $('companySize').textContent=d.porte||d.descricao_porte||'Não informado';$('companyLocation').textContent=[d.municipio,d.uf].filter(Boolean).join(' / ')||'Não informado';$('companyNature').textContent=d.natureza_juridica||d.descricao_natureza_juridica||'Não informado';$('companyCnae').textContent=`${cnaeFmt(d.cnae_fiscal)} · ${d.cnae_fiscal_descricao||'Descrição não informada'}`;$('activity').value=`${cnaeFmt(d.cnae_fiscal)} · ${d.cnae_fiscal_descricao||''}`;
+ if(blocked){
+  $('simpleStatus').value='no';if($('meiStatus'))$('meiStatus').value='no';
+ }else{
+  if(d.opcao_pelo_simples===true)$('simpleStatus').value='yes';else if(d.opcao_pelo_simples===false)$('simpleStatus').value='no';else $('simpleStatus').value='unknown';
+  if($('meiStatus'))$('meiStatus').value=d.opcao_pelo_mei===true?'yes':d.opcao_pelo_mei===false?'no':'unknown';
+ }
+ cnaeSuggestion=inferActivity(d.cnae_fiscal,d.cnae_fiscal_descricao);
+ if(blocked){
+  $('annex').value='';$('annexHint').textContent='Não aplicável: sociedades anônimas não podem optar pelo Simples Nacional.';
+ }else{
+  $('annex').value=cnaeSuggestion.annex;$('annexHint').textContent=`Sugestão: Anexo ${cnaeSuggestion.annex}. Confiança ${cnaeSuggestion.confidence}. ${cnaeSuggestion.reason}.`;
+ }
  const kind=cnaeSuggestion.kind;if(kind==='service')numSet('legacyRate',5);else if(kind==='commerce'||kind==='industry')numSet('legacyRate',10);applyFactorR();
  if(typeof markFieldAuto==='function'){
-  markFieldAuto('activity');markFieldAuto('simpleStatus');markFieldAuto('meiStatus');markFieldAuto('annex','SUGERIDO');markFieldDerived('legacyRate','SUGERIDO');
+  markFieldAuto('activity');markFieldAuto('simpleStatus');markFieldAuto('meiStatus');markFieldAuto('annex',blocked?'N/A':'SUGERIDO');markFieldDerived('legacyRate','SUGERIDO');
  }
 }
