@@ -65,11 +65,26 @@ function calculate(){
  renderVatSummary(r);renderTimeline(all);renderModels(r,rec);renderCompetition(r);renderCash(r);renderActions(r,rec);renderNarrative(r,rec,structural,srec);
  try{localStorage.setItem('brmi_v3',JSON.stringify(Object.fromEntries([...document.querySelectorAll('input,select')].filter(el=>el.id&&el.id!=='yearRange'&&!['cashReserve','workingCapitalNet','debtAverage'].includes(el.id)).map(el=>[el.id,el.type==='checkbox'?el.checked:el.value]))))}catch(_){}
 }
-function restore(){try{const x=JSON.parse(localStorage.getItem('brmi_v3')||'{}');Object.entries(x).forEach(([id,v])=>{const el=$(id);if(!el)return;if(el.type==='checkbox')el.checked=Boolean(v);else el.value=v})}catch(_){} }
+function restore(){
+ try{
+  const x=JSON.parse(localStorage.getItem('brmi_v3')||'{}');
+  const legacyDemo={monthlyRevenue:'35000',rbt12:'420000',monthlyPayroll:'11000',b2bPct:'70',purchasesPct:'20',eligibleCreditPct:'90',regularSuppliersPct:'80',cashAndEquivalents:'10000'};
+  const isLegacyDemo=Object.entries(legacyDemo).every(([id,value])=>String(x[id]??'')===value);
+  if(isLegacyDemo){
+   ['simpleStatus','meiStatus','annex','monthlyRevenue','rbt12','monthlyPayroll','b2bPct','purchasesPct','eligibleCreditPct','regularSuppliersPct','cashAndEquivalents','liquidInvestments','currentAssets','currentLiabilities','interestExpense','debtStart','debtEnd','hybridCompliance','fullCompliance','legacyRate','realAdditionsAnnual','realExclusionsAnnual','irpjLossCarryforward','csllNegativeBase'].forEach(id=>delete x[id]);
+   localStorage.setItem('brmi_v3',JSON.stringify(x));
+  }
+  Object.entries(x).forEach(([id,v])=>{const el=$(id);if(!el)return;if(el.type==='checkbox')el.checked=Boolean(v);else el.value=v});
+ }catch(_){}
+}
 function clearAllSimulatorData(){const confirmed=window.confirm('Limpar todas as informações do simulador?\n\nEssa ação removerá os campos preenchidos, os dados da empresa, os documentos importados e o diagnóstico salvo neste navegador.');if(!confirmed)return;try{localStorage.removeItem('brmi_v3')}catch(_){}window.location.reload()}
 let revenueSyncing=false,lastRevenueSource='monthly';
 function syncRevenue(source,markDerived=false){
- const toggle=$('revenueSync');if(revenueSyncing||!toggle?.checked)return;revenueSyncing=true;lastRevenueSource=source;
+ const toggle=$('revenueSync');if(revenueSyncing||!toggle?.checked)return;
+ const sourceId=source==='monthly'?'monthlyRevenue':'rbt12',targetId=source==='monthly'?'rbt12':'monthlyRevenue';
+ const sourceEl=$(sourceId),targetEl=$(targetId);
+ if(!sourceEl||String(sourceEl.value).trim()===''){if(targetEl)targetEl.value='';return}
+ revenueSyncing=true;lastRevenueSource=source;
  if(source==='monthly'){
   const monthly=Math.max(0,num('monthlyRevenue'));numSet('rbt12',Math.round(monthly*12*100)/100);if(markDerived&&typeof markFieldDerived==='function')markFieldDerived('rbt12');
  }else{
