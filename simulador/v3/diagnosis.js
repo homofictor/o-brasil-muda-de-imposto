@@ -26,8 +26,8 @@ window.printDiagnosisReport=printDiagnosisReport;
 function diagnosisMarkup(){
  return `<section class="panel diagnosisGate" id="diagnosisGate">
   <div class="diagnosisIntro">
-   <div><span class="diagnosisEyebrow">Etapa final</span><h2>Pronto para gerar o diagnóstico?</h2><p>Vamos cruzar enquadramento, regimes aplicáveis, carga tributária, créditos, competitividade e caixa antes de revelar o resultado.</p></div>
-   <div class="diagnosisChecks"><span>Regimes aplicáveis</span><span>2027 a 2033</span><span>Crédito B2B</span><span>Split e caixa</span></div>
+   <div><span class="diagnosisEyebrow">Etapa final</span><h2>Pronto para gerar o diagnóstico?</h2><p>Vamos cruzar enquadramento, regimes aplicáveis, carga tributária, créditos, competitividade, caixa e efeito econômico antes de revelar o resultado.</p></div>
+   <div class="diagnosisChecks"><span>Regimes aplicáveis</span><span>2027 a 2033</span><span>Crédito B2B</span><span>Split e caixa</span><span>Preço e margem</span></div>
   </div>
   <div id="diagnosisValidation" class="diagnosisValidation" hidden role="alert"></div>
   <button id="generateDiagnosisBtn" class="diagnosisButton" type="button"><span>Gerar diagnóstico</span><small>Processar cenários e recomendações</small></button>
@@ -49,6 +49,7 @@ function diagnosisStages(){
   ['Calculando créditos e competitividade B2B','Estimando créditos das aquisições, crédito do cliente e efeito comercial conforme o tratamento das operações.'],
   ['Projetando 2027 a 2033','Aplicando a transição anual e comparando a decisão de curto e longo prazo.'],
   ['Estimando impacto no caixa','Calculando split payment, perda de float, reserva financeira, capital de giro e custo da dívida.'],
+  ['Medindo preço, margem e resultado','Comparando a carga atual e futura em bases equivalentes e estimando o efeito econômico anual.'],
   ['Consolidando recomendação','Organizando o diagnóstico executivo e os próximos passos.']
  ];
 }
@@ -108,11 +109,11 @@ async function generateDiagnosis(){
  closeDiagnosisReport();if(mount)mount.hidden=true;if(result)result.hidden=false;if(print)print.hidden=true;
  if(done)done.hidden=true;if(work)work.hidden=false;
  renderDiagnosisSteps(0,-1);if($('diagnosisProgressBar'))$('diagnosisProgressBar').style.width='0%';if($('diagnosisProgressText'))$('diagnosisProgressText').textContent='0%';
- const durations=[700,850,850,950,950,750];
+ const durations=[650,800,800,850,850,850,700];
  try{
   for(let i=0;i<diagnosisStages().length;i++){
    setDiagnosisProgress(i);
-   if(i===1||i===3||i===5)calculate();
+   if(i===1||i===3||i===6)calculate();
    await diagnosisDelay(durations[i]);
   }
   renderDiagnosisSteps(-1,diagnosisStages().length-1);

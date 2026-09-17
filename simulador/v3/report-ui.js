@@ -64,8 +64,10 @@
   let p2='';
   if(r.simpleEligible&&r.extraClientCredit>0){p2=`<p><strong>Ponto que pode alterar a decisão.</strong> O regime regular entrega aproximadamente <strong>${money(r.extraClientCredit)}</strong> adicionais de crédito aos clientes B2B em relação ao Simples puro. A vantagem só compensa economicamente se houver capacidade real de capturar esse valor em preço, margem, retenção ou volume.</p>`}
   else{p2='<p><strong>Ponto de atenção.</strong> A conclusão deve ser confrontada com contratos, benefícios específicos, créditos efetivos e qualidade dos dados contábeis antes de qualquer opção formal.</p>'}
+  let economic='';const impact=window.lastEconomicImpact;
+  if(impact?.known){const direction=impact.resultEffect>0?'ganho':impact.resultEffect<0?'perda':'efeito neutro';economic=`<p><strong>Efeito econômico.</strong> Depois da parcela transferida ao preço e do custo financeiro estimado, o cenário indica <strong>${direction} de ${money(Math.abs(impact.resultEffect))}</strong> por ano no resultado.${impact.projectedOperatingMargin==null?' A margem atual não foi informada, por isso a margem futura não foi projetada.':` A margem operacional projetada é de <strong>${pct(impact.projectedOperatingMargin)}</strong>.`}</p>`}
   const transition=`<p><strong>Visão de longo prazo.</strong> ${same2033?`A alternativa recomendada em ${r.year} permanece a mesma em 2033, reforçando a consistência do resultado ao longo da transição.`:`A recomendação muda na visão estrutural de 2033 para ${srec?.title||'outro modelo'}. Isso exige comparar a decisão imediata com a estratégia de longo prazo.`}${pending.length?` ${pending.map(m=>m.name).join(' e ')} ${pending.length>1?'não entraram':'não entrou'} no ranking atual por falta de dados suficientes ou impedimento identificado.`:''}</p>`;
-  box.innerHTML=p1+p2+transition;
+  box.innerHTML=p1+p2+economic+transition;
  }
 
  function renderActionsExecutive(r){
@@ -73,6 +75,7 @@
   pending.forEach(m=>{if(m.validationMessage)actions.push(`${m.name}: ${m.validationMessage}`)});
   try{if(cnaeSuggestion?.factorR)actions.push(`Confirmar o Fator R e o Anexo indicado pelas premissas antes da decisão.`)}catch(_){}
   const b2b=Number(el('b2bPct')?.value)||0;if(b2b>=40)actions.push('Validar com os principais clientes PJ se o crédito de IBS/CBS influencia preço, homologação ou retenção.');
+  const impact=window.lastEconomicImpact;if(impact?.known&&impact.taxDelta>0&&impact.transferRate<1)actions.push(`Revisar preços e contratos: ${money(impact.unabsorbedDelta)} da variação tributária anual permanece absorvida pela empresa.`);else if(!impact?.known)actions.push('Informar a carga atual dos tributos sobre consumo para medir o impacto em preço e margem.');
   actions.push('Confirmar a composição das receitas por tratamento de IBS/CBS e substituir estimativas por dados efetivos sempre que possível.');
   actions.push('Validar aquisições que geram crédito e o regime tributário dos principais fornecedores.');
   try{const c=typeof cashMetrics==='function'?cashMetrics(r):null;if(c?.gap>0)actions.push(`Planejar fonte adicional de liquidez para o gap estimado de ${money(c.gap)}.`)}catch(_){}

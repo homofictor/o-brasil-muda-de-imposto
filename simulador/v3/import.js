@@ -85,6 +85,7 @@ function renderImportCandidates(){
 }
 function applyImportCandidate(i,button){
  const c=brmiImport.candidates[i],el=$(c?.field);if(!c||!el)return;if(c.field==='cnpj'){el.value=typeof normalizeCnpjInput==='function'?normalizeCnpjInput(c.value):formatImportedCnpj(c.value);if(typeof markFieldAuto==='function')markFieldAuto('cnpj','IMPORTADO');if(button){button.textContent='Aplicado';button.classList.add('importApplied')}if(typeof lookupCnpj==='function')lookupCnpj();return}el.value=Math.round(c.value*100)/100;
+ if(c.field==='currentConsumptionTaxAnnual'&&$('currentConsumptionMode')){$('currentConsumptionMode').value='manual';el.readOnly=false}
  if(c.field==='rbt12'&&$('revenueSync')?.checked&&typeof syncRevenue==='function'){syncRevenue('annual');if(typeof markFieldDerived==='function')markFieldDerived('monthlyRevenue','CALCULADO')}
  if(c.field==='monthlyRevenue'&&$('revenueSync')?.checked&&typeof syncRevenue==='function'){syncRevenue('monthly');if(typeof markFieldDerived==='function')markFieldDerived('rbt12','CALCULADO')}
  if(typeof markFieldAuto==='function')markFieldAuto(c.field,c.confidence==='low'?'REVISAR':'IMPORTADO');

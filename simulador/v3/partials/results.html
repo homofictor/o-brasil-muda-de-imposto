@@ -66,8 +66,22 @@
       </div>
     </section>
 
+    <section class="execSection economicSection">
+      <div class="execSectionHead"><div><span>4</span><h2>Impacto em preço, margem e resultado</h2></div><p>A carga líquida de consumo é comparada em bases equivalentes, sem descontar o crédito pertencente ao cliente.</p></div>
+      <div class="economicOverview">
+        <article class="economicMetric"><span>Carga atual de consumo</span><strong id="execCurrentConsumptionTax">—</strong><small>PIS/Cofins, ICMS, ISS e IPI líquidos, conforme aplicável.</small></article>
+        <article class="economicMetric"><span>Carga futura no modelo recomendado</span><strong id="execFutureConsumptionTax">—</strong><small>IBS/CBS líquido e tributos residuais da transição.</small></article>
+        <article class="economicMetric"><span>Variação tributária anual</span><strong id="execTaxDelta">—</strong><small>Diferença que precisa ser absorvida ou transferida ao preço.</small></article>
+      </div>
+      <article class="economicImpactCard" id="economicImpactCard" data-tone="pending">
+        <div class="economicStatus"><div><span>Leitura econômica</span><strong id="economicImpactStatus">Comparação pendente</strong></div><div><span>Efeito anual no resultado</span><strong id="execResultEffect">—</strong></div></div>
+        <div class="economicDetailGrid"><div><span>Ajuste integral de preço</span><strong id="execRequiredPrice">—</strong></div><div><span>Margem operacional projetada</span><strong id="execProjectedMargin">—</strong></div><div><span>Modelo analisado</span><strong id="execEconomicModel">—</strong></div><div><span>Ano</span><strong id="execEconomicYear">—</strong></div></div>
+        <p id="economicImpactText">Informe a carga atual para comparar preço, margem e resultado.</p>
+      </article>
+    </section>
+
     <section class="execSection execDecisionSection">
-      <div class="execSectionHead"><div><span>4</span><h2>Conclusão e próximos passos</h2></div><p>A recomendação resume a decisão sem repetir toda a memória de cálculo.</p></div>
+      <div class="execSectionHead"><div><span>5</span><h2>Conclusão e próximos passos</h2></div><p>A recomendação resume a decisão sem repetir toda a memória de cálculo.</p></div>
       <div id="execConclusion" class="execConclusion"><p>Gere o diagnóstico para visualizar a conclusão.</p></div>
       <h3 class="execActionsTitle">Prioridades antes da decisão</h3>
       <ol id="execActions" class="execActions"></ol>
@@ -101,13 +115,20 @@
       <div class="cashGrid"><div class="cashHero"><span>Capital de giro adicional estimado</span><strong id="workingCapital">—</strong><small id="workingCapitalText">—</small></div><div class="cashMetrics"><div><span>Valor mensal potencialmente segregado</span><b id="grossSplit">—</b></div><div><span>Reposição do float tributário</span><b id="floatReplacement">—</b></div><div><span>Retenção temporária excedente</span><b id="temporaryExcess">—</b></div><div><span>Necessidade de financiamento após reserva</span><b id="financingGap">—</b></div><div><span>Custo financeiro anual do gap</span><b id="financingCost">—</b></div><div><span>Caixa que permanece de cada R$ 100</span><b id="cashPer100">—</b></div></div></div>
     </section>
 
+    <section class="resultSection economicTechnical">
+      <div class="sectionTitle compact"><div><span>E</span><h2>Preço, margem e efeito econômico</h2></div><p>O cálculo compara apenas tributos sobre consumo em bases equivalentes. IRPJ, CSLL e contribuição patronal permanecem na comparação dos regimes.</p></div>
+      <div class="economicDetailGrid"><div><span>Carga atual líquida</span><strong id="techCurrentConsumptionTax">—</strong></div><div><span>Carga futura líquida</span><strong id="techFutureConsumptionTax">—</strong></div><div><span>Variação tributária</span><strong id="techTaxDelta">—</strong></div><div><span>Variação transferida ao preço</span><strong id="techPriceTransfer">—</strong></div><div><span>Variação absorvida pela empresa</span><strong id="techUnabsorbedDelta">—</strong></div><div><span>Custo financeiro do gap</span><strong id="techFinanceEffect">—</strong></div><div><span>Efeito anual no resultado</span><strong id="techResultEffect">—</strong></div><div><span>Margem projetada</span><strong id="techProjectedMargin">—</strong></div></div>
+      <div class="economicFormula"><b>Fórmula:</b> efeito no resultado = variação tributária transferida ao preço − variação da carga líquida − custo financeiro estimado.</div>
+      <div class="insight" id="technicalEconomicText">Informe a carga atual para gerar a comparação econômica.</div>
+    </section>
+
     <section class="resultSection actionsSection">
-      <div class="sectionTitle compact"><div><span>E</span><h2>Checklist técnico completo</h2></div><p>Lista de validações e providências gerada a partir das premissas da simulação.</p></div>
+      <div class="sectionTitle compact"><div><span>F</span><h2>Checklist técnico completo</h2></div><p>Lista de validações e providências gerada a partir das premissas da simulação.</p></div>
       <ol id="actionList" class="actionList"></ol>
     </section>
 
     <section class="resultSection narrativeSection">
-      <div class="sectionTitle compact"><div><span>F</span><h2>Memória interpretativa</h2></div><p>Leitura detalhada dos resultados para conferência técnica.</p></div>
+      <div class="sectionTitle compact"><div><span>G</span><h2>Memória interpretativa</h2></div><p>Leitura detalhada dos resultados para conferência técnica.</p></div>
       <div id="narrativeText" class="narrativeText"><p>Gere o diagnóstico para visualizar a conclusão.</p></div>
     </section>
 

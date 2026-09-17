@@ -20,6 +20,11 @@ Evoluir a V3.1 sem regredir funcionalidades, incorporando as revisões feitas em
 11. O relatório deve bloquear qualquer conclusão prospectiva com Simples Nacional ou Simples híbrido quando a empresa não for elegível pelo faturamento.
 12. O cálculo de IBS/CBS deve considerar a composição por tratamentos tributários, e não apenas a alíquota cheia sobre 100% do faturamento.
 13. O crédito potencial do cliente PJ deve refletir a tributação efetivamente incidente e o tratamento das operações, e não apenas faturamento B2B multiplicado pela alíquota cheia.
+14. A carga líquida atual dos tributos sobre consumo deve ser comparada com a carga futura do modelo recomendado em bases equivalentes.
+15. Para optantes confirmados pelo Simples, o sistema pode estimar a parcela atual dos tributos sobre consumo dentro do DAS. Fora do Simples, a base atual deve ser informada ou importada da contabilidade.
+16. O relatório deve calcular a variação tributária anual, o ajuste de preço necessário, a parcela absorvida pela empresa e a margem operacional projetada.
+17. O crédito pertencente ao cliente B2B não pode ser usado para reduzir a carga tributária própria nem para melhorar artificialmente a margem do vendedor.
+18. O efeito anual no resultado deve considerar separadamente a variação tributária não transferida ao preço e o custo financeiro estimado do gap de caixa.
 
 ## Princípio de UX
 O sistema estima primeiro e o usuário revisa depois. Campos importados ou calculados devem mostrar origem, confiança e possibilidade de correção quando pertinente.
