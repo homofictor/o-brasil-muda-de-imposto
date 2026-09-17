@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#102640">
+<meta name="robots" content="noindex,nofollow">
+<title>Simulador Guiado da Reforma Tributária</title>
+<meta name="description" content="Versão guiada do simulador empresarial da Reforma Tributária, com automação por CNPJ e CNAE e motor técnico completo.">
+<link rel="stylesheet" href="/simulador/v3/base.css">
+<link rel="stylesheet" href="/simulador/v3/results.css">
+<link rel="stylesheet" href="/simulador/v3/report-executive.css">
+<link rel="stylesheet" href="/simulador/v3/responsive.css?v=20260916-1">
+<link rel="stylesheet" href="/simulador/v3/enhanced-mobile.css">
+<link rel="stylesheet" href="/simulador/v3/diagnosis.css">
+<link rel="stylesheet" href="/simulador/v3/field-state.css">
+<link rel="stylesheet" href="/simulador/v3/economic-impact.css?v=20260917-2">
+<link rel="stylesheet" href="/simulador/guiado/guided.css?v=20260917-1">
+</head>
+<body class="guidedMode">
+<header class="topbar"><div class="topinner"><a class="brand" href="/"><div><strong>O Brasil muda de imposto</strong><span>Simulador Guiado · motor técnico completo</span></div></a><div class="guidedHeaderTag">VERSÃO PARA AVALIAÇÃO</div><div class="topactions"><a class="linkbtn" href="/simulador/v3/">Versão técnica</a><button class="linkbtn clearAllBtn" id="clearAllBtn" type="button">Limpar dados</button><a class="homebtn" href="/">Voltar ao site</a></div></div></header>
+<div class="deadline" id="deadlineBanner" hidden><div><strong>Decisão para 2027 em andamento.</strong> Consulte o prazo aplicável à sua empresa.</div><a href="https://www.gov.br/receitafederal/" target="_blank" rel="noopener">Fonte oficial</a></div>
+<main class="page">
+ <section class="hero guidedHero"><div><div class="kicker">Automação primeiro, revisão depois</div><h1>Comece pelo CNPJ. Revise apenas o que pode mudar a decisão.</h1><p>Esta versão usa o mesmo motor completo do simulador V3.2. O CNPJ e o CNAE preenchem o perfil inicial; BP, DRE e relatórios aumentam a precisão sem transformar a primeira tela em um formulário contábil.</p></div><div class="guidedHeroStats"><div><b>1</b><span>CNPJ para começar</span></div><div><b>4</b><span>etapas guiadas</span></div><div><b>100%</b><span>do motor preservado</span></div></div></section>
+ <div class="guidedNotice"><strong>Proposta alternativa.</strong> Nenhum cálculo foi simplificado. Apenas reorganizamos a experiência e priorizamos o preenchimento automático.</div>
+ <nav class="guidedNav" id="guidedNav" aria-label="Etapas da simulação">
+  <button type="button" data-guided-nav="1" class="active"><span>1</span><b>Empresa</b><small>CNPJ e faturamento</small></button>
+  <button type="button" data-guided-nav="2"><span>2</span><b>Operação</b><small>Clientes e compras</small></button>
+  <button type="button" data-guided-nav="3"><span>3</span><b>Precisão</b><small>Documentos e finanças</small></button>
+  <button type="button" data-guided-nav="4"><span>4</span><b>Diagnóstico</b><small>Revisão e relatório</small></button>
+ </nav>
+ <div id="guidedAutomation" class="guidedAutomation" hidden></div>
+ <div id="setupMount"></div>
+ <div class="guidedActions" id="guidedActions"><button type="button" id="guidedBack">Voltar</button><div><span id="guidedStepText">Etapa 1 de 4</span><button type="button" id="guidedNext">Continuar</button></div></div>
+</main>
+<div id="reportModal" class="reportModal" hidden role="dialog" aria-modal="true" aria-labelledby="recommendationTitle"><div class="reportShell"><div class="reportToolbar"><div><strong>Relatório do diagnóstico</strong><span>Simulador Guiado · motor V3.2</span></div><div class="reportToolbarActions"><button id="reportPrintBtn" type="button">Imprimir resumo</button><button id="reportCloseBtn" type="button">Fechar</button></div></div><div id="resultsMount" hidden></div></div></div>
+<footer><div><strong>O Brasil muda de imposto</strong><span>Wagner Rubim Rangel · Homo Fictor Edições Independentes</span></div><p>Ferramenta educativa. Não substitui planejamento tributário, parecer contábil ou jurídico.</p></footer>
+<script>
+(async()=>{const [a,b]=await Promise.all([fetch('/simulador/v3/partials/setup.html').then(r=>r.text()),fetch('/simulador/v3/partials/results.html').then(r=>r.text())]);document.getElementById('setupMount').innerHTML=a;document.getElementById('resultsMount').innerHTML=b;for(const name of ['data.js','money-format.js','field-state.js','cnpj.js','models.js','risk-cash.js','economic-impact.js','render.js','enhanced-results.js','diagnosis.js','audit-core.js','audit-render.js','boot.js','report-ui.js'])await new Promise((ok,fail)=>{const s=document.createElement('script');s.src='/simulador/v3/'+name+'?v=20260917-3';s.onload=ok;s.onerror=fail;document.body.appendChild(s)});await new Promise((ok,fail)=>{const s=document.createElement('script');s.src='/simulador/guiado/guided.js?v=20260917-1';s.onload=ok;s.onerror=fail;document.body.appendChild(s)})})().catch(err=>{console.error(err);document.getElementById('setupMount').innerHTML='<section class="panel"><h2>Não foi possível carregar o simulador.</h2><p>Atualize a página e tente novamente.</p></section>'});
+</script>
+</body></html>
