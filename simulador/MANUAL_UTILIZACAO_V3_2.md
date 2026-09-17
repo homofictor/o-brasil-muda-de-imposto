@@ -163,6 +163,20 @@ O capital de giro líquido não é tratado como dinheiro disponível. Estoques e
 
 Por isso, reserva financeira disponível e capital de giro líquido aparecem separadamente.
 
+### 7.3 Preço, margem e resultado
+
+O módulo econômico compara a carga líquida atual dos tributos sobre consumo com a carga projetada no modelo de menor desembolso validado.
+
+Para empresas confirmadas no Simples, a parcela atual dos tributos sobre consumo dentro do DAS pode ser estimada automaticamente. Nos demais casos, informe ou importe a carga anual líquida de PIS/Cofins, ICMS, ISS e IPI, conforme aplicável.
+
+Use preferencialmente a margem EBITDA sobre a receita, depois dos tributos sobre consumo e antes de IRPJ, CSLL e resultado financeiro.
+
+**Variação da carga = carga futura líquida - carga atual líquida**
+
+**Efeito no resultado = parcela transferida ao preço - variação da carga - custo financeiro estimado**
+
+O ajuste integral de preço presume volume constante. Eventual perda de vendas provocada pelo reajuste deve ser analisada separadamente.
+
 ## 8. Custo financeiro anual
 
 ### 8.1 Modo automático
@@ -324,7 +338,13 @@ Esta seção separa:
 
 O split payment não é tratado automaticamente como custo tributário adicional. O foco é o efeito sobre a liquidez e o momento em que o dinheiro deixa de permanecer no caixa da empresa.
 
-### 12.7 O que fazer agora
+### 12.7 Preço, margem e resultado
+
+Mostra a carga atual, a carga futura do modelo recomendado, a variação anual, o ajuste integral de preço, a margem operacional projetada e o efeito anual no resultado.
+
+O crédito pertencente ao cliente B2B permanece fora desse cálculo e não reduz artificialmente o imposto ou a margem da empresa.
+
+### 12.8 O que fazer agora
 
 O sistema gera um checklist com providências relacionadas ao perfil da empresa, aos dados informados e ao resultado da simulação.
 

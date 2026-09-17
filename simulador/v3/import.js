@@ -1,7 +1,7 @@
 window.brmiImport={files:[],candidates:[],docs:[]};
 
 function importMarkup(){return `<section class="panel importPanel" id="importPanel">
- <div class="sectionTitle"><div><span>04</span><div><div class="importTitleTag">V3.2 · preenchimento inteligente</div><h2>Importar dados da empresa</h2></div></div><p>Envie o que tiver disponível. O simulador tenta localizar números úteis, mostra a fonte e pede sua confirmação antes de alimentar o diagnóstico.</p></div>
+ <div class="sectionTitle"><div><span>05</span><div><div class="importTitleTag">V3.2 · preenchimento inteligente</div><h2>Importar dados da empresa</h2></div></div><p>Envie o que tiver disponível. O simulador tenta localizar números úteis, mostra a fonte e pede sua confirmação antes de alimentar o diagnóstico.</p></div>
  <div class="importDrop" id="importDrop" tabindex="0" role="button" aria-label="Selecionar documentos da empresa"><strong>Arraste Balanço, DRE ou relatórios do ERP</strong><p>Você pode combinar vários arquivos. Quanto mais informação consistente houver, menos campos precisarão ser preenchidos manualmente.</p><button id="importChooseBtn" type="button">Selecionar arquivos</button><small>Formatos: PDF com texto pesquisável, CSV, XLS e XLSX · múltiplos arquivos permitidos</small><input id="importFiles" type="file" multiple accept=".pdf,.csv,.xls,.xlsx,text/csv,application/pdf" hidden></div>
  <div class="importPrivacy"><b>🔒</b><div><strong>Processamento local nesta versão.</strong> Os arquivos são lidos no seu navegador para montar as sugestões e não são enviados ao servidor do simulador.</div></div>
  <div id="importProgress" class="importProgress" hidden><span class="importSpinner"></span><div><strong id="importProgressTitle">Analisando documentos...</strong><small id="importProgressText">Identificando estrutura e indicadores.</small></div></div>
@@ -85,6 +85,7 @@ function renderImportCandidates(){
 }
 function applyImportCandidate(i,button){
  const c=brmiImport.candidates[i],el=$(c?.field);if(!c||!el)return;if(c.field==='cnpj'){el.value=typeof normalizeCnpjInput==='function'?normalizeCnpjInput(c.value):formatImportedCnpj(c.value);if(typeof markFieldAuto==='function')markFieldAuto('cnpj','IMPORTADO');if(button){button.textContent='Aplicado';button.classList.add('importApplied')}if(typeof lookupCnpj==='function')lookupCnpj();return}el.value=Math.round(c.value*100)/100;
+ if(c.field==='currentConsumptionTaxAnnual'&&$('currentConsumptionMode')){$('currentConsumptionMode').value='manual';el.readOnly=false}
  if(c.field==='rbt12'&&$('revenueSync')?.checked&&typeof syncRevenue==='function'){syncRevenue('annual');if(typeof markFieldDerived==='function')markFieldDerived('monthlyRevenue','CALCULADO')}
  if(c.field==='monthlyRevenue'&&$('revenueSync')?.checked&&typeof syncRevenue==='function'){syncRevenue('monthly');if(typeof markFieldDerived==='function')markFieldDerived('rbt12','CALCULADO')}
  if(typeof markFieldAuto==='function')markFieldAuto(c.field,c.confidence==='low'?'REVISAR':'IMPORTADO');

@@ -1,0 +1,123 @@
+/* V3.2 - impacto economico em preco, margem e resultado */
+(function(root){
+ function clampLocal(value,min,max){return Math.max(min,Math.min(max,Number(value)||0))}
+
+ function calculateEconomicImpact(values){
+  const revenue=Math.max(0,Number(values.annualRevenue)||0);
+  const currentTax=Math.max(0,Number(values.currentConsumptionTax)||0);
+  const futureTax=Math.max(0,Number(values.futureConsumptionTax)||0);
+  const transferRate=clampLocal(values.priceTransferRate,0,1);
+  const currentMargin=Number.isFinite(Number(values.currentOperatingMargin))?Number(values.currentOperatingMargin):null;
+  const financeCost=Math.max(0,Number(values.financeCost)||0);
+  const taxDelta=futureTax-currentTax;
+  const priceChange=taxDelta*transferRate;
+  const adjustedRevenue=Math.max(0,revenue+priceChange);
+  const unabsorbedDelta=taxDelta-priceChange;
+  const requiredPriceRate=revenue>0?taxDelta/revenue:null;
+  const currentOperatingResult=currentMargin==null?null:revenue*currentMargin;
+  const projectedOperatingResult=currentOperatingResult==null?null:currentOperatingResult-unabsorbedDelta;
+  const projectedOperatingMargin=projectedOperatingResult==null||adjustedRevenue<=0?null:projectedOperatingResult/adjustedRevenue;
+  const resultEffectRaw=-unabsorbedDelta-financeCost,resultEffect=Object.is(resultEffectRaw,-0)?0:resultEffectRaw;
+  return{revenue,currentTax,futureTax,taxDelta,transferRate,priceChange,adjustedRevenue,unabsorbedDelta,requiredPriceRate,currentMargin,currentOperatingResult,projectedOperatingResult,projectedOperatingMargin,financeCost,resultEffect};
+ }
+
+ const currentDasShares={
+  I:{federal:[.155,.155,.155,.155,.155,.344],local:[.34,.34,.335,.335,.335,0],ipi:[0,0,0,0,0,0]},
+  II:{federal:[.14,.14,.14,.14,.14,.255],local:[.32,.32,.32,.32,.32,0],ipi:[.075,.075,.075,.075,.075,.35]},
+  III:{federal:[.156,.171,.166,.166,.156,.195],local:[.335,.32,.325,.325,.335,0],ipi:[0,0,0,0,0,0]},
+  IV:{federal:[.215,.25,.24,.23,.22,.25],local:[.445,.40,.40,.40,.40,0],ipi:[0,0,0,0,0,0]},
+  V:{federal:[.1715,.1715,.1815,.1915,.1715,.20],local:[.14,.17,.19,.21,.235,0],ipi:[0,0,0,0,0,0]}
+ };
+
+ function simpleCurrentConsumptionTax(r){
+  if(!r?.simpleEligible||!r.annex||r.rbt12<=0)return null;
+  const table=root.annexBands?.[r.annex]||annexBands?.[r.annex];
+  if(!table)return null;
+  let idx=table.findIndex(row=>r.rbt12<=row[0]);if(idx<0)idx=table.length-1;
+  const nominal=table[idx][1],deduction=table[idx][2],effective=Math.max(0,(r.rbt12*nominal-deduction)/r.rbt12),das=r.annualRevenue*effective;
+  if(r.annex==='III'&&idx===4&&effective>.1492537)return r.annualRevenue*.05+r.annualRevenue*Math.max(0,effective-.05)*.2346;
+  if(r.annex==='IV'&&idx===4&&effective>.125)return r.annualRevenue*.05+r.annualRevenue*Math.max(0,effective-.05)*.3667;
+  const shares=currentDasShares[r.annex]||currentDasShares.I;
+  return das*((shares.federal[idx]||0)+(shares.local[idx]||0)+(shares.ipi[idx]||0));
+ }
+
+ function simpleLegacyConsumption(r){
+  if(!r?.simpleEligible||r.year>=2033)return 0;
+  const shares=root.splitShares?.[r.annex]||splitShares?.[r.annex];
+  if(!shares)return 0;
+  const replacement=((shares.cbs33?.[r.sr.idx]||0)+(shares.ibs33?.[r.sr.idx]||0))/100;
+  return Math.max(0,r.das*replacement-r.embedded);
+ }
+
+ function modelConsumptionTax(r,modelKey){
+  if(!r)return null;
+  if(modelKey==='pure')return r.embedded+simpleLegacyConsumption(r);
+  if(modelKey==='hybrid')return r.netVat+simpleLegacyConsumption(r);
+  if(modelKey==='presumed'||modelKey==='real')return r.netVat+r.legacy;
+  return null;
+ }
+
+ function fieldNumber(id){const node=document.getElementById(id);return Number(node?.value||0)}
+ function hasField(id){const node=document.getElementById(id);return !!node&&String(node.value).trim()!==''}
+ function money(value){return Number.isFinite(value)?brl2.format(value):'—'}
+ function percent(value){return Number.isFinite(value)?pct1(value):'—'}
+ function setText(id,value){const node=document.getElementById(id);if(node)node.textContent=value==null?'—':String(value)}
+
+ function economicImpactFor(r,model){
+  const mode=document.getElementById('currentConsumptionMode')?.value||'auto';
+  const automatic=simpleCurrentConsumptionTax(r);
+  const manual=hasField('currentConsumptionTaxAnnual')?Math.max(0,fieldNumber('currentConsumptionTaxAnnual')):null;
+  const currentTax=mode==='auto'?automatic:manual;
+  const input=document.getElementById('currentConsumptionTaxAnnual');
+  const source=document.getElementById('currentConsumptionTaxSource');
+  if(input){input.readOnly=mode==='auto';if(mode==='auto')input.value=automatic==null?'':Math.round(automatic*100)/100}
+  if(source){
+   if(mode==='auto'&&automatic!=null)source.textContent='Calculado pela parcela estimada dos tributos sobre consumo no DAS atual. Revise a opção manual se possuir o valor contábil efetivo.';
+   else if(mode==='auto')source.textContent='O cálculo automático está disponível para empresas confirmadas no Simples. Selecione a informação manual para outros regimes.';
+   else source.textContent='Informe PIS/Cofins, ICMS, ISS e IPI líquidos de créditos, conforme aplicável, usando a mesma base anual.';
+  }
+  const futureTax=modelConsumptionTax(r,model?.key);
+  const margin=hasField('currentOperatingMarginPct')?fieldNumber('currentOperatingMarginPct')/100:null;
+  let financeCost=0;try{financeCost=root.cashMetrics?root.cashMetrics(r).cost:cashMetrics(r).cost}catch(_){}
+  if(currentTax==null||futureTax==null)return{known:false,currentTax,futureTax,modelKey:model?.key||null};
+  return{known:true,modelKey:model.key,...calculateEconomicImpact({annualRevenue:r.annualRevenue,currentConsumptionTax:currentTax,futureConsumptionTax:futureTax,priceTransferRate:fieldNumber('priceTransferPct')/100,currentOperatingMargin:margin,financeCost})};
+ }
+
+ function impactTone(impact){if(!impact?.known)return'pending';if(impact.resultEffect>1)return'positive';if(impact.resultEffect<-1)return'negative';return'neutral'}
+ function deltaLabel(value){if(!Number.isFinite(value))return'—';if(value>0)return`Aumento de ${money(value)}`;if(value<0)return`Redução de ${money(Math.abs(value))}`;return'Sem variação estimada'}
+ function resultLabel(value){if(!Number.isFinite(value))return'—';if(value>0)return`Ganho de ${money(value)}`;if(value<0)return`Perda de ${money(Math.abs(value))}`;return'Efeito neutro'}
+
+ function renderEconomicImpact(r){
+  const valid=(r?.models||[]).filter(m=>m.valid!==false&&Number.isFinite(m.total)).sort((a,b)=>a.total-b.total),model=valid[0],impact=economicImpactFor(r,model);
+  root.lastEconomicImpact=impact;
+  const pending='Informe a carga atual líquida dos tributos sobre consumo para comparar preço, margem e resultado.';
+  if(!impact.known){
+   ['execCurrentConsumptionTax','execFutureConsumptionTax','execTaxDelta','execRequiredPrice','execProjectedMargin','execResultEffect','techCurrentConsumptionTax','techFutureConsumptionTax','techTaxDelta','techPriceTransfer','techUnabsorbedDelta','techFinanceEffect','techResultEffect'].forEach(id=>setText(id,'—'));
+   setText('economicImpactStatus','Comparação pendente');setText('economicImpactText',pending);setText('technicalEconomicText',pending);
+   const card=document.getElementById('economicImpactCard');if(card)card.dataset.tone='pending';return impact;
+  }
+  setText('execCurrentConsumptionTax',money(impact.currentTax));setText('execFutureConsumptionTax',money(impact.futureTax));setText('execTaxDelta',deltaLabel(impact.taxDelta));
+  setText('execRequiredPrice',impact.requiredPriceRate==null?'—':`${impact.requiredPriceRate>=0?'+':''}${percent(impact.requiredPriceRate)}`);
+  setText('execProjectedMargin',impact.projectedOperatingMargin==null?'Informe a margem atual':percent(impact.projectedOperatingMargin));setText('execResultEffect',resultLabel(impact.resultEffect));
+  setText('execEconomicModel',model.name);setText('execEconomicYear',r.year);setText('techProjectedMargin',impact.projectedOperatingMargin==null?'Informe a margem atual':percent(impact.projectedOperatingMargin));
+  setText('economicImpactStatus',impact.taxDelta>1?'Pressão sobre a margem':impact.taxDelta<-1?'Potencial de ganho':'Impacto tributário neutro');
+  const transfer=percent(impact.transferRate),direction=impact.taxDelta>=0?'acréscimo':'redução';
+  setText('economicImpactText',`O cenário transfere ${transfer} da variação tributária ao preço. O ${direction} anual de preço estimado é ${money(Math.abs(impact.priceChange))}. Após o efeito tributário não transferido e o custo financeiro estimado, o impacto no resultado é ${resultLabel(impact.resultEffect).toLowerCase()}.`);
+  setText('techCurrentConsumptionTax',money(impact.currentTax));setText('techFutureConsumptionTax',money(impact.futureTax));setText('techTaxDelta',deltaLabel(impact.taxDelta));setText('techPriceTransfer',money(impact.priceChange));setText('techUnabsorbedDelta',money(impact.unabsorbedDelta));setText('techFinanceEffect',money(impact.financeCost));setText('techResultEffect',resultLabel(impact.resultEffect));
+  setText('technicalEconomicText',`A comparação usa ${model.name} como modelo de menor desembolso validado em ${r.year}. A carga de consumo futura considera somente IBS/CBS e ICMS/ISS residual aplicável, sem confundir o crédito do cliente com redução do imposto da empresa.`);
+  const card=document.getElementById('economicImpactCard');if(card)card.dataset.tone=impactTone(impact);
+  return impact;
+ }
+
+ root.calculateEconomicImpact=calculateEconomicImpact;
+ root.economicImpactFor=economicImpactFor;
+ root.renderEconomicImpact=renderEconomicImpact;
+ const modeField=typeof document!=='undefined'?document.getElementById('currentConsumptionMode'):null;
+ const taxField=typeof document!=='undefined'?document.getElementById('currentConsumptionTaxAnnual'):null;
+ function syncEconomicInputMode(){
+  if(!modeField||!taxField)return;taxField.readOnly=modeField.value==='auto';
+  if(modeField.value==='manual'&&document.getElementById('currentConsumptionTaxSource'))document.getElementById('currentConsumptionTaxSource').textContent='Informe a carga líquida anual de PIS/Cofins, ICMS, ISS e IPI, conforme aplicável.';
+ }
+ modeField?.addEventListener('change',syncEconomicInputMode);syncEconomicInputMode();
+  if(typeof module!=='undefined'&&module.exports)module.exports={calculateEconomicImpact};
+})(typeof window!=='undefined'?window:globalThis);

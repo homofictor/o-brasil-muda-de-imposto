@@ -14,6 +14,7 @@ function renderActions(r,rec){
  acts.push('Separar fornecedores por regime tributário e validar quais compras realmente geram crédito de IBS/CBS.');
  const fm=financialMetrics();if(fm.annualRate==null&&$('financeRateMode')?.value==='auto')acts.push('Completar no BP/DRE os juros e encargos da dívida e os saldos de empréstimos/financiamentos para calcular o custo financeiro automaticamente.');
  const c=cashMetrics(r);if(c.gap>0)acts.push(`Planejar aproximadamente ${brl.format(c.gap)} de fonte adicional de liquidez para o cenário de split payment informado.`);else acts.push('A reserva financeira calculada cobre a necessidade adicional de capital de giro estimada neste cenário.');
+ const economic=window.lastEconomicImpact;if(economic?.known){if(economic.taxDelta>0&&economic.transferRate<1)acts.push(`Revisar preços, contratos e margens: ${brl.format(economic.unabsorbedDelta)} da variação anual dos tributos sobre consumo permanece absorvida pela empresa no cenário informado.`);else if(economic.taxDelta<0)acts.push('Definir quanto da redução estimada da carga de consumo será preservada na margem e quanto será convertido em preço ou competitividade.')}else acts.push('Informar a carga líquida atual dos tributos sobre consumo para medir o efeito sobre preço, margem e resultado.');
  if(selectedYear===2027&&r.simpleEligible)acts.push('Se a empresa quiser IBS/CBS no regime regular no primeiro semestre de 2027, observar o prazo oficial de setembro de 2026 e as regras de cancelamento.');
  acts.push(`Validar a recomendação “${rec.title}” com contador responsável, considerando contratos, benefícios, créditos específicos, estado/município e particularidades da atividade.`);
  $('actionList').innerHTML=acts.map(x=>`<li>${x}</li>`).join('');
@@ -37,6 +38,12 @@ function renderNarrative(r,rec,structural,srec){
  if(c&&!c.notApplicable){
   if(c.gap>0)parts.push(`<p><strong>Caixa.</strong> O cenário de split payment gera necessidade adicional de liquidez e, depois da reserva considerada, permanece um gap estimado de <strong>${brl2.format(c.gap)}</strong>. Esse valor deve ser tratado como necessidade financeira, e não como novo imposto.</p>`);
   else parts.push(`<p><strong>Caixa.</strong> A reserva financeira considerada cobre a necessidade adicional de liquidez estimada para o cenário de split payment informado. Ainda assim, prazo de recebimento, concentração de clientes e cronograma efetivo do split devem ser monitorados.</p>`);
+ }
+ const economic=window.lastEconomicImpact;
+ if(economic?.known){
+  const taxDirection=economic.taxDelta>0?'aumento':economic.taxDelta<0?'redução':'estabilidade';
+  const resultDirection=economic.resultEffect>0?'ganho':economic.resultEffect<0?'perda':'efeito neutro';
+  parts.push(`<p><strong>Preço e margem.</strong> A comparação da carga líquida dos tributos sobre consumo indica <strong>${taxDirection} de ${brl2.format(Math.abs(economic.taxDelta))}</strong> por ano. Com ${pct1(economic.transferRate)} da variação transferida ao preço e o custo financeiro estimado, o efeito anual no resultado é de <strong>${resultDirection} de ${brl2.format(Math.abs(economic.resultEffect))}</strong>.${economic.projectedOperatingMargin==null?' Informe a margem operacional atual para projetar a margem futura.':` A margem operacional projetada é de <strong>${pct1(economic.projectedOperatingMargin)}</strong>.`}</p>`);
  }
  if(srec&&srec.key!==rec.key)parts.push(`<p><strong>Transição.</strong> A recomendação para ${r.year} não é a mesma da visão estrutural de 2033, quando o simulador aponta <strong>${srec.title}</strong>. Isso significa que uma decisão eficiente no curto prazo pode precisar ser revista conforme ICMS e ISS desaparecem e o IBS ganha peso.</p>`);
  else if(srec)parts.push(`<p><strong>Transição.</strong> A alternativa recomendada em ${r.year} permanece a mesma na visão estrutural de 2033. Isso reforça a consistência do resultado, embora as diferenças de valor entre os regimes possam mudar ao longo da transição.</p>`);
@@ -62,7 +69,7 @@ function calculate(){
  $('structuralDecision').textContent=srec.title;$('structuralReason').textContent=srec.text;
  const fr=factorRValue();$('factorResult').textContent=r.simpleEligible?pct1(fr):'N/A';$('factorResultText').textContent=r.simpleEligible?(cnaeSuggestion?.factorR?(fr>=.28?'Pelas premissas, tende ao Anexo III.':'Pelas premissas, tende ao Anexo V.'):'Exibido como indicador de referência.'):'Fator R não entra na análise prospectiva quando o Simples não é alternativa confirmada.';
  if(typeof renderReferenceComparison==='function')renderReferenceComparison(all);
- renderVatSummary(r);renderTimeline(all);renderModels(r,rec);renderCompetition(r);renderCash(r);renderActions(r,rec);renderNarrative(r,rec,structural,srec);
+ renderVatSummary(r);renderTimeline(all);renderModels(r,rec);renderCompetition(r);renderCash(r);if(typeof renderEconomicImpact==='function')renderEconomicImpact(r);renderActions(r,rec);renderNarrative(r,rec,structural,srec);
  try{localStorage.setItem('brmi_v3',JSON.stringify(Object.fromEntries([...document.querySelectorAll('input,select')].filter(el=>el.id&&el.id!=='yearRange'&&!['cashReserve','workingCapitalNet','debtAverage'].includes(el.id)).map(el=>[el.id,el.type==='checkbox'?el.checked:el.value]))))}catch(_){}
 }
 function restore(){
