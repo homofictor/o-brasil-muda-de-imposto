@@ -15,21 +15,15 @@
   return parsed.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
  }
 
- function isMoneyInput(el){return !!el?.closest?.('.money')}
  function setMoneyInputValue(target,value){
   const el=typeof target==='string'?document.getElementById(target):target;
   if(!el)return;
   if(value==null||value===''){el.value='';return}
-  el.value=document.activeElement===el?String(value).replace('.',','):formatMoneyValue(value);
+  el.value=formatMoneyValue(value);
  }
  function formatMoneyInput(el){
   if(!el||String(el.value).trim()==='')return;
   el.value=formatMoneyValue(el.value);
- }
- function editMoneyInput(el){
-  if(!el||String(el.value).trim()==='')return;
-  const parsed=parseMoneyValue(el.value);
-  el.value=Number.isInteger(parsed)?String(parsed):String(parsed).replace('.',',');
  }
  function refreshMoneyInputs(includeActive=false){
   if(typeof document==='undefined')return;
@@ -40,7 +34,6 @@
   document.querySelectorAll('.money input').forEach(el=>{
    if(el.dataset.moneyFormatted==='1')return;
    el.dataset.moneyFormatted='1';el.type='text';el.inputMode='decimal';el.autocomplete='off';
-   el.addEventListener('focus',()=>editMoneyInput(el));
    el.addEventListener('blur',()=>formatMoneyInput(el));
    formatMoneyInput(el);
   });
