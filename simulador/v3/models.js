@@ -1,4 +1,4 @@
-function numSet(id,v){if($(id))$(id).value=v}
+function numSet(id,v){const el=$(id);if(!el)return;if(typeof window.setMoneyInputValue==='function'&&el.closest?.('.money'))window.setMoneyInputValue(el,v);else el.value=v}
 function currentKind(){return cnaeSuggestion?.kind||(($('annex').value==='I')?'commerce':$('annex').value==='II'?'industry':'service')}
 function migrationDefaults(kind){return kind==='service'?{irpjPres:.32,csllPres:.32}:{irpjPres:.08,csllPres:.12}}
 function legacyTransition(year){return year<=2028?1:({2029:.9,2030:.8,2031:.7,2032:.6,2033:0}[year]??0)}

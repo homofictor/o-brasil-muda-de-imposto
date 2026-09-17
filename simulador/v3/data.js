@@ -1,5 +1,5 @@
 const $=id=>document.getElementById(id);
-const num=id=>Number($(id)?.value||0);
+const num=id=>typeof window.parseMoneyValue==='function'?window.parseMoneyValue($(id)?.value):Number($(id)?.value||0);
 const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
 const brl=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0});
 const brl2=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:2,maximumFractionDigits:2});
