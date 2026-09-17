@@ -76,14 +76,14 @@
  }
 
  function refreshAutomation(){
-  const card=byId('companyCard'),box=byId('guidedAutomation');if(!box||!card||card.hidden){if(box)box.hidden=true;return}
+  const card=byId('companyCard'),box=byId('guidedAutomation');if(!box||!card||card.hidden){if(box)box.hidden=true;if(byId('deadlineBanner'))byId('deadlineBanner').hidden=true;return}
   const mix=[['mixFull','Integral'],['mix30','Redução de 30%'],['mix40','Redução de 40%'],['mix60','Redução de 60%'],['mixZero','Alíquota zero']].filter(([id])=>numeric(id)>0).map(([id,n])=>`${n}: ${percent(numeric(id))}`).join(' · ');
   box.hidden=false;box.innerHTML=`<div class="guidedAutomationHead"><div><strong>Pré-diagnóstico automático criado pelo CNPJ e CNAE</strong><p>${escapeHtml(byId('companyCnae')?.textContent||value('activity'))}</p></div><span>REVISÁVEL</span></div><div class="guidedAutomationGrid"><div class="guidedAutoItem"><span>Vendas para empresas</span><b>${percent(numeric('b2bPct'))}</b></div><div class="guidedAutoItem"><span>Compras com tributos na nota</span><b>${percent(numeric('purchasesPct'))}</b></div><div class="guidedAutoItem"><span>Compras potencialmente creditáveis</span><b>${percent(numeric('eligibleCreditPct'))}</b></div><div class="guidedAutoItem"><span>Fornecedores no regime regular</span><b>${percent(numeric('regularSuppliersPct'))}</b></div><div class="guidedAutoItem"><span>Tratamento sugerido</span><b>${escapeHtml(mix||'A revisar')}</b></div><div class="guidedAutoItem"><span>Simples Nacional</span><b>${escapeHtml(byId('simpleStatus')?.selectedOptions?.[0]?.textContent||'Não confirmado')}</b></div><div class="guidedAutoItem"><span>Anexo sugerido</span><b>${escapeHtml(value('annex')||'Não aplicável')}</b></div><div class="guidedAutoItem"><span>Atividade</span><b>${escapeHtml((value('activity')||'Não identificada').slice(0,55))}</b></div></div>`;
  }
 
  function refreshFinance(){
   const box=byId('guidedFinanceCards');if(!box)return;
-  const rate=value('financeRate');box.innerHTML=`<div><span>Reserva financeira</span><b>${numeric('cashReserve')?money.format(numeric('cashReserve')):'Aguardando BP'}</b></div><div><span>Capital de giro líquido</span><b>${value('workingCapitalNet')!==''?money.format(numeric('workingCapitalNet')):'Aguardando BP'}</b></div><div><span>Dívida financeira média</span><b>${numeric('debtAverage')?money.format(numeric('debtAverage')):'Aguardando BP'}</b></div><div><span>Custo financeiro anual</span><b>${rate!==''?percent(rate):'Aguardando BP e DRE'}</b></div>`;
+  const rate=value('financeRate'),cclKnown=value('currentAssets')!==''&&value('currentLiabilities')!=='';box.innerHTML=`<div><span>Reserva financeira</span><b>${numeric('cashReserve')?money.format(numeric('cashReserve')):'Aguardando BP'}</b></div><div><span>Capital de giro líquido</span><b>${cclKnown?money.format(numeric('workingCapitalNet')):'Aguardando BP'}</b></div><div><span>Dívida financeira média</span><b>${numeric('debtAverage')?money.format(numeric('debtAverage')):'Aguardando BP'}</b></div><div><span>Custo financeiro anual</span><b>${rate!==''?percent(rate):'Aguardando BP e DRE'}</b></div>`;
  }
 
  function refreshReview(){
@@ -107,6 +107,7 @@
   const panels=[...setup.querySelectorAll(':scope > .panel')].filter(x=>!x.id);
   if(panels.length<4)return;
   prepareCompanyStep(panels[0]);prepareOperationStep(panels[1]);prepareFinanceStep(panels[2]);prepareEconomicStep(panels[3]);createReviewPanel();attachImportPanel();
+  const brandLine=document.querySelector('.brand span');if(brandLine)brandLine.textContent='Simulador Guiado · motor técnico completo';
   document.querySelectorAll('[data-guided-nav]').forEach(b=>b.addEventListener('click',()=>showStep(b.dataset.guidedNav)));
   byId('guidedBack').addEventListener('click',()=>showStep(currentStep-1));byId('guidedNext').addEventListener('click',()=>showStep(currentStep+1));
   document.addEventListener('input',refreshAll);document.addEventListener('change',refreshAll);
