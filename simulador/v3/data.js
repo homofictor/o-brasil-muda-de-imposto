@@ -184,22 +184,27 @@ function financialMetrics(){
  const avg=start>0&&end>0?(start+end)/2:(end>0?end:start);
  const interest=Math.max(0,num('interestExpense')),months=clamp(num('dreMonths')||12,1,12);
  let annualRate=debtKnown&&interestKnown&&avg>0&&interest>0?(interest/avg)*(12/months):null;
+ const automaticRatePlausible=annualRate!=null&&Number.isFinite(annualRate)&&annualRate<=1;
  if($('cashReserve'))$('cashReserve').value=cashKnown?Math.round(reserve*100)/100:'';
  if($('workingCapitalNet'))$('workingCapitalNet').value=cclKnown?Math.round(ccl*100)/100:'';
  if($('debtAverage'))$('debtAverage').value=debtKnown?Math.round(avg*100)/100:'';
  const mode=$('financeRateMode')?.value||'auto';
- if(mode==='auto'&&annualRate!=null&&Number.isFinite(annualRate)){
+ if(mode==='auto'&&automaticRatePlausible){
   $('financeRate').value=Math.round(annualRate*10000)/100;
   if(typeof markFieldDerived==='function')markFieldDerived('financeRate','CALCULADO');
-  if($('financeRateSource'))$('financeRateSource').textContent=`Juros/encargos ÷ dívida financeira média, anualizado para ${months} mês${months===1?'':'es'} de DRE.`;
+  if($('financeRateSource'))$('financeRateSource').textContent=`Juros e encargos específicos da dívida ÷ dívida financeira média, anualizado para ${months} mês${months===1?'':'es'} de DRE.`;
+ }else if(mode==='auto'&&annualRate!=null&&Number.isFinite(annualRate)&&annualRate>1){
+  $('financeRate').value='';
+  if(typeof markFieldPending==='function')markFieldPending('financeRate','REVISAR BASE');
+  if($('financeRateSource'))$('financeRateSource').textContent=`A relação encontrada seria de ${(annualRate*100).toLocaleString('pt-BR',{maximumFractionDigits:2})}% a.a., acima do limite de validação automática. Revise se o numerador contém apenas juros e encargos vinculados às dívidas consideradas.`;
  }else if(mode==='auto'){
   $('financeRate').value='';
-  if($('financeRateSource'))$('financeRateSource').textContent='Sem dados suficientes de juros e dívida média. Revise BP/DRE ou altere para premissa manual.';
+  if($('financeRateSource'))$('financeRateSource').textContent='Sem dados suficientes de juros específicos e dívida média. Revise BP/DRE ou altere para premissa manual.';
  }
  if(typeof markFieldDerived==='function'){
   if(cashKnown)markFieldDerived('cashReserve','CALCULADO');
   if(cclKnown)markFieldDerived('workingCapitalNet','CALCULADO');
   if(debtKnown)markFieldDerived('debtAverage','CALCULADO');
  }
- return{cash,liquid,reserve,ac,pc,ccl,start,end,avg,interest,months,annualRate};
+ return{cash,liquid,reserve,ac,pc,ccl,start,end,avg,interest,months,annualRate:automaticRatePlausible?annualRate:null,rawAnnualRate:annualRate};
 }
