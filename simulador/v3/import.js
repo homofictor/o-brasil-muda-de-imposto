@@ -158,9 +158,9 @@ function analyseImportDoc(file,parsed){
  const currentAssets=latestLineValue(bpText,['ativo circulante'],['total do ativo','nao circulante']);
  const currentLiabilities=latestLineValue(bpText,['passivo circulante'],['nao circulante']);
  const pretaxProfit=firstLatestLineValue(dreText,[['lucro liquido antes provisao irpj e csll','lucro liquido antes da provisao irpj e csll','lucro antes do irpj e csll','lucro antes do irpj','lucro antes do imposto de renda','resultado antes do irpj','resultado antes dos tributos sobre o lucro','resultado antes dos impostos sobre o lucro'],['lucro antes dos tributos','resultado antes dos tributos']]);
- const netProfit=firstLatestLineValue(dreText,[['lucro liquido','resultado liquido','resultado do exercicio','resultado exercicio']]);
- const irpjExpense=Math.abs(firstLatestLineValue(dreText,[['imposto de renda corrente','irpj corrente'],['imposto de renda']])||0);
- const csllExpense=Math.abs(firstLatestLineValue(dreText,[['contribuicao social corrente','csll corrente'],['contribuicao social sobre o lucro','csll']])||0);
+ const netProfit=firstLatestLineValue(dreText,[['lucro liquido do exercicio','resultado liquido do exercicio','resultado do exercicio','resultado exercicio'],['lucro liquido','resultado liquido']],['antes']);
+ const irpjExpense=Math.abs(firstLatestLineValue(dreText,[['provisao p imposto de renda','provisao para imposto de renda','imposto de renda corrente','irpj corrente','despesa de irpj'],['imposto de renda']],['antes'])||0);
+ const csllExpense=Math.abs(firstLatestLineValue(dreText,[['provisao p contribuicao social','provisao para contribuicao social','contribuicao social corrente','csll corrente','despesa de csll'],['contribuicao social sobre o lucro','csll']],['antes'])||0);
  const accountingProfit=pretaxProfit!=null?pretaxProfit:(netProfit!=null&&(irpjExpense>0||csllExpense>0)?netProfit+irpjExpense+csllExpense:null);
  const payrollCosts=latestLineValue(dreText,['custos com pessoal']),payrollExpenses=latestLineValue(dreText,['despesas com pessoal']),payroll=(payrollCosts||0)+(payrollExpenses||0)||latestLineValue(dreText,['folha de pagamento','salarios e encargos','pessoal e encargos']);
  const debtBalances=financialDebtBalances(bpText),debtEnd=debtBalances.end,debtStart=debtBalances.start,debtOrdered=debtBalances.ordered;
