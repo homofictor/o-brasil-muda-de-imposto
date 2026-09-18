@@ -120,7 +120,9 @@
 
  function syncVerifiedProfitIntoGuided(){
   const el=byId('realAccountingProfitAnnual'),verified=window.brmiImport?.verifiedAccountingProfit;
-  if(!el||String(el.value||'').trim()!==''||!verified||!Number.isFinite(verified.value))return;
+  if(!el||!verified||!Number.isFinite(verified.value)||el.dataset.userEdited==='1')return;
+  const currentText=String(el.value||'').trim(),currentValue=numeric('realAccountingProfitAnnual'),alreadyImported=el.dataset.importVerified==='1';
+  if(currentText&&!alreadyImported&&Math.abs(currentValue)>.000001)return;
   if(typeof setMoneyInputValue==='function')setMoneyInputValue(el,verified.value);else el.value=Math.round(verified.value*100)/100;
   el.dataset.importVerified='1';el.dataset.importSource=verified.source||'DRE importada';
   if(typeof markFieldAuto==='function')markFieldAuto('realAccountingProfitAnnual','IMPORTADO');
@@ -128,9 +130,22 @@
  function refreshReview(){
   syncVerifiedProfitIntoGuided();
   const grid=byId('guidedReviewGrid'),warnings=byId('guidedReviewWarnings');if(!grid||!warnings)return;
-  const cards=[['Empresa',byId('companyName')?.textContent||value('activity')||'Não identificada'],['Faturamento anual',numeric('rbt12')?money.format(numeric('rbt12')):'Não informado'],['Regime atual',byId('simpleStatus')?.selectedOptions?.[0]?.textContent||'Não confirmado'],['Vendas para empresas',percent(numeric('b2bPct'))],['Compras com tributos na nota',percent(numeric('purchasesPct'))],['Crédito possível nas compras',percent(numeric('eligibleCreditPct'))],['Reserva financeira',numeric('cashReserve')?money.format(numeric('cashReserve')):'Não informada'],['Lucro contábil',numeric('realAccountingProfitAnnual')?money.format(numeric('realAccountingProfitAnnual')):'Não informado'],['Carga atual de consumo',numeric('currentConsumptionTaxAnnual')?money.format(numeric('currentConsumptionTaxAnnual')):'A calcular']];
+  const provided=id=>String(value(id)).trim()!=='';
+  const revenueQuality=window.brmiImport?.revenueQuality,taxCandidates=(window.brmiImport?.candidates||[]).filter(x=>x?.field==='currentConsumptionTaxAnnual');
+  const taxStatus=provided('currentConsumptionTaxAnnual')?money.format(numeric('currentConsumptionTaxAnnual')):(revenueQuality||window.brmiImport?.docs?.length?'DRE sem abertura suficiente':'A calcular');
+  const cards=[['Empresa',byId('companyName')?.textContent||value('activity')||'Não identificada'],['Faturamento anual',provided('rbt12')?money.format(numeric('rbt12')):'Não informado'],['Regime atual',byId('simpleStatus')?.selectedOptions?.[0]?.textContent||'Não confirmado'],['Vendas para empresas',percent(numeric('b2bPct'))],['Compras com tributos na nota',percent(numeric('purchasesPct'))],['Crédito possível nas compras',percent(numeric('eligibleCreditPct'))],['Reserva financeira',provided('cashReserve')?money.format(numeric('cashReserve')):'Não informada'],['Lucro contábil',provided('realAccountingProfitAnnual')?money.format(numeric('realAccountingProfitAnnual')):'Não informado'],['Carga atual de consumo',taxStatus]];
   grid.innerHTML=cards.map(([a,b])=>`<div><span>${escapeHtml(a)}</span><b>${escapeHtml(b)}</b></div>`).join('');
-  const notes=[];if(!numeric('rbt12'))notes.push('Informe o faturamento anual para liberar o diagnóstico.');if(value('simpleStatus')==='unknown')notes.push('Confirme se a empresa está ou não no Simples Nacional.');if(!numeric('cashReserve'))notes.push('Sem caixa ou aplicações informados, a análise de caixa ficará menos precisa.');if(!numeric('realAccountingProfitAnnual'))notes.push('Sem lucro contábil, o Lucro Real não entrará no ranking completo.');if(!numeric('currentConsumptionTaxAnnual')&&value('simpleStatus')!=='yes')notes.push('Informe ou importe a carga atual dos tributos sobre consumo para medir preço e margem.');
+  const notes=[];
+  if(!provided('rbt12')||numeric('rbt12')<=0)notes.push('Informe o faturamento bruto anual para liberar o diagnóstico.');
+  if(revenueQuality?.status==='net-only'){
+   const sameAsNet=provided('rbt12')&&Math.abs(numeric('rbt12')-Number(revenueQuality.net||0))<1;
+   notes.push(sameAsNet?'A DRE traz apenas Receita Líquida e esse mesmo valor está no faturamento anual. Confirme o faturamento bruto/RBT12 antes de usar o ranking tributário.':'A DRE traz apenas Receita Líquida. O faturamento bruto/RBT12 precisa ser confirmado separadamente.');
+  }
+  if(value('simpleStatus')==='unknown')notes.push('Confirme se a empresa está ou não no Simples Nacional.');
+  if(!provided('cashReserve'))notes.push('Sem caixa ou aplicações informados, a análise de caixa ficará menos precisa.');
+  if(!provided('realAccountingProfitAnnual'))notes.push('Sem lucro contábil antes de IRPJ e CSLL, o Lucro Real não entrará no ranking completo.');
+  if(!provided('monthlyCppBase')&&value('simpleStatus')!=='yes')notes.push('Informe a remuneração mensal sujeita à contribuição patronal para comparar corretamente Lucro Presumido e Lucro Real.');
+  if(!provided('currentConsumptionTaxAnnual')&&value('simpleStatus')!=='yes')notes.push(taxCandidates.length?'Revise a carga atual de tributos sobre consumo identificada nos documentos.':'A DRE não contém abertura suficiente para calcular a carga atual de consumo. Importe uma DRE detalhada ou relatório fiscal com tributos/deduções sobre vendas.');
   warnings.innerHTML=notes.length?notes.map(x=>`<div>${escapeHtml(x)}</div>`).join(''):'<div class="ok">Os dados essenciais estão preenchidos. O diagnóstico pode ser gerado.</div>';
  }
 
