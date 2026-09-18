@@ -35,7 +35,7 @@
  }
 
  function prepareOperationStep(panel){
-  panel.dataset.guidedStep='2';
+  panel.dataset.guidedStep='2';panel.classList.add('guidedOperationPanel');
   relabel('b2bPct','Vendas para outras empresas','Percentual do faturamento destinado a clientes com CNPJ. O perfil inicial é estimado pelo CNAE.');
   relabel('purchasesPct','Compras e despesas com tributos na nota','Matérias-primas, mercadorias, ativos e serviços adquiridos com tributos destacados ou embutidos no valor da operação.');
   relabel('eligibleCreditPct','Quanto dessas compras pode gerar crédito','Estimativa da parcela que atende às condições para aproveitamento de créditos de IBS/CBS.');
