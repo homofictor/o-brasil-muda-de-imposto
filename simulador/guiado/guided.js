@@ -47,11 +47,27 @@
   panel.dataset.guidedStep='3';
   const title=panel.querySelector('.sectionTitle');
   if(!panel.querySelector('.guidedFinancialIntro')){
-   const intro=document.createElement('div');intro.className='guidedFinancialIntro';intro.innerHTML='<strong>Os dados podem ser importados ou digitados manualmente.</strong><p>Use BP e DRE para ganhar tempo ou abra o formulário manual para informar e corrigir faturamento, lucro, caixa, capital de giro, dívida, juros e demais premissas.</p>';
+   const intro=document.createElement('div');intro.className='guidedFinancialIntro';intro.innerHTML='<strong>Os dados podem ser importados ou digitados manualmente.</strong><p>Escolha o caminho mais prático. BP, DRE e relatórios aceleram o preenchimento, mas todos os valores também podem ser informados ou corrigidos diretamente na tela.</p>';
    title.insertAdjacentElement('afterend',intro);
    const cards=document.createElement('div');cards.className='guidedFinanceCards';cards.id='guidedFinanceCards';intro.insertAdjacentElement('afterend',cards);
    const d=detailsBox('Preencher ou corrigir os dados manualmente');d.id='guidedManualFields';const body=d.querySelector('.guidedReviewDetailsBody');
-   [...panel.children].filter(x=>x.classList?.contains('grid4')||x.classList?.contains('advanced')).forEach(x=>body.appendChild(x));
+   const moved=[...panel.children].filter(x=>x.classList?.contains('grid4')||x.classList?.contains('advanced'));
+   moved.forEach(x=>body.appendChild(x));
+   const groups=[
+    ['Cenário tributário e indicadores','Alíquotas de referência e indicadores financeiros calculados pelo sistema.'],
+    ['Folha, contribuição patronal e lucro','Dados necessários para comparar corretamente os regimes fora do Simples.'],
+    ['Caixa e capital de giro','Informe os saldos disponíveis no balanço ou em seus controles internos.'],
+    ['Dívida e encargos financeiros','Use empréstimos e financiamentos do início e do fim do período, além dos juros.'],
+    ['Custo financeiro e período','O sistema anualiza o custo quando a DRE cobrir menos de 12 meses.']
+   ];
+   [...body.querySelectorAll(':scope > .grid4')].forEach((grid,i)=>{
+    grid.classList.add('guidedManualGrid');
+    const meta=groups[i];if(!meta)return;
+    const band=document.createElement('div');band.className='guidedManualGroupTitle';
+    band.innerHTML=`<span>${String(i+1).padStart(2,'0')}</span><div><b>${meta[0]}</b><small>${meta[1]}</small></div>`;
+    grid.insertAdjacentElement('beforebegin',band);
+   });
+   const advanced=body.querySelector(':scope > .advanced');if(advanced)advanced.classList.add('guidedManualAdvanced');
    cards.insertAdjacentElement('afterend',d);
   }
  }
@@ -95,14 +111,14 @@
 
  function refreshFinance(){
   const box=byId('guidedFinanceCards');if(!box)return;
-  const rate=value('financeRate'),cclKnown=value('currentAssets')!==''&&value('currentLiabilities')!=='';box.innerHTML=`<div><span>Reserva financeira</span><b>${numeric('cashReserve')?money.format(numeric('cashReserve')):'Aguardando BP'}</b></div><div><span>Capital de giro líquido</span><b>${cclKnown?money.format(numeric('workingCapitalNet')):'Aguardando BP'}</b></div><div><span>Dívida financeira média</span><b>${numeric('debtAverage')?money.format(numeric('debtAverage')):'Aguardando BP'}</b></div><div><span>Custo financeiro anual</span><b>${rate!==''?percent(rate):'Aguardando BP e DRE'}</b></div>`;
+  const rate=value('financeRate'),cclKnown=value('currentAssets')!==''&&value('currentLiabilities')!=='';box.innerHTML=`<div><span>Reserva financeira</span><b>${numeric('cashReserve')?money.format(numeric('cashReserve')):'Aguardando dados'}</b></div><div><span>Capital de giro líquido</span><b>${cclKnown?money.format(numeric('workingCapitalNet')):'Aguardando dados'}</b></div><div><span>Dívida financeira média</span><b>${numeric('debtAverage')?money.format(numeric('debtAverage')):'Aguardando dados'}</b></div><div><span>Custo financeiro anual</span><b>${rate!==''?percent(rate):'Aguardando dados'}</b></div>`;
  }
 
  function refreshReview(){
   const grid=byId('guidedReviewGrid'),warnings=byId('guidedReviewWarnings');if(!grid||!warnings)return;
   const cards=[['Empresa',byId('companyName')?.textContent||value('activity')||'Não identificada'],['Faturamento anual',numeric('rbt12')?money.format(numeric('rbt12')):'Não informado'],['Regime atual',byId('simpleStatus')?.selectedOptions?.[0]?.textContent||'Não confirmado'],['Vendas para empresas',percent(numeric('b2bPct'))],['Compras com tributos na nota',percent(numeric('purchasesPct'))],['Crédito possível nas compras',percent(numeric('eligibleCreditPct'))],['Reserva financeira',numeric('cashReserve')?money.format(numeric('cashReserve')):'Não informada'],['Lucro contábil',numeric('realAccountingProfitAnnual')?money.format(numeric('realAccountingProfitAnnual')):'Não informado'],['Carga atual de consumo',numeric('currentConsumptionTaxAnnual')?money.format(numeric('currentConsumptionTaxAnnual')):'A calcular']];
   grid.innerHTML=cards.map(([a,b])=>`<div><span>${escapeHtml(a)}</span><b>${escapeHtml(b)}</b></div>`).join('');
-  const notes=[];if(!numeric('rbt12'))notes.push('Informe o faturamento anual para liberar o diagnóstico.');if(value('simpleStatus')==='unknown')notes.push('Confirme se a empresa está ou não no Simples Nacional.');if(!numeric('cashReserve'))notes.push('Sem BP, a análise de caixa ficará menos precisa.');if(!numeric('realAccountingProfitAnnual'))notes.push('Sem lucro contábil, o Lucro Real não entrará no ranking completo.');if(!numeric('currentConsumptionTaxAnnual')&&value('simpleStatus')!=='yes')notes.push('Informe ou importe a carga atual dos tributos sobre consumo para medir preço e margem.');
+  const notes=[];if(!numeric('rbt12'))notes.push('Informe o faturamento anual para liberar o diagnóstico.');if(value('simpleStatus')==='unknown')notes.push('Confirme se a empresa está ou não no Simples Nacional.');if(!numeric('cashReserve'))notes.push('Sem caixa ou aplicações informados, a análise de caixa ficará menos precisa.');if(!numeric('realAccountingProfitAnnual'))notes.push('Sem lucro contábil, o Lucro Real não entrará no ranking completo.');if(!numeric('currentConsumptionTaxAnnual')&&value('simpleStatus')!=='yes')notes.push('Informe ou importe a carga atual dos tributos sobre consumo para medir preço e margem.');
   warnings.innerHTML=notes.length?notes.map(x=>`<div>${escapeHtml(x)}</div>`).join(''):'<div class="ok">Os dados essenciais estão preenchidos. O diagnóstico pode ser gerado.</div>';
  }
 
