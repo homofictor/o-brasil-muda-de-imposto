@@ -290,7 +290,7 @@ function applyImportCandidate(i,button){
 }
 function applyHighConfidenceCandidates(){
  const groups=groupedImportCandidates();let applied=0,skipped=0;
- Object.values(groups).forEach(arr=>{const high=arr.filter(c=>c.confidence==='high');if(!high.length)return;if(conflictGroup(high)){skipped++;return}applyImportCandidate(high[0]._index);applied++});
+ Object.values(groups).forEach(arr=>{const high=arr.filter(c=>c.confidence==='high');if(!high.length)return;if(conflictGroup(high)){skipped++;return}if(applyImportCandidate(high[0]._index,true))applied++});
  const btn=$('importApplyHigh');if(btn){btn.textContent=applied?`${applied} sugest${applied===1?'ão aplicada':'ões aplicadas'}`:'Nenhuma sugestão segura para aplicar';if(skipped)btn.title=`${skipped} grupo(s) com valores divergentes não foram aplicados automaticamente.`}
 }
 
