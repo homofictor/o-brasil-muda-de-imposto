@@ -1,4 +1,36 @@
 window.brmiImport={files:[],candidates:[],docs:[]};
+const BRMI_AUTOMATION_KEY='brmi_automation_mode';
+function importAutomationMode(){
+ const raw=localStorage.getItem(BRMI_AUTOMATION_KEY)||'recommended';
+ return ['rigorous','recommended','maximum'].includes(raw)?raw:'recommended';
+}
+function automationModeLabel(mode=importAutomationMode()){
+ return mode==='rigorous'?'Mais rigor':mode==='maximum'?'Máxima automação':'Recomendado';
+}
+function clearAutoImportedForMode(){
+ const fields=new Set((brmiImport.candidates||[]).map(x=>x?.field).filter(Boolean));
+ fields.forEach(id=>{
+  if(id==='cnpj')return;
+  const el=$(id);if(!el||el.dataset.userEdited==='1'||el.dataset.importAccepted==='1'||el.dataset.importVerified!=='1')return;
+  el.value='';delete el.dataset.importVerified;delete el.dataset.importSource;delete el.dataset.importConfidence;delete el.dataset.importDerivedKey;delete el.dataset.sourceNote;
+ });
+}
+window.getBrmiAutomationMode=importAutomationMode;
+window.setBrmiAutomationMode=function(mode,{reapply=true}={}){
+ const next=['rigorous','recommended','maximum'].includes(mode)?mode:'recommended';
+ localStorage.setItem(BRMI_AUTOMATION_KEY,next);
+ if(reapply&&brmiImport.candidates?.length){
+  clearAutoImportedForMode();
+  autoApplyDocumentCalculations();
+  writeVerifiedAccountingProfit();
+  updateEconomicMetricAvailability();
+  if(typeof financialMetrics==='function')financialMetrics();
+  if(typeof calculate==='function')calculate();
+  renderImportCandidates();
+ }
+ document.dispatchEvent(new CustomEvent('brmi:automation-mode',{detail:{mode:next,label:automationModeLabel(next)}}));
+ return next;
+};
 
 function importMarkup(){return `<section class="panel importPanel" id="importPanel">
  <div class="sectionTitle"><div><span>05</span><div><div class="importTitleTag">V3.2 · preenchimento inteligente</div><h2>Importar dados da empresa</h2></div></div><p>Envie o que tiver disponível. O simulador localiza números úteis, mostra a fonte, aplica automaticamente apenas dados seguros e mantém aproximações para revisão.</p></div>
@@ -276,10 +308,10 @@ function applyImportCandidate(i,button){
  const explicit=!!button,currentText=String(el.value||'').trim(),currentValue=typeof parseMoneyValue==='function'?parseMoneyValue(currentText):Number(currentText||0),alreadyImported=el.dataset.importVerified==='1'||el.dataset.importSource;
  if(!explicit&&el.dataset.userEdited==='1')return false;
  if(!explicit&&currentText&&!alreadyImported&&Number.isFinite(currentValue)&&Math.abs(currentValue)>.000001&&c.field!=='cnpj')return false;
- if(explicit){delete el.dataset.userEdited}
+ if(explicit){delete el.dataset.userEdited;el.dataset.importAccepted='1'}
  if(c.field==='cnpj'){el.value=typeof normalizeCnpjInput==='function'?normalizeCnpjInput(c.value):formatImportedCnpj(c.value);el.dataset.importVerified='1';el.dataset.importSource=c.source||'';if(typeof markFieldAuto==='function')markFieldAuto('cnpj','IMPORTADO');syncImportCandidateButtons(c.field,i);if(typeof lookupCnpj==='function')lookupCnpj();return true}
  if(typeof setMoneyInputValue==='function'&&el.closest?.('.money'))setMoneyInputValue(el,c.value);else el.value=Math.round(c.value*100)/100;
- el.dataset.importVerified='1';el.dataset.importSource=c.source||'Documento importado';if(c.derivedKey)el.dataset.importDerivedKey=c.derivedKey;else delete el.dataset.importDerivedKey;
+ el.dataset.importVerified='1';el.dataset.importSource=c.source||'Documento importado';el.dataset.importConfidence=c.confidence||'';if(c.derivedKey)el.dataset.importDerivedKey=c.derivedKey;else delete el.dataset.importDerivedKey;
  if(c.field==='currentConsumptionTaxAnnual'&&$('currentConsumptionMode')){$('currentConsumptionMode').value='manual';el.readOnly=false;el.dataset.sourceNote=c.reason||'';if($('currentConsumptionTaxSource'))$('currentConsumptionTaxSource').textContent='Calculado a partir da DRE importada. '+(c.reason||'Revise a origem antes de concluir.')}
  if(c.field==='rbt12'&&$('revenueSync')?.checked&&typeof syncRevenue==='function'){syncRevenue('annual');if(typeof markFieldDerived==='function')markFieldDerived('monthlyRevenue','CALCULADO')}
  if(c.field==='monthlyRevenue'&&$('revenueSync')?.checked&&typeof syncRevenue==='function'){syncRevenue('monthly');if(typeof markFieldDerived==='function')markFieldDerived('rbt12','CALCULADO')}
@@ -295,17 +327,22 @@ function applyHighConfidenceCandidates(){
 }
 
 function autoApplyDocumentCalculations(){
- const groups=groupedImportCandidates();
- const automaticFields=new Set(['rbt12','cashAndEquivalents','currentAssets','currentLiabilities','currentConsumptionTaxAnnual','currentOperatingMarginPct','realAccountingProfitAnnual','debtStart','debtEnd','interestExpense']);
- automaticFields.forEach(field=>{
+ const groups=groupedImportCandidates(),mode=importAutomationMode(),score={high:3,medium:2,low:1};
+ const recommendedFields=new Set(['rbt12','cashAndEquivalents','currentAssets','currentLiabilities','currentConsumptionTaxAnnual','currentOperatingMarginPct','realAccountingProfitAnnual','debtStart','debtEnd','interestExpense']);
+ const fields=mode==='maximum'?Object.keys(groups).filter(f=>f!=='cnpj'):[...recommendedFields];
+ fields.forEach(field=>{
   const arr=groups[field]||[];if(!arr.length||conflictGroup(arr))return;
-  const ranked=[...arr].sort((a,b)=>({high:3,medium:2,low:1}[b.confidence]||0)-({high:3,medium:2,low:1}[a.confidence]||0));
+  const ranked=[...arr].sort((a,b)=>(score[b.confidence]||0)-(score[a.confidence]||0));
   const best=ranked[0];if(!best)return;
-  if(['rbt12','cashAndEquivalents','currentAssets','currentLiabilities','interestExpense'].includes(field)&&best.confidence!=='high')return;
-  if(['debtStart','debtEnd','realAccountingProfitAnnual'].includes(field)&&best.confidence==='low')return;
+  if(mode==='rigorous'&&best.confidence!=='high')return;
+  if(mode==='recommended'){
+   if(['rbt12','cashAndEquivalents','currentAssets','currentLiabilities','interestExpense'].includes(field)&&best.confidence!=='high')return;
+   if(['debtStart','debtEnd','realAccountingProfitAnnual'].includes(field)&&best.confidence==='low')return;
+  }
   applyImportCandidate(best._index);
  });
  if(typeof financialMetrics==='function')financialMetrics();
+ document.dispatchEvent(new CustomEvent('brmi:automation-applied',{detail:{mode}}));
 }
 
 function updateEconomicMetricAvailability(){
