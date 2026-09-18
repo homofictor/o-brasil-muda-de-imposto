@@ -4,6 +4,7 @@
 
  function calculateEconomicImpact(values){
   const revenue=Math.max(0,Number(values.annualRevenue)||0);
+  const operatingRevenue=Math.max(0,Number(values.currentOperatingRevenue)||revenue);
   const currentTax=Math.max(0,Number(values.currentConsumptionTax)||0);
   const futureTax=Math.max(0,Number(values.futureConsumptionTax)||0);
   const transferRate=clampLocal(values.priceTransferRate,0,1);
@@ -14,11 +15,12 @@
   const adjustedRevenue=Math.max(0,revenue+priceChange);
   const unabsorbedDelta=taxDelta-priceChange;
   const requiredPriceRate=revenue>0?taxDelta/revenue:null;
-  const currentOperatingResult=currentMargin==null?null:revenue*currentMargin;
+  const currentOperatingResult=currentMargin==null?null:operatingRevenue*currentMargin;
   const projectedOperatingResult=currentOperatingResult==null?null:currentOperatingResult-unabsorbedDelta;
-  const projectedOperatingMargin=projectedOperatingResult==null||adjustedRevenue<=0?null:projectedOperatingResult/adjustedRevenue;
+  const adjustedOperatingRevenue=Math.max(0,operatingRevenue+priceChange);
+  const projectedOperatingMargin=projectedOperatingResult==null||adjustedOperatingRevenue<=0?null:projectedOperatingResult/adjustedOperatingRevenue;
   const resultEffectRaw=-unabsorbedDelta-financeCost,resultEffect=Object.is(resultEffectRaw,-0)?0:resultEffectRaw;
-  return{revenue,currentTax,futureTax,taxDelta,transferRate,priceChange,adjustedRevenue,unabsorbedDelta,requiredPriceRate,currentMargin,currentOperatingResult,projectedOperatingResult,projectedOperatingMargin,financeCost,resultEffect};
+  return{revenue,operatingRevenue,currentTax,futureTax,taxDelta,transferRate,priceChange,adjustedRevenue,adjustedOperatingRevenue,unabsorbedDelta,requiredPriceRate,currentMargin,currentOperatingResult,projectedOperatingResult,projectedOperatingMargin,financeCost,resultEffect};
  }
 
  const currentDasShares={
@@ -57,30 +59,38 @@
   return null;
  }
 
- function fieldNumber(id){const node=document.getElementById(id);return Number(node?.value||0)}
+ function fieldNumber(id){const node=document.getElementById(id);if(!node)return 0;return typeof root.parseMoneyValue==='function'?root.parseMoneyValue(node.value):Number(node.value||0)}
  function hasField(id){const node=document.getElementById(id);return !!node&&String(node.value).trim()!==''}
  function money(value){return Number.isFinite(value)?brl2.format(value):'—'}
  function percent(value){return Number.isFinite(value)?pct1(value):'—'}
  function setText(id,value){const node=document.getElementById(id);if(node)node.textContent=value==null?'—':String(value)}
 
+ function currentOperatingRevenueBase(r){
+  const docs=root.brmiImport?.docs||[],dre=docs.find(d=>(d.type==='DRE'||d.type==='Balanço + DRE')&&Number(d.revenueNet)>0);
+  if(!dre)return r?.annualRevenue||0;
+  const months=Math.max(1,Math.min(12,fieldNumber('dreMonths')||12));
+  return Number(dre.revenueNet)*(12/months);
+ }
+
  function economicImpactFor(r,model){
   const mode=document.getElementById('currentConsumptionMode')?.value||'auto';
   const automatic=simpleCurrentConsumptionTax(r);
+  const input=document.getElementById('currentConsumptionTaxAnnual');
   const manual=hasField('currentConsumptionTaxAnnual')?Math.max(0,fieldNumber('currentConsumptionTaxAnnual')):null;
   const currentTax=mode==='auto'?automatic:manual;
-  const input=document.getElementById('currentConsumptionTaxAnnual');
   const source=document.getElementById('currentConsumptionTaxSource');
   if(input){input.readOnly=mode==='auto';if(mode==='auto')input.value=automatic==null?'':Math.round(automatic*100)/100}
   if(source){
-   if(mode==='auto'&&automatic!=null)source.textContent='Calculado pela parcela estimada dos tributos sobre consumo no DAS atual. Revise a opção manual se possuir o valor contábil efetivo.';
-   else if(mode==='auto')source.textContent='O cálculo automático está disponível para empresas confirmadas no Simples. Selecione a informação manual para outros regimes.';
+   if(mode==='auto'&&automatic!=null)source.textContent='Calculado pela parcela estimada dos tributos sobre consumo no DAS atual. Revise a opção contábil se possuir DRE ou valor efetivo.';
+   else if(mode==='auto')source.textContent='Sem base automática disponível. Importe a DRE ou use a informação contábil para calcular a situação atual.';
+   else if(input?.dataset?.sourceNote)source.textContent='Calculado a partir da DRE importada. '+input.dataset.sourceNote;
    else source.textContent='Informe PIS/Cofins, ICMS, ISS e IPI líquidos de créditos, conforme aplicável, usando a mesma base anual.';
   }
   const futureTax=modelConsumptionTax(r,model?.key);
   const margin=hasField('currentOperatingMarginPct')?fieldNumber('currentOperatingMarginPct')/100:null;
-  let financeCost=0;try{financeCost=root.cashMetrics?root.cashMetrics(r).cost:cashMetrics(r).cost}catch(_){}
-  if(currentTax==null||futureTax==null)return{known:false,currentTax,futureTax,modelKey:model?.key||null};
-  return{known:true,modelKey:model.key,...calculateEconomicImpact({annualRevenue:r.annualRevenue,currentConsumptionTax:currentTax,futureConsumptionTax:futureTax,priceTransferRate:fieldNumber('priceTransferPct')/100,currentOperatingMargin:margin,financeCost})};
+  let financeCost=0,financeCostKnown=true;try{const cm=root.cashMetrics?root.cashMetrics(r):cashMetrics(r);if(cm?.cost==null){financeCostKnown=false;financeCost=0}else financeCost=cm.cost}catch(_){financeCostKnown=false;financeCost=0}
+  if(currentTax==null||futureTax==null)return{known:false,currentTax,futureTax,modelKey:model?.key||null,financeCostKnown};
+  return{known:true,modelKey:model.key,financeCostKnown,...calculateEconomicImpact({annualRevenue:r.annualRevenue,currentOperatingRevenue:currentOperatingRevenueBase(r),currentConsumptionTax:currentTax,futureConsumptionTax:futureTax,priceTransferRate:fieldNumber('priceTransferPct')/100,currentOperatingMargin:margin,financeCost})};
  }
 
  function impactTone(impact){if(!impact?.known)return'pending';if(impact.resultEffect>1)return'positive';if(impact.resultEffect<-1)return'negative';return'neutral'}
@@ -98,13 +108,13 @@
   }
   setText('execCurrentConsumptionTax',money(impact.currentTax));setText('execFutureConsumptionTax',money(impact.futureTax));setText('execTaxDelta',deltaLabel(impact.taxDelta));
   setText('execRequiredPrice',impact.requiredPriceRate==null?'—':`${impact.requiredPriceRate>=0?'+':''}${percent(impact.requiredPriceRate)}`);
-  setText('execProjectedMargin',impact.projectedOperatingMargin==null?'Informe a margem atual':percent(impact.projectedOperatingMargin));setText('execResultEffect',resultLabel(impact.resultEffect));
+  setText('execProjectedMargin',impact.projectedOperatingMargin==null?'Informe a margem atual':percent(impact.projectedOperatingMargin));setText('execResultEffect',impact.financeCostKnown?resultLabel(impact.resultEffect):'Parcial · '+resultLabel(impact.resultEffect)+' antes do custo financeiro');
   setText('execEconomicModel',model.name);setText('execEconomicYear',r.year);setText('techProjectedMargin',impact.projectedOperatingMargin==null?'Informe a margem atual':percent(impact.projectedOperatingMargin));
   setText('economicImpactStatus',impact.taxDelta>1?'Pressão sobre a margem':impact.taxDelta<-1?'Potencial de ganho':'Impacto tributário neutro');
   const transfer=percent(impact.transferRate),direction=impact.taxDelta>=0?'acréscimo':'redução';
-  setText('economicImpactText',`O cenário transfere ${transfer} da variação tributária ao preço. O ${direction} anual de preço estimado é ${money(Math.abs(impact.priceChange))}. Após o efeito tributário não transferido e o custo financeiro estimado, o impacto no resultado é ${resultLabel(impact.resultEffect).toLowerCase()}.`);
-  setText('techCurrentConsumptionTax',money(impact.currentTax));setText('techFutureConsumptionTax',money(impact.futureTax));setText('techTaxDelta',deltaLabel(impact.taxDelta));setText('techPriceTransfer',money(impact.priceChange));setText('techUnabsorbedDelta',money(impact.unabsorbedDelta));setText('techFinanceEffect',money(impact.financeCost));setText('techResultEffect',resultLabel(impact.resultEffect));
-  setText('technicalEconomicText',`A comparação usa ${model.name} como modelo de menor desembolso validado em ${r.year}. A carga de consumo futura considera somente IBS/CBS e ICMS/ISS residual aplicável, sem confundir o crédito do cliente com redução do imposto da empresa.`);
+  setText('economicImpactText',impact.financeCostKnown?`O cenário transfere ${transfer} da variação tributária ao preço. O ${direction} anual de preço estimado é ${money(Math.abs(impact.priceChange))}. Após o efeito tributário não transferido e o custo financeiro estimado, o impacto no resultado é ${resultLabel(impact.resultEffect).toLowerCase()}.`:`O cenário transfere ${transfer} da variação tributária ao preço. O ${direction} anual de preço estimado é ${money(Math.abs(impact.priceChange))}. O efeito no resultado antes do custo financeiro é ${resultLabel(impact.resultEffect).toLowerCase()}; informe reserva e taxa financeira para completar a análise.`);
+  setText('techCurrentConsumptionTax',money(impact.currentTax));setText('techFutureConsumptionTax',money(impact.futureTax));setText('techTaxDelta',deltaLabel(impact.taxDelta));setText('techPriceTransfer',money(impact.priceChange));setText('techUnabsorbedDelta',money(impact.unabsorbedDelta));setText('techFinanceEffect',impact.financeCostKnown?money(impact.financeCost):'Não calculado');setText('techResultEffect',impact.financeCostKnown?resultLabel(impact.resultEffect):'Parcial · antes do custo financeiro');
+  setText('technicalEconomicText',`A comparação usa ${model.name} como modelo de menor desembolso validado em ${r.year}. A carga de consumo futura considera IBS/CBS e ICMS/ISS residual aplicável. A margem EBITDA usa a receita líquida da DRE quando disponível, enquanto a base tributária usa o faturamento bruto confirmado.`);
   const card=document.getElementById('economicImpactCard');if(card)card.dataset.tone=impactTone(impact);
   return impact;
  }
@@ -116,7 +126,7 @@
  const taxField=typeof document!=='undefined'?document.getElementById('currentConsumptionTaxAnnual'):null;
  function syncEconomicInputMode(){
   if(!modeField||!taxField)return;taxField.readOnly=modeField.value==='auto';
-  if(modeField.value==='manual'&&document.getElementById('currentConsumptionTaxSource'))document.getElementById('currentConsumptionTaxSource').textContent='Informe a carga líquida anual de PIS/Cofins, ICMS, ISS e IPI, conforme aplicável.';
+  if(modeField.value==='manual'&&document.getElementById('currentConsumptionTaxSource'))document.getElementById('currentConsumptionTaxSource').textContent=taxField?.dataset?.sourceNote?'Calculado a partir da DRE importada. '+taxField.dataset.sourceNote:'Informe a carga líquida anual de PIS/Cofins, ICMS, ISS e IPI, conforme aplicável.';
  }
  modeField?.addEventListener('change',syncEconomicInputMode);syncEconomicInputMode();
   if(typeof module!=='undefined'&&module.exports)module.exports={calculateEconomicImpact};

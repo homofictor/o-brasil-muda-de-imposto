@@ -13,10 +13,10 @@ function renderActions(r,rec){
  acts.push('Validar a composição das receitas por cClassTrib e substituir as estimativas setoriais pelos tratamentos efetivamente aplicáveis às operações.');
  acts.push('Separar fornecedores por regime tributário e validar quais compras realmente geram crédito de IBS/CBS.');
  const fm=financialMetrics();if(fm.annualRate==null&&$('financeRateMode')?.value==='auto')acts.push('Completar no BP/DRE os juros e encargos da dívida e os saldos de empréstimos/financiamentos para calcular o custo financeiro automaticamente.');
- const c=cashMetrics(r);if(c.gap>0)acts.push(`Planejar aproximadamente ${brl.format(c.gap)} de fonte adicional de liquidez para o cenário de split payment informado.`);else acts.push('A reserva financeira calculada cobre a necessidade adicional de capital de giro estimada neste cenário.');
+ const c=cashMetrics(r);if(c.gap==null)acts.push('Informar caixa e aplicações disponíveis para calcular o gap de financiamento do cenário de split payment.');else if(c.gap>0)acts.push(`Planejar aproximadamente ${brl.format(c.gap)} de fonte adicional de liquidez para o cenário de split payment informado.`);else acts.push('A reserva financeira calculada cobre a necessidade adicional de capital de giro estimada neste cenário.');
  const economic=window.lastEconomicImpact;if(economic?.known){if(economic.taxDelta>0&&economic.transferRate<1)acts.push(`Revisar preços, contratos e margens: ${brl.format(economic.unabsorbedDelta)} da variação anual dos tributos sobre consumo permanece absorvida pela empresa no cenário informado.`);else if(economic.taxDelta<0)acts.push('Definir quanto da redução estimada da carga de consumo será preservada na margem e quanto será convertido em preço ou competitividade.')}else acts.push('Informar a carga líquida atual dos tributos sobre consumo para medir o efeito sobre preço, margem e resultado.');
  if(selectedYear===2027&&r.simpleEligible)acts.push('Se a empresa quiser IBS/CBS no regime regular no primeiro semestre de 2027, observar o prazo oficial de setembro de 2026 e as regras de cancelamento.');
- acts.push(`Validar a recomendação “${rec.title}” com contador responsável, considerando contratos, benefícios, créditos específicos, estado/município e particularidades da atividade.`);
+ acts.push(rec.key==='partial'||rec.key==='pending'?'Completar as pendências e validar a comparação com o contador responsável antes de qualquer decisão.':`Validar a recomendação “${rec.title}” com contador responsável, considerando contratos, benefícios, créditos específicos, estado/município e particularidades da atividade.`);
  $('actionList').innerHTML=acts.map(x=>`<li>${x}</li>`).join('');
 }
 
@@ -25,7 +25,7 @@ function renderNarrative(r,rec,structural,srec){
  const valid=r.models.filter(m=>m.valid!==false&&Number.isFinite(m.total)).sort((a,b)=>a.total-b.total),best=valid[0],second=valid[1],pending=r.models.filter(m=>m.valid===false).map(m=>m.name),c=cashMetrics(r),b2b=clamp(num('b2bPct')/100,0,1),parts=[];
  if(best){
   const gap=second?Math.max(0,second.total-best.total):0;
-  parts.push(`<p><strong>Conclusão para ${r.year}.</strong> Entre os modelos considerados válidos, <strong>${best.name}</strong> apresenta o menor desembolso tributário anual estimado, de <strong>${brl2.format(best.total)}</strong>.${second?` O segundo colocado é <strong>${second.name}</strong>, com diferença de <strong>${brl2.format(gap)}</strong> por ano.`:''} O ranking considera a carga própria da empresa e os custos adicionais informados, sem descontar o crédito que pertence ao cliente.</p>`);
+  parts.push(`<p><strong>Conclusão para ${r.year}.</strong> Entre os modelos considerados válidos, <strong>${best.name}</strong> apresenta o menor desembolso anual estimado, de <strong>${brl2.format(best.total)}</strong>.${second?` O segundo colocado é <strong>${second.name}</strong>, com diferença de <strong>${brl2.format(gap)}</strong> por ano.`:''} O ranking considera a carga própria da empresa e os custos adicionais informados, sem descontar o crédito que pertence ao cliente.</p>`);
  }
  if(rec.key==='pure')parts.push(`<p><strong>Leitura tributária.</strong> O Simples Nacional 100% é a alternativa mais econômica nas premissas atuais. A principal vantagem é a menor carga própria e a simplicidade operacional. A principal cautela está nas vendas para pessoas jurídicas, porque o crédito do cliente é limitado à parcela de IBS/CBS devida no Simples.</p>`);
  if(rec.key==='hybrid')parts.push(`<p><strong>Leitura tributária.</strong> O Simples híbrido aparece como a melhor alternativa nas premissas atuais. Isso indica que a combinação entre DAS sem IBS/CBS, créditos das aquisições e tributação regular do consumo compensou a maior complexidade operacional. Antes de qualquer opção, confirme os créditos efetivamente aproveitáveis e o custo adicional de compliance.</p>`);
@@ -36,16 +36,18 @@ function renderNarrative(r,rec,structural,srec){
   else parts.push(`<p><strong>Competitividade B2B.</strong> Nas premissas atuais, a diferença de crédito entregue aos clientes PJ não altera de forma relevante a comparação. O foco deve permanecer na carga própria, margem, caixa e simplicidade operacional.</p>`);
  }
  if(c&&!c.notApplicable){
-  if(c.gap>0)parts.push(`<p><strong>Caixa.</strong> O cenário de split payment gera necessidade adicional de liquidez e, depois da reserva considerada, permanece um gap estimado de <strong>${brl2.format(c.gap)}</strong>. Esse valor deve ser tratado como necessidade financeira, e não como novo imposto.</p>`);
+  if(c.gap==null)parts.push('<p><strong>Caixa.</strong> A necessidade de liquidez do cenário de split payment foi estimada, mas o gap de financiamento ainda não pode ser concluído porque a reserva financeira disponível não foi informada.</p>');
+  else if(c.gap>0)parts.push(`<p><strong>Caixa.</strong> O cenário de split payment gera necessidade adicional de liquidez e, depois da reserva considerada, permanece um gap estimado de <strong>${brl2.format(c.gap)}</strong>. Esse valor deve ser tratado como necessidade financeira, e não como novo imposto.</p>`);
   else parts.push(`<p><strong>Caixa.</strong> A reserva financeira considerada cobre a necessidade adicional de liquidez estimada para o cenário de split payment informado. Ainda assim, prazo de recebimento, concentração de clientes e cronograma efetivo do split devem ser monitorados.</p>`);
  }
  const economic=window.lastEconomicImpact;
  if(economic?.known){
   const taxDirection=economic.taxDelta>0?'aumento':economic.taxDelta<0?'redução':'estabilidade';
   const resultDirection=economic.resultEffect>0?'ganho':economic.resultEffect<0?'perda':'efeito neutro';
-  parts.push(`<p><strong>Preço e margem.</strong> A comparação da carga líquida dos tributos sobre consumo indica <strong>${taxDirection} de ${brl2.format(Math.abs(economic.taxDelta))}</strong> por ano. Com ${pct1(economic.transferRate)} da variação transferida ao preço e o custo financeiro estimado, o efeito anual no resultado é de <strong>${resultDirection} de ${brl2.format(Math.abs(economic.resultEffect))}</strong>.${economic.projectedOperatingMargin==null?' Informe a margem operacional atual para projetar a margem futura.':` A margem operacional projetada é de <strong>${pct1(economic.projectedOperatingMargin)}</strong>.`}</p>`);
+  parts.push(economic.financeCostKnown?`<p><strong>Preço e margem.</strong> A comparação da carga líquida dos tributos sobre consumo indica <strong>${taxDirection} de ${brl2.format(Math.abs(economic.taxDelta))}</strong> por ano. Com ${pct1(economic.transferRate)} da variação transferida ao preço e o custo financeiro estimado, o efeito anual no resultado é de <strong>${resultDirection} de ${brl2.format(Math.abs(economic.resultEffect))}</strong>.${economic.projectedOperatingMargin==null?' Informe a margem operacional atual para projetar a margem futura.':` A margem operacional projetada é de <strong>${pct1(economic.projectedOperatingMargin)}</strong>.`}</p>`:`<p><strong>Preço e margem.</strong> A comparação da carga líquida dos tributos sobre consumo indica <strong>${taxDirection} de ${brl2.format(Math.abs(economic.taxDelta))}</strong> por ano. Antes do custo financeiro, o efeito anual no resultado é de <strong>${resultDirection} de ${brl2.format(Math.abs(economic.resultEffect))}</strong>. Informe reserva e taxa financeira para completar essa análise.</p>`);
  }
- if(srec&&srec.key!==rec.key)parts.push(`<p><strong>Transição.</strong> A recomendação para ${r.year} não é a mesma da visão estrutural de 2033, quando o simulador aponta <strong>${srec.title}</strong>. Isso significa que uma decisão eficiente no curto prazo pode precisar ser revista conforme ICMS e ISS desaparecem e o IBS ganha peso.</p>`);
+ if(rec.key==='partial'||rec.key==='pending'||srec?.key==='partial'||srec?.key==='pending')parts.push('<p><strong>Transição.</strong> A comparação entre o cenário atual e 2033 permanece parcial enquanto houver regimes aplicáveis sem dados suficientes.</p>');
+ else if(srec&&srec.key!==rec.key)parts.push(`<p><strong>Transição.</strong> A recomendação para ${r.year} não é a mesma da visão estrutural de 2033, quando o simulador aponta <strong>${srec.title}</strong>. Isso significa que uma decisão eficiente no curto prazo pode precisar ser revista conforme ICMS e ISS desaparecem e o IBS ganha peso.</p>`);
  else if(srec)parts.push(`<p><strong>Transição.</strong> A alternativa recomendada em ${r.year} permanece a mesma na visão estrutural de 2033. Isso reforça a consistência do resultado, embora as diferenças de valor entre os regimes possam mudar ao longo da transição.</p>`);
  if(pending.length)parts.push(`<p><strong>Limitações do ranking.</strong> ${pending.join(' e ')} ${pending.length>1?'não entraram':'não entrou'} no ranking por falta de dados suficientes ou por impedimento identificado. A ausência desses modelos do ranking não deve ser interpretada como prova de que seriam necessariamente piores.</p>`);
  parts.push(`<p><strong>Recomendação prática.</strong> Use este resultado como filtro de decisão. Antes de qualquer mudança de regime, confirme enquadramento, tratamentos específicos de IBS/CBS, créditos efetivos, contribuição patronal, contratos relevantes e os dados contábeis utilizados. Se a diferença entre os primeiros colocados for pequena, simplicidade operacional, risco de erro e efeito comercial podem ser mais importantes do que a diferença tributária isolada.</p>`);
@@ -61,7 +63,7 @@ function deadline(r){
 }
 function calculate(){
  if(companyData&&!sectorSuggestion){historicalSimpleReported=companyData.opcao_pelo_simples===true;sectorSuggestion=sectorProfile(companyData.cnae_fiscal,companyData.cnae_fiscal_descricao);applySectorProfile(sectorSuggestion);}
- financialMetrics();refreshEligibilityUi();applyFactorR();revenueRateFactor();renderYearButtons();if($('yearRange'))$('yearRange').value=selectedYear;
+ financialMetrics();refreshEligibilityUi();applyFactorR();if(typeof syncMixFull==='function')syncMixFull(false);revenueRateFactor();renderYearButtons();if($('yearRange'))$('yearRange').value=selectedYear;
  const all=years.map(modelForYear);const r=all.find(x=>x.year===selectedYear);const rec=recommendation(r);const structural=all.find(x=>x.year===2033);const srec=recommendation(structural);
  renderEligibilityBanner(r);deadline(r);
  $('recommendationTitle').textContent=`${rec.title} em ${selectedYear}`;$('recommendationText').textContent=rec.text;
@@ -81,6 +83,18 @@ function restore(){
    ['simpleStatus','meiStatus','annex','monthlyRevenue','rbt12','monthlyPayroll','b2bPct','purchasesPct','eligibleCreditPct','regularSuppliersPct','cashAndEquivalents','liquidInvestments','currentAssets','currentLiabilities','interestExpense','debtStart','debtEnd','hybridCompliance','fullCompliance','legacyRate','realAdditionsAnnual','realExclusionsAnnual','irpjLossCarryforward','csllNegativeBase'].forEach(id=>delete x[id]);
    localStorage.setItem('brmi_v3',JSON.stringify(x));
   }
+  try{
+   const key='brmi_price_transfer_default_100_v1';
+   if(!localStorage.getItem(key)){
+    if(x.priceTransferPct==null||String(x.priceTransferPct)==='0')x.priceTransferPct='100';
+    localStorage.setItem(key,'1');
+   }
+   const taxKey='brmi_current_tax_zero_cleanup_v1';
+   if(!localStorage.getItem(taxKey)){
+    if(String(x.currentConsumptionTaxAnnual??'')==='0')delete x.currentConsumptionTaxAnnual;
+    localStorage.setItem(taxKey,'1');
+   }
+  }catch(_){}
   Object.entries(x).forEach(([id,v])=>{const el=$(id);if(!el)return;if(el.type==='checkbox')el.checked=Boolean(v);else el.value=v});
  }catch(_){}
 }
@@ -106,10 +120,11 @@ $('monthlyRevenue').addEventListener('input',()=>{if(typeof markFieldComplete===
 $('rbt12').addEventListener('input',()=>{if(typeof markFieldComplete==='function')markFieldComplete('rbt12');syncRevenue('annual',true);dirty()});
 $('revenueSync').addEventListener('change',()=>{if($('revenueSync').checked)syncRevenue(lastRevenueSource,true);dirty()});
 $('financeRateMode')?.addEventListener('change',()=>{if($('financeRateMode').value==='manual'&&$('financeRateSource'))$('financeRateSource').textContent='Premissa manual informada pelo usuário.';dirty()});
+['mix30','mix40','mix60','mixZero'].forEach(id=>$(id)?.addEventListener('input',()=>{if(typeof syncMixFull==='function')syncMixFull(true);revenueRateFactor();dirty()}));
 $('printBtn').addEventListener('click',()=>typeof printDiagnosisReport==='function'?printDiagnosisReport():window.print());
 $('clearAllBtn')?.addEventListener('click',clearAllSimulatorData);
 document.querySelectorAll('input,select').forEach(el=>{
  if(!['cnpj','yearRange','monthlyRevenue','rbt12','revenueSync'].includes(el.id))el.addEventListener('input',dirty);
  if(!['yearRange','monthlyRevenue','rbt12','revenueSync'].includes(el.id))el.addEventListener('change',dirty)
 });
-restore();if(typeof initFieldStates==='function')initFieldStates();if($('revenueSync')?.checked)syncRevenue('monthly',false);financialMetrics();refreshEligibilityUi();if(typeof initEnhancedResults==='function')initEnhancedResults();if(typeof initDiagnosisFlow==='function')initDiagnosisFlow();calculate();
+restore();if(typeof initFieldStates==='function')initFieldStates();if(typeof syncMixFull==='function')syncMixFull(true);if($('revenueSync')?.checked)syncRevenue('monthly',false);financialMetrics();refreshEligibilityUi();if(typeof initEnhancedResults==='function')initEnhancedResults();if(typeof initDiagnosisFlow==='function')initDiagnosisFlow();calculate();
