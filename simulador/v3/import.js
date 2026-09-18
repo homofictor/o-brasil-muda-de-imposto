@@ -37,44 +37,101 @@ function importNumberTokens(line){
  const matches=String(line||'').match(/\(?\s*(?:R\$\s*)?-?\d{1,3}(?:\.\d{3})*(?:,\d{1,2})?\s*\)?|\(?\s*-?\d+(?:[.,]\d{1,2})?\s*\)?/g)||[];
  return matches.map(brNum).filter(Number.isFinite)
 }
+function statementRows(text){
+ const raw=String(text||'').split(/\r?\n/),rows=[];let pending='';
+ for(const original of raw){
+  const line=String(original||'').trim();if(!line)continue;
+  const nums=importNumberTokens(line),n=normImport(line);
+  const metadata=/^(entidade|periodo da escrituracao|periodo selecionado|numero de ordem do livro|descricao nota|balanco patrimonial|demonstracao de resultado)/.test(n);
+  if(nums.length){
+   rows.push((pending?pending+' ':'')+line);pending='';
+  }else if(metadata){
+   if(pending){rows.push(pending);pending=''}rows.push(line);
+  }else{
+   pending=pending?pending+' '+line:line;
+   if(pending.length>220){rows.push(pending);pending=''}
+  }
+ }
+ if(pending)rows.push(pending);return rows
+}
 function comparativeOrder(text){
- const lines=String(text||'').split(/\r?\n/).slice(0,45);
+ const lines=String(text||'').split(/\r?\n/).slice(0,60),head=normImport(lines.join(' '));
+ if(/saldo inicial.*saldo final/.test(head)||/saldo anterior.*saldo atual/.test(head))return'latest-last';
+ if(/saldo final.*saldo inicial/.test(head)||/saldo atual.*saldo anterior/.test(head))return'latest-first';
  for(const line of lines){
-  const years=(line.match(/20\d{2}/g)||[]).map(Number);
-  const unique=[...new Set(years)];
+  const years=(line.match(/20\d{2}/g)||[]).map(Number),unique=[...new Set(years)];
   if(unique.length>=2){if(unique[0]>unique[1])return'latest-first';if(unique[0]<unique[1])return'latest-last'}
  }
  return null
 }
+function orderedLineValues(line,order){
+ const nums=importNumberTokens(line);if(!nums.length)return{latest:null,prior:null,ordered:false};
+ if(nums.length===1)return{latest:nums[0],prior:null,ordered:false};
+ const pair=nums.slice(-2);return order==='latest-last'?{latest:pair[1],prior:pair[0],ordered:true}:{latest:pair[0],prior:pair[1],ordered:order==='latest-first'}
+}
 function latestLineValues(text,labels,exclude=[]){
- const order=comparativeOrder(text),lines=String(text||'').split(/\r?\n/);
+ const order=comparativeOrder(text),lines=statementRows(text);
  for(const line of lines){
   const n=normImport(line);if(!labels.some(x=>n.includes(x))||exclude.some(x=>n.includes(x)))continue;
-  const nums=importNumberTokens(line);if(!nums.length)continue;
-  if(nums.length===1)return{latest:nums[0],prior:null,ordered:false};
-  const pair=nums.slice(-2);
-  return order==='latest-last'?{latest:pair[1],prior:pair[0],ordered:true}:{latest:pair[0],prior:pair[1],ordered:order==='latest-first'}
+  return orderedLineValues(line,order)
  }
  return{latest:null,prior:null,ordered:false}
 }
 function latestLineValue(text,labels,exclude=[]){return latestLineValues(text,labels,exclude).latest}
 function firstLatestLineValue(text,labelGroups,exclude=[]){for(const labels of labelGroups){const v=latestLineValue(text,labels,exclude);if(v!=null)return v}return null}
 function comparativeCategoryTotal(text,labelGroups,exclude=[]){
- const order=comparativeOrder(text),lines=String(text||'').split(/\r?\n/);
+ const order=comparativeOrder(text),lines=statementRows(text);
  for(const labels of labelGroups){
   let latest=0,prior=0,count=0,priorCount=0;
   for(const line of lines){
    const n=normImport(line);if(!labels.some(x=>n.includes(x))||exclude.some(x=>n.includes(x)))continue;
-   const nums=importNumberTokens(line);if(!nums.length)continue;
-   const pair=nums.length>1?nums.slice(-2):[nums[0]];
-   let a=pair[0],b=pair.length>1?pair[1]:null;
-   if(order==='latest-last'&&b!=null)[a,b]=[b,a];
-   latest+=Math.abs(a);count++;
-   if(b!=null){prior+=Math.abs(b);priorCount++}
+   const vals=orderedLineValues(line,order);if(vals.latest==null)continue;
+   latest+=Math.abs(vals.latest);count++;if(vals.prior!=null){prior+=Math.abs(vals.prior);priorCount++}
   }
   if(count)return{end:latest,start:priorCount===count?prior:null,ordered:order!=null,count}
  }
  return{end:0,start:null,ordered:false,count:0}
+}
+function financialDebtBalances(text){
+ const order=comparativeOrder(text),rows=statementRows(text);
+ const make=()=>({specificEnd:0,specificStart:0,specificCount:0,specificPriorCount:0,broadEnd:0,broadStart:null,taxEnd:0,taxStart:0,taxCount:0,taxPriorCount:0});
+ const sections={current:make(),noncurrent:make(),other:make()};let section='other',liabilitySeen=false;
+ const addSpecific=(s,v)=>{s.specificEnd+=Math.abs(v.latest);s.specificCount++;if(v.prior!=null){s.specificStart+=Math.abs(v.prior);s.specificPriorCount++}};
+ const addTax=(s,v)=>{s.taxEnd+=Math.abs(v.latest);s.taxCount++;if(v.prior!=null){s.taxStart+=Math.abs(v.prior);s.taxPriorCount++}};
+ for(const row of rows){
+  const n=normImport(row);
+  if(n.includes('passivo e patrimonio liquido')){liabilitySeen=true;section='other';continue}
+  if(n.includes('passivo nao circulante')||n.includes('exigivel a longo prazo')){liabilitySeen=true;section='noncurrent';continue}
+  if(n.includes('passivo circulante')&&!n.includes('nao circulante')){liabilitySeen=true;section='current';continue}
+  if(n.includes('patrimonio liquido')){if(liabilitySeen)section='other';continue}
+  if(!liabilitySeen)continue;
+  const vals=orderedLineValues(row,order);if(vals.latest==null)continue;
+  const s=sections[section];
+  const tax=/parcelament(o|os) (de )?(impostos|tributos)|parcelament(o|os) (fiscais|tributarios)/.test(n);
+  const mutual=/mutuo|emprestimos? de socios|emprestimos? de pessoas ligadas|emprestimos? de partes relacionadas/.test(n);
+  const specific=/emprestimos? e financiamentos?.*(banco|bancari|terceir)|financiamentos? bancari|emprestimos? bancari|arrendamento mercantil|leasing/.test(n);
+  const broad=/emprestimos? e financiamentos?/.test(n)&&!specific&&!mutual;
+  if(tax){addTax(s,vals);continue}
+  if(mutual||specific){addSpecific(s,vals);continue}
+  if(broad){
+   const end=Math.abs(vals.latest),prior=vals.prior==null?null:Math.abs(vals.prior);
+   if(end>s.broadEnd){s.broadEnd=end;s.broadStart=prior}
+  }
+ }
+ let end=0,start=0,startKnown=true,components=0;
+ for(const s of Object.values(sections)){
+  const specificStartKnown=s.specificCount===0||s.specificPriorCount===s.specificCount;
+  const taxStartKnown=s.taxCount===0||s.taxPriorCount===s.taxCount;
+  const coreEnd=Math.max(s.broadEnd,s.specificEnd);
+  let coreStart=null;
+  if(s.broadEnd>=s.specificEnd&&s.broadEnd>0)coreStart=s.broadStart;
+  else if(s.specificEnd>0&&specificStartKnown)coreStart=s.specificStart;
+  const sectionEnd=coreEnd+s.taxEnd;if(sectionEnd<=0)continue;
+  components++;end+=sectionEnd;
+  if(coreEnd>0&&coreStart==null)startKnown=false;else start+=(coreStart||0);
+  if(s.taxEnd>0&&!taxStartKnown)startKnown=false;else start+=s.taxStart;
+ }
+ return{end,start:startKnown&&components?start:null,ordered:order!=null,components,order}
 }
 
 function tabularMetrics(rows){
@@ -105,10 +162,7 @@ function analyseImportDoc(file,parsed){
  const csllExpense=Math.abs(firstLatestLineValue(dreText,[['contribuicao social corrente','csll corrente'],['contribuicao social sobre o lucro','csll']])||0);
  const accountingProfit=pretaxProfit!=null?pretaxProfit:(netProfit!=null&&(irpjExpense>0||csllExpense>0)?netProfit+irpjExpense+csllExpense:null);
  const payrollCosts=latestLineValue(dreText,['custos com pessoal']),payrollExpenses=latestLineValue(dreText,['despesas com pessoal']),payroll=(payrollCosts||0)+(payrollExpenses||0)||latestLineValue(dreText,['folha de pagamento','salarios e encargos','pessoal e encargos']);
- const loans=comparativeCategoryTotal(bpText,[['emprestimos e financiamentos'],['emprestimos bancarios','financiamentos bancarios'],['emprestimos','financiamentos']],['receber','concedidos']);
- const taxDebt=comparativeCategoryTotal(bpText,[['parcelamentos fiscais','parcelamentos tributarios'],['parcelamento fiscal','parcelamento tributario'],['parcelamento de tributos','parcelamento de impostos']],['a recuperar','creditos']);
- const mutuals=comparativeCategoryTotal(bpText,[['contratos de mutuo','mutuos'],['emprestimos de socios','emprestimos de partes relacionadas']],['a receber']);
- const debtParts=[loans,taxDebt,mutuals].filter(x=>x.end>0),debtEnd=debtParts.reduce((s,x)=>s+x.end,0),debtStart=debtParts.length&&debtParts.every(x=>x.start!=null)?debtParts.reduce((s,x)=>s+x.start,0):null,debtOrdered=debtParts.length>0&&debtParts.every(x=>x.ordered);
+ const debtBalances=financialDebtBalances(bpText),debtEnd=debtBalances.end,debtStart=debtBalances.start,debtOrdered=debtBalances.ordered;
  const interestRaw=firstLatestLineValue(dreText,[['juros e encargos da divida','juros e encargos financeiros'],['juros sobre emprestimos','juros de emprestimos','juros de empréstimos'],['juros sobre financiamentos','juros de financiamentos'],['encargos de emprestimos','encargos de financiamentos'],['encargos financeiros de emprestimos','encargos financeiros de financiamentos'],['juros passivos','juros bancarios','juros bancários']]);
  const genericFinanceRaw=latestLineValue(dreText,['despesas financeiras'],['receitas financeiras','resultado financeiro']);
  const interest=interestRaw==null?null:Math.abs(interestRaw),genericFinance=genericFinanceRaw==null?null:Math.abs(genericFinanceRaw);
@@ -133,10 +187,10 @@ function analyseImportDoc(file,parsed){
  if(investments!=null&&Math.abs(investments)>0&&balanceDoc)c.push(candidate('liquidInvestments','Aplicações de liquidez imediata',Math.abs(investments),file.name,'medium','Aplicações financeiras localizadas. Confirme se possuem liquidez imediata.',fmtMoney(Math.abs(investments))));
  if(currentAssets!=null&&Math.abs(currentAssets)>0&&balanceDoc)c.push(candidate('currentAssets','Ativo circulante',Math.abs(currentAssets),file.name,'high','Total do ativo circulante localizado no balanço.',fmtMoney(Math.abs(currentAssets))));
  if(currentLiabilities!=null&&Math.abs(currentLiabilities)>0&&balanceDoc)c.push(candidate('currentLiabilities','Passivo circulante',Math.abs(currentLiabilities),file.name,'high','Total do passivo circulante localizado no balanço.',fmtMoney(Math.abs(currentLiabilities))));
- if(debtEnd>0&&balanceDoc)c.push(candidate('debtEnd','Dívida financeira final',debtEnd,file.name,debtOrdered?'high':'medium','Soma de empréstimos e financiamentos, parcelamentos fiscais/tributários e mútuos de curto e longo prazo. Confirme a data-base.',fmtMoney(debtEnd)));
- if(debtStart!=null&&debtStart>=0&&balanceDoc)c.push(candidate('debtStart','Dívida financeira inicial',debtStart,file.name,debtOrdered?'high':'medium','Saldo comparativo anterior das mesmas obrigações usadas na dívida financeira final.',fmtMoney(debtStart)));
+ if(debtEnd>0&&balanceDoc)c.push(candidate('debtEnd','Dívida financeira final',debtEnd,file.name,debtOrdered?'high':'medium','Soma das obrigações financeiras identificadas no passivo circulante e não circulante, incluindo empréstimos/financiamentos, terceiros, parcelamentos fiscais e mútuos quando existentes.',fmtMoney(debtEnd)));
+ if(debtStart!=null&&debtStart>=0&&balanceDoc)c.push(candidate('debtStart','Dívida financeira inicial',debtStart,file.name,debtOrdered?'high':'medium','Saldo inicial das mesmas obrigações financeiras utilizadas na dívida final.',fmtMoney(debtStart)));
  if(interest!=null&&interest>0&&dreDoc)c.push(candidate('interestExpense','Despesas financeiras da dívida',interest,file.name,'high','Conta específica de juros/encargos da dívida localizada na DRE.',fmtMoney(interest)));
- else if(genericFinance!=null&&genericFinance>0&&dreDoc)c.push(candidate('interestExpense','Despesas financeiras totais',genericFinance,file.name,'low','Subtotal genérico da DRE. Não é aplicado automaticamente ao custo da dívida porque pode incluir tarifas, IOF, variação cambial, multas, descontos financeiros e outros itens não vinculados ao saldo médio das dívidas.',fmtMoney(genericFinance)));
+ else if(genericFinance!=null&&genericFinance>0&&dreDoc)c.push(candidate('interestExpense','Despesas financeiras da DRE',genericFinance,file.name,'high','Conta de despesas financeiras do período usada como aproximação gerencial do custo da dívida. Revise se houver valores relevantes não vinculados a empréstimos, financiamentos, parcelamentos ou mútuos.',fmtMoney(genericFinance)));
  if(accountingProfit!=null&&dreDoc)c.push(candidate('realAccountingProfitAnnual','Lucro contábil antes de IRPJ e CSLL',accountingProfit,file.name,pretaxProfit!=null?'high':'medium',pretaxProfit!=null?'Resultado antes de IRPJ/CSLL identificado diretamente na DRE.':'Valor aproximado a partir do lucro líquido acrescido de IRPJ e CSLL identificados.',fmtMoney(accountingProfit)));
  if(consumptionTaxes>0&&dreDoc){const taxRate=revenueGross?100*consumptionTaxes/Math.abs(revenueGross):null;const rateText=taxRate!=null&&Number.isFinite(taxRate)?` Equivale a aproximadamente ${fmtPct(taxRate)} da receita bruta.`:'';c.push(candidate('currentConsumptionTaxAnnual','Carga atual de tributos sobre consumo',consumptionTaxes,file.name,taxConfidence,taxReason+rateText,fmtMoney(consumptionTaxes)))}
  if(ebitdaMargin!=null&&Number.isFinite(ebitdaMargin)&&dreDoc)c.push(candidate('currentOperatingMarginPct','Margem EBITDA atual',ebitdaMargin,file.name,(explicitEbitda!=null||operatingBeforeFinance!=null)?'high':'medium',explicitEbitda!=null?'EBITDA identificado diretamente e dividido pela receita líquida.':operatingBeforeFinance!=null?'Resultado antes do resultado financeiro acrescido de depreciação e amortização, dividido pela receita líquida.':'EBITDA aproximado pelo resultado operacional acrescido de depreciação e amortização, dividido pela receita líquida.',fmtPct(ebitdaMargin)));
