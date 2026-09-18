@@ -1,0 +1,156 @@
+name: Simulador browser smoke
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/simulador-browser-smoke.yml'
+      - 'simulador/**'
+      - 'api/**'
+      - 'index.html'
+  workflow_dispatch:
+
+jobs:
+  browser-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Test production simulator in Chromium
+        env:
+          BASE_URL: https://www.obrasilmudadeimposto.com.br
+        run: |
+          node <<'NODE'
+          const { chromium } = require('playwright');
+          const assert = require('node:assert/strict');
+
+          (async () => {
+            const browser = await chromium.launch({ headless: true });
+            const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+            const pageErrors = [];
+            const consoleErrors = [];
+            page.on('pageerror', e => pageErrors.push(String(e)));
+            page.on('console', msg => { if (msg.type() === 'error') consoleErrors.push(msg.text()); });
+
+            await page.goto(process.env.BASE_URL + '/simulador/guiado/', { waitUntil: 'domcontentloaded', timeout: 45000 });
+            await page.waitForSelector('#cnpj', { timeout: 30000 });
+            await page.waitForSelector('#importPanel', { timeout: 30000 });
+            await page.waitForSelector('#guidedNav', { timeout: 30000 });
+
+            const scriptVersion = await page.locator('script[src*="guided.js"]').getAttribute('src');
+            assert.match(scriptVersion || '', /20260918-1700/);
+
+            await page.evaluate(() => localStorage.clear());
+            await page.reload({ waitUntil: 'domcontentloaded' });
+            await page.waitForSelector('#cnpj');
+
+            await page.fill('#cnpj', '03.204.058/0001-45');
+            await page.click('#lookupBtn');
+            await page.waitForFunction(() => {
+              const el = document.getElementById('companyName');
+              return el && /ORTHOHEAD/i.test(el.textContent || '');
+            }, { timeout: 30000 });
+
+            const company = await page.textContent('#companyName');
+            const activity = await page.inputValue('#activity');
+            const b2b = await page.inputValue('#b2bPct');
+            assert.match(company || '', /ORTHOHEAD/i);
+            assert.match(activity || '', /4664-8\/00|4664800|odonto|médico|medico/i);
+            assert.equal(b2b, '95');
+
+            const importCheck = await page.evaluate(() => {
+              const profit = document.getElementById('realAccountingProfitAnnual');
+              const rbt12 = document.getElementById('rbt12');
+              profit.value = '0';
+              delete profit.dataset.userEdited;
+              rbt12.value = '';
+
+              const syntheticDre = [
+                'DEMONSTRAÇÃO DE RESULTADO DO EXERCÍCIO',
+                'Entidade: EMPRESA TESTE LTDA',
+                'Período da Escrituração: 01/01/2025 a 31/12/2025 CNPJ: 03.204.058/0001-45',
+                'Descrição Nota Saldo anterior Saldo atual',
+                'RECEITA LIQUIDA R$ 900.000,00 R$ 1.000.000,00',
+                '(-) DESPESAS FINANCEIRAS R$ (18.000,00) R$ (20.000,00)',
+                'LUCRO LIQUIDO ANTES PROVISAO IRPJ E CSLL R$ 90.000,00 R$ 100.000,00',
+                '(-) PROVISAO P/ IRPJ E CSLL R$ (27.000,00) R$ (30.000,00)',
+                'LUCRO LIQUIDO DO EXERCICIO R$ 63.000,00 R$ 70.000,00'
+              ].join('\n');
+
+              const doc = analyseImportDoc({ name: 'dre-teste.pdf' }, { text: syntheticDre, rows: null });
+              brmiImport.docs = [doc];
+              brmiImport.candidates = [...doc.candidates];
+              brmiImport.candidates.forEach((x, i) => x._index = i);
+              const written = writeVerifiedAccountingProfit();
+              return {
+                written,
+                profit: Number(profit.value),
+                rbt12Candidates: brmiImport.candidates.filter(x => x.field === 'rbt12').length
+              };
+            });
+
+            assert.equal(importCheck.written, 100000);
+            assert.equal(importCheck.profit, 100000);
+            assert.equal(importCheck.rbt12Candidates, 0);
+
+            const regimeCheck = await page.evaluate(() => {
+              const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = String(v); };
+              set('monthlyRevenue', 1000000);
+              set('rbt12', 12000000);
+              set('simpleStatus', 'no');
+              set('monthlyCppBase', '');
+              set('legacyRate', 10);
+              set('realAccountingProfitAnnual', 100000);
+              const a = modelForYear(2027);
+              set('monthlyCppBase', 100000);
+              const b = modelForYear(2027);
+              return {
+                withoutCpp: {
+                  presumed: a.allModels.find(x => x.key === 'presumed').valid,
+                  real: a.allModels.find(x => x.key === 'real').valid
+                },
+                withCpp: {
+                  presumed: b.allModels.find(x => x.key === 'presumed').valid,
+                  real: b.allModels.find(x => x.key === 'real').valid
+                }
+              };
+            });
+
+            assert.equal(regimeCheck.withoutCpp.presumed, false);
+            assert.equal(regimeCheck.withoutCpp.real, false);
+            assert.equal(regimeCheck.withCpp.presumed, true);
+            assert.equal(regimeCheck.withCpp.real, true);
+
+            await page.click('[data-guided-nav="4"]');
+            await page.waitForSelector('#guidedReviewGrid');
+            const reviewText = await page.textContent('#guidedReviewPanel');
+            assert.match(reviewText || '', /Lucro contábil/i);
+
+            const relevantConsoleErrors = consoleErrors.filter(x => !/favicon|Failed to load resource.*404/i.test(x));
+            if (pageErrors.length || relevantConsoleErrors.length) {
+              throw new Error('Browser errors: ' + JSON.stringify({ pageErrors, consoleErrors: relevantConsoleErrors }));
+            }
+
+            console.log(JSON.stringify({
+              ok: true,
+              company,
+              activity,
+              b2b,
+              importCheck,
+              regimeCheck,
+              url: page.url()
+            }, null, 2));
+
+            await browser.close();
+          })().catch(err => {
+            console.error(err);
+            process.exit(1);
+          });
+          NODE
