@@ -54,11 +54,12 @@
    const moved=[...panel.children].filter(x=>x.classList?.contains('grid4')||x.classList?.contains('advanced'));
    moved.forEach(x=>body.appendChild(x));
    const groups=[
-    ['Cenário tributário e indicadores','Alíquotas de referência e indicadores financeiros calculados pelo sistema.'],
+    ['Premissas tributárias e indicadores','Alíquotas de referência e indicadores calculados automaticamente pelo sistema.'],
     ['Folha, contribuição patronal e lucro','Dados necessários para comparar corretamente os regimes fora do Simples.'],
-    ['Caixa e capital de giro','Informe os saldos disponíveis no balanço ou em seus controles internos.'],
-    ['Dívida e encargos financeiros','Use empréstimos e financiamentos do início e do fim do período, além dos juros.'],
-    ['Custo financeiro e período','O sistema anualiza o custo quando a DRE cobrir menos de 12 meses.']
+    ['Lucro Presumido','Percentuais de presunção de IRPJ e CSLL aplicáveis à atividade e regras de elegibilidade.'],
+    ['Caixa e capital de giro','Caixa, bancos, aplicações e saldos circulantes usados na análise financeira.'],
+    ['Dívida financeira','Obrigações financeiras do início e do fim do período e despesas financeiras associadas.'],
+    ['Custo financeiro e período','Cálculo do custo financeiro e período coberto pela DRE.']
    ];
    [...body.querySelectorAll(':scope > .grid4')].forEach((grid,i)=>{
     grid.classList.add('guidedManualGrid');
