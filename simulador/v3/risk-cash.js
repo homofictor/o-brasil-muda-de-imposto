@@ -25,9 +25,9 @@ function riskScore(r){
  return{score,label,notApplicable:false,drivers:[`${(b2b*100).toFixed(0)}% das vendas foram informadas como B2B.`,`O Simples puro entrega aproximadamente ${pct1(1-vatGap)} do crédito que o regime regular entregaria ao cliente, nas premissas atuais.`,`${(regShare*100).toFixed(0)}% dos fornecedores foram informados no regime regular, aumentando o potencial de crédito próprio no híbrido.`]};
 }
 function cashMetrics(r){
- if(r.isMei)return{grossMonthly:0,liabilityMonthly:0,floatReplacement:0,temporaryExcess:0,working:0,gap:0,cost:0,cash100:100,notApplicable:true};
+ if(r.isMei)return{grossMonthly:0,liabilityMonthly:0,floatReplacement:0,temporaryExcess:0,working:0,gap:0,cost:0,cash100:100,reserveKnown:true,rateKnown:true,notApplicable:true};
  financialMetrics();
- const split=clamp(num('splitPct')/100,0,1),floatDays=clamp(num('floatDays'),0,90),refundDays=clamp(num('refundDays'),0,30),reserve=Math.max(0,num('cashReserve'));
- const grossMonthly=(r.grossVat/12)*split,liabilityMonthly=(r.netVat/12)*split,floatReplacement=liabilityMonthly*(floatDays/30),overRetention=Math.max(0,grossMonthly-liabilityMonthly),temporaryExcess=overRetention*(refundDays/30),working=floatReplacement+temporaryExcess,gap=Math.max(0,working-reserve),cost=gap*clamp(num('financeRate')/100,0,2),cash100=100-(r.grossRegularRate*split*100);
- return{grossMonthly,liabilityMonthly,floatReplacement,temporaryExcess,working,gap,cost,cash100,notApplicable:false};
+ const split=clamp(num('splitPct')/100,0,1),floatDays=clamp(num('floatDays'),0,90),refundDays=clamp(num('refundDays'),0,30),reserveKnown=String($('cashReserve')?.value??'').trim()!=='',rateKnown=String($('financeRate')?.value??'').trim()!=='',reserve=reserveKnown?Math.max(0,num('cashReserve')):null;
+ const grossMonthly=(r.grossVat/12)*split,liabilityMonthly=(r.netVat/12)*split,floatReplacement=liabilityMonthly*(floatDays/30),overRetention=Math.max(0,grossMonthly-liabilityMonthly),temporaryExcess=overRetention*(refundDays/30),working=floatReplacement+temporaryExcess,gap=reserveKnown?Math.max(0,working-reserve):null,cost=gap==null?null:gap===0?0:rateKnown?gap*clamp(num('financeRate')/100,0,2):null,cash100=100-(r.grossRegularRate*split*100);
+ return{grossMonthly,liabilityMonthly,floatReplacement,temporaryExcess,working,gap,cost,cash100,reserve,reserveKnown,rateKnown,notApplicable:false};
 }
