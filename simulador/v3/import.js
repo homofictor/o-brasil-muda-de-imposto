@@ -199,7 +199,54 @@ function analyseImportDoc(file,parsed){
  if(tab.regularSuppliersPct!=null)c.push(candidate('regularSuppliersPct','Fornecedores no regime regular',tab.regularSuppliersPct,file.name,'medium','Calculado pelas linhas que identificam o regime dos fornecedores.',fmtPct(tab.regularSuppliersPct)));
  return{file:file.name,type,text,candidates:c,cnpj:importedCnpj,purchaseTotal:tab.purchaseTotal||((type==='Relatório de compras'&&costs)?Math.abs(costs):null)}
 }
-function buildCrossCandidates(docs,candidates){const revs=candidates.filter(x=>x.field==='rbt12').sort((a,b)=>(a.confidence==='high'?-1:1));const base=revs[0]?.value;if(base>0)docs.forEach(d=>{if(d.purchaseTotal>0){const p=100*d.purchaseTotal/base;if(p>=0&&p<=300)candidates.push(candidate('purchasesPct','Compras/insumos sobre o faturamento',p,d.file,'medium','Compras/custos encontrados divididos pelo faturamento importado. CMV/CPV/CSP pode não ser igual a compras creditáveis.',fmtPct(p)))}});return candidates}
+function buildCrossCandidates(docs,candidates){
+ const revs=candidates.filter(x=>x.field==='rbt12').sort((a,b)=>(a.confidence==='high'?-1:1)),base=revs[0]?.value;
+ if(base>0)docs.forEach(d=>{if(d.purchaseTotal>0){const p=100*d.purchaseTotal/base;if(p>=0&&p<=300)candidates.push(candidate('purchasesPct','Compras/insumos sobre o faturamento',p,d.file,'medium','Compras/custos encontrados divididos pelo faturamento importado. CMV/CPV/CSP pode não ser igual a compras creditáveis.',fmtPct(p)))}});
+
+ const dreDoc=docs.find(d=>d.type==='DRE'||d.type==='Balanço + DRE'),bpDoc=docs.find(d=>d.type==='Balanço'||d.type==='Balanço + DRE');
+ if(!dreDoc)return candidates;
+ const months=Math.max(1,Math.min(12,Number($('dreMonths')?.value)||12)),dreText=typeof importStatementSections==='function'?importStatementSections(dreDoc.text).dre:dreDoc.text,bpText=bpDoc?(typeof importStatementSections==='function'?importStatementSections(bpDoc.text).balance:bpDoc.text):'';
+ const latest=(text,groups,exclude=[])=>typeof firstLatestLineValue==='function'?firstLatestLineValue(text,groups,exclude):null;
+ const exists=field=>candidates.some(x=>x.field===field);
+
+ const gross=latest(dreText,[['receita bruta','receita operacional bruta','faturamento bruto','faturamento total'],['receita de vendas','receita de servicos','receita de serviços']]);
+ const net=latest(dreText,[['receita liquida','receita operacional liquida','receita líquida','receita operacional líquida']]);
+ const explicitTax=latest(dreText,[['tributos incidentes sobre vendas','impostos incidentes sobre vendas'],['tributos sobre vendas','impostos sobre vendas'],['pis sobre vendas','cofins sobre vendas','icms sobre vendas','iss sobre vendas','ipi sobre vendas']],['a recuperar','credito','crédito']);
+ const deductions=latest(dreText,[['deducoes da receita bruta','deduções da receita bruta','deducoes sobre vendas','deduções sobre vendas'],['impostos, devolucoes e abatimentos','impostos, devoluções e abatimentos']]);
+ if(!exists('currentConsumptionTaxAnnual')){
+  let tax=null,confidence='low',reason='';
+  if(explicitTax!=null){tax=Math.abs(explicitTax)*(12/months);confidence='high';reason='Tributos incidentes sobre vendas identificados diretamente na DRE e anualizados para a mesma base do diagnóstico.'}
+  else if(deductions!=null){tax=Math.abs(deductions)*(12/months);reason='Aproximação pelas deduções da receita bruta. Pode conter devoluções, abatimentos e descontos, por isso o valor deve ser revisado.'}
+  else if(gross!=null&&net!=null&&Math.abs(gross)>Math.abs(net)){tax=(Math.abs(gross)-Math.abs(net))*(12/months);reason='Aproximação pela diferença entre receita bruta e receita líquida da DRE. Pode incluir devoluções e abatimentos além de tributos.'}
+  else if(net!=null){
+   const netAnnual=Math.abs(net)*(12/months),grossField=Math.max(0,num('rbt12'));
+   if(grossField>netAnnual&&grossField<=netAnnual*1.5){tax=grossField-netAnnual;reason='Aproximação pela diferença entre o faturamento bruto informado na etapa Empresa e a receita líquida importada da DRE.'}
+  }
+  if(tax!=null&&tax>0)candidates.push(candidate('currentConsumptionTaxAnnual','Carga atual líquida de tributos sobre consumo',tax,dreDoc.file,confidence,reason,fmtMoney(tax)));
+ }
+
+ if(!exists('currentOperatingMarginPct')&&net!=null&&Math.abs(net)>0){
+  const explicitEbitda=latest(dreText,[['ebitda'],['lajida']]);
+  let ebitda=explicitEbitda,confidence=explicitEbitda!=null?'high':'medium',reason=explicitEbitda!=null?'EBITDA/LAJIDA identificado diretamente na DRE.':'';
+  if(ebitda==null){
+   const op=latest(dreText,[['resultado antes do resultado financeiro e dos tributos','resultado antes do resultado financeiro','lucro operacional antes do resultado financeiro'],['lucro operacional','resultado operacional']]);
+   const pretax=latest(dreText,[['lucro liquido antes provisao irpj e csll','lucro liquido antes da provisao irpj e csll','lucro antes do irpj e csll','resultado antes do irpj e csll','resultado antes dos tributos sobre o lucro']]);
+   const finExp=Math.abs(latest(dreText,[['despesas financeiras']],['receitas financeiras','resultado financeiro'])||0),finRev=Math.abs(latest(dreText,[['receitas financeiras']],['despesas financeiras'])||0),other=latest(dreText,[['outras receitas e despesas','outras receitas/despesas','outras receitas/despesas operacionais']])||0;
+   const ebit=op!=null?op:(pretax!=null?pretax+finExp-finRev-other:null);
+   let da=0,daKnown=false,daReason='';
+   const depDre=Math.abs(latest(dreText,[['depreciacao e amortizacao','depreciações e amortizações','depreciacoes e amortizacoes'],['depreciacao','depreciações','depreciacoes']])||0),amortDre=Math.abs(latest(dreText,[['amortizacao','amortizações','amortizacoes']],['depreciacao e amortizacao','depreciacoes e amortizacoes'])||0);
+   if(depDre>0||amortDre>0){da=depDre+amortDre;daKnown=true;daReason='depreciação e amortização identificadas na DRE';confidence='high'}
+   else if(bpText&&typeof latestLineValues==='function'){
+    const dep=latestLineValues(bpText,['depreciacao acumulada','depreciação acumulada']),am=latestLineValues(bpText,['amortizacao acumulada','amortização acumulada']);
+    const depDelta=dep.latest!=null&&dep.prior!=null?Math.max(0,Math.abs(dep.latest)-Math.abs(dep.prior)):0,amDelta=am.latest!=null&&am.prior!=null?Math.max(0,Math.abs(am.latest)-Math.abs(am.prior)):0;
+    if(depDelta>0||amDelta>0){da=depDelta+amDelta;daKnown=true;daReason='variação da depreciação/amortização acumulada do BP usada como aproximação';confidence='medium'}
+   }
+   if(ebit!=null&&daKnown){ebitda=ebit+da;reason=`EBIT reconstruído antes do resultado financeiro, acrescido de ${daReason}. Revise se houver baixas ou reclassificações relevantes de ativos.`}
+  }
+  if(ebitda!=null){const margin=100*(ebitda*(12/months))/(Math.abs(net)*(12/months));if(Number.isFinite(margin))candidates.push(candidate('currentOperatingMarginPct','Margem EBITDA atual',margin,[dreDoc.file,bpDoc?.file].filter(Boolean).join(' + '),confidence,reason,fmtPct(margin)))}
+ }
+ return candidates
+}
 function groupedImportCandidates(){return brmiImport.candidates.reduce((a,c,i)=>{c._index=i;(a[c.field]||(a[c.field]=[])).push(c);return a},{})}
 function conflictGroup(arr){if(arr.length<2)return false;if(arr[0]?.field==='cnpj')return new Set(arr.map(x=>x.value)).size>1;const vals=arr.map(x=>x.value).filter(Number.isFinite),max=Math.max(...vals),min=Math.min(...vals);return max>0&&(max-min)/max>.05}
 function renderImportFiles(){const el=$('importFileList');if(!el)return;el.innerHTML=brmiImport.files.map(f=>`<div class="importFile"><span class="importFileIcon">${f.ext.toUpperCase()}</span><div><strong>${f.name}</strong><small>${f.type||'Aguardando análise'}</small></div><span class="importFileStatus ${f.statusClass||''}">${f.status||'Pendente'}</span></div>`).join('')}
