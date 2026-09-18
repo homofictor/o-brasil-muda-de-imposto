@@ -66,14 +66,15 @@
  function economicImpactFor(r,model){
   const mode=document.getElementById('currentConsumptionMode')?.value||'auto';
   const automatic=simpleCurrentConsumptionTax(r);
+  const input=document.getElementById('currentConsumptionTaxAnnual');
   const manual=hasField('currentConsumptionTaxAnnual')?Math.max(0,fieldNumber('currentConsumptionTaxAnnual')):null;
   const currentTax=mode==='auto'?automatic:manual;
-  const input=document.getElementById('currentConsumptionTaxAnnual');
   const source=document.getElementById('currentConsumptionTaxSource');
   if(input){input.readOnly=mode==='auto';if(mode==='auto')input.value=automatic==null?'':Math.round(automatic*100)/100}
   if(source){
-   if(mode==='auto'&&automatic!=null)source.textContent='Calculado pela parcela estimada dos tributos sobre consumo no DAS atual. Revise a opção manual se possuir o valor contábil efetivo.';
-   else if(mode==='auto')source.textContent='O cálculo automático está disponível para empresas confirmadas no Simples. Selecione a informação manual para outros regimes.';
+   if(mode==='auto'&&automatic!=null)source.textContent='Calculado pela parcela estimada dos tributos sobre consumo no DAS atual. Revise a opção contábil se possuir DRE ou valor efetivo.';
+   else if(mode==='auto')source.textContent='Sem base automática disponível. Importe a DRE ou use a informação contábil para calcular a situação atual.';
+   else if(input?.dataset?.sourceNote)source.textContent='Calculado a partir da DRE importada. '+input.dataset.sourceNote;
    else source.textContent='Informe PIS/Cofins, ICMS, ISS e IPI líquidos de créditos, conforme aplicável, usando a mesma base anual.';
   }
   const futureTax=modelConsumptionTax(r,model?.key);
@@ -116,7 +117,7 @@
  const taxField=typeof document!=='undefined'?document.getElementById('currentConsumptionTaxAnnual'):null;
  function syncEconomicInputMode(){
   if(!modeField||!taxField)return;taxField.readOnly=modeField.value==='auto';
-  if(modeField.value==='manual'&&document.getElementById('currentConsumptionTaxSource'))document.getElementById('currentConsumptionTaxSource').textContent='Informe a carga líquida anual de PIS/Cofins, ICMS, ISS e IPI, conforme aplicável.';
+  if(modeField.value==='manual'&&document.getElementById('currentConsumptionTaxSource'))document.getElementById('currentConsumptionTaxSource').textContent=taxField?.dataset?.sourceNote?'Calculado a partir da DRE importada. '+taxField.dataset.sourceNote:'Informe a carga líquida anual de PIS/Cofins, ICMS, ISS e IPI, conforme aplicável.';
  }
  modeField?.addEventListener('change',syncEconomicInputMode);syncEconomicInputMode();
   if(typeof module!=='undefined'&&module.exports)module.exports={calculateEconomicImpact};
