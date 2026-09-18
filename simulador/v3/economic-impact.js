@@ -4,6 +4,7 @@
 
  function calculateEconomicImpact(values){
   const revenue=Math.max(0,Number(values.annualRevenue)||0);
+  const operatingRevenue=Math.max(0,Number(values.currentOperatingRevenue)||revenue);
   const currentTax=Math.max(0,Number(values.currentConsumptionTax)||0);
   const futureTax=Math.max(0,Number(values.futureConsumptionTax)||0);
   const transferRate=clampLocal(values.priceTransferRate,0,1);
@@ -14,11 +15,12 @@
   const adjustedRevenue=Math.max(0,revenue+priceChange);
   const unabsorbedDelta=taxDelta-priceChange;
   const requiredPriceRate=revenue>0?taxDelta/revenue:null;
-  const currentOperatingResult=currentMargin==null?null:revenue*currentMargin;
+  const currentOperatingResult=currentMargin==null?null:operatingRevenue*currentMargin;
   const projectedOperatingResult=currentOperatingResult==null?null:currentOperatingResult-unabsorbedDelta;
-  const projectedOperatingMargin=projectedOperatingResult==null||adjustedRevenue<=0?null:projectedOperatingResult/adjustedRevenue;
+  const adjustedOperatingRevenue=Math.max(0,operatingRevenue+priceChange);
+  const projectedOperatingMargin=projectedOperatingResult==null||adjustedOperatingRevenue<=0?null:projectedOperatingResult/adjustedOperatingRevenue;
   const resultEffectRaw=-unabsorbedDelta-financeCost,resultEffect=Object.is(resultEffectRaw,-0)?0:resultEffectRaw;
-  return{revenue,currentTax,futureTax,taxDelta,transferRate,priceChange,adjustedRevenue,unabsorbedDelta,requiredPriceRate,currentMargin,currentOperatingResult,projectedOperatingResult,projectedOperatingMargin,financeCost,resultEffect};
+  return{revenue,operatingRevenue,currentTax,futureTax,taxDelta,transferRate,priceChange,adjustedRevenue,adjustedOperatingRevenue,unabsorbedDelta,requiredPriceRate,currentMargin,currentOperatingResult,projectedOperatingResult,projectedOperatingMargin,financeCost,resultEffect};
  }
 
  const currentDasShares={
@@ -63,6 +65,13 @@
  function percent(value){return Number.isFinite(value)?pct1(value):'—'}
  function setText(id,value){const node=document.getElementById(id);if(node)node.textContent=value==null?'—':String(value)}
 
+ function currentOperatingRevenueBase(r){
+  const docs=root.brmiImport?.docs||[],dre=docs.find(d=>(d.type==='DRE'||d.type==='Balanço + DRE')&&Number(d.revenueNet)>0);
+  if(!dre)return r?.annualRevenue||0;
+  const months=Math.max(1,Math.min(12,fieldNumber('dreMonths')||12));
+  return Number(dre.revenueNet)*(12/months);
+ }
+
  function economicImpactFor(r,model){
   const mode=document.getElementById('currentConsumptionMode')?.value||'auto';
   const automatic=simpleCurrentConsumptionTax(r);
@@ -81,7 +90,7 @@
   const margin=hasField('currentOperatingMarginPct')?fieldNumber('currentOperatingMarginPct')/100:null;
   let financeCost=0,financeCostKnown=true;try{const cm=root.cashMetrics?root.cashMetrics(r):cashMetrics(r);if(cm?.cost==null){financeCostKnown=false;financeCost=0}else financeCost=cm.cost}catch(_){financeCostKnown=false;financeCost=0}
   if(currentTax==null||futureTax==null)return{known:false,currentTax,futureTax,modelKey:model?.key||null,financeCostKnown};
-  return{known:true,modelKey:model.key,financeCostKnown,...calculateEconomicImpact({annualRevenue:r.annualRevenue,currentConsumptionTax:currentTax,futureConsumptionTax:futureTax,priceTransferRate:fieldNumber('priceTransferPct')/100,currentOperatingMargin:margin,financeCost})};
+  return{known:true,modelKey:model.key,financeCostKnown,...calculateEconomicImpact({annualRevenue:r.annualRevenue,currentOperatingRevenue:currentOperatingRevenueBase(r),currentConsumptionTax:currentTax,futureConsumptionTax:futureTax,priceTransferRate:fieldNumber('priceTransferPct')/100,currentOperatingMargin:margin,financeCost})};
  }
 
  function impactTone(impact){if(!impact?.known)return'pending';if(impact.resultEffect>1)return'positive';if(impact.resultEffect<-1)return'negative';return'neutral'}
@@ -105,7 +114,7 @@
   const transfer=percent(impact.transferRate),direction=impact.taxDelta>=0?'acréscimo':'redução';
   setText('economicImpactText',impact.financeCostKnown?`O cenário transfere ${transfer} da variação tributária ao preço. O ${direction} anual de preço estimado é ${money(Math.abs(impact.priceChange))}. Após o efeito tributário não transferido e o custo financeiro estimado, o impacto no resultado é ${resultLabel(impact.resultEffect).toLowerCase()}.`:`O cenário transfere ${transfer} da variação tributária ao preço. O ${direction} anual de preço estimado é ${money(Math.abs(impact.priceChange))}. O efeito no resultado antes do custo financeiro é ${resultLabel(impact.resultEffect).toLowerCase()}; informe reserva e taxa financeira para completar a análise.`);
   setText('techCurrentConsumptionTax',money(impact.currentTax));setText('techFutureConsumptionTax',money(impact.futureTax));setText('techTaxDelta',deltaLabel(impact.taxDelta));setText('techPriceTransfer',money(impact.priceChange));setText('techUnabsorbedDelta',money(impact.unabsorbedDelta));setText('techFinanceEffect',impact.financeCostKnown?money(impact.financeCost):'Não calculado');setText('techResultEffect',impact.financeCostKnown?resultLabel(impact.resultEffect):'Parcial · antes do custo financeiro');
-  setText('technicalEconomicText',`A comparação usa ${model.name} como modelo de menor desembolso validado em ${r.year}. A carga de consumo futura considera somente IBS/CBS e ICMS/ISS residual aplicável, sem confundir o crédito do cliente com redução do imposto da empresa.`);
+  setText('technicalEconomicText',`A comparação usa ${model.name} como modelo de menor desembolso validado em ${r.year}. A carga de consumo futura considera IBS/CBS e ICMS/ISS residual aplicável. A margem EBITDA usa a receita líquida da DRE quando disponível, enquanto a base tributária usa o faturamento bruto confirmado.`);
   const card=document.getElementById('economicImpactCard');if(card)card.dataset.tone=impactTone(impact);
   return impact;
  }
