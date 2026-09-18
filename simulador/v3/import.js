@@ -283,7 +283,7 @@ function applyImportCandidate(i,button){
  if(c.field==='currentConsumptionTaxAnnual'&&$('currentConsumptionMode')){$('currentConsumptionMode').value='manual';el.readOnly=false;el.dataset.sourceNote=c.reason||'';if($('currentConsumptionTaxSource'))$('currentConsumptionTaxSource').textContent='Calculado a partir da DRE importada. '+(c.reason||'Revise a origem antes de concluir.')}
  if(c.field==='rbt12'&&$('revenueSync')?.checked&&typeof syncRevenue==='function'){syncRevenue('annual');if(typeof markFieldDerived==='function')markFieldDerived('monthlyRevenue','CALCULADO')}
  if(c.field==='monthlyRevenue'&&$('revenueSync')?.checked&&typeof syncRevenue==='function'){syncRevenue('monthly');if(typeof markFieldDerived==='function')markFieldDerived('rbt12','CALCULADO')}
- if(typeof markFieldAuto==='function')markFieldAuto(c.field,c.confidence==='low'?'REVISAR':'IMPORTADO');
+ if(typeof markFieldAuto==='function')markFieldAuto(c.field,c.confidence==='high'?'IMPORTADO':c.confidence==='medium'?'CALCULADO':'REVISAR');
  try{el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}))}catch(_){}
  if(typeof financialMetrics==='function')financialMetrics();if(typeof refreshEligibilityUi==='function')refreshEligibilityUi();
  if(typeof markDiagnosisDirty==='function')markDiagnosisDirty('import');if(typeof refreshAllFieldStates==='function')refreshAllFieldStates();syncImportCandidateButtons(c.field,i);return true
@@ -296,12 +296,12 @@ function applyHighConfidenceCandidates(){
 
 function autoApplyDocumentCalculations(){
  const groups=groupedImportCandidates();
- const automaticFields=new Set(['currentConsumptionTaxAnnual','currentOperatingMarginPct','realAccountingProfitAnnual','debtStart','debtEnd','interestExpense']);
+ const automaticFields=new Set(['rbt12','cashAndEquivalents','currentAssets','currentLiabilities','currentConsumptionTaxAnnual','currentOperatingMarginPct','realAccountingProfitAnnual','debtStart','debtEnd','interestExpense']);
  automaticFields.forEach(field=>{
   const arr=groups[field]||[];if(!arr.length||conflictGroup(arr))return;
   const ranked=[...arr].sort((a,b)=>({high:3,medium:2,low:1}[b.confidence]||0)-({high:3,medium:2,low:1}[a.confidence]||0));
   const best=ranked[0];if(!best)return;
-  if(field==='interestExpense'&&best.confidence!=='high')return;
+  if(['rbt12','cashAndEquivalents','currentAssets','currentLiabilities','interestExpense'].includes(field)&&best.confidence!=='high')return;
   if(['debtStart','debtEnd','realAccountingProfitAnnual'].includes(field)&&best.confidence==='low')return;
   applyImportCandidate(best._index);
  });
