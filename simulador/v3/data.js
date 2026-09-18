@@ -66,7 +66,13 @@ function regularRates(year){
  if(year<=2028)return{cbs:Math.max(0,fullCbs-.001),ibs:.001};
  return{cbs:fullCbs,ibs:fullIbs*({2029:.1,2030:.2,2031:.3,2032:.4,2033:1}[year]||1)};
 }
+function syncMixFull(mark=true){
+ const reductions=['mix30','mix40','mix60','mixZero'].reduce((s,id)=>s+Math.max(0,num(id)),0),full=Math.max(0,100-reductions),input=$('mixFull');
+ if(input){input.value=Math.round(full*100)/100;input.readOnly=true;if(mark&&typeof markFieldDerived==='function')markFieldDerived('mixFull','CALCULADO')}
+ return{full,reductions};
+}
 function revenueRateFactor(){
+ syncMixFull(false);
  const ids=[['mixFull',1],['mix30',.7],['mix40',.6],['mix60',.4],['mixZero',0]],total=ids.reduce((s,[id])=>s+num(id),0),el=$('mixTotal');
  if(el){el.textContent=`${total.toFixed(0)}%`;el.className='total '+(Math.abs(total-100)<.01?'ok':'bad')}
  if(total<=0)return 1;return ids.reduce((s,[id,f])=>s+num(id)*f,0)/total;
@@ -121,7 +127,7 @@ function applySectorProfile(profile=sectorSuggestion){
  if(!profile)return;
  const set=(id,v,label='SUGERIDO')=>{const el=$(id);if(!el)return;el.value=v;if(typeof markFieldAuto==='function')markFieldAuto(id,label)};
  set('b2bPct',profile.b2b);set('eligibleCreditPct',profile.creditable);set('regularSuppliersPct',profile.suppliers);
- const m=profile.mix||{};set('mixFull',m.full??100);set('mix30',m.r30??0);set('mix40',m.r40??0);set('mix60',m.r60??0);set('mixZero',m.zero??0);
+ const m=profile.mix||{};set('mix30',m.r30??0);set('mix40',m.r40??0);set('mix60',m.r60??0);set('mixZero',m.zero??0);syncMixFull(true);
  if($('b2bHint'))$('b2bHint').textContent=`Estimado pelo CNAE · confiança ${profile.confidence}. ${profile.reason}.`;
  if($('creditHint'))$('creditHint').textContent=`Estimado pelo perfil de gastos do setor · confiança ${profile.confidence}.`;
  if($('supplierHint'))$('supplierHint').textContent=`Estimado pela cadeia de fornecedores do setor · confiança ${profile.confidence}.`;
