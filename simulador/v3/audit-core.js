@@ -76,7 +76,7 @@
  window.applyProfessionalReductionState=applyBenefit;
  const originalApplySectorProfile=window.applySectorProfile;
  window.applySectorProfile=function(profile=sectorSuggestion){
-  originalApplySectorProfile(profile);applyBenefit(profile);applyPresumedSuggestion(true);
+  originalApplySectorProfile(profile);applyBenefit(profile);applyPresumedSuggestion(false);
   const el=$('purchasesPct');if(el&&profile?.purchasePct!=null){const state=fieldStateContainer?.('purchasesPct');const userConfirmed=state?.classList.contains('state-complete')&&!state?.classList.contains('state-auto');if(!userConfirmed){el.value=profile.purchasePct;if(typeof markFieldAuto==='function')markFieldAuto('purchasesPct','SUGERIDO');const s=el.closest('.field')?.querySelector('small');if(s)s.textContent=`Estimativa setorial inicial de ${profile.purchasePct}% do faturamento em aquisições e despesas tributadas. Substitua pelo valor da DRE ou dos relatórios de compras quando disponível.`}}
  };
  applyPresumedSuggestion(false);
@@ -127,7 +127,9 @@
  window.patchAuditImportAnalyzer();
 
  function ensureImportedProfitBeforeModel(){
-  const el=$('realAccountingProfitAnnual');if(!el||String(el.value||'').trim()!=='')return;
+  const el=$('realAccountingProfitAnnual');if(!el||el.dataset.userEdited==='1')return;
+  const currentText=String(el.value||'').trim(),currentValue=typeof parseMoneyValue==='function'?parseMoneyValue(currentText):Number(currentText||0),alreadyImported=el.dataset.importVerified==='1';
+  if(currentText&&!alreadyImported&&Number.isFinite(currentValue)&&Math.abs(currentValue)>.000001)return;
   const verified=window.brmiImport?.verifiedAccountingProfit;
   if(verified&&Number.isFinite(verified.value)){
    if(typeof setMoneyInputValue==='function')setMoneyInputValue(el,verified.value);else el.value=Math.round(verified.value*100)/100;
