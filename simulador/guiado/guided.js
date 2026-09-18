@@ -99,13 +99,14 @@
  }
 
  function attachImportPanel(){
-  const panel=byId('importPanel'),company=byId('cnpj')?.closest('.panel');if(!panel||!company)return false;
-  panel.dataset.guidedStep='1';panel.classList.add('guidedImportOnboarding');
+  const panel=byId('importPanel'),company=byId('cnpj')?.closest('.panel'),companyCard=byId('companyCard');if(!panel||!company)return false;
+  panel.removeAttribute('data-guided-step');panel.classList.add('guidedImportOnboarding');
   const step=panel.querySelector('.sectionTitle>div>span');if(step)step.textContent='02';
   const tag=panel.querySelector('.importTitleTag');if(tag)tag.textContent='Documentos · opcional, mas recomendado';
   const h=panel.querySelector('.sectionTitle h2');if(h)h.textContent='Envie o que você já possui';
   const p=panel.querySelector('.sectionTitle p');if(p)p.textContent='BP, DRE, balancete ou relatórios podem reduzir bastante o preenchimento manual. Você pode continuar apenas com o CNPJ se preferir.';
-  if(company.nextElementSibling!==panel)company.parentNode.insertBefore(panel,company.nextElementSibling);
+  const anchor=companyCard||company.querySelector('.cnpjrow');
+  if(anchor&&anchor.nextElementSibling!==panel)anchor.insertAdjacentElement('afterend',panel);
   createAutomationModePanel();
   return true;
  }
@@ -113,7 +114,7 @@
  function createAutomationModePanel(){
   if(byId('guidedAutomationMode'))return byId('guidedAutomationMode');
   const importPanel=byId('importPanel'),company=byId('cnpj')?.closest('.panel');if(!company)return null;
-  const panel=document.createElement('section');panel.className='panel guidedAutomationMode';panel.id='guidedAutomationMode';panel.dataset.guidedStep='1';panel.hidden=true;
+  const panel=document.createElement('section');panel.className='guidedAutomationMode';panel.id='guidedAutomationMode';panel.hidden=true;
   panel.innerHTML=`<div class="guidedAutomationModeHead"><span>03</span><div><small>NÍVEL DE AUTOMAÇÃO</small><h2>Quanto o simulador pode preencher por você?</h2><p>Você escolhe até onde o sistema pode usar cálculos e estimativas. A origem e o nível de confiança continuam visíveis.</p></div></div>
   <div class="guidedAutomationModeGrid">
    <button type="button" data-automation-mode="rigorous"><b>Mais rigor</b><small>Preenche automaticamente somente informações de alta confiança.</small><strong>Mais confirmação manual</strong></button>
