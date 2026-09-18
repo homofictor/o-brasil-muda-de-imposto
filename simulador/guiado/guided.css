@@ -190,3 +190,21 @@
  .guidedMode .guidedManualGroupTitle{margin-top:15px}
  .erpVersion{display:none}
 }
+
+
+/* Ajustes de revisão 2026-09-18 */
+.guidedMode .field.state-pending>span:first-child,
+.guidedMode .field.state-complete>span:first-child,
+.guidedMode .mix.state-pending>span:first-child,
+.guidedMode .mix.state-complete>span:first-child{padding-right:82px}
+.guidedMode .fieldStateBadge{top:7px;right:8px;max-width:74px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.guidedMode .importCandidate button.importApplied,
+.guidedMode .importCandidate button:disabled.importApplied{background:#e7f4ed!important;border-color:#9bc9ae!important;color:#1e6842!important;opacity:1;cursor:default}
+.guidedMode .importApplyHigh{min-width:210px}
+@media(max-width:760px){
+ .guidedMode .field.state-pending>span:first-child,
+ .guidedMode .field.state-complete>span:first-child,
+ .guidedMode .mix.state-pending>span:first-child,
+ .guidedMode .mix.state-complete>span:first-child{padding-right:70px}
+ .guidedMode .fieldStateBadge{max-width:62px;font-size:6.5px!important}
+}
