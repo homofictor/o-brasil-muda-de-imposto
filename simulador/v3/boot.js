@@ -87,6 +87,11 @@ function restore(){
     if(x.priceTransferPct==null||String(x.priceTransferPct)==='0')x.priceTransferPct='100';
     localStorage.setItem(key,'1');
    }
+   const taxKey='brmi_current_tax_zero_cleanup_v1';
+   if(!localStorage.getItem(taxKey)){
+    if(String(x.currentConsumptionTaxAnnual??'')==='0')delete x.currentConsumptionTaxAnnual;
+    localStorage.setItem(taxKey,'1');
+   }
   }catch(_){}
   Object.entries(x).forEach(([id,v])=>{const el=$(id);if(!el)return;if(el.type==='checkbox')el.checked=Boolean(v);else el.value=v});
  }catch(_){}
