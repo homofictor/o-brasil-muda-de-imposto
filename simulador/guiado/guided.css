@@ -39,8 +39,8 @@
 .guidedMode .page{max-width:1240px;padding:0 24px 64px}
 .erpTopbar{background:#102640;border-bottom:0;box-shadow:0 2px 10px rgba(16,38,64,.18);backdrop-filter:none}
 .erpTopbar .topinner{max-width:none;height:64px;padding:0 24px;gap:18px}
-.erpBrand{min-width:260px;gap:11px}
-.erpBrandMark{display:grid!important;place-items:center;width:38px;height:38px;border:1px solid rgba(255,255,255,.3);border-radius:8px;background:#fff;color:#8f1f2d!important;font:900 16px/1 Georgia,serif!important;letter-spacing:-.04em}
+.erpBrand{min-width:300px;gap:12px}
+.erpBrandLogo{display:block;width:78px;height:50px;object-fit:contain;object-position:center;background:#fff;border-radius:6px;padding:3px 5px;box-shadow:0 0 0 1px rgba(255,255,255,.15)}
 .erpBrandCopy{color:#fff!important;line-height:1.15}
 .erpBrandCopy strong{font-size:14px;letter-spacing:.01em}
 .erpBrandCopy small{display:block;margin-top:4px;color:#aebed0;font-size:10px;font-weight:600}
@@ -207,4 +207,9 @@
  .guidedMode .mix.state-pending>span:first-child,
  .guidedMode .mix.state-complete>span:first-child{padding-right:70px}
  .guidedMode .fieldStateBadge{max-width:62px;font-size:6.5px!important}
+}
+
+@media(max-width:760px){
+ .erpBrand{min-width:auto}
+ .erpBrandLogo{width:62px;height:42px}
 }
