@@ -128,6 +128,13 @@
 
  function ensureImportedProfitBeforeModel(){
   const el=$('realAccountingProfitAnnual');if(!el||String(el.value||'').trim()!=='')return;
+  const verified=window.brmiImport?.verifiedAccountingProfit;
+  if(verified&&Number.isFinite(verified.value)){
+   if(typeof setMoneyInputValue==='function')setMoneyInputValue(el,verified.value);else el.value=Math.round(verified.value*100)/100;
+   el.dataset.importVerified='1';el.dataset.importSource=verified.source||'DRE importada';
+   if(typeof markFieldAuto==='function')markFieldAuto('realAccountingProfitAnnual','IMPORTADO');
+   return;
+  }
   const items=(window.brmiImport?.candidates||[]).filter(x=>x?.field==='realAccountingProfitAnnual'&&Number.isFinite(x.value));
   if(!items.length)return;
   const score={high:3,medium:2,low:1},ranked=[...items].sort((a,b)=>(score[b.confidence]||0)-(score[a.confidence]||0)),best=ranked[0],peers=ranked.filter(x=>x.confidence===best.confidence);
@@ -138,9 +145,6 @@
   if(typeof setMoneyInputValue==='function')setMoneyInputValue(el,best.value);else el.value=Math.round(best.value*100)/100;
   el.dataset.importVerified='1';el.dataset.importSource=best.source||'DRE importada';
   if(typeof markFieldAuto==='function')markFieldAuto('realAccountingProfitAnnual','IMPORTADO');
-  try{
-   const saved=JSON.parse(localStorage.getItem('brmi_v3')||'{}');saved.realAccountingProfitAnnual=String(el.value);localStorage.setItem('brmi_v3',JSON.stringify(saved));
-  }catch(_){}
  }
 
  const originalModelForYear=window.modelForYear;
