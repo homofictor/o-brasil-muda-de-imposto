@@ -1,12 +1,12 @@
 window.brmiImport={files:[],candidates:[],docs:[]};
 
 function importMarkup(){return `<section class="panel importPanel" id="importPanel">
- <div class="sectionTitle"><div><span>05</span><div><div class="importTitleTag">V3.2 · preenchimento inteligente</div><h2>Importar dados da empresa</h2></div></div><p>Envie o que tiver disponível. O simulador tenta localizar números úteis, mostra a fonte e pede sua confirmação antes de alimentar o diagnóstico.</p></div>
+ <div class="sectionTitle"><div><span>05</span><div><div class="importTitleTag">V3.2 · preenchimento inteligente</div><h2>Importar dados da empresa</h2></div></div><p>Envie o que tiver disponível. O simulador localiza números úteis, mostra a fonte, aplica automaticamente apenas dados seguros e mantém aproximações para revisão.</p></div>
  <div class="importDrop" id="importDrop" tabindex="0" role="button" aria-label="Selecionar documentos da empresa"><strong>Arraste Balanço, DRE ou relatórios do ERP</strong><p>Você pode combinar vários arquivos. Quanto mais informação consistente houver, menos campos precisarão ser preenchidos manualmente.</p><button id="importChooseBtn" type="button">Selecionar arquivos</button><small>Formatos: PDF com texto pesquisável, CSV, XLS e XLSX · múltiplos arquivos permitidos</small><input id="importFiles" type="file" multiple accept=".pdf,.csv,.xls,.xlsx,text/csv,application/pdf" hidden></div>
  <div class="importPrivacy"><b>🔒</b><div><strong>Processamento local nesta versão.</strong> Os arquivos são lidos no seu navegador para montar as sugestões e não são enviados ao servidor do simulador.</div></div>
  <div id="importProgress" class="importProgress" hidden><span class="importSpinner"></span><div><strong id="importProgressTitle">Analisando documentos...</strong><small id="importProgressText">Identificando estrutura e indicadores.</small></div></div>
  <div id="importFileList" class="importFileList"></div>
- <div id="importSummary" class="importSummary" hidden><div class="importSummaryHead"><div><h3>Informações encontradas</h3><p>Confira a origem e a confiança de cada sugestão antes de usar.</p></div><span id="importSummaryCount" class="importSummaryCount">0 sugestões</span></div><div id="importCandidateGroups" class="importCandidateGroups"></div><div class="importActions"><button class="importApplyHigh" id="importApplyHigh" type="button">Aplicar sugestões de alta confiança</button><button class="importClear" id="importClear" type="button">Limpar documentos</button></div></div>
+ <div id="importSummary" class="importSummary" hidden><div class="importSummaryHead"><div><h3>Informações encontradas</h3><p>Confira a origem e a confiança de cada sugestão antes de usar.</p></div><span id="importSummaryCount" class="importSummaryCount">0 sugestões</span></div><div id="importCandidateGroups" class="importCandidateGroups"></div><div class="importActions"><button class="importApplyHigh" id="importApplyHigh" type="button">Aplicar sugestões de alta confiança</button><button class="importClear" id="importClear" type="button">Limpar documentos e dados importados</button></div></div>
  <div id="importEmpty" class="importEmpty" hidden>Não encontramos indicadores suficientes nesse arquivo. Você pode manter o preenchimento manual ou adicionar outro documento.</div>
  </section>`}
 
@@ -261,8 +261,15 @@ function renderImportCandidates(){
  const summary=$('importSummary'),empty=$('importEmpty'),groups=groupedImportCandidates(),keys=Object.keys(groups);if(!keys.length){if(summary)summary.hidden=true;if(empty)empty.hidden=false;return}if(empty)empty.hidden=true;if(summary)summary.hidden=false;if($('importSummaryCount'))$('importSummaryCount').textContent=`${brmiImport.candidates.length} sugest${brmiImport.candidates.length===1?'ão':'ões'}`;
  const root=$('importCandidateGroups');root.innerHTML=keys.map(field=>{const arr=groups[field],conflict=conflictGroup(arr);return `<div class="importGroup"><div class="importGroupHead"><strong>${arr[0].label}</strong><span class="${conflict?'conflict':''}">${conflict?'VALORES DIVERGENTES':'FONTE LOCALIZADA'}</span></div><div class="importCandidates">${arr.map(c=>`<div class="importCandidate"><div class="importCandidateMain"><strong>${c.display}</strong><small>${c.reason}</small><div class="importMeta"><span>${c.source}</span><span class="${c.confidence}">confiança ${c.confidence==='high'?'alta':c.confidence==='medium'?'média':'baixa'}</span></div></div><button type="button" data-import-index="${c._index}" ${c.applied?'disabled':''} class="${c.applied?'importApplied':''}">${c.applied?'Aplicado ✓':'Usar este valor'}</button></div>`).join('')}</div></div>`}).join('');root.querySelectorAll('[data-import-index]').forEach(b=>b.addEventListener('click',()=>applyImportCandidate(Number(b.dataset.importIndex),b)))
 }
+function candidateValuesEqual(a,b){
+ if(!a||!b||a.field!==b.field)return false;
+ if(a.field==='cnpj')return String(a.value)===String(b.value);
+ if(!Number.isFinite(a.value)||!Number.isFinite(b.value))return false;
+ return Math.abs(a.value-b.value)<=Math.max(.01,Math.abs(a.value)*.000001);
+}
 function syncImportCandidateButtons(field,activeIndex){
- document.querySelectorAll('[data-import-index]').forEach(btn=>{const idx=Number(btn.dataset.importIndex),item=brmiImport.candidates[idx];if(!item||item.field!==field)return;const active=idx===activeIndex;item.applied=active;btn.textContent=active?'Aplicado ✓':'Usar este valor';btn.classList.toggle('importApplied',active);btn.disabled=active})
+ const activeItem=brmiImport.candidates[activeIndex];
+ document.querySelectorAll('[data-import-index]').forEach(btn=>{const idx=Number(btn.dataset.importIndex),item=brmiImport.candidates[idx];if(!item||item.field!==field)return;const active=candidateValuesEqual(item,activeItem);item.applied=active;btn.textContent=active?'Aplicado ✓':'Usar este valor';btn.classList.toggle('importApplied',active);btn.disabled=active})
 }
 function applyImportCandidate(i,button){
  const c=brmiImport.candidates[i],el=$(c?.field);if(!c||!el)return false;
@@ -272,7 +279,7 @@ function applyImportCandidate(i,button){
  if(explicit){delete el.dataset.userEdited}
  if(c.field==='cnpj'){el.value=typeof normalizeCnpjInput==='function'?normalizeCnpjInput(c.value):formatImportedCnpj(c.value);el.dataset.importVerified='1';el.dataset.importSource=c.source||'';if(typeof markFieldAuto==='function')markFieldAuto('cnpj','IMPORTADO');syncImportCandidateButtons(c.field,i);if(typeof lookupCnpj==='function')lookupCnpj();return true}
  if(typeof setMoneyInputValue==='function'&&el.closest?.('.money'))setMoneyInputValue(el,c.value);else el.value=Math.round(c.value*100)/100;
- el.dataset.importVerified='1';el.dataset.importSource=c.source||'Documento importado';
+ el.dataset.importVerified='1';el.dataset.importSource=c.source||'Documento importado';if(c.derivedKey)el.dataset.importDerivedKey=c.derivedKey;else delete el.dataset.importDerivedKey;
  if(c.field==='currentConsumptionTaxAnnual'&&$('currentConsumptionMode')){$('currentConsumptionMode').value='manual';el.readOnly=false;el.dataset.sourceNote=c.reason||'';if($('currentConsumptionTaxSource'))$('currentConsumptionTaxSource').textContent='Calculado a partir da DRE importada. '+(c.reason||'Revise a origem antes de concluir.')}
  if(c.field==='rbt12'&&$('revenueSync')?.checked&&typeof syncRevenue==='function'){syncRevenue('annual');if(typeof markFieldDerived==='function')markFieldDerived('monthlyRevenue','CALCULADO')}
  if(c.field==='monthlyRevenue'&&$('revenueSync')?.checked&&typeof syncRevenue==='function'){syncRevenue('monthly');if(typeof markFieldDerived==='function')markFieldDerived('rbt12','CALCULADO')}
