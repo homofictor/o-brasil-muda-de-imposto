@@ -13,7 +13,7 @@ function modelForYear(year){
  const acquisitions=annualRevenue*clamp(num('purchasesPct')/100,0,1),eligible=clamp(num('eligibleCreditPct')/100,0,1),regSup=clamp(num('regularSuppliersPct')/100,0,1);
  const inputCredit=acquisitions*eligible*regSup*fullRegularRate,netVat=Math.max(0,grossVat-inputCredit);
  const hybridCompliance=num('hybridCompliance')*12,fullCompliance=num('fullCompliance')*12;
- const factorRPayroll=num('monthlyPayroll')*12,cppBaseKnown=hasFieldValue('monthlyCppBase')||factorRPayroll===0,cppBaseMonthly=Math.max(0,num('monthlyCppBase')),employerRate=clamp(num('employerRatePct')/100,0,.80),cpp=cppBaseMonthly*12*employerRate;
+ const factorRPayroll=num('monthlyPayroll')*12,cppBaseKnown=hasFieldValue('monthlyCppBase'),cppBaseMonthly=Math.max(0,num('monthlyCppBase')),employerRate=clamp(num('employerRatePct')/100,0,.80),cpp=cppBaseMonthly*12*employerRate;
  const simplePayrollValid=annex!=='IV'||cppBaseKnown,annexCpp=annex==='IV'&&simpleComputable?cpp:0;
  const pureTotal=das+annexCpp,hybridTotal=dasWithout+netVat+annexCpp+hybridCompliance;
  const kind=currentKind(),pres=migrationDefaults(kind),presumedBaseIR=annualRevenue*pres.irpjPres;
