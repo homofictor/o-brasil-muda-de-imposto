@@ -102,7 +102,7 @@ jobs:
               const written = writeVerifiedAccountingProfit();
               return {
                 written,
-                profit: Number(profit.value),
+                profit: parseMoneyValue(profit.value),
                 rbt12Candidates: brmiImport.candidates.filter(x => x.field === 'rbt12').length
               };
             });
