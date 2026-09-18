@@ -310,11 +310,47 @@ function updateEconomicMetricAvailability(){
   const note=margin.closest('.field')?.querySelector('small');if(note)note.textContent='O sistema tentou reconstruir o EBITDA pela DRE e pelo BP, mas faltaram dados de resultado operacional e/ou depreciação e amortização.';
  }
 }
+
+function forceApplyVerifiedAccountingProfit(){
+ const el=$('realAccountingProfitAnnual');if(!el)return null;
+ const values=[];
+ for(const doc of brmiImport.docs){
+  if(doc.type!=='DRE'&&doc.type!=='Balanço + DRE')continue;
+  const dreText=typeof importStatementSections==='function'?importStatementSections(doc.text).dre:doc.text;
+  let value=typeof firstLatestLineValue==='function'?firstLatestLineValue(dreText,[
+   ['lucro liquido antes provisao irpj e csll','lucro liquido antes da provisao irpj e csll'],
+   ['lucro antes do irpj e csll','resultado antes do irpj e csll'],
+   ['lucro antes do imposto de renda','resultado antes dos tributos sobre o lucro']
+  ]):null;
+  if(value==null&&typeof firstLatestLineValue==='function'){
+   const net=firstLatestLineValue(dreText,[['lucro liquido do exercicio','resultado do exercicio','lucro liquido','resultado liquido']]);
+   const provision=firstLatestLineValue(dreText,[['provisao p irpj e csll','provisao de irpj e csll','provisao para irpj e csll']]);
+   if(net!=null&&provision!=null)value=net+Math.abs(provision);
+  }
+  if(value!=null&&Number.isFinite(value))values.push({value,source:doc.file});
+ }
+ if(!values.length)return null;
+ const max=Math.max(...values.map(x=>x.value)),min=Math.min(...values.map(x=>x.value));
+ if(max>0&&(max-min)/max>.05)return null;
+ const chosen=values[0],box=typeof fieldStateContainer==='function'?fieldStateContainer('realAccountingProfitAnnual'):el.closest('.field');
+ const hasManualValue=String(el.value||'').trim()!==''&&box?.classList.contains('state-complete')&&!box?.classList.contains('state-auto');
+ if(hasManualValue)return null;
+ if(typeof setMoneyInputValue==='function')setMoneyInputValue(el,chosen.value);else el.value=Math.round(chosen.value*100)/100;
+ el.dataset.importSource=chosen.source;
+ el.dataset.importVerified='1';
+ if(typeof markFieldAuto==='function')markFieldAuto('realAccountingProfitAnnual','IMPORTADO');
+ const groups=groupedImportCandidates(),arr=groups.realAccountingProfitAnnual||[];
+ if(arr.length){
+  let idx=arr.findIndex(x=>Math.abs(x.value-chosen.value)<.01);
+  if(idx>=0&&arr[idx]._index!=null)syncImportCandidateButtons('realAccountingProfitAnnual',arr[idx]._index);
+ }
+ return chosen.value;
+}
 async function autoLookupImportedCompany(docs){const ids=[...new Set((docs||[]).map(d=>d.cnpj).filter(Boolean))];if(ids.length!==1)return;const raw=ids[0],el=$('cnpj'),status=$('lookupStatus');if(!el)return;const current=importedCnpjDigits(el.value);if(current&&current!==raw){if(status){status.className='status';status.textContent=`O documento contém o CNPJ ${formatImportedCnpj(raw)}, diferente do CNPJ já informado. Revise antes de aplicar.`}return}el.value=typeof normalizeCnpjInput==='function'?normalizeCnpjInput(raw):formatImportedCnpj(raw);if(typeof markFieldAuto==='function')markFieldAuto('cnpj','IMPORTADO');if(brmiImport.lastLookupCnpj===raw)return;brmiImport.lastLookupCnpj=raw;if(typeof lookupCnpj==='function')await lookupCnpj()}
 async function processImportFiles(files){
  const list=[...files];if(!list.length)return;brmiImport.files=list.map(f=>({name:f.name,ext:extOf(f.name),status:'Na fila'}));brmiImport.docs=[];brmiImport.candidates=[];renderImportFiles();const progress=$('importProgress');if(progress)progress.hidden=false;
  for(let i=0;i<list.length;i++){const f=list[i],row=brmiImport.files[i];row.status='Analisando';row.statusClass='';renderImportFiles();if($('importProgressTitle'))$('importProgressTitle').textContent=`Analisando ${f.name}`;if($('importProgressText'))$('importProgressText').textContent=`Arquivo ${i+1} de ${list.length}. Procurando faturamento, clientes, compras, caixa, BP, dívida, juros, folha e margem.`;try{const parsed=await readImportFile(f),doc=analyseImportDoc(f,parsed);row.type=doc.type;row.status=doc.candidates.length||doc.purchaseTotal?'Lido':'Sem indicador';row.statusClass=doc.candidates.length||doc.purchaseTotal?'ok':'warn';brmiImport.docs.push(doc);brmiImport.candidates.push(...doc.candidates)}catch(e){row.status='Não lido';row.statusClass='bad';row.type=e.message}renderImportFiles();await new Promise(r=>setTimeout(r,220))}
- buildCrossCandidates(brmiImport.docs,brmiImport.candidates);if(progress)progress.hidden=true;renderImportCandidates();autoApplyDocumentCalculations();updateEconomicMetricAvailability();await autoLookupImportedCompany(brmiImport.docs);autoApplyDocumentCalculations();updateEconomicMetricAvailability();if(typeof calculate==='function')calculate()
+ buildCrossCandidates(brmiImport.docs,brmiImport.candidates);if(progress)progress.hidden=true;renderImportCandidates();autoApplyDocumentCalculations();forceApplyVerifiedAccountingProfit();updateEconomicMetricAvailability();await autoLookupImportedCompany(brmiImport.docs);autoApplyDocumentCalculations();forceApplyVerifiedAccountingProfit();updateEconomicMetricAvailability();if(typeof calculate==='function')calculate();forceApplyVerifiedAccountingProfit()
 }
 function clearImport(){brmiImport.files=[];brmiImport.docs=[];brmiImport.candidates=[];renderImportFiles();if($('importSummary'))$('importSummary').hidden=true;if($('importEmpty'))$('importEmpty').hidden=true;const inp=$('importFiles');if(inp)inp.value=''}
 function initDocumentImport(){const setup=$('setupMount');if(!setup||$('importPanel'))return;setup.insertAdjacentHTML('beforeend',importMarkup());const input=$('importFiles'),drop=$('importDrop'),choose=$('importChooseBtn');choose?.addEventListener('click',e=>{e.stopPropagation();input?.click()});drop?.addEventListener('click',e=>{if(e.target!==choose)input?.click()});drop?.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();input?.click()}});input?.addEventListener('change',()=>processImportFiles(input.files));['dragenter','dragover'].forEach(ev=>drop?.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('drag')}));['dragleave','drop'].forEach(ev=>drop?.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('drag')}));drop?.addEventListener('drop',e=>processImportFiles(e.dataTransfer.files));$('importApplyHigh')?.addEventListener('click',applyHighConfidenceCandidates);$('importClear')?.addEventListener('click',clearImport)}
