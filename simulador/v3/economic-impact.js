@@ -57,7 +57,7 @@
   return null;
  }
 
- function fieldNumber(id){const node=document.getElementById(id);return Number(node?.value||0)}
+ function fieldNumber(id){const node=document.getElementById(id);if(!node)return 0;return typeof root.parseMoneyValue==='function'?root.parseMoneyValue(node.value):Number(node.value||0)}
  function hasField(id){const node=document.getElementById(id);return !!node&&String(node.value).trim()!==''}
  function money(value){return Number.isFinite(value)?brl2.format(value):'—'}
  function percent(value){return Number.isFinite(value)?pct1(value):'—'}
