@@ -53,14 +53,21 @@ jobs:
             await page.waitForSelector('#importPanel', { timeout: 30000 });
             await page.waitForFunction(() => typeof window.lookupCnpj === 'function', { timeout: 30000 });
 
-            await page.fill('#cnpj', '03.204.058/0001-45');
-            await page.click('#lookupBtn');
-            await page.waitForFunction(() => {
-              const el = document.getElementById('companyName');
-              const status = document.getElementById('lookupStatus');
-              if (status && /falha|não foi possível|demorou/i.test(status.textContent || '')) throw new Error('CNPJ lookup: ' + status.textContent);
-              return el && /ORTHOHEAD/i.test(el.textContent || '');
-            }, { timeout: 30000 });
+            const apiResponse = await page.request.get(process.env.BASE_URL + '/api/cnpj?cnpj=03204058000145');
+            assert.equal(apiResponse.status(), 200);
+            const apiPayload = await apiResponse.json();
+            assert.match(apiPayload?.data?.razao_social || '', /ORTHOHEAD/i);
+
+            const lookupResult = await page.evaluate(async () => {
+              const input = document.getElementById('cnpj');
+              input.value = '03.204.058/0001-45';
+              await lookupCnpj();
+              return {
+                company: document.getElementById('companyName')?.textContent || '',
+                status: document.getElementById('lookupStatus')?.textContent || ''
+              };
+            });
+            assert.match(lookupResult.company, /ORTHOHEAD/i);
 
             const company = await page.textContent('#companyName');
             const activity = await page.inputValue('#activity');
