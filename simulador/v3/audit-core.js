@@ -126,8 +126,26 @@
  };
  window.patchAuditImportAnalyzer();
 
+ function ensureImportedProfitBeforeModel(){
+  const el=$('realAccountingProfitAnnual');if(!el||String(el.value||'').trim()!=='')return;
+  const items=(window.brmiImport?.candidates||[]).filter(x=>x?.field==='realAccountingProfitAnnual'&&Number.isFinite(x.value));
+  if(!items.length)return;
+  const score={high:3,medium:2,low:1},ranked=[...items].sort((a,b)=>(score[b.confidence]||0)-(score[a.confidence]||0)),best=ranked[0],peers=ranked.filter(x=>x.confidence===best.confidence);
+  if(peers.length>1){
+   const vals=peers.map(x=>x.value),max=Math.max(...vals),min=Math.min(...vals);
+   if(max>0&&(max-min)/max>.05)return;
+  }
+  if(typeof setMoneyInputValue==='function')setMoneyInputValue(el,best.value);else el.value=Math.round(best.value*100)/100;
+  el.dataset.importVerified='1';el.dataset.importSource=best.source||'DRE importada';
+  if(typeof markFieldAuto==='function')markFieldAuto('realAccountingProfitAnnual','IMPORTADO');
+  try{
+   const saved=JSON.parse(localStorage.getItem('brmi_v3')||'{}');saved.realAccountingProfitAnnual=String(el.value);localStorage.setItem('brmi_v3',JSON.stringify(saved));
+  }catch(_){}
+ }
+
  const originalModelForYear=window.modelForYear;
  window.modelForYear=function(year){
+  ensureImportedProfitBeforeModel();
   const r=originalModelForYear(year),pres=window.migrationDefaults(),normal=Math.min(r.annualRevenue,5000000),excess=Math.max(0,r.annualRevenue-5000000),baseIR=normal*pres.irpjPres+excess*pres.irpjPres*1.10,baseCS=normal*pres.csllPres+excess*pres.csllPres*1.10;
   const irpj=baseIR*.15+Math.max(0,baseIR-240000)*.10,csll=baseCS*.09,barred=mandatoryRealPattern.test(companyText()),over78=r.rbt12>78000000,presumedValid=r.cppBaseKnown&&!barred&&!over78,presumedTotal=r.netVat+irpj+csll+r.cpp+r.legacy+r.fullCompliance;
   r.irpj=irpj;r.csll=csll;r.presumedBaseIR=baseIR;r.presumedBaseCSLL=baseCS;r.presumedValid=presumedValid;r.presumedTotal=presumedTotal;r.presumedBarred=barred;r.presumedOverLimit=over78;
