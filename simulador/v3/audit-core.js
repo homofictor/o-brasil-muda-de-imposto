@@ -40,11 +40,11 @@
  ensurePresumedFields();
 
  function inferPresumedProfile(){
-  const text=companyText(),kind=currentKind();
+  const text=companyText(),kind=currentKind(),code=String(companyData?.cnae_fiscal||'').replace(/\D/g,'').padStart(7,'0'),div=Number(code.slice(0,2));
+  if(kind==='commerce'||kind==='industry'||(div>=10&&div<=47&&![35,36,41,42,43].includes(div)))return{irpj:8,csll:12,confidence:'alta',reason:'atividade comercial ou industrial'};
   if(/transporte.{0,20}(carga|cargas)|carga.{0,20}transporte/.test(text))return{irpj:8,csll:12,confidence:'alta',reason:'transporte de cargas'};
   if(/transporte/.test(text))return{irpj:16,csll:12,confidence:'média',reason:'serviço de transporte; confirme se é carga ou passageiros'};
-  if(/hospital|aux[ií]lio diagn[oó]stico|terapia|patologia|imagenologia|radiologia|medicina nuclear|an[aá]lises cl[ií]nicas/.test(text))return{irpj:32,csll:32,confidence:'baixa',reason:'serviço de saúde; percentuais reduzidos de 8% e 12% dependem de requisitos específicos, por isso não são aplicados automaticamente'};
-  if(kind==='commerce'||kind==='industry')return{irpj:8,csll:12,confidence:'alta',reason:'atividade comercial ou industrial'};
+  if(div===86||((kind==='service')&&/hospital|aux[ií]lio diagn[oó]stico|terapia|patologia|imagenologia|radiologia|medicina nuclear|an[aá]lises cl[ií]nicas/.test(text)))return{irpj:32,csll:32,confidence:'baixa',reason:'serviço de saúde; 8% no IRPJ e 12% na CSLL podem ser aplicáveis quando os requisitos legais estiverem comprovados'};
   return{irpj:32,csll:32,confidence:'média',reason:'prestação de serviços em geral'};
  }
  function applyPresumedSuggestion(force=false){
@@ -76,7 +76,7 @@
  window.applyProfessionalReductionState=applyBenefit;
  const originalApplySectorProfile=window.applySectorProfile;
  window.applySectorProfile=function(profile=sectorSuggestion){
-  originalApplySectorProfile(profile);applyBenefit(profile);applyPresumedSuggestion(true);
+  originalApplySectorProfile(profile);applyBenefit(profile);applyPresumedSuggestion(false);
   const el=$('purchasesPct');if(el&&profile?.purchasePct!=null){const state=fieldStateContainer?.('purchasesPct');const userConfirmed=state?.classList.contains('state-complete')&&!state?.classList.contains('state-auto');if(!userConfirmed){el.value=profile.purchasePct;if(typeof markFieldAuto==='function')markFieldAuto('purchasesPct','SUGERIDO');const s=el.closest('.field')?.querySelector('small');if(s)s.textContent=`Estimativa setorial inicial de ${profile.purchasePct}% do faturamento em aquisições e despesas tributadas. Substitua pelo valor da DRE ou dos relatórios de compras quando disponível.`}}
  };
  applyPresumedSuggestion(false);
@@ -85,41 +85,72 @@
  if(typeof originalValidate==='function')window.validateDiagnosisInputs=function(){const errors=originalValidate();const candidate=!!sectorSuggestion?.professionalReduction30Candidate||benefitCandidate(companyData?.cnae_fiscal,companyData?.cnae_fiscal_descricao);if(candidate&&$('professionalReduction30')?.value==='review')errors.push('Confirme se a redução de 30% do IBS/CBS para profissão regulamentada é aplicável. O CNAE sozinho não comprova os requisitos do art. 127 da LC 214/2025.');return errors};
 
  window.financialMetrics=function(){
-  const cash=Math.max(0,num('cashAndEquivalents')),liquid=Math.max(0,num('liquidInvestments')),reserve=cash+liquid,ac=Math.max(0,num('currentAssets')),pc=Math.max(0,num('currentLiabilities')),ccl=ac-pc,start=Math.max(0,num('debtStart')),end=Math.max(0,num('debtEnd')),avg=start>0&&end>0?(start+end)/2:(end>0?end:start),interest=Math.max(0,num('interestExpense')),months=clamp(num('dreMonths')||12,1,12),annualRate=avg>0&&interest>0?(interest/avg)*(12/months):null;
-  if($('cashReserve'))$('cashReserve').value=Math.round(reserve*100)/100;if($('workingCapitalNet'))$('workingCapitalNet').value=Math.round(ccl*100)/100;if($('debtAverage'))$('debtAverage').value=Math.round(avg*100)/100;
+  const filled=id=>String($(id)?.value??'').trim()!=='',cashKnown=filled('cashAndEquivalents')||filled('liquidInvestments'),cclKnown=filled('currentAssets')&&filled('currentLiabilities'),debtKnown=filled('debtStart')||filled('debtEnd'),interestKnown=filled('interestExpense');
+  const cash=Math.max(0,num('cashAndEquivalents')),liquid=Math.max(0,num('liquidInvestments')),reserve=cash+liquid,ac=Math.max(0,num('currentAssets')),pc=Math.max(0,num('currentLiabilities')),ccl=ac-pc,start=Math.max(0,num('debtStart')),end=Math.max(0,num('debtEnd')),avg=start>0&&end>0?(start+end)/2:(end>0?end:start),interest=Math.max(0,num('interestExpense')),months=clamp(num('dreMonths')||12,1,12);
+  const rawAnnualRate=debtKnown&&interestKnown&&avg>0&&interest>0?(interest/avg)*(12/months):null,automaticRatePlausible=rawAnnualRate!=null&&Number.isFinite(rawAnnualRate)&&rawAnnualRate<=1;
+  if($('cashReserve'))$('cashReserve').value=cashKnown?Math.round(reserve*100)/100:'';
+  if($('workingCapitalNet'))$('workingCapitalNet').value=cclKnown?Math.round(ccl*100)/100:'';
+  if($('debtAverage'))$('debtAverage').value=debtKnown?Math.round(avg*100)/100:'';
   const mode=$('financeRateMode')?.value||'auto';
-  if(mode==='auto'&&annualRate!=null&&Number.isFinite(annualRate)){$('financeRate').value=Math.round(annualRate*10000)/100;if(typeof markFieldDerived==='function')markFieldDerived('financeRate','CALCULADO');$('financeRateSource').textContent=`Juros e encargos divididos pela dívida financeira média, anualizados para ${months} mês${months===1?'':'es'} de DRE.`}
-  else if(mode==='auto'){if($('financeRate'))$('financeRate').value='';$('financeRateSource').textContent=avg<=0?'Não aplicável automaticamente: não há dívida financeira informada. Para simular novo financiamento, selecione premissa manual.':'Não calculado: informe juros e encargos da dívida ou selecione premissa manual.'}
-  else $('financeRateSource').textContent='Premissa manual para custo de financiamento atual ou futuro.';
+  if(mode==='auto'&&automaticRatePlausible){
+   $('financeRate').value=Math.round(rawAnnualRate*10000)/100;
+   if(typeof markFieldDerived==='function')markFieldDerived('financeRate','CALCULADO');
+   if($('financeRateSource'))$('financeRateSource').textContent=`Despesas financeiras/juros do período ÷ dívida financeira média, anualizado para ${months} mês${months===1?'':'es'} de DRE.`;
+  }else if(mode==='auto'&&rawAnnualRate!=null&&Number.isFinite(rawAnnualRate)&&rawAnnualRate>1){
+   $('financeRate').value='';if(typeof markFieldPending==='function'){markFieldPending('financeRate','REVISAR BASE');markFieldPending('interestExpense','REVISAR')}
+   if($('financeRateSource'))$('financeRateSource').textContent=`A relação encontrada seria de ${(rawAnnualRate*100).toLocaleString('pt-BR',{maximumFractionDigits:2})}% a.a. Revise a composição das despesas financeiras e da dívida antes de usar o valor.`;
+  }else if(mode==='auto'){
+   if($('financeRate'))$('financeRate').value='';
+   if($('financeRateSource'))$('financeRateSource').textContent=avg<=0?'Não calculado: não há dívida financeira informada.':'Não calculado: informe despesas financeiras/juros da dívida ou selecione premissa manual.';
+  }else if($('financeRateSource'))$('financeRateSource').textContent='Premissa manual para custo de financiamento atual ou futuro.';
   if(typeof markFieldDerived==='function'){markFieldDerived('cashReserve','CALCULADO');markFieldDerived('workingCapitalNet','CALCULADO');markFieldDerived('debtAverage','CALCULADO')}
-  return{cash,liquid,reserve,ac,pc,ccl,start,end,avg,interest,months,annualRate};
+  return{cash,liquid,reserve,ac,pc,ccl,start,end,avg,interest,months,annualRate:automaticRatePlausible?rawAnnualRate:null,rawAnnualRate};
  };
 
  window.patchAuditImportAnalyzer=function(){
   const original=window.analyseImportDoc;if(typeof original!=='function'||original.__auditPatched)return;
   const wrapped=function(file,parsed){
    const out=original(file,parsed);out.candidates=(out.candidates||[]).filter(x=>x&&x.field!=='realProfitMargin');const text=parsed.text,type=detectDoc(text,parsed.rows),dreDoc=type==='DRE'||type==='Balanço + DRE',months=clamp(num('dreMonths')||12,1,12),sections=typeof importStatementSections==='function'?importStatementSections(text):{dre:text},dreText=sections.dre||text;
-   let pretax=firstLineValue(dreText,[['lucro antes do irpj e csll'],['resultado antes do irpj e csll'],['lucro antes do imposto de renda'],['resultado antes dos tributos sobre o lucro']]),pretaxReason='Resultado antes dos tributos sobre o lucro localizado na DRE.';
-   if(pretax==null&&dreDoc){const netResult=lineValue(dreText,['resultado do exercicio','resultado exercicio','lucro liquido','resultado liquido']),taxProvision=lineValue(dreText,['provisao de irpj e csll','provisao para irpj e csll']);if(netResult!=null&&taxProvision!=null){pretax=netResult+Math.abs(taxProvision);pretaxReason='Resultado do exercício somado à provisão de IRPJ e CSLL identificada na DRE.'}}
-   if(pretax!=null&&dreDoc){const annualPretax=pretax*(12/months);out.candidates.push(candidate('realAccountingProfitAnnual','Lucro contábil anual antes de IRPJ e CSLL',annualPretax,file.name,'medium',`${pretaxReason} Valor anualizado a partir de ${months} ${months===1?'mês':'meses'}; revise antes de usar no cenário pro forma.`,fmtMoney(annualPretax)))}
-   const revenue=firstLineValue(dreText,[['receita bruta','receita operacional bruta','faturamento bruto','faturamento total'],['receita de vendas','receita de servicos','receita de serviços']]);
-   const ebitda=firstLineValue(dreText,[['ebitda'],['lajida']]);
-   if(revenue>0&&ebitda!=null&&dreDoc)out.candidates.push(candidate('currentOperatingMarginPct','Margem operacional atual',100*ebitda/revenue,file.name,'high','EBITDA ou LAJIDA dividido pela receita bruta identificada na DRE. Confirme se a demonstração usa a mesma definição do cenário.',fmtPct(100*ebitda/revenue)));
-   const consumptionTaxes=firstLineValue(dreText,[['impostos incidentes sobre vendas'],['tributos incidentes sobre vendas'],['impostos sobre vendas e servicos'],['impostos sobre vendas e serviços']]);
-   if(consumptionTaxes!=null&&dreDoc){const annualTaxes=Math.abs(consumptionTaxes)*(12/months);out.candidates.push(candidate('currentConsumptionTaxAnnual','Carga atual líquida de tributos sobre consumo',annualTaxes,file.name,'medium',`Tributos sobre vendas identificados na DRE e anualizados a partir de ${months} ${months===1?'mês':'meses'}. Confirme se incluem somente PIS/Cofins, ICMS, ISS e IPI, líquidos dos créditos aplicáveis.`,fmtMoney(annualTaxes)))}
-   const salaries=lineValue(dreText,['salarios','ordenados'],['encargos']),prolabore=lineValue(dreText,['pro labore','pro-labore']),remuneration=(salaries||0)+(prolabore||0);
-   if(remuneration>0&&dreDoc)out.candidates.push(candidate('monthlyCppBase','Remunerações mensais sujeitas à contribuição patronal',remuneration/months,file.name,'medium','Salários e pró-labore identificados sem somar contas genéricas de encargos. Confirme incidências e periodicidade.',fmtMoney(remuneration/months)));
+   let pretax=typeof firstLatestLineValue==='function'?firstLatestLineValue(dreText,[['lucro liquido antes provisao irpj e csll','lucro liquido antes da provisao irpj e csll','lucro antes do irpj e csll','resultado antes do irpj e csll','lucro antes do imposto de renda','resultado antes dos tributos sobre o lucro']]):firstLineValue(dreText,[['lucro antes do irpj e csll'],['resultado antes do irpj e csll'],['lucro antes do imposto de renda'],['resultado antes dos tributos sobre o lucro']]),pretaxReason='Resultado antes de IRPJ e CSLL localizado na DRE.';
+   if(pretax==null&&dreDoc){const netResult=typeof firstLatestLineValue==='function'?firstLatestLineValue(dreText,[['lucro liquido do exercicio','resultado do exercicio','lucro liquido','resultado liquido']]):lineValue(dreText,['resultado do exercicio','resultado exercicio','lucro liquido','resultado liquido']),taxProvision=typeof firstLatestLineValue==='function'?firstLatestLineValue(dreText,[['provisao p irpj e csll','provisao de irpj e csll','provisao para irpj e csll']]):lineValue(dreText,['provisao de irpj e csll','provisao para irpj e csll']);if(netResult!=null&&taxProvision!=null){pretax=netResult+Math.abs(taxProvision);pretaxReason='Lucro líquido somado à provisão de IRPJ e CSLL identificada na DRE.'}}
+   if(pretax!=null&&dreDoc&&!out.candidates.some(x=>x.field==='realAccountingProfitAnnual')){const annualPretax=pretax*(12/months);out.candidates.push(candidate('realAccountingProfitAnnual','Lucro contábil anual antes de IRPJ e CSLL',annualPretax,file.name,'high',`${pretaxReason} Valor anualizado a partir de ${months} ${months===1?'mês':'meses'}.`,fmtMoney(annualPretax)))}
+   const salaries=typeof firstLatestLineValue==='function'?firstLatestLineValue(dreText,[['salarios','ordenados']],['encargos']):lineValue(dreText,['salarios','ordenados'],['encargos']),prolabore=typeof firstLatestLineValue==='function'?firstLatestLineValue(dreText,[['pro labore','pro-labore']]):lineValue(dreText,['pro labore','pro-labore']),remuneration=(salaries||0)+(prolabore||0);
+   if(remuneration>0&&dreDoc&&!out.candidates.some(x=>x.field==='monthlyCppBase'))out.candidates.push(candidate('monthlyCppBase','Remunerações mensais sujeitas à contribuição patronal',remuneration/months,file.name,'medium','Salários e pró-labore identificados sem somar contas genéricas de encargos. Confirme incidências e periodicidade.',fmtMoney(remuneration/months)));
    return out;
   };wrapped.__auditPatched=true;window.analyseImportDoc=wrapped;
  };
  window.patchAuditImportAnalyzer();
 
+ function ensureImportedProfitBeforeModel(){
+  const el=$('realAccountingProfitAnnual');if(!el||el.dataset.userEdited==='1')return;
+  const currentText=String(el.value||'').trim(),currentValue=typeof parseMoneyValue==='function'?parseMoneyValue(currentText):Number(currentText||0),alreadyImported=el.dataset.importVerified==='1';
+  if(currentText&&!alreadyImported&&Number.isFinite(currentValue)&&Math.abs(currentValue)>.000001)return;
+  const verified=window.brmiImport?.verifiedAccountingProfit;
+  if(verified&&Number.isFinite(verified.value)){
+   if(typeof setMoneyInputValue==='function')setMoneyInputValue(el,verified.value);else el.value=Math.round(verified.value*100)/100;
+   el.dataset.importVerified='1';el.dataset.importSource=verified.source||'DRE importada';
+   if(typeof markFieldAuto==='function')markFieldAuto('realAccountingProfitAnnual','IMPORTADO');
+   return;
+  }
+  const items=(window.brmiImport?.candidates||[]).filter(x=>x?.field==='realAccountingProfitAnnual'&&Number.isFinite(x.value));
+  if(!items.length)return;
+  const score={high:3,medium:2,low:1},ranked=[...items].sort((a,b)=>(score[b.confidence]||0)-(score[a.confidence]||0)),best=ranked[0],peers=ranked.filter(x=>x.confidence===best.confidence);
+  if(peers.length>1){
+   const vals=peers.map(x=>x.value),max=Math.max(...vals),min=Math.min(...vals);
+   if(max>0&&(max-min)/max>.05)return;
+  }
+  if(typeof setMoneyInputValue==='function')setMoneyInputValue(el,best.value);else el.value=Math.round(best.value*100)/100;
+  el.dataset.importVerified='1';el.dataset.importSource=best.source||'DRE importada';
+  if(typeof markFieldAuto==='function')markFieldAuto('realAccountingProfitAnnual','IMPORTADO');
+ }
+
  const originalModelForYear=window.modelForYear;
  window.modelForYear=function(year){
+  ensureImportedProfitBeforeModel();
   const r=originalModelForYear(year),pres=window.migrationDefaults(),normal=Math.min(r.annualRevenue,5000000),excess=Math.max(0,r.annualRevenue-5000000),baseIR=normal*pres.irpjPres+excess*pres.irpjPres*1.10,baseCS=normal*pres.csllPres+excess*pres.csllPres*1.10;
-  const irpj=baseIR*.15+Math.max(0,baseIR-240000)*.10,csll=baseCS*.09,barred=mandatoryRealPattern.test(companyText()),over78=r.rbt12>78000000,presumedValid=r.cppBaseKnown&&!barred&&!over78,presumedTotal=r.netVat+irpj+csll+r.cpp+r.legacy+r.fullCompliance;
+  const irpj=baseIR*.15+Math.max(0,baseIR-240000)*.10,csll=baseCS*.09,barred=mandatoryRealPattern.test(companyText()),over78=r.rbt12>78000000,presumedValid=r.cppBaseKnown&&r.legacyKnown&&!barred&&!over78,presumedTotal=r.netVat+irpj+csll+r.cpp+r.legacy+r.fullCompliance;
   r.irpj=irpj;r.csll=csll;r.presumedBaseIR=baseIR;r.presumedBaseCSLL=baseCS;r.presumedValid=presumedValid;r.presumedTotal=presumedTotal;r.presumedBarred=barred;r.presumedOverLimit=over78;
-  const m=r.allModels.find(x=>x.key==='presumed');if(m){m.total=presumedTotal;m.tax=presumedTotal-r.fullCompliance;m.valid=presumedValid;m.validationMessage=!r.cppBaseKnown?'Informe a remuneração mensal sujeita à contribuição patronal.':barred?'Há indício de atividade legalmente obrigada ao Lucro Real.':over78?'RBT12 acima de R$ 78 milhões: Lucro Presumido não considerado elegível para a análise prospectiva.':''}
+  const m=r.allModels.find(x=>x.key==='presumed');if(m){m.total=presumedTotal;m.tax=presumedTotal-r.fullCompliance;m.valid=presumedValid;m.validationMessage=!r.cppBaseKnown?'Informe a remuneração mensal sujeita à contribuição patronal.':!r.legacyKnown?'Informe a carga efetiva atual de ICMS/ISS para a transição de 2027 a 2032.':barred?'Há indício de atividade legalmente obrigada ao Lucro Real.':over78?'RBT12 acima de R$ 78 milhões: Lucro Presumido não considerado elegível para a análise prospectiva.':''}
   const valid=r.models.filter(x=>x.valid!==false&&Number.isFinite(x.total));r.taxBest=valid.length?[...valid].sort((a,b)=>a.total-b.total)[0]:{key:'pending',name:'Dados insuficientes',total:Infinity,valid:false};
   return r;
  };

@@ -66,7 +66,13 @@ function regularRates(year){
  if(year<=2028)return{cbs:Math.max(0,fullCbs-.001),ibs:.001};
  return{cbs:fullCbs,ibs:fullIbs*({2029:.1,2030:.2,2031:.3,2032:.4,2033:1}[year]||1)};
 }
+function syncMixFull(mark=true){
+ const reductions=['mix30','mix40','mix60','mixZero'].reduce((s,id)=>s+Math.max(0,num(id)),0),full=Math.max(0,100-reductions),input=$('mixFull');
+ if(input){input.value=Math.round(full*100)/100;input.readOnly=true;if(mark&&typeof markFieldDerived==='function')markFieldDerived('mixFull','CALCULADO')}
+ return{full,reductions};
+}
 function revenueRateFactor(){
+ syncMixFull(false);
  const ids=[['mixFull',1],['mix30',.7],['mix40',.6],['mix60',.4],['mixZero',0]],total=ids.reduce((s,[id])=>s+num(id),0),el=$('mixTotal');
  if(el){el.textContent=`${total.toFixed(0)}%`;el.className='total '+(Math.abs(total-100)<.01?'ok':'bad')}
  if(total<=0)return 1;return ids.reduce((s,[id,f])=>s+num(id)*f,0)/total;
@@ -102,7 +108,7 @@ function sectorProfile(cnae,description){
  const code=String(cnae||'').replace(/\D/g,'').padStart(7,'0'),div=Number(code.slice(0,2)),text=(description||'').toLowerCase();
  const base={b2b:60,creditable:70,suppliers:80,confidence:'baixa',reason:'perfil setorial genérico',mix:{full:100,r30:0,r40:0,r60:0,zero:0}};
  if(div>=10&&div<=33)return{...base,b2b:95,creditable:92,suppliers:92,confidence:'alta',reason:'indústria de transformação, tipicamente B2B e intensiva em insumos'};
- if(div===46)return{...base,b2b:95,creditable:95,suppliers:90,confidence:'alta',reason:'comércio atacadista, tipicamente B2B'};
+ if(div===46){if(/medic|odont|hospital|saude|saúde|dispositivo/.test(text))return{...base,b2b:95,creditable:95,suppliers:90,confidence:'média',reason:'comércio atacadista B2B; produtos médico-hospitalares podem ter tratamentos específicos e exigem revisão por NCM/cClassTrib',treatmentReview:true};return{...base,b2b:95,creditable:95,suppliers:90,confidence:'alta',reason:'comércio atacadista, tipicamente B2B'}};
  if(div===47){
   if(/supermerc|mercado|mercearia|padaria|alimento/.test(text))return{...base,b2b:10,creditable:90,suppliers:85,confidence:'média',reason:'varejo alimentar, tipicamente B2C; cesta de produtos pode misturar alíquota cheia e zero',mix:{full:70,r30:0,r40:0,r60:0,zero:30}};
   return{...base,b2b:10,creditable:90,suppliers:85,confidence:'alta',reason:'comércio varejista, tipicamente B2C'};
@@ -121,7 +127,7 @@ function applySectorProfile(profile=sectorSuggestion){
  if(!profile)return;
  const set=(id,v,label='SUGERIDO')=>{const el=$(id);if(!el)return;el.value=v;if(typeof markFieldAuto==='function')markFieldAuto(id,label)};
  set('b2bPct',profile.b2b);set('eligibleCreditPct',profile.creditable);set('regularSuppliersPct',profile.suppliers);
- const m=profile.mix||{};set('mixFull',m.full??100);set('mix30',m.r30??0);set('mix40',m.r40??0);set('mix60',m.r60??0);set('mixZero',m.zero??0);
+ const m=profile.mix||{};set('mix30',m.r30??0);set('mix40',m.r40??0);set('mix60',m.r60??0);set('mixZero',m.zero??0);syncMixFull(true);
  if($('b2bHint'))$('b2bHint').textContent=`Estimado pelo CNAE · confiança ${profile.confidence}. ${profile.reason}.`;
  if($('creditHint'))$('creditHint').textContent=`Estimado pelo perfil de gastos do setor · confiança ${profile.confidence}.`;
  if($('supplierHint'))$('supplierHint').textContent=`Estimado pela cadeia de fornecedores do setor · confiança ${profile.confidence}.`;
@@ -178,22 +184,27 @@ function financialMetrics(){
  const avg=start>0&&end>0?(start+end)/2:(end>0?end:start);
  const interest=Math.max(0,num('interestExpense')),months=clamp(num('dreMonths')||12,1,12);
  let annualRate=debtKnown&&interestKnown&&avg>0&&interest>0?(interest/avg)*(12/months):null;
+ const automaticRatePlausible=annualRate!=null&&Number.isFinite(annualRate)&&annualRate<=1;
  if($('cashReserve'))$('cashReserve').value=cashKnown?Math.round(reserve*100)/100:'';
  if($('workingCapitalNet'))$('workingCapitalNet').value=cclKnown?Math.round(ccl*100)/100:'';
  if($('debtAverage'))$('debtAverage').value=debtKnown?Math.round(avg*100)/100:'';
  const mode=$('financeRateMode')?.value||'auto';
- if(mode==='auto'&&annualRate!=null&&Number.isFinite(annualRate)){
+ if(mode==='auto'&&automaticRatePlausible){
   $('financeRate').value=Math.round(annualRate*10000)/100;
   if(typeof markFieldDerived==='function')markFieldDerived('financeRate','CALCULADO');
-  if($('financeRateSource'))$('financeRateSource').textContent=`Juros/encargos ÷ dívida financeira média, anualizado para ${months} mês${months===1?'':'es'} de DRE.`;
+  if($('financeRateSource'))$('financeRateSource').textContent=`Juros e encargos específicos da dívida ÷ dívida financeira média, anualizado para ${months} mês${months===1?'':'es'} de DRE.`;
+ }else if(mode==='auto'&&annualRate!=null&&Number.isFinite(annualRate)&&annualRate>1){
+  $('financeRate').value='';
+  if(typeof markFieldPending==='function'){markFieldPending('financeRate','REVISAR BASE');markFieldPending('interestExpense','REVISAR')}
+  if($('financeRateSource'))$('financeRateSource').textContent=`A relação encontrada seria de ${(annualRate*100).toLocaleString('pt-BR',{maximumFractionDigits:2})}% a.a., acima do limite de validação automática. Revise se o numerador contém apenas juros e encargos vinculados às dívidas consideradas.`;
  }else if(mode==='auto'){
   $('financeRate').value='';
-  if($('financeRateSource'))$('financeRateSource').textContent='Sem dados suficientes de juros e dívida média. Revise BP/DRE ou altere para premissa manual.';
+  if($('financeRateSource'))$('financeRateSource').textContent='Sem dados suficientes de juros específicos e dívida média. Revise BP/DRE ou altere para premissa manual.';
  }
  if(typeof markFieldDerived==='function'){
   if(cashKnown)markFieldDerived('cashReserve','CALCULADO');
   if(cclKnown)markFieldDerived('workingCapitalNet','CALCULADO');
   if(debtKnown)markFieldDerived('debtAverage','CALCULADO');
  }
- return{cash,liquid,reserve,ac,pc,ccl,start,end,avg,interest,months,annualRate};
+ return{cash,liquid,reserve,ac,pc,ccl,start,end,avg,interest,months,annualRate:automaticRatePlausible?annualRate:null,rawAnnualRate:annualRate};
 }

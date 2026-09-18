@@ -1,4 +1,4 @@
-const fieldStateIds=['activity','simpleStatus','meiStatus','annex','monthlyRevenue','rbt12','monthlyPayroll','factorMode','b2bPct','purchasesPct','eligibleCreditPct','regularSuppliersPct','professionalReduction30','mixFull','mix30','mix40','mix60','mixZero','fullCbs','fullIbs','monthlyCppBase','employerRatePct','presumedIrpjPct','presumedCsllPct','realAccountingProfitAnnual','cashAndEquivalents','liquidInvestments','cashReserve','currentAssets','currentLiabilities','workingCapitalNet','interestExpense','debtStart','debtEnd','debtAverage','dreMonths','financeRateMode','financeRate','splitPct','floatDays','refundDays','capturePct','hybridCompliance','fullCompliance','legacyRate','realAdditionsAnnual','realExclusionsAnnual','irpjLossCarryforward','csllNegativeBase'];
+const fieldStateIds=['activity','simpleStatus','meiStatus','annex','monthlyRevenue','rbt12','monthlyPayroll','factorMode','b2bPct','purchasesPct','eligibleCreditPct','regularSuppliersPct','professionalReduction30','mixFull','mix30','mix40','mix60','mixZero','fullCbs','fullIbs','monthlyCppBase','employerRatePct','presumedIrpjPct','presumedCsllPct','realAccountingProfitAnnual','cashAndEquivalents','liquidInvestments','cashReserve','currentAssets','currentLiabilities','workingCapitalNet','interestExpense','debtStart','debtEnd','debtAverage','dreMonths','financeRateMode','financeRate','splitPct','floatDays','refundDays','capturePct','hybridCompliance','fullCompliance','legacyRate','realAdditionsAnnual','realExclusionsAnnual','irpjLossCarryforward','csllNegativeBase','currentConsumptionMode','currentConsumptionTaxAnnual','currentOperatingMarginPct','priceTransferPct'];
 
 function fieldStateContainer(id){
  const el=$(id);return el?.closest('.field,.mix')||null;
@@ -40,7 +40,7 @@ function insertFieldLegend(){
  const anchor=first.querySelector('.sectionTitle');anchor?.insertAdjacentElement('afterend',legend);
 }
 function resetAutoFieldStates(){
- ['activity','simpleStatus','meiStatus','annex','factorMode','b2bPct','eligibleCreditPct','regularSuppliersPct','professionalReduction30','mixFull','mix30','mix40','mix60','mixZero','legacyRate','presumedIrpjPct','presumedCsllPct'].forEach(id=>markFieldPending(id));
+ ['activity','simpleStatus','meiStatus','annex','factorMode','b2bPct','eligibleCreditPct','regularSuppliersPct','professionalReduction30','mix30','mix40','mix60','mixZero','legacyRate','presumedIrpjPct','presumedCsllPct'].forEach(id=>markFieldPending(id));
 }
 function initFieldStates(){
  insertFieldLegend();
@@ -52,7 +52,7 @@ function initFieldStates(){
   const confirm=()=>markFieldComplete(id);
   el.addEventListener('input',confirm);el.addEventListener('change',confirm);
  });
- ['cashReserve','workingCapitalNet','debtAverage'].forEach(id=>markFieldDerived(id,'CALCULADO'));
+ ['cashReserve','workingCapitalNet','debtAverage','mixFull'].forEach(id=>markFieldDerived(id,'CALCULADO'));
  ['fullCbs','fullIbs'].forEach(id=>markFieldAuto(id,'PREMISSA'));
  const cnpj=$('cnpj');if(cnpj&&!cnpj.dataset.fieldStateBound){
   cnpj.dataset.fieldStateBound='1';cnpj.addEventListener('input',()=>{const raw=cnpj.value.replace(/[^A-Z0-9]/gi,'');const box=fieldStateContainer('cnpj');if(box){box.classList.remove('state-complete','state-auto','state-derived');box.classList.add('state-pending');const b=fieldStateBadge(box);if(b)b.textContent=raw.length===14?'BUSCAR':'REVISAR'};resetAutoFieldStates();updateFieldCompletion()});
@@ -63,7 +63,7 @@ function initFieldStates(){
 
 function enableV32Import(){
  if(document.getElementById('v32ImportModule'))return;
- const css=document.createElement('link');css.rel='stylesheet';css.href='/simulador/v3/import.css';document.head.appendChild(css);
- const s=document.createElement('script');s.id='v32ImportModule';s.src='/simulador/v3/import.js';s.onload=()=>{if(typeof window.patchAuditImportAnalyzer==='function')window.patchAuditImportAnalyzer();if(typeof initDocumentImport==='function')initDocumentImport();const p=document.getElementById('importPanel'),g=document.getElementById('diagnosisGate');if(p&&g)g.parentNode.insertBefore(p,g);const b=document.querySelector('.brand span');if(b)b.textContent='Simulador Empresarial da Reforma Tributária · V3.2'};document.body.appendChild(s)
+ const css=document.createElement('link');css.rel='stylesheet';css.href='/simulador/v3/import.css?v=20260918-16';document.head.appendChild(css);
+ const s=document.createElement('script');s.id='v32ImportModule';s.src='/simulador/v3/import.js?v=20260918-16';s.onload=()=>{if(typeof window.patchAuditImportAnalyzer==='function')window.patchAuditImportAnalyzer();if(typeof initDocumentImport==='function')initDocumentImport();const p=document.getElementById('importPanel'),g=document.getElementById('diagnosisGate');if(p&&g)g.parentNode.insertBefore(p,g);const b=document.body.classList.contains('guidedMode')?null:document.querySelector('.brand > div > span');if(b)b.textContent='Simulador Empresarial da Reforma Tributária · V3.2'};document.body.appendChild(s)
 }
 setTimeout(enableV32Import,0);

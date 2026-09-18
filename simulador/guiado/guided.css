@@ -1,0 +1,215 @@
+.guidedMode{background:#edf2f6}
+.guidedMode .page{max-width:1180px}
+.guidedHeaderTag{padding:7px 10px;border-radius:999px;background:#fff3d6;color:#704900;font:800 10px/1 Arial,sans-serif;letter-spacing:.05em;white-space:nowrap}
+.clearAllBtn{color:#8b1e25!important;border-color:#d9a8ac!important;background:#fff8f8!important}
+.guidedHero{min-height:0;padding:34px 38px;grid-template-columns:minmax(0,1.6fr) minmax(280px,.7fr)}
+.guidedHero h1{font-size:38px;max-width:760px}
+.guidedHeroStats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;align-self:center}
+.guidedHeroStats div{padding:16px 12px;border:1px solid rgba(255,255,255,.18);border-radius:14px;background:rgba(255,255,255,.07);text-align:center}
+.guidedHeroStats b{display:block;color:#f4cc74;font-size:22px}.guidedHeroStats span{display:block;color:#d9e3ec;font-size:11px;margin-top:4px}
+.guidedNotice{margin:16px 0;padding:13px 16px;border:1px solid #e3c57e;border-radius:12px;background:#fff8e6;color:#654606;font-size:13px}
+.guidedNav{position:sticky;top:8px;z-index:20;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:18px 0;padding:8px;border:1px solid #d6e0e9;border-radius:17px;background:rgba(255,255,255,.96);box-shadow:0 10px 30px rgba(16,38,64,.1);backdrop-filter:blur(12px)}
+.guidedNav button{display:grid;grid-template-columns:32px 1fr;grid-template-rows:auto auto;column-gap:10px;padding:11px 12px;border:0;border-radius:12px;background:transparent;text-align:left;color:#667085}
+.guidedNav button>span{grid-row:1/3;display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:#e8eef4;color:#475467;font-weight:900}
+.guidedNav b{font-size:13px}.guidedNav small{font-size:10px}.guidedNav button.active{background:#102640;color:#fff}.guidedNav button.active>span{background:#d9a441;color:#102640}.guidedNav button.done{color:#13795b}.guidedNav button.done>span{background:#def4e9;color:#13795b}
+.guidedAutomation{margin:0 0 18px;padding:18px;border:1px solid #a8d5c3;border-radius:17px;background:#effaf5}
+.guidedAutomationHead{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.guidedAutomationHead strong{display:block;color:#116149}.guidedAutomationHead p{margin:4px 0 0;color:#52616f;font-size:12px}.guidedAutomationHead span{padding:5px 8px;border-radius:999px;background:#d8f1e6;color:#116149;font-size:10px;font-weight:900}
+.guidedAutomationGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:13px}.guidedAutoItem{padding:11px;border-radius:11px;background:#fff;border:1px solid #d7ebe2}.guidedAutoItem span{display:block;color:#667085;font-size:10px}.guidedAutoItem b{display:block;margin-top:3px;font-size:14px;color:#172033}
+.guidedReady #setupMount>[data-guided-step]{display:none}.guidedReady #setupMount>[data-guided-step].guidedStepActive{display:block}
+.guidedReady #setupMount>.panel{margin-top:16px}.guidedReady #setupMount>.panel .sectionTitle>div>span{background:#102640}
+.guidedMode .sectionTitle p{max-width:660px}
+.guidedMode .panel{border-radius:19px;box-shadow:0 8px 28px rgba(16,38,64,.06)}
+.guidedMode .panel.setup .sectionTitle h2{font-size:0}.guidedMode .panel.setup .sectionTitle h2:after{content:'Identificação automática da empresa';font-size:24px}
+.guidedMode .panel.setup .sectionTitle p{font-size:0}.guidedMode .panel.setup .sectionTitle p:after{content:'Informe o CNPJ para buscar os dados públicos e gerar as premissas iniciais pelo CNAE principal.';font-size:13px}
+.guidedMode #setupMount>.panel:nth-of-type(2) .sectionTitle h2{font-size:0}.guidedMode #setupMount>.panel:nth-of-type(2) .sectionTitle h2:after{content:'Como a empresa vende e compra';font-size:24px}
+.guidedMode #setupMount>.panel:nth-of-type(2) .sectionTitle p{font-size:0}.guidedMode #setupMount>.panel:nth-of-type(2) .sectionTitle p:after{content:'O CNPJ e o CNAE sugerem os percentuais. Revise apenas quando conhecer uma informação mais precisa.';font-size:13px}
+.guidedMode .guidedRevenueBlock{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}
+.guidedMode .guidedReviewDetails{margin-top:16px;border:1px solid #d9e2ea;border-radius:14px;background:#f9fbfc}.guidedMode .guidedReviewDetails>summary{padding:14px 16px;cursor:pointer;font-weight:800;color:#173a5e}.guidedMode .guidedReviewDetailsBody{padding:0 16px 16px}.guidedMode .guidedReviewDetailsBody>.grid4{margin-top:12px}
+.guidedMode .guidedPlainLabel{font-weight:800}.guidedMode .guidedPlainHelp{color:#667085}
+.guidedFinancialIntro{margin:0 0 16px;padding:16px;border-radius:14px;background:#eef5fb;border:1px solid #cbddeb}.guidedFinancialIntro strong{display:block;color:#173a5e}.guidedFinancialIntro p{margin:4px 0 0;color:#52616f;font-size:12px}
+.guidedDataChoice{padding:24px}.guidedDataChoiceHead span{color:#8b6414;font-size:11px;font-weight:900;letter-spacing:.06em}.guidedDataChoiceHead h2{margin:5px 0 0;color:#102640;font-size:24px}.guidedDataChoiceHead p{margin:7px 0 0;color:#667085;font-size:14px}.guidedDataChoiceGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.guidedDataChoiceGrid button{padding:17px;border:1px solid #cbd5df;border-radius:14px;background:#fff;text-align:left;cursor:pointer;transition:border-color .18s ease,background .18s ease,box-shadow .18s ease,transform .18s ease}.guidedDataChoiceGrid button:hover,.guidedDataChoiceGrid button:focus-visible,.guidedDataChoiceGrid button.active{border-color:#173a5e;background:#eef5fb;box-shadow:0 8px 22px rgba(16,38,64,.1);outline:0;transform:translateY(-1px)}.guidedDataChoiceGrid b{display:block;color:#102640;font-size:16px}.guidedDataChoiceGrid small{display:block;min-height:38px;margin:6px 0 13px;color:#667085;font-size:12px;line-height:1.45}.guidedDataChoiceGrid strong{color:#173a5e;font-size:12px}.guidedDataChoiceNote{margin-top:13px;padding:11px 13px;border-radius:10px;background:#f6f8fa;color:#52616f;font-size:12px}
+.guidedFinanceCards{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0}.guidedFinanceCards div{padding:13px;border:1px solid #dbe3ec;border-radius:12px;background:#fff}.guidedFinanceCards span{display:block;color:#667085;font-size:10px}.guidedFinanceCards b{display:block;margin-top:5px;font-size:15px}
+.guidedMode #importPanel .sectionTitle h2{font-size:0}.guidedMode #importPanel .sectionTitle h2:after{content:'Importar BP, DRE ou relatórios';font-size:24px}.guidedMode #importPanel .sectionTitle p{font-size:0}.guidedMode #importPanel .sectionTitle p:after{content:'Use esta opção para ganhar tempo. O simulador procura faturamento, lucro, caixa, dívidas, juros, compras e outras informações úteis para sua confirmação.';font-size:13px}
+.guidedReviewPanel{padding:24px}.guidedReviewPanel h2{margin:0}.guidedReviewPanel>p{color:#667085;margin:6px 0 18px}.guidedReviewGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}.guidedReviewGrid div{padding:13px;border-radius:12px;background:#f4f7fa}.guidedReviewGrid span{display:block;color:#667085;font-size:10px}.guidedReviewGrid b{display:block;margin-top:4px}.guidedReviewWarnings{margin-top:14px}.guidedReviewWarnings div{padding:11px 13px;border-radius:10px;background:#fff7e8;color:#704900;font-size:12px;margin-top:7px}.guidedReviewWarnings .ok{background:#eefaf5;color:#116149}
+.guidedActions{position:sticky;bottom:10px;z-index:18;display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:16px;padding:11px 14px;border:1px solid #d6e0e9;border-radius:15px;background:rgba(255,255,255,.97);box-shadow:0 12px 32px rgba(16,38,64,.16)}.guidedActions>button,.guidedActions div button{padding:11px 18px;border-radius:10px;font-weight:800}.guidedActions>button{background:#fff;color:#102640;border:1px solid #102640}.guidedActions div{display:flex;align-items:center;gap:13px}.guidedActions div span{font-size:11px;color:#667085}.guidedActions div button{border:1px solid #102640;background:#102640;color:#fff}.guidedActions button[hidden]{display:none}
+.guidedMode #diagnosisGate{border-color:#b6cde0;background:linear-gradient(135deg,#fff,#f3f8fc)}
+
+/* Interface empresarial */
+.guidedMode{background:#f1f4f8;color:#172033}
+.guidedMode .page{max-width:1240px;padding:0 24px 64px}
+.erpTopbar{background:#102640;border-bottom:0;box-shadow:0 2px 10px rgba(16,38,64,.18);backdrop-filter:none}
+.erpTopbar .topinner{max-width:none;height:64px;padding:0 24px;gap:18px}
+.erpBrand{min-width:300px;gap:12px}
+.erpBrandLogo{display:block;width:78px;height:50px;object-fit:contain;object-position:center;background:#fff;border-radius:6px;padding:3px 5px;box-shadow:0 0 0 1px rgba(255,255,255,.15)}
+.erpBrandCopy{color:#fff!important;line-height:1.15}
+.erpBrandCopy strong{font-size:14px;letter-spacing:.01em}
+.erpBrandCopy small{display:block;margin-top:4px;color:#aebed0;font-size:10px;font-weight:600}
+.erpHeaderCenter{flex:1;min-width:170px;padding-left:18px;border-left:1px solid rgba(255,255,255,.16);line-height:1.2}
+.erpHeaderCenter span{display:block;color:#94a9bd;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.09em}
+.erpHeaderCenter strong{display:block;max-width:320px;margin-top:4px;overflow:hidden;color:#fff;font-size:12px;text-overflow:ellipsis;white-space:nowrap}
+.guidedHeaderTag{display:flex;align-items:center;gap:7px;padding:6px 9px;border:1px solid rgba(244,204,116,.34);border-radius:6px;background:rgba(244,204,116,.1);color:#f4cc74;font:800 9px/1 Arial,sans-serif;letter-spacing:.05em;text-transform:uppercase}
+.guidedHeaderTag i{width:6px;height:6px;border-radius:50%;background:#f4cc74;box-shadow:0 0 0 3px rgba(244,204,116,.12)}
+.erpTopbar .topactions{gap:6px}
+.erpTopbar .erpAction{display:flex;align-items:center;gap:7px;min-height:36px;padding:8px 10px;border-color:rgba(255,255,255,.18);border-radius:7px;background:rgba(255,255,255,.05);color:#e8eef5;font-size:10px}
+.erpTopbar .erpAction:hover{background:rgba(255,255,255,.11);border-color:rgba(255,255,255,.32)}
+.erpTopbar .erpAction svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.erpTopbar .erpAction rect{fill:none}
+.erpTopbar .homebtn{background:#d9a441;border-color:#d9a441;color:#102640}
+.erpTopbar .clearAllBtn{background:transparent!important;border-color:rgba(255,255,255,.18)!important;color:#f0c4c9!important}
+.erpSubbar{height:34px;background:#fff;border-bottom:1px solid #d7e0e8;color:#52616f}
+.erpSubinner{height:100%;display:flex;align-items:center;justify-content:space-between;max-width:1240px;margin:auto;padding:0 24px}
+.erpBreadcrumb{display:flex;align-items:center;gap:8px;font-size:10px}.erpBreadcrumb span{color:#8793a1}.erpBreadcrumb i{font-style:normal;color:#aab3bd}.erpBreadcrumb b{color:#314359}
+.erpSession{display:flex;align-items:center;gap:7px;font-size:10px}.erpSession>i{width:7px;height:7px;border-radius:50%;background:#1f9d6a}.erpSession small{margin-left:7px;padding-left:10px;border-left:1px solid #d7e0e8;color:#738193;font-weight:800}
+.guidedMode .deadline{padding:8px 20px;background:#fff8e8;border-color:#ead69e;font-size:11px}
+.guidedHero{min-height:0;margin:20px 0 12px;padding:22px 24px;grid-template-columns:minmax(0,1.25fr) minmax(460px,.75fr);gap:28px;align-items:center;background:#fff;border:1px solid #d8e1ea;border-radius:12px;color:#172033;box-shadow:0 3px 12px rgba(16,38,64,.05)}
+.guidedHero .kicker{color:#7b5a16;font-size:9px;letter-spacing:.12em}
+.guidedHero h1{max-width:none;margin:5px 0 6px;color:#102640;font-size:28px;line-height:1.08;letter-spacing:-.025em}
+.guidedHero p{max-width:720px;margin:0;color:#647386;font-size:13px;line-height:1.5}
+.guidedHeroStats{grid-template-columns:repeat(3,1fr);gap:8px}
+.guidedHeroStats div{padding:11px 12px;border:1px solid #dce4ec;border-radius:8px;background:#f7f9fb;text-align:left}
+.guidedHeroStats span{display:block;margin:0;color:#7b8796;font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.06em}
+.guidedHeroStats b{display:block;margin-top:2px;color:#173a5e;font-size:15px;line-height:1.2}
+.guidedHeroStats small{display:block;margin-top:3px;color:#748294;font-size:9px}
+.guidedNotice{display:flex;align-items:center;gap:11px;margin:10px 0 14px;padding:10px 13px;border:1px solid #cbdbea;border-radius:8px;background:#f3f8fc;color:#3f5369;font-size:12px}
+.guidedNotice>span{display:grid;place-items:center;flex:0 0 22px;width:22px;height:22px;border-radius:50%;background:#173a5e;color:#fff;font:800 12px/1 Georgia,serif}
+.guidedNotice strong,.guidedNotice small{display:block}.guidedNotice strong{font-size:11px;color:#173a5e}.guidedNotice small{margin-top:1px;color:#687789;font-size:10px}
+.guidedNav{top:104px;margin:14px 0;padding:5px;border-color:#d5dee8;border-radius:10px;background:rgba(255,255,255,.98);box-shadow:0 5px 18px rgba(16,38,64,.08)}
+.guidedNav button{min-height:50px;padding:8px 10px;border-radius:7px;cursor:pointer}
+.guidedNav button>span{width:29px;height:29px;border-radius:7px;font-size:11px}
+.guidedNav b{font-size:12px}.guidedNav small{font-size:9px}
+.guidedNav button.active{background:#173a5e}.guidedNav button.active>span{background:#d9a441}
+.guidedMode .panel{border-color:#d7e0e8;border-radius:11px;box-shadow:0 3px 12px rgba(16,38,64,.045)}
+.guidedReady #setupMount>.panel{margin-top:12px}
+.guidedMode .sectionTitle{padding-bottom:16px;border-bottom:1px solid #e2e8ef;margin-bottom:18px}
+.guidedMode .sectionTitle>div>span{border-radius:6px}
+.guidedMode .sectionTitle h2{font-size:21px}.guidedMode .sectionTitle p{font-size:11px;line-height:1.45}
+.guidedMode .panel.setup .sectionTitle h2:after,.guidedMode #setupMount>.panel:nth-of-type(2) .sectionTitle h2:after,.guidedMode #importPanel .sectionTitle h2:after{font-size:21px}
+.guidedMode .field>span{min-height:34px;margin-bottom:5px;color:#26384d;font-size:11px;line-height:1.35}
+.guidedMode .field input,.guidedMode .field select{min-height:42px;border-color:#cbd5df;border-radius:7px;padding:9px 10px;font-size:13px}
+.guidedMode .field small{font-size:9px;line-height:1.45}
+.guidedMode .money,.guidedMode .suffix{min-height:42px;border-color:#cbd5df;border-radius:7px}
+.guidedMode .money i,.guidedMode .suffix i{display:flex;align-items:center;padding:9px 10px;background:#edf2f6;font-size:10px}
+.guidedMode .primary{min-height:42px;border-radius:7px;background:#173a5e;font-size:12px}
+.guidedMode .companyCard,.guidedMode .mixbox,.guidedMode .guidedReviewDetails{border-radius:8px}
+.guidedMode .guidedReviewDetails{background:#f8fafc}.guidedMode .guidedReviewDetails>summary{padding:12px 14px;font-size:12px}
+.guidedAutomation{border-radius:10px}.guidedAutoItem{border-radius:7px}
+.guidedDataChoice{padding:22px}.guidedDataChoiceGrid button{border-radius:8px}.guidedDataChoiceNote{border-radius:7px}
+.guidedFinanceCards div,.guidedReviewGrid div{border-radius:7px}
+.guidedActions{bottom:8px;padding:9px 12px;border-radius:9px;box-shadow:0 8px 24px rgba(16,38,64,.14)}
+.guidedActions>button,.guidedActions div button{padding:9px 16px;border-radius:7px;font-size:12px}
+.guidedMode footer{border-top:1px solid #d7e0e8}
+@media(max-width:1050px){.erpHeaderCenter{display:none}.guidedHeaderTag{margin-left:auto}.guidedHero{grid-template-columns:1fr}.guidedHeroStats{max-width:620px}.guidedAutomationGrid,.guidedFinanceCards{grid-template-columns:1fr 1fr}.guidedReviewGrid{grid-template-columns:1fr 1fr}.guidedNav button{grid-template-columns:28px 1fr}.guidedNav button>span{width:28px;height:28px}.guidedNav small{display:none}}
+@media(max-width:760px){.erpTopbar .topinner{height:58px;padding:0 12px;gap:9px}.erpBrand{min-width:0;flex:1}.erpBrandMark{width:34px;height:34px;font-size:14px!important}.erpBrandCopy strong{font-size:12px}.erpBrandCopy small,.guidedHeaderTag{display:none}.erpTopbar .topactions{flex-shrink:0}.erpTopbar .erpAction{width:34px;min-height:34px;justify-content:center;padding:7px}.erpTopbar .erpAction b{display:none}.erpTopbar .topactions>.erpAction:first-child{display:none}.erpSubbar{height:31px}.erpSubinner{padding:0 12px}.erpSession span{display:none}.erpSession small{margin-left:0;padding-left:0;border-left:0}.guidedMode .page{padding:0 12px 48px}.guidedHero{margin-top:12px;padding:18px}.guidedHero h1{font-size:24px}.guidedHeroStats{grid-template-columns:1fr 1fr 1fr}.guidedHeroStats div{padding:9px}.guidedHeroStats small{display:none}.guidedNav{top:94px;gap:3px;padding:4px}.guidedNav button{display:block;min-height:48px;padding:7px 3px;text-align:center}.guidedNav button>span{margin:auto}.guidedNav b{display:block;margin-top:3px;font-size:9px}.guidedAutomationGrid,.guidedFinanceCards,.guidedReviewGrid,.guidedMode .guidedRevenueBlock,.guidedDataChoiceGrid{grid-template-columns:1fr}.guidedDataChoice{padding:18px}.guidedDataChoiceGrid small{min-height:0}.guidedMode .sectionTitle{display:block}.guidedActions div span{display:none}.guidedActions>button,.guidedActions div button{padding:9px 12px}}
+@media(max-width:430px){.erpBrandCopy small{display:none}.guidedHeroStats{grid-template-columns:1fr}.guidedHeroStats div{display:grid;grid-template-columns:62px 1fr;align-items:center}.guidedHeroStats b{margin:0}.guidedNotice small{line-height:1.35}.guidedMode .panel{padding:15px}.guidedMode .sectionTitle h2,.guidedMode .panel.setup .sectionTitle h2:after,.guidedMode #setupMount>.panel:nth-of-type(2) .sectionTitle h2:after,.guidedMode #importPanel .sectionTitle h2:after{font-size:19px}}
+@media print{.erpTopbar,.guidedNav,.guidedActions,.guidedNotice,.guidedAutomation,.guidedHeaderTag{display:none!important}}
+
+
+/* ERP cells and financial grouping */
+.guidedMode .grid4>.field,
+.guidedMode .guidedRevenueBlock>.field,
+.guidedMode .economicInputs .grid4>.field{
+ min-width:0;padding:11px 12px;border:1px solid #dfe6ed;border-radius:8px;background:#fbfcfe;
+ transition:border-color .16s ease,box-shadow .16s ease,background .16s ease
+}
+.guidedMode .grid4>.field:hover,
+.guidedMode .guidedRevenueBlock>.field:hover,
+.guidedMode .economicInputs .grid4>.field:hover{
+ border-color:#c9d4df;background:#fff;box-shadow:0 2px 8px rgba(16,38,64,.045)
+}
+.guidedMode .grid4>.field>span,
+.guidedMode .guidedRevenueBlock>.field>span{
+ min-height:30px;margin-bottom:6px;color:#314359;font-size:10.5px;font-weight:800
+}
+.guidedMode .field input,.guidedMode .field select{
+ border-color:#c5d0db;background:#fff;box-shadow:inset 0 1px 1px rgba(16,38,64,.025)
+}
+.guidedMode .field input:hover,.guidedMode .field select:hover{border-color:#aebdcc}
+.guidedMode .field input:focus,.guidedMode .field select:focus{
+ border-color:#315f8b;box-shadow:0 0 0 3px rgba(49,95,139,.11)
+}
+.guidedMode .field input[readonly]{
+ background:#edf2f6;color:#52616f;font-weight:750;cursor:default
+}
+.guidedMode .money:has(input[readonly]),.guidedMode .suffix:has(input[readonly]){
+ background:#edf2f6;border-color:#d2dbe4
+}
+.guidedMode .money:has(input[readonly]) i,.guidedMode .suffix:has(input[readonly]) i{
+ background:#e4eaf0;color:#667485
+}
+.guidedMode .field .status{
+ min-height:42px;margin:0;padding:9px 10px;border:1px dashed #cbd5df;border-radius:7px;background:#f5f7f9;color:#5d6c7e;font-size:9.5px;line-height:1.45
+}
+.guidedMode .fieldStateBadge{
+ top:5px;right:7px;padding:3px 6px;border-radius:5px;font-size:7px!important;letter-spacing:.04em
+}
+.guidedMode .state-pending{border-color:#ead49c!important;background:#fffdf7!important}
+.guidedMode .state-complete{border-color:#bdd9c8!important;background:#f9fdfb!important}
+.guidedMode .state-pending>.fieldStateBadge{background:#f3dfaa}
+.guidedMode .state-complete>.fieldStateBadge{background:#dcefe4}
+.guidedMode .guidedManualGroupTitle{
+ display:flex;align-items:flex-start;gap:9px;margin:18px 0 8px;padding:0 2px;color:#24384e
+}
+.guidedMode .guidedManualGroupTitle:first-child{margin-top:8px}
+.guidedMode .guidedManualGroupTitle>span{
+ display:grid;place-items:center;flex:0 0 27px;width:27px;height:27px;border-radius:6px;background:#e9eff5;color:#173a5e;font-size:9px;font-weight:900
+}
+.guidedMode .guidedManualGroupTitle b{display:block;font-size:11.5px}
+.guidedMode .guidedManualGroupTitle small{display:block;margin-top:1px;color:#748294;font-size:9.5px;line-height:1.4}
+.guidedMode .guidedManualGrid{margin-top:0;padding-bottom:4px}
+.guidedMode .guidedManualAdvanced{
+ margin-top:18px;padding:13px 14px;border:1px solid #dfe6ed;border-radius:8px;background:#f8fafc
+}
+.guidedMode .guidedManualAdvanced summary{color:#314d6b}
+.guidedMode .companyCard{
+ background:#fbfcfe;border-color:#d8e1ea;border-left:4px solid #315f8b;padding:14px 15px
+}
+.guidedMode .companyCard strong{color:#102640;font-size:16px}
+.guidedMode .companyCard dl div{border:1px solid #e2e8ee;border-radius:7px;background:#fff}
+.guidedMode .companyCard dt{letter-spacing:.04em}
+.guidedMode .guidedAutomation{
+ border:1px solid #c7dcd3;border-left:4px solid #1d7d5b;background:#f6fbf8
+}
+.guidedMode .guidedAutomationHead strong{color:#174d3e;font-size:12px}
+.guidedMode .guidedAutomationGrid{gap:8px}
+.guidedMode .guidedAutoItem{
+ min-height:58px;padding:10px 11px;border-color:#dfe9e4;background:#fff
+}
+.guidedMode .guidedAutoItem span{font-size:8.5px;text-transform:uppercase;letter-spacing:.035em}
+.guidedMode .guidedAutoItem b{font-size:12px;line-height:1.35}
+.guidedMode .guidedFinanceCards div{
+ min-height:66px;border-color:#dfe6ed;background:#fbfcfe
+}
+.guidedMode .guidedFinanceCards span{font-size:8.5px;text-transform:uppercase;letter-spacing:.04em}
+.guidedMode .guidedFinanceCards b{font-size:13px;color:#26384d}
+.erpVersion{
+ margin-left:8px;padding:3px 6px;border:1px solid #d9e2ea;border-radius:5px;background:#f7f9fb;color:#687789!important;font-size:8px!important;font-weight:800
+}
+@media(max-width:760px){
+ .guidedMode .grid4>.field,.guidedMode .guidedRevenueBlock>.field,.guidedMode .economicInputs .grid4>.field{padding:10px}
+ .guidedMode .grid4>.field>span,.guidedMode .guidedRevenueBlock>.field>span{min-height:0}
+ .guidedMode .guidedManualGroupTitle{margin-top:15px}
+ .erpVersion{display:none}
+}
+
+
+/* Ajustes de revisão 2026-09-18 */
+.guidedMode .field.state-pending>span:first-child,
+.guidedMode .field.state-complete>span:first-child,
+.guidedMode .mix.state-pending>span:first-child,
+.guidedMode .mix.state-complete>span:first-child{padding-right:82px}
+.guidedMode .fieldStateBadge{top:7px;right:8px;max-width:74px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.guidedMode .importCandidate button.importApplied,
+.guidedMode .importCandidate button:disabled.importApplied{background:#e7f4ed!important;border-color:#9bc9ae!important;color:#1e6842!important;opacity:1;cursor:default}
+.guidedMode .importApplyHigh{min-width:210px}
+@media(max-width:760px){
+ .guidedMode .field.state-pending>span:first-child,
+ .guidedMode .field.state-complete>span:first-child,
+ .guidedMode .mix.state-pending>span:first-child,
+ .guidedMode .mix.state-complete>span:first-child{padding-right:70px}
+ .guidedMode .fieldStateBadge{max-width:62px;font-size:6.5px!important}
+}
+
+@media(max-width:760px){
+ .erpBrand{min-width:auto}
+ .erpBrandLogo{width:62px;height:42px}
+}

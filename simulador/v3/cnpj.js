@@ -57,8 +57,12 @@ function fillCompany(d){
  }else{
   $('annex').value=cnaeSuggestion.annex;$('annexHint').textContent=`Sugestão: Anexo ${cnaeSuggestion.annex}. Confiança ${cnaeSuggestion.confidence}. ${cnaeSuggestion.reason}.`;
  }
- const kind=cnaeSuggestion.kind;if(kind==='service')numSet('legacyRate',5);else if(kind==='commerce'||kind==='industry')numSet('legacyRate',10);applyFactorR();
+ const kind=cnaeSuggestion.kind,legacyEl=$('legacyRate'),legacyManual=legacyEl?.dataset.autoSuggested==='0'||legacyEl?.dataset.userEdited==='1';
+ if(legacyEl&&!legacyManual){if(kind==='service')numSet('legacyRate',5);else if(kind==='commerce'||kind==='industry')numSet('legacyRate',10);legacyEl.dataset.autoSuggested='1';const note=legacyEl.closest('.field')?.querySelector('small');if(note)note.textContent='Sugestão inicial por perfil da atividade. Revise a carga efetiva de ICMS/ISS da empresa para melhorar a projeção de 2027 a 2032.'}
+ applyFactorR();
  if(typeof markFieldAuto==='function'){
-  markFieldAuto('activity');markFieldAuto('simpleStatus');markFieldAuto('meiStatus');markFieldAuto('annex',blocked?'N/A':'SUGERIDO');markFieldDerived('legacyRate','SUGERIDO');
+  markFieldAuto('activity');markFieldAuto('simpleStatus');markFieldAuto('meiStatus');markFieldAuto('annex',blocked?'N/A':'SUGERIDO');if(legacyEl&&!legacyManual)markFieldAuto('legacyRate','SUGERIDO');
  }
 }
+$('legacyRate')?.addEventListener('input',e=>{if(e.isTrusted){e.currentTarget.dataset.autoSuggested='0';e.currentTarget.dataset.userEdited='1'}});
+$('legacyRate')?.addEventListener('change',e=>{if(e.isTrusted){e.currentTarget.dataset.autoSuggested='0';e.currentTarget.dataset.userEdited='1'}});
