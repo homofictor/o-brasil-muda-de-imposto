@@ -118,7 +118,15 @@
   const rate=value('financeRate'),cclKnown=value('currentAssets')!==''&&value('currentLiabilities')!=='';box.innerHTML=`<div><span>Reserva financeira</span><b>${numeric('cashReserve')?money.format(numeric('cashReserve')):'Aguardando dados'}</b></div><div><span>Capital de giro líquido</span><b>${cclKnown?money.format(numeric('workingCapitalNet')):'Aguardando dados'}</b></div><div><span>Dívida financeira média</span><b>${numeric('debtAverage')?money.format(numeric('debtAverage')):'Aguardando dados'}</b></div><div><span>Custo financeiro anual</span><b>${rate!==''?percent(rate):'Aguardando dados'}</b></div>`;
  }
 
+ function syncVerifiedProfitIntoGuided(){
+  const el=byId('realAccountingProfitAnnual'),verified=window.brmiImport?.verifiedAccountingProfit;
+  if(!el||String(el.value||'').trim()!==''||!verified||!Number.isFinite(verified.value))return;
+  if(typeof setMoneyInputValue==='function')setMoneyInputValue(el,verified.value);else el.value=Math.round(verified.value*100)/100;
+  el.dataset.importVerified='1';el.dataset.importSource=verified.source||'DRE importada';
+  if(typeof markFieldAuto==='function')markFieldAuto('realAccountingProfitAnnual','IMPORTADO');
+ }
  function refreshReview(){
+  syncVerifiedProfitIntoGuided();
   const grid=byId('guidedReviewGrid'),warnings=byId('guidedReviewWarnings');if(!grid||!warnings)return;
   const cards=[['Empresa',byId('companyName')?.textContent||value('activity')||'Não identificada'],['Faturamento anual',numeric('rbt12')?money.format(numeric('rbt12')):'Não informado'],['Regime atual',byId('simpleStatus')?.selectedOptions?.[0]?.textContent||'Não confirmado'],['Vendas para empresas',percent(numeric('b2bPct'))],['Compras com tributos na nota',percent(numeric('purchasesPct'))],['Crédito possível nas compras',percent(numeric('eligibleCreditPct'))],['Reserva financeira',numeric('cashReserve')?money.format(numeric('cashReserve')):'Não informada'],['Lucro contábil',numeric('realAccountingProfitAnnual')?money.format(numeric('realAccountingProfitAnnual')):'Não informado'],['Carga atual de consumo',numeric('currentConsumptionTaxAnnual')?money.format(numeric('currentConsumptionTaxAnnual')):'A calcular']];
   grid.innerHTML=cards.map(([a,b])=>`<div><span>${escapeHtml(a)}</span><b>${escapeHtml(b)}</b></div>`).join('');
