@@ -195,7 +195,7 @@ function financialMetrics(){
   if($('financeRateSource'))$('financeRateSource').textContent=`Juros e encargos específicos da dívida ÷ dívida financeira média, anualizado para ${months} mês${months===1?'':'es'} de DRE.`;
  }else if(mode==='auto'&&annualRate!=null&&Number.isFinite(annualRate)&&annualRate>1){
   $('financeRate').value='';
-  if(typeof markFieldPending==='function')markFieldPending('financeRate','REVISAR BASE');
+  if(typeof markFieldPending==='function'){markFieldPending('financeRate','REVISAR BASE');markFieldPending('interestExpense','REVISAR')}
   if($('financeRateSource'))$('financeRateSource').textContent=`A relação encontrada seria de ${(annualRate*100).toLocaleString('pt-BR',{maximumFractionDigits:2})}% a.a., acima do limite de validação automática. Revise se o numerador contém apenas juros e encargos vinculados às dívidas consideradas.`;
  }else if(mode==='auto'){
   $('financeRate').value='';
