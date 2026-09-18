@@ -99,7 +99,10 @@
 
  function attachImportPanel(){
   const panel=byId('importPanel'),finance=byId('cashReserve')?.closest('.panel');if(!panel)return false;
-  panel.dataset.guidedStep='3';if(finance&&panel.nextElementSibling!==finance)finance.parentNode.insertBefore(panel,finance);return true;
+  panel.dataset.guidedStep='3';
+  const step=panel.querySelector('.sectionTitle>div>span');if(step)step.textContent='03';
+  const tag=panel.querySelector('.importTitleTag');if(tag)tag.textContent='Documentos · preenchimento inteligente';
+  if(finance&&panel.nextElementSibling!==finance)finance.parentNode.insertBefore(panel,finance);return true;
  }
 
  function refreshAutomation(){
@@ -140,8 +143,10 @@
   document.addEventListener('input',refreshAll);document.addEventListener('change',refreshAll);
   const status=byId('lookupStatus');if(status)new MutationObserver(()=>setTimeout(refreshAll,50)).observe(status,{childList:true,subtree:true,characterData:true});
   const observer=new MutationObserver(()=>{if(attachImportPanel()){observer.disconnect();showStep(currentStep,false)}});observer.observe(setup,{childList:true});
-  relabel('monthlyRevenue','Faturamento médio mensal','Informe um valor aproximado. O total dos últimos 12 meses será sincronizado.');
-  relabel('rbt12','Faturamento dos últimos 12 meses','Valor usado para testar enquadramento e comparar os regimes aplicáveis.');
+  relabel('monthlyRevenue','Faturamento médio mensal','Informe um valor aproximado agora ou deixe para importar os documentos na etapa de precisão.');
+  relabel('rbt12','Faturamento dos últimos 12 meses','Informe agora ou deixe para importar os documentos na etapa de precisão. Este valor é usado para testar enquadramento e comparar os regimes aplicáveis.');
+  if(byId('monthlyRevenue'))byId('monthlyRevenue').placeholder='Informe o valor';
+  if(byId('rbt12'))byId('rbt12').placeholder='Informe o valor';
   showStep(1,false);setTimeout(refreshAll,600);
  }
 
