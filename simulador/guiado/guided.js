@@ -145,6 +145,7 @@
   if(!provided('cashReserve'))notes.push('Sem caixa ou aplicações informados, a análise de caixa ficará menos precisa.');
   if(!provided('realAccountingProfitAnnual'))notes.push('Sem lucro contábil antes de IRPJ e CSLL, o Lucro Real não entrará no ranking completo.');
   if(!provided('monthlyCppBase')&&value('simpleStatus')!=='yes')notes.push('Informe a remuneração mensal sujeita à contribuição patronal para comparar corretamente Lucro Presumido e Lucro Real.');
+  if(!provided('legacyRate')&&value('simpleStatus')!=='yes')notes.push('Informe a carga efetiva atual de ICMS/ISS para a projeção de 2027 a 2032. Campo em branco não será mais tratado como zero.');
   if(!provided('currentConsumptionTaxAnnual')&&value('simpleStatus')!=='yes')notes.push(taxCandidates.length?'Revise a carga atual de tributos sobre consumo identificada nos documentos.':'A DRE não contém abertura suficiente para calcular a carga atual de consumo. Importe uma DRE detalhada ou relatório fiscal com tributos/deduções sobre vendas.');
   warnings.innerHTML=notes.length?notes.map(x=>`<div>${escapeHtml(x)}</div>`).join(''):'<div class="ok">Os dados essenciais estão preenchidos. O diagnóstico pode ser gerado.</div>';
  }
