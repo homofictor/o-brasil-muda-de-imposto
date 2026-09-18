@@ -62,7 +62,7 @@
   let cash='A pressão de caixa deve ser lida separadamente da carga tributária.';
   try{
    const c=typeof cashMetrics==='function'?cashMetrics(r):null;
-   if(c){const reserve=Number(el('cashReserve')?.value)||0;if(c.gap>0){safeText('execReserveStatus','Reserva insuficiente');cash=`A reserva informada não cobre toda a necessidade estimada. O cenário indica ${money(c.gap)} de financiamento adicional.`}else{safeText('execReserveStatus','Reserva suficiente');cash=`A reserva informada cobre a necessidade adicional de liquidez estimada neste cenário. O split payment continua exigindo acompanhamento do fluxo de caixa.`}}
+   if(c){const reserve=typeof parseMoneyValue==='function'?parseMoneyValue(el('cashReserve')?.value):Number(el('cashReserve')?.value)||0;if(c.gap>0){safeText('execReserveStatus','Reserva insuficiente');cash=`A reserva informada de ${money(reserve)} não cobre toda a necessidade estimada. O cenário indica ${money(c.gap)} de financiamento adicional.`}else{safeText('execReserveStatus','Reserva suficiente');cash=`A reserva informada de ${money(reserve)} cobre a necessidade adicional de liquidez estimada neste cenário. O split payment continua exigindo acompanhamento do fluxo de caixa.`}}
   }catch(_){safeText('execReserveStatus','Revisar caixa')}
   safeText('execCashText',cash);
  }
