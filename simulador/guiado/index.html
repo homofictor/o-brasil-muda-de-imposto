@@ -7,15 +7,15 @@
 <meta name="robots" content="noindex,nofollow">
 <title>Simulador Guiado da Reforma Tributária</title>
 <meta name="description" content="Versão guiada do simulador empresarial da Reforma Tributária, com automação por CNPJ e CNAE e motor técnico completo.">
-<link rel="stylesheet" href="/simulador/v3/base.css?v=20260918-1700">
-<link rel="stylesheet" href="/simulador/v3/results.css?v=20260918-1700">
-<link rel="stylesheet" href="/simulador/v3/report-executive.css?v=20260918-1700">
-<link rel="stylesheet" href="/simulador/v3/responsive.css?v=20260918-1700">
-<link rel="stylesheet" href="/simulador/v3/enhanced-mobile.css?v=20260918-1700">
-<link rel="stylesheet" href="/simulador/v3/diagnosis.css?v=20260918-1700">
-<link rel="stylesheet" href="/simulador/v3/field-state.css?v=20260918-1700">
-<link rel="stylesheet" href="/simulador/v3/economic-impact.css?v=20260918-1700">
-<link rel="stylesheet" href="/simulador/guiado/guided.css?v=20260918-1700">
+<link rel="stylesheet" href="/simulador/v3/base.css?v=20260918-test-auto1">
+<link rel="stylesheet" href="/simulador/v3/results.css?v=20260918-test-auto1">
+<link rel="stylesheet" href="/simulador/v3/report-executive.css?v=20260918-test-auto1">
+<link rel="stylesheet" href="/simulador/v3/responsive.css?v=20260918-test-auto1">
+<link rel="stylesheet" href="/simulador/v3/enhanced-mobile.css?v=20260918-test-auto1">
+<link rel="stylesheet" href="/simulador/v3/diagnosis.css?v=20260918-test-auto1">
+<link rel="stylesheet" href="/simulador/v3/field-state.css?v=20260918-test-auto1">
+<link rel="stylesheet" href="/simulador/v3/economic-impact.css?v=20260918-test-auto1">
+<link rel="stylesheet" href="/simulador/guiado/guided.css?v=20260918-test-auto1">
 </head>
 <body class="guidedMode">
 <header class="topbar erpTopbar">
@@ -37,12 +37,12 @@
 </header>
 <div class="deadline" id="deadlineBanner" hidden><div><strong>Decisão para 2027 em andamento.</strong> Consulte o prazo aplicável à sua empresa.</div><a href="https://www.gov.br/receitafederal/" target="_blank" rel="noopener">Fonte oficial</a></div>
 <main class="page">
- <section class="hero guidedHero"><div class="guidedHeroCopy"><div class="kicker">Diagnóstico empresarial</div><h1>Simulação da Reforma Tributária</h1><p>Identifique a empresa pelo CNPJ, confirme as premissas operacionais e complemente os dados financeiros para gerar o relatório decisório.</p></div><div class="guidedHeroStats"><div><span>Entrada</span><b>CNPJ</b><small>Cadastro automático</small></div><div><span>Perfil</span><b>CNAE</b><small>Premissas sugeridas</small></div><div><span>Precisão</span><b>Financeiro</b><small>Manual ou importação</small></div></div></section>
- <div class="guidedNotice"><span aria-hidden="true">i</span><div><strong>Motor técnico completo</strong><small>Use o preenchimento guiado, a entrada manual ou a importação de documentos. Todos alimentam os mesmos cálculos.</small></div></div>
+ <section class="hero guidedHero"><div class="guidedHeroCopy"><div class="kicker">Diagnóstico empresarial</div><h1>Simulação da Reforma Tributária</h1><p>Identifique a empresa pelo CNPJ, envie os documentos que já possui e deixe o simulador preencher o máximo possível antes de pedir sua revisão.</p></div><div class="guidedHeroStats"><div><span>Entrada</span><b>CNPJ</b><small>Cadastro automático</small></div><div><span>Perfil</span><b>CNAE</b><small>Premissas sugeridas</small></div><div><span>Precisão</span><b>Documentos</b><small>BP · DRE · relatórios</small></div></div></section>
+ <div class="guidedNotice"><span aria-hidden="true">i</span><div><strong>Motor técnico completo</strong><small>Comece pelo CNPJ e, se tiver, envie BP, DRE ou relatórios. O sistema identifica as informações antes de pedir preenchimentos manuais.</small></div></div>
  <nav class="guidedNav" id="guidedNav" aria-label="Etapas da simulação">
   <button type="button" data-guided-nav="1" class="active"><span>1</span><b>Empresa</b><small>CNPJ e faturamento</small></button>
   <button type="button" data-guided-nav="2"><span>2</span><b>Operação</b><small>Clientes e compras</small></button>
-  <button type="button" data-guided-nav="3"><span>3</span><b>Precisão</b><small>Documentos e finanças</small></button>
+  <button type="button" data-guided-nav="3"><span>3</span><b>Precisão</b><small>Revisão financeira</small></button>
   <button type="button" data-guided-nav="4"><span>4</span><b>Diagnóstico</b><small>Revisão e relatório</small></button>
  </nav>
  <div id="guidedAutomation" class="guidedAutomation" hidden></div>
@@ -52,6 +52,6 @@
 <div id="reportModal" class="reportModal" hidden role="dialog" aria-modal="true" aria-labelledby="recommendationTitle"><div class="reportShell"><div class="reportToolbar"><div><strong>Relatório do diagnóstico</strong><span>Simulador Guiado · motor V3.2</span></div><div class="reportToolbarActions"><button id="reportPrintBtn" type="button">Imprimir resumo</button><button id="reportCloseBtn" type="button">Fechar</button></div></div><div id="resultsMount" hidden></div></div></div>
  <footer><div><strong>O Brasil muda de imposto</strong><span>Wagner Rubim Rangel · Homo Fictor Edições Independentes</span></div><p>Ferramenta educativa. Não substitui planejamento tributário, parecer contábil ou jurídico.</p></footer>
 <script>
-(async()=>{const [a,b]=await Promise.all([fetch('/simulador/v3/partials/setup.html?v=20260918-1700').then(r=>r.text()),fetch('/simulador/v3/partials/results.html?v=20260918-1700').then(r=>r.text())]);document.getElementById('setupMount').innerHTML=a;document.getElementById('resultsMount').innerHTML=b;for(const name of ['data.js','money-format.js','field-state.js','cnpj.js','models.js','risk-cash.js','economic-impact.js','render.js','enhanced-results.js','diagnosis.js','audit-core.js','audit-render.js','boot.js','report-ui.js'])await new Promise((ok,fail)=>{const s=document.createElement('script');s.src='/simulador/v3/'+name+'?v=20260918-1700';s.onload=ok;s.onerror=fail;document.body.appendChild(s)});await new Promise((ok,fail)=>{const s=document.createElement('script');s.src='/simulador/guiado/guided.js?v=20260918-1700';s.onload=ok;s.onerror=fail;document.body.appendChild(s)})})().catch(err=>{console.error(err);document.getElementById('setupMount').innerHTML='<section class="panel"><h2>Não foi possível carregar o simulador.</h2><p>Atualize a página e tente novamente.</p></section>'});
+(async()=>{const [a,b]=await Promise.all([fetch('/simulador/v3/partials/setup.html?v=20260918-test-auto1').then(r=>r.text()),fetch('/simulador/v3/partials/results.html?v=20260918-test-auto1').then(r=>r.text())]);document.getElementById('setupMount').innerHTML=a;document.getElementById('resultsMount').innerHTML=b;for(const name of ['data.js','money-format.js','field-state.js','cnpj.js','models.js','risk-cash.js','economic-impact.js','render.js','enhanced-results.js','diagnosis.js','audit-core.js','audit-render.js','boot.js','report-ui.js'])await new Promise((ok,fail)=>{const s=document.createElement('script');s.src='/simulador/v3/'+name+'?v=20260918-test-auto1';s.onload=ok;s.onerror=fail;document.body.appendChild(s)});await new Promise((ok,fail)=>{const s=document.createElement('script');s.src='/simulador/guiado/guided.js?v=20260918-test-auto1';s.onload=ok;s.onerror=fail;document.body.appendChild(s)})})().catch(err=>{console.error(err);document.getElementById('setupMount').innerHTML='<section class="panel"><h2>Não foi possível carregar o simulador.</h2><p>Atualize a página e tente novamente.</p></section>'});
 </script>
 </body></html>
