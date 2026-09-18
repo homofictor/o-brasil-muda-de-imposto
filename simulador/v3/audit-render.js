@@ -19,11 +19,21 @@
  function legacyInsideSimple(r){if(!r?.simpleEligible||r.year>=2033)return 0;return Math.max(0,r.das*replacementShare(r.annex,r.sr.idx)-r.embedded)}
  const td=v=>`<strong>${typeof v==='number'?brl2.format(v):v}</strong>`;
 
+ function comparablePending(r){
+  return (r?.models||[]).filter(m=>m.valid===false&&(
+   m.key==='real'||
+   (m.key==='presumed'&&!r.presumedBarred&&!r.presumedOverLimit)||
+   ((m.key==='pure'||m.key==='hybrid')&&r.simpleEligible)
+  ));
+ }
+ window.comparablePendingModels=comparablePending;
  window.recommendation=function(r){
   if(r.isMei)return{key:'mei',title:'MEI: regime híbrido indisponível',text:'O MEI possui regras próprias. Confirme a permanência no SIMEI e as regras específicas aplicáveis.'};
   const valid=r.models.filter(m=>m.valid!==false&&Number.isFinite(m.total));
   if(!valid.length)return{key:'pending',title:'Dados insuficientes para recomendar',text:'Complete os dados pendentes dos regimes aplicáveis. O simulador não usa valores parciais para formar o ranking.'};
-  const best=[...valid].sort((a,b)=>a.total-b.total)[0],pending=r.models.filter(m=>m.valid===false).map(m=>m.name),suffix=pending.length?` ${pending.join(' e ')} ${pending.length>1?'foram excluídos':'foi excluído'} do ranking por falta de dados suficientes ou por impedimento identificado.`:'';
+  const best=[...valid].sort((a,b)=>a.total-b.total)[0],pendingComparable=comparablePending(r);
+  if(pendingComparable.length)return{key:'partial',title:'Comparação ainda incompleta',text:`${best.name} tem o menor desembolso entre os modelos atualmente validados, mas ${pendingComparable.map(m=>m.name).join(' e ')} ${pendingComparable.length>1?'ainda não possuem':'ainda não possui'} dados suficientes para uma recomendação final.`};
+  const pending=r.models.filter(m=>m.valid===false).map(m=>m.name),suffix=pending.length?` ${pending.join(' e ')} ${pending.length>1?'foram excluídos':'foi excluído'} por impedimento ou não aplicabilidade identificada.`:'';
   return{key:best.key,title:best.name,text:`${best.name} apresenta o menor desembolso tributário anual estimado entre os modelos validados para ${r.year}. O ranking considera a carga própria da empresa e o custo operacional informado, sem abater o crédito de IBS/CBS pertencente aos clientes B2B. A análise comercial do crédito aparece separadamente.${suffix}`};
  };
 
