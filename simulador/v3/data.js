@@ -108,7 +108,7 @@ function sectorProfile(cnae,description){
  const code=String(cnae||'').replace(/\D/g,'').padStart(7,'0'),div=Number(code.slice(0,2)),text=(description||'').toLowerCase();
  const base={b2b:60,creditable:70,suppliers:80,confidence:'baixa',reason:'perfil setorial genérico',mix:{full:100,r30:0,r40:0,r60:0,zero:0}};
  if(div>=10&&div<=33)return{...base,b2b:95,creditable:92,suppliers:92,confidence:'alta',reason:'indústria de transformação, tipicamente B2B e intensiva em insumos'};
- if(div===46)return{...base,b2b:95,creditable:95,suppliers:90,confidence:'alta',reason:'comércio atacadista, tipicamente B2B'};
+ if(div===46){if(/medic|odont|hospital|saude|saúde|dispositivo/.test(text))return{...base,b2b:95,creditable:95,suppliers:90,confidence:'média',reason:'comércio atacadista B2B; produtos médico-hospitalares podem ter tratamentos específicos e exigem revisão por NCM/cClassTrib',treatmentReview:true};return{...base,b2b:95,creditable:95,suppliers:90,confidence:'alta',reason:'comércio atacadista, tipicamente B2B'}};
  if(div===47){
   if(/supermerc|mercado|mercearia|padaria|alimento/.test(text))return{...base,b2b:10,creditable:90,suppliers:85,confidence:'média',reason:'varejo alimentar, tipicamente B2C; cesta de produtos pode misturar alíquota cheia e zero',mix:{full:70,r30:0,r40:0,r60:0,zero:30}};
   return{...base,b2b:10,creditable:90,suppliers:85,confidence:'alta',reason:'comércio varejista, tipicamente B2C'};
