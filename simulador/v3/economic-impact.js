@@ -79,9 +79,9 @@
   }
   const futureTax=modelConsumptionTax(r,model?.key);
   const margin=hasField('currentOperatingMarginPct')?fieldNumber('currentOperatingMarginPct')/100:null;
-  let financeCost=0;try{financeCost=root.cashMetrics?root.cashMetrics(r).cost:cashMetrics(r).cost}catch(_){}
-  if(currentTax==null||futureTax==null)return{known:false,currentTax,futureTax,modelKey:model?.key||null};
-  return{known:true,modelKey:model.key,...calculateEconomicImpact({annualRevenue:r.annualRevenue,currentConsumptionTax:currentTax,futureConsumptionTax:futureTax,priceTransferRate:fieldNumber('priceTransferPct')/100,currentOperatingMargin:margin,financeCost})};
+  let financeCost=0,financeCostKnown=true;try{const cm=root.cashMetrics?root.cashMetrics(r):cashMetrics(r);if(cm?.cost==null){financeCostKnown=false;financeCost=0}else financeCost=cm.cost}catch(_){financeCostKnown=false;financeCost=0}
+  if(currentTax==null||futureTax==null)return{known:false,currentTax,futureTax,modelKey:model?.key||null,financeCostKnown};
+  return{known:true,modelKey:model.key,financeCostKnown,...calculateEconomicImpact({annualRevenue:r.annualRevenue,currentConsumptionTax:currentTax,futureConsumptionTax:futureTax,priceTransferRate:fieldNumber('priceTransferPct')/100,currentOperatingMargin:margin,financeCost})};
  }
 
  function impactTone(impact){if(!impact?.known)return'pending';if(impact.resultEffect>1)return'positive';if(impact.resultEffect<-1)return'negative';return'neutral'}
@@ -99,12 +99,12 @@
   }
   setText('execCurrentConsumptionTax',money(impact.currentTax));setText('execFutureConsumptionTax',money(impact.futureTax));setText('execTaxDelta',deltaLabel(impact.taxDelta));
   setText('execRequiredPrice',impact.requiredPriceRate==null?'—':`${impact.requiredPriceRate>=0?'+':''}${percent(impact.requiredPriceRate)}`);
-  setText('execProjectedMargin',impact.projectedOperatingMargin==null?'Informe a margem atual':percent(impact.projectedOperatingMargin));setText('execResultEffect',resultLabel(impact.resultEffect));
+  setText('execProjectedMargin',impact.projectedOperatingMargin==null?'Informe a margem atual':percent(impact.projectedOperatingMargin));setText('execResultEffect',impact.financeCostKnown?resultLabel(impact.resultEffect):'Parcial · '+resultLabel(impact.resultEffect)+' antes do custo financeiro');
   setText('execEconomicModel',model.name);setText('execEconomicYear',r.year);setText('techProjectedMargin',impact.projectedOperatingMargin==null?'Informe a margem atual':percent(impact.projectedOperatingMargin));
   setText('economicImpactStatus',impact.taxDelta>1?'Pressão sobre a margem':impact.taxDelta<-1?'Potencial de ganho':'Impacto tributário neutro');
   const transfer=percent(impact.transferRate),direction=impact.taxDelta>=0?'acréscimo':'redução';
-  setText('economicImpactText',`O cenário transfere ${transfer} da variação tributária ao preço. O ${direction} anual de preço estimado é ${money(Math.abs(impact.priceChange))}. Após o efeito tributário não transferido e o custo financeiro estimado, o impacto no resultado é ${resultLabel(impact.resultEffect).toLowerCase()}.`);
-  setText('techCurrentConsumptionTax',money(impact.currentTax));setText('techFutureConsumptionTax',money(impact.futureTax));setText('techTaxDelta',deltaLabel(impact.taxDelta));setText('techPriceTransfer',money(impact.priceChange));setText('techUnabsorbedDelta',money(impact.unabsorbedDelta));setText('techFinanceEffect',money(impact.financeCost));setText('techResultEffect',resultLabel(impact.resultEffect));
+  setText('economicImpactText',impact.financeCostKnown?`O cenário transfere ${transfer} da variação tributária ao preço. O ${direction} anual de preço estimado é ${money(Math.abs(impact.priceChange))}. Após o efeito tributário não transferido e o custo financeiro estimado, o impacto no resultado é ${resultLabel(impact.resultEffect).toLowerCase()}.`:`O cenário transfere ${transfer} da variação tributária ao preço. O ${direction} anual de preço estimado é ${money(Math.abs(impact.priceChange))}. O efeito no resultado antes do custo financeiro é ${resultLabel(impact.resultEffect).toLowerCase()}; informe reserva e taxa financeira para completar a análise.`);
+  setText('techCurrentConsumptionTax',money(impact.currentTax));setText('techFutureConsumptionTax',money(impact.futureTax));setText('techTaxDelta',deltaLabel(impact.taxDelta));setText('techPriceTransfer',money(impact.priceChange));setText('techUnabsorbedDelta',money(impact.unabsorbedDelta));setText('techFinanceEffect',impact.financeCostKnown?money(impact.financeCost):'Não calculado');setText('techResultEffect',impact.financeCostKnown?resultLabel(impact.resultEffect):'Parcial · antes do custo financeiro');
   setText('technicalEconomicText',`A comparação usa ${model.name} como modelo de menor desembolso validado em ${r.year}. A carga de consumo futura considera somente IBS/CBS e ICMS/ISS residual aplicável, sem confundir o crédito do cliente com redução do imposto da empresa.`);
   const card=document.getElementById('economicImpactCard');if(card)card.dataset.tone=impactTone(impact);
   return impact;
