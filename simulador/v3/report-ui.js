@@ -34,6 +34,14 @@
 
  function renderTransition(all){
   const y27=all.find(x=>x.year===2027),y33=all.find(x=>x.year===2033);
+  let current2026=window.lastEconomicImpact?.currentTax;
+  if(current2026==null){
+   try{
+    const selected=all.find(x=>x.year===selectedYear),model=validModels(selected)[0];
+    if(selected&&model&&typeof economicImpactFor==='function')current2026=economicImpactFor(selected,model)?.currentTax;
+   }catch(_){}
+  }
+  safeText('exec2026Consumption',current2026==null?'—':money(current2026));
   safeText('exec2027Consumption',y27?money((y27.netVat||0)+(y27.legacy||0)):'—');
   safeText('exec2033Consumption',y33?money((y33.netVat||0)+(y33.legacy||0)):'—');
   const line=el('execTransitionYears');if(!line)return;
@@ -41,6 +49,9 @@
  }
 
  function renderImpacts(r){
+  const top=validModels(r).slice(0,2),regularPair=top.length===2&&top.every(m=>m.key==='real'||m.key==='presumed');
+  safeText('execDecisionDriversTitle',regularPair?'Efeitos da Reforma no negócio':'O que pode mudar a decisão');
+  safeText('execDecisionDriversText',regularPair?'Crédito B2B e caixa continuam relevantes para a operação, mas não diferenciam Lucro Real de Lucro Presumido, pois ambos utilizam o regime regular de IBS/CBS.':'Competitividade B2B e pressão sobre caixa são analisadas separadamente da carga própria.');
   copyText('riskLabel','execRiskLabel');copyText('riskNumber','execRiskScore');copyText('extraClientCredit','execExtraCredit');copyText('breakEvenCapture','execCapture');
   copyText('workingCapital','execWorkingCapital');copyText('financingGap','execFinancingGap');copyText('cashPer100','execCashPer100');
   const b2b=Math.max(0,Math.min(100,Number(el('b2bPct')?.value)||0));
@@ -61,8 +72,9 @@
   if(!best){box.innerHTML='<p>Não há dados suficientes para uma conclusão executiva. Complete as pendências destacadas antes de usar o relatório para decisão.</p>';return}
   const gap=second?second.total-best.total:null,same2033=srec&&srec.key===rec.key;
   const p1=`<p><strong>Decisão tributária.</strong> ${best.name} apresenta o menor desembolso anual estimado em ${r.year}, de <strong>${money(best.total)}</strong>${second?`, com vantagem de <strong>${money(gap)}</strong> sobre ${second.name}`:''}. O ranking considera a carga própria da empresa e não desconta o crédito pertencente ao cliente.</p>`;
-  let p2='';
-  if(r.simpleEligible&&r.extraClientCredit>0){p2=`<p><strong>Ponto que pode alterar a decisão.</strong> O regime regular entrega aproximadamente <strong>${money(r.extraClientCredit)}</strong> adicionais de crédito aos clientes B2B em relação ao Simples puro. A vantagem só compensa economicamente se houver capacidade real de capturar esse valor em preço, margem, retenção ou volume.</p>`}
+  let p2='';const topKeys=valid.slice(0,2).map(m=>m.key),regularPair=topKeys.length===2&&topKeys.every(k=>k==='real'||k==='presumed');
+  if(regularPair){p2='<p><strong>Validação entre Lucro Real e Lucro Presumido.</strong> Como ambos utilizam o regime regular de IBS/CBS, crédito B2B e efeito do split payment não diferenciam diretamente os dois regimes. A comparação depende principalmente da margem tributável, percentuais de presunção, despesas dedutíveis, adições e exclusões fiscais, compensações e qualidade da informação contábil.</p>'}
+  else if(r.simpleEligible&&r.extraClientCredit>0){p2=`<p><strong>Ponto que pode alterar a decisão.</strong> O regime regular entrega aproximadamente <strong>${money(r.extraClientCredit)}</strong> adicionais de crédito aos clientes B2B em relação ao Simples puro. A vantagem só compensa economicamente se houver capacidade real de capturar esse valor em preço, margem, retenção ou volume.</p>`}
   else{p2='<p><strong>Ponto de atenção.</strong> A conclusão deve ser confrontada com contratos, benefícios específicos, créditos efetivos e qualidade dos dados contábeis antes de qualquer opção formal.</p>'}
   let economic='';const impact=window.lastEconomicImpact;
   if(impact?.known){const direction=impact.resultEffect>0?'ganho':impact.resultEffect<0?'perda':'efeito neutro';economic=`<p><strong>Efeito econômico.</strong> Depois da parcela transferida ao preço e do custo financeiro estimado, o cenário indica <strong>${direction} de ${money(Math.abs(impact.resultEffect))}</strong> por ano no resultado.${impact.projectedOperatingMargin==null?' A margem atual não foi informada, por isso a margem futura não foi projetada.':` A margem operacional projetada é de <strong>${pct(impact.projectedOperatingMargin)}</strong>.`}</p>`}
@@ -86,7 +98,8 @@
  function renderExecutiveReport(r,rec,all,srec){
   if(!r)return;const valid=validModels(r),best=valid[0],second=valid[1],gap=best&&second?second.total-best.total:null;
   const title=best?`${best.name} em ${r.year}`:rec.title;safeText('recommendationTitle',title);
-  const lead=best?`${best.name} apresenta o menor desembolso entre os modelos validados${second?`, com diferença de ${money(gap)} para ${second.name}`:''}. Os fatores que podem mudar essa decisão aparecem abaixo.`:rec.text;
+  const regularPair=best&&second&&[best.key,second.key].every(k=>k==='real'||k==='presumed');
+  const lead=best?`${best.name} apresenta o menor desembolso entre os modelos validados${second?`, com diferença de ${money(gap)} para ${second.name}`:''}. ${regularPair?'Os fatores de validação entre Lucro Real e Lucro Presumido aparecem abaixo.':'Os fatores que podem mudar essa decisão aparecem abaixo.'}`:rec.text;
   safeText('recommendationText',lead);
   safeText('yearDecision',best?.name||rec.title);safeText('yearReason',best?`${money(best.total)} por ano · ${pct(r.annualRevenue>0?best.total/r.annualRevenue:0)} da receita`:'Dados insuficientes');
   safeText('execSavings',gap==null?'—':money(gap));safeText('execSecond',second?`vs. ${second.name}`:'Sem segundo modelo validado');
