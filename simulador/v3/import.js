@@ -109,7 +109,7 @@ function analyseImportDoc(file,parsed){
  const taxDebt=comparativeCategoryTotal(bpText,[['parcelamentos fiscais','parcelamentos tributarios'],['parcelamento fiscal','parcelamento tributario'],['parcelamento de tributos','parcelamento de impostos']],['a recuperar','creditos']);
  const mutuals=comparativeCategoryTotal(bpText,[['contratos de mutuo','mutuos'],['emprestimos de socios','emprestimos de partes relacionadas']],['a receber']);
  const debtParts=[loans,taxDebt,mutuals].filter(x=>x.end>0),debtEnd=debtParts.reduce((s,x)=>s+x.end,0),debtStart=debtParts.length&&debtParts.every(x=>x.start!=null)?debtParts.reduce((s,x)=>s+x.start,0):null,debtOrdered=debtParts.length>0&&debtParts.every(x=>x.ordered);
- const interestRaw=firstLatestLineValue(dreText,[['juros sobre emprestimos'],['juros sobre financiamentos'],['encargos de emprestimos'],['encargos financeiros de emprestimos'],['juros e encargos da divida']]);
+ const interestRaw=firstLatestLineValue(dreText,[['juros e encargos da divida','juros e encargos financeiros'],['juros sobre emprestimos','juros de emprestimos','juros de empréstimos'],['juros sobre financiamentos','juros de financiamentos'],['encargos de emprestimos','encargos de financiamentos'],['encargos financeiros de emprestimos','encargos financeiros de financiamentos'],['juros passivos','juros bancarios','juros bancários']]);
  const genericFinanceRaw=latestLineValue(dreText,['despesas financeiras'],['receitas financeiras','resultado financeiro']);
  const interest=interestRaw==null?null:Math.abs(interestRaw),genericFinance=genericFinanceRaw==null?null:Math.abs(genericFinanceRaw);
  const taxTotalRaw=firstLatestLineValue(dreText,[['tributos incidentes sobre vendas'],['impostos incidentes sobre vendas'],['tributos sobre vendas'],['impostos sobre vendas'],['deducoes tributarias']]);
@@ -136,7 +136,7 @@ function analyseImportDoc(file,parsed){
  if(debtEnd>0&&balanceDoc)c.push(candidate('debtEnd','Dívida financeira final',debtEnd,file.name,debtOrdered?'high':'medium','Soma de empréstimos e financiamentos, parcelamentos fiscais/tributários e mútuos de curto e longo prazo. Confirme a data-base.',fmtMoney(debtEnd)));
  if(debtStart!=null&&debtStart>=0&&balanceDoc)c.push(candidate('debtStart','Dívida financeira inicial',debtStart,file.name,debtOrdered?'high':'medium','Saldo comparativo anterior das mesmas obrigações usadas na dívida financeira final.',fmtMoney(debtStart)));
  if(interest!=null&&interest>0&&dreDoc)c.push(candidate('interestExpense','Despesas financeiras da dívida',interest,file.name,'high','Conta específica de juros/encargos da dívida localizada na DRE.',fmtMoney(interest)));
- else if(genericFinance!=null&&genericFinance>0&&dreDoc)c.push(candidate('interestExpense','Despesas financeiras',genericFinance,file.name,'high','Conta de despesas financeiras localizada diretamente na DRE. O simulador a usa como aproximação do custo da dívida; revise se incluir tarifas, IOF, variação cambial, multas ou itens não vinculados às dívidas consideradas.',fmtMoney(genericFinance)));
+ else if(genericFinance!=null&&genericFinance>0&&dreDoc)c.push(candidate('interestExpense','Despesas financeiras totais',genericFinance,file.name,'low','Subtotal genérico da DRE. Não é aplicado automaticamente ao custo da dívida porque pode incluir tarifas, IOF, variação cambial, multas, descontos financeiros e outros itens não vinculados ao saldo médio das dívidas.',fmtMoney(genericFinance)));
  if(accountingProfit!=null&&dreDoc)c.push(candidate('realAccountingProfitAnnual','Lucro contábil antes de IRPJ e CSLL',accountingProfit,file.name,pretaxProfit!=null?'high':'medium',pretaxProfit!=null?'Resultado antes de IRPJ/CSLL identificado diretamente na DRE.':'Valor aproximado a partir do lucro líquido acrescido de IRPJ e CSLL identificados.',fmtMoney(accountingProfit)));
  if(consumptionTaxes>0&&dreDoc){const taxRate=revenueGross?100*consumptionTaxes/Math.abs(revenueGross):null;const rateText=taxRate!=null&&Number.isFinite(taxRate)?` Equivale a aproximadamente ${fmtPct(taxRate)} da receita bruta.`:'';c.push(candidate('currentConsumptionTaxAnnual','Carga atual de tributos sobre consumo',consumptionTaxes,file.name,taxConfidence,taxReason+rateText,fmtMoney(consumptionTaxes)))}
  if(ebitdaMargin!=null&&Number.isFinite(ebitdaMargin)&&dreDoc)c.push(candidate('currentOperatingMarginPct','Margem EBITDA atual',ebitdaMargin,file.name,(explicitEbitda!=null||operatingBeforeFinance!=null)?'high':'medium',explicitEbitda!=null?'EBITDA identificado diretamente e dividido pela receita líquida.':operatingBeforeFinance!=null?'Resultado antes do resultado financeiro acrescido de depreciação e amortização, dividido pela receita líquida.':'EBITDA aproximado pelo resultado operacional acrescido de depreciação e amortização, dividido pela receita líquida.',fmtPct(ebitdaMargin)));
@@ -180,7 +180,8 @@ function autoApplyDocumentCalculations(){
   const arr=groups[field]||[];if(!arr.length||conflictGroup(arr))return;
   const ranked=[...arr].sort((a,b)=>({high:3,medium:2,low:1}[b.confidence]||0)-({high:3,medium:2,low:1}[a.confidence]||0));
   const best=ranked[0];if(!best)return;
-  if(['debtStart','debtEnd','interestExpense','realAccountingProfitAnnual'].includes(field)&&best.confidence==='low')return;
+  if(field==='interestExpense'&&best.confidence!=='high')return;
+  if(['debtStart','debtEnd','realAccountingProfitAnnual'].includes(field)&&best.confidence==='low')return;
   applyImportCandidate(best._index);
  });
  if(typeof financialMetrics==='function')financialMetrics();
