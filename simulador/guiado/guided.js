@@ -87,7 +87,8 @@
  }
 
  function refreshAutomation(){
-  const card=byId('companyCard'),box=byId('guidedAutomation');if(!box||!card||card.hidden){if(box)box.hidden=true;if(byId('deadlineBanner'))byId('deadlineBanner').hidden=true;return}
+  const card=byId('companyCard'),box=byId('guidedAutomation'),context=byId('erpCompanyContext');if(!box||!card||card.hidden){if(box)box.hidden=true;if(context)context.textContent='Novo diagnóstico';if(byId('deadlineBanner'))byId('deadlineBanner').hidden=true;return}
+  if(context)context.textContent=byId('companyName')?.textContent||value('activity')||'Empresa identificada';
   const mix=[['mixFull','Integral'],['mix30','Redução de 30%'],['mix40','Redução de 40%'],['mix60','Redução de 60%'],['mixZero','Alíquota zero']].filter(([id])=>numeric(id)>0).map(([id,n])=>`${n}: ${percent(numeric(id))}`).join(' · ');
   box.hidden=false;box.innerHTML=`<div class="guidedAutomationHead"><div><strong>Pré-diagnóstico automático criado pelo CNPJ e CNAE</strong><p>${escapeHtml(byId('companyCnae')?.textContent||value('activity'))}</p></div><span>REVISÁVEL</span></div><div class="guidedAutomationGrid"><div class="guidedAutoItem"><span>Vendas para empresas</span><b>${percent(numeric('b2bPct'))}</b></div><div class="guidedAutoItem"><span>Compras com tributos na nota</span><b>${percent(numeric('purchasesPct'))}</b></div><div class="guidedAutoItem"><span>Compras potencialmente creditáveis</span><b>${percent(numeric('eligibleCreditPct'))}</b></div><div class="guidedAutoItem"><span>Fornecedores no regime regular</span><b>${percent(numeric('regularSuppliersPct'))}</b></div><div class="guidedAutoItem"><span>Tratamento sugerido</span><b>${escapeHtml(mix||'A revisar')}</b></div><div class="guidedAutoItem"><span>Simples Nacional</span><b>${escapeHtml(byId('simpleStatus')?.selectedOptions?.[0]?.textContent||'Não confirmado')}</b></div><div class="guidedAutoItem"><span>Anexo sugerido</span><b>${escapeHtml(value('annex')||'Não aplicável')}</b></div><div class="guidedAutoItem"><span>Atividade</span><b>${escapeHtml((value('activity')||'Não identificada').slice(0,55))}</b></div></div>`;
  }
@@ -111,14 +112,13 @@
   currentStep=Math.max(1,Math.min(4,Number(step)||1));document.body.classList.add('guidedReady');
   setup.querySelectorAll('[data-guided-step]').forEach(x=>x.classList.toggle('guidedStepActive',Number(x.dataset.guidedStep)===currentStep));
   document.querySelectorAll('[data-guided-nav]').forEach(b=>{const n=Number(b.dataset.guidedNav);b.classList.toggle('active',n===currentStep);b.classList.toggle('done',n<currentStep)});
-  byId('guidedBack').hidden=currentStep===1;byId('guidedNext').hidden=currentStep===4;byId('guidedStepText').textContent=`Etapa ${currentStep} de 4`;refreshAll();if(scroll)byId('guidedNav')?.scrollIntoView({behavior:'smooth',block:'start'});
+  byId('guidedBack').hidden=currentStep===1;byId('guidedNext').hidden=currentStep===4;byId('guidedStepText').textContent=`Etapa ${currentStep} de 4`;if(byId('erpStepMeta'))byId('erpStepMeta').textContent=`Etapa ${currentStep} de 4`;refreshAll();if(scroll)byId('guidedNav')?.scrollIntoView({behavior:'smooth',block:'start'});
  }
 
  function init(){
   const panels=[...setup.querySelectorAll(':scope > .panel')].filter(x=>!x.id);
   if(panels.length<4)return;
   prepareCompanyStep(panels[0]);prepareOperationStep(panels[1]);prepareFinanceStep(panels[2]);prepareEconomicStep(panels[3]);createDataChoice();createReviewPanel();attachImportPanel();
-  const brandLine=document.querySelector('.brand span');if(brandLine)brandLine.textContent='Simulador Guiado · motor técnico completo';
   document.querySelectorAll('[data-guided-nav]').forEach(b=>b.addEventListener('click',()=>showStep(b.dataset.guidedNav)));
   byId('guidedBack').addEventListener('click',()=>showStep(currentStep-1));byId('guidedNext').addEventListener('click',()=>showStep(currentStep+1));
   document.addEventListener('input',refreshAll);document.addEventListener('change',refreshAll);
