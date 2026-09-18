@@ -325,6 +325,46 @@ function updateEconomicMetricAvailability(){
  }
 }
 
+
+function clearLegacyNetRevenueAsGross(){
+ const q=brmiImport.revenueQuality,annual=$('rbt12');if(!q||q.status!=='net-only'||!annual||annual.dataset.userEdited==='1')return false;
+ const months=Math.max(1,Math.min(12,Number($('dreMonths')?.value)||12)),annualNet=Number(q.net||0)*(12/months),current=num('rbt12');
+ if(!(annualNet>0&&Math.abs(current-annualNet)<1))return false;
+ annual.value='';delete annual.dataset.importVerified;delete annual.dataset.importSource;delete annual.dataset.importDerivedKey;
+ const monthly=$('monthlyRevenue');if(monthly&&$('revenueSync')?.checked)monthly.value='';
+ if(typeof markFieldPending==='function'){markFieldPending('rbt12','CONFIRMAR BRUTO');markFieldPending('monthlyRevenue','CONFIRMAR BRUTO')}
+ q.cleanedLegacyNet=true;q.annualNet=annualNet;
+ try{const saved=JSON.parse(localStorage.getItem('brmi_v3')||'{}');delete saved.rbt12;if($('revenueSync')?.checked)delete saved.monthlyRevenue;localStorage.setItem('brmi_v3',JSON.stringify(saved))}catch(_){}
+ return true;
+}
+function refreshNetToGrossTaxApproximation(){
+ const q=brmiImport.revenueQuality;if(!q||q.status!=='net-only')return null;
+ brmiImport.candidates=brmiImport.candidates.filter(x=>x?.derivedKey!=='gross-net-tax');
+ const tax=$('currentConsumptionTaxAnnual');
+ if(tax?.dataset?.importDerivedKey==='gross-net-tax'){tax.value='';delete tax.dataset.importVerified;delete tax.dataset.importSource;delete tax.dataset.importDerivedKey;delete tax.dataset.sourceNote}
+ const explicit=brmiImport.candidates.some(x=>x?.field==='currentConsumptionTaxAnnual');
+ if(explicit)return null;
+ const months=Math.max(1,Math.min(12,Number($('dreMonths')?.value)||12)),annualNet=Number(q.net||0)*(12/months),gross=num('rbt12');
+ if(!(gross>annualNet&&gross<=annualNet*1.5))return null;
+ const approx=candidate('currentConsumptionTaxAnnual','Carga atual líquida de tributos sobre consumo',gross-annualNet,String(q.source||'DRE')+' + faturamento bruto informado','low','Aproximação pela diferença entre faturamento bruto e Receita Líquida da DRE. Essa diferença pode incluir devoluções, abatimentos e descontos além de tributos; revise antes de concluir.',fmtMoney(gross-annualNet));
+ if(!approx)return null;approx.derivedKey='gross-net-tax';brmiImport.candidates.push(approx);groupedImportCandidates();
+ const idx=brmiImport.candidates.indexOf(approx);applyImportCandidate(idx);renderImportCandidates();return approx.value;
+}
+function clearImportedDocumentValues(){
+ const fields=new Set((brmiImport.candidates||[]).map(x=>x?.field).filter(Boolean));['realAccountingProfitAnnual','currentConsumptionTaxAnnual','currentOperatingMarginPct','debtStart','debtEnd','interestExpense','cashAndEquivalents','liquidInvestments','currentAssets','currentLiabilities'].forEach(x=>fields.add(x));
+ const cleared=[];
+ fields.forEach(id=>{if(id==='cnpj')return;const el=$(id);if(!el||el.dataset.userEdited==='1'||el.dataset.importVerified!=='1')return;el.value='';delete el.dataset.importVerified;delete el.dataset.importSource;delete el.dataset.importDerivedKey;delete el.dataset.sourceNote;cleared.push(id);if(typeof markFieldPending==='function')markFieldPending(id,'REVISAR')});
+ if(cleared.includes('rbt12')&&$('revenueSync')?.checked&&$('monthlyRevenue')){$('monthlyRevenue').value='';cleared.push('monthlyRevenue')}
+ try{const saved=JSON.parse(localStorage.getItem('brmi_v3')||'{}');cleared.forEach(id=>delete saved[id]);localStorage.setItem('brmi_v3',JSON.stringify(saved))}catch(_){}
+ brmiImport.verifiedAccountingProfit=null;brmiImport.revenueQuality=null;
+ if(typeof financialMetrics==='function')financialMetrics();if(typeof markDiagnosisDirty==='function')markDiagnosisDirty('import-clear');
+ return cleared;
+}
+function bindImportedCompanyIntegrity(){
+ const el=$('cnpj');if(!el||el.dataset.importCompanyBound)return;el.dataset.importCompanyBound='1';
+ el.addEventListener('input',e=>{if(!e.isTrusted||!brmiImport.docs?.length)return;const raw=importedCnpjDigits(el.value);if(raw.length!==14)return;const ids=[...new Set(brmiImport.docs.map(d=>d.cnpj).filter(Boolean))];if(ids.length!==1||ids[0]===raw)return;clearImportedDocumentValues();brmiImport.files=[];brmiImport.docs=[];brmiImport.candidates=[];brmiImport.lastLookupCnpj=null;renderImportFiles();if($('importSummary'))$('importSummary').hidden=true;const status=$('lookupStatus');if(status){status.className='status';status.textContent='O CNPJ foi alterado. Os valores vinculados aos documentos da empresa anterior foram descartados; importe os documentos da nova empresa.'}});
+}
+
 function bestVerifiedAccountingProfit(){
  const items=(brmiImport.candidates||[]).filter(x=>x?.field==='realAccountingProfitAnnual'&&Number.isFinite(x.value));
  if(!items.length)return null;
