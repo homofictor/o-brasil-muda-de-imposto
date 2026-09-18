@@ -47,13 +47,24 @@
   panel.dataset.guidedStep='3';
   const title=panel.querySelector('.sectionTitle');
   if(!panel.querySelector('.guidedFinancialIntro')){
-   const intro=document.createElement('div');intro.className='guidedFinancialIntro';intro.innerHTML='<strong>Prefira importar BP e DRE.</strong><p>O preenchimento manual permanece disponível, mas os documentos reduzem trabalho e aumentam a consistência dos cálculos de lucro, caixa, dívida e custo financeiro.</p>';
+   const intro=document.createElement('div');intro.className='guidedFinancialIntro';intro.innerHTML='<strong>Os dados podem ser importados ou digitados manualmente.</strong><p>Use BP e DRE para ganhar tempo ou abra o formulário manual para informar e corrigir faturamento, lucro, caixa, capital de giro, dívida, juros e demais premissas.</p>';
    title.insertAdjacentElement('afterend',intro);
    const cards=document.createElement('div');cards.className='guidedFinanceCards';cards.id='guidedFinanceCards';intro.insertAdjacentElement('afterend',cards);
-   const d=detailsBox('Revisar ou complementar os dados contábeis');const body=d.querySelector('.guidedReviewDetailsBody');
+   const d=detailsBox('Preencher ou corrigir os dados manualmente');d.id='guidedManualFields';const body=d.querySelector('.guidedReviewDetailsBody');
    [...panel.children].filter(x=>x.classList?.contains('grid4')||x.classList?.contains('advanced')).forEach(x=>body.appendChild(x));
    cards.insertAdjacentElement('afterend',d);
   }
+ }
+
+ function createDataChoice(){
+  if(byId('guidedDataChoice'))return byId('guidedDataChoice');
+  const finance=byId('cashReserve')?.closest('.panel');if(!finance)return null;
+  const panel=document.createElement('section');panel.className='panel guidedDataChoice';panel.id='guidedDataChoice';panel.dataset.guidedStep='3';
+  panel.innerHTML='<div class="guidedDataChoiceHead"><span>ETAPA DE PRECISÃO</span><h2>Como deseja informar os dados financeiros?</h2><p>As duas opções alimentam o mesmo motor e podem ser combinadas.</p></div><div class="guidedDataChoiceGrid"><button type="button" id="guidedImportPath"><b>Importar BP, DRE ou relatórios</b><small>O simulador procura os valores e apresenta sugestões para confirmação.</small><strong>Escolher importação</strong></button><button type="button" id="guidedManualPath"><b>Preencher os dados manualmente</b><small>Digite diretamente os valores disponíveis e deixe em branco o que não souber.</small><strong>Abrir formulário manual</strong></button></div><div class="guidedDataChoiceNote" id="guidedDataChoiceNote">Você também poderá corrigir manualmente qualquer valor importado.</div>';
+  finance.parentNode.insertBefore(panel,finance);
+  const select=mode=>{panel.dataset.mode=mode;byId('guidedImportPath').classList.toggle('active',mode==='import');byId('guidedManualPath').classList.toggle('active',mode==='manual');if(mode==='import'){byId('guidedDataChoiceNote').textContent='Após a leitura, confirme as sugestões encontradas. Os campos manuais continuarão disponíveis para ajustes.';byId('importPanel')?.scrollIntoView({behavior:'smooth',block:'start'})}else{byId('guidedDataChoiceNote').textContent='Informe somente os dados que conhece. O relatório mostrará quais análises ficaram pendentes por falta de informação.';const d=byId('guidedManualFields');if(d)d.open=true;finance.scrollIntoView({behavior:'smooth',block:'start'})}};
+  byId('guidedImportPath').addEventListener('click',()=>select('import'));byId('guidedManualPath').addEventListener('click',()=>select('manual'));
+  return panel;
  }
 
  function prepareEconomicStep(panel){
@@ -106,7 +117,7 @@
  function init(){
   const panels=[...setup.querySelectorAll(':scope > .panel')].filter(x=>!x.id);
   if(panels.length<4)return;
-  prepareCompanyStep(panels[0]);prepareOperationStep(panels[1]);prepareFinanceStep(panels[2]);prepareEconomicStep(panels[3]);createReviewPanel();attachImportPanel();
+  prepareCompanyStep(panels[0]);prepareOperationStep(panels[1]);prepareFinanceStep(panels[2]);prepareEconomicStep(panels[3]);createDataChoice();createReviewPanel();attachImportPanel();
   const brandLine=document.querySelector('.brand span');if(brandLine)brandLine.textContent='Simulador Guiado · motor técnico completo';
   document.querySelectorAll('[data-guided-nav]').forEach(b=>b.addEventListener('click',()=>showStep(b.dataset.guidedNav)));
   byId('guidedBack').addEventListener('click',()=>showStep(currentStep-1));byId('guidedNext').addEventListener('click',()=>showStep(currentStep+1));
