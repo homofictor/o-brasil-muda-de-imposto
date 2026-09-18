@@ -243,7 +243,13 @@ function buildCrossCandidates(docs,candidates){
    }
    if(ebit!=null&&daKnown){ebitda=ebit+da;reason=`EBIT reconstruído antes do resultado financeiro, acrescido de ${daReason}. Revise se houver baixas ou reclassificações relevantes de ativos.`}
   }
-  if(ebitda!=null){const margin=100*(ebitda*(12/months))/(Math.abs(net)*(12/months));if(Number.isFinite(margin))candidates.push(candidate('currentOperatingMarginPct','Margem EBITDA atual',margin,[dreDoc.file,bpDoc?.file].filter(Boolean).join(' + '),confidence,reason,fmtPct(margin)))}
+  if(ebitda!=null){
+   const annualEbitda=ebitda*(12/months),annualNet=Math.abs(net)*(12/months),margin=100*annualEbitda/annualNet;
+   if(Number.isFinite(margin)){
+    const detail=(reason?reason+' ':'')+`EBITDA anual estimado em ${fmtMoney(annualEbitda)} sobre receita líquida anual de ${fmtMoney(annualNet)}.`;
+    candidates.push(candidate('currentOperatingMarginPct','Margem EBITDA atual',margin,[dreDoc.file,bpDoc?.file].filter(Boolean).join(' + '),confidence,detail,fmtPct(margin)))
+   }
+  }
  }
  return candidates
 }
@@ -308,7 +314,7 @@ async function autoLookupImportedCompany(docs){const ids=[...new Set((docs||[]).
 async function processImportFiles(files){
  const list=[...files];if(!list.length)return;brmiImport.files=list.map(f=>({name:f.name,ext:extOf(f.name),status:'Na fila'}));brmiImport.docs=[];brmiImport.candidates=[];renderImportFiles();const progress=$('importProgress');if(progress)progress.hidden=false;
  for(let i=0;i<list.length;i++){const f=list[i],row=brmiImport.files[i];row.status='Analisando';row.statusClass='';renderImportFiles();if($('importProgressTitle'))$('importProgressTitle').textContent=`Analisando ${f.name}`;if($('importProgressText'))$('importProgressText').textContent=`Arquivo ${i+1} de ${list.length}. Procurando faturamento, clientes, compras, caixa, BP, dívida, juros, folha e margem.`;try{const parsed=await readImportFile(f),doc=analyseImportDoc(f,parsed);row.type=doc.type;row.status=doc.candidates.length||doc.purchaseTotal?'Lido':'Sem indicador';row.statusClass=doc.candidates.length||doc.purchaseTotal?'ok':'warn';brmiImport.docs.push(doc);brmiImport.candidates.push(...doc.candidates)}catch(e){row.status='Não lido';row.statusClass='bad';row.type=e.message}renderImportFiles();await new Promise(r=>setTimeout(r,220))}
- buildCrossCandidates(brmiImport.docs,brmiImport.candidates);if(progress)progress.hidden=true;renderImportCandidates();autoApplyDocumentCalculations();updateEconomicMetricAvailability();await autoLookupImportedCompany(brmiImport.docs)
+ buildCrossCandidates(brmiImport.docs,brmiImport.candidates);if(progress)progress.hidden=true;renderImportCandidates();autoApplyDocumentCalculations();updateEconomicMetricAvailability();await autoLookupImportedCompany(brmiImport.docs);autoApplyDocumentCalculations();updateEconomicMetricAvailability();if(typeof calculate==='function')calculate()
 }
 function clearImport(){brmiImport.files=[];brmiImport.docs=[];brmiImport.candidates=[];renderImportFiles();if($('importSummary'))$('importSummary').hidden=true;if($('importEmpty'))$('importEmpty').hidden=true;const inp=$('importFiles');if(inp)inp.value=''}
 function initDocumentImport(){const setup=$('setupMount');if(!setup||$('importPanel'))return;setup.insertAdjacentHTML('beforeend',importMarkup());const input=$('importFiles'),drop=$('importDrop'),choose=$('importChooseBtn');choose?.addEventListener('click',e=>{e.stopPropagation();input?.click()});drop?.addEventListener('click',e=>{if(e.target!==choose)input?.click()});drop?.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();input?.click()}});input?.addEventListener('change',()=>processImportFiles(input.files));['dragenter','dragover'].forEach(ev=>drop?.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('drag')}));['dragleave','drop'].forEach(ev=>drop?.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('drag')}));drop?.addEventListener('drop',e=>processImportFiles(e.dataTransfer.files));$('importApplyHigh')?.addEventListener('click',applyHighConfidenceCandidates);$('importClear')?.addEventListener('click',clearImport)}
