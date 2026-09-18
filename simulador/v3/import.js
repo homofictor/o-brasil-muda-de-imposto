@@ -123,10 +123,10 @@ function analyseImportDoc(file,parsed){
  const explicitEbitda=firstLatestLineValue(dreText,[['ebitda'],['lajida']]);
  const operatingBeforeFinance=firstLatestLineValue(dreText,[['resultado antes do resultado financeiro e dos tributos','resultado antes do resultado financeiro','lucro operacional antes do resultado financeiro']]);
  const operatingProfit=operatingBeforeFinance!=null?operatingBeforeFinance:firstLatestLineValue(dreText,[['resultado operacional','lucro operacional']]);
- const depreciation=Math.abs(firstLatestLineValue(dreText,[['depreciacao e amortizacao'],['depreciacao']])||0);
- const amortization=Math.abs(firstLatestLineValue(dreText,[['amortizacao']],['depreciacao e amortizacao'])||0);
+ const depreciation=Math.abs(firstLatestLineValue(dreText,[['depreciacao e amortizacao','depreciacoes e amortizacoes'],['depreciacao','depreciacoes']])||0);
+ const amortization=Math.abs(firstLatestLineValue(dreText,[['amortizacao','amortizacoes']],['depreciacao e amortizacao','depreciacoes e amortizacoes'])||0);
  const ebitda=explicitEbitda!=null?explicitEbitda:(operatingProfit!=null?operatingProfit+depreciation+amortization:null);
- const ebitdaMargin=ebitda!=null&&revenueNet>0?100*ebitda/revenueNet:null;
+ const revenueNetForMargin=revenueNet>0?Math.abs(revenueNet):(revenueGross>0?Math.max(0,Math.abs(revenueGross)-deductions):0);const ebitdaMargin=ebitda!=null&&revenueNetForMargin>0?100*ebitda/revenueNetForMargin:null;
  if(importedCnpj)c.push(candidate('cnpj','CNPJ da empresa',importedCnpj,file.name,'high','CNPJ validado e identificado no cabeçalho da demonstração contábil.',formatImportedCnpj(importedCnpj)));
  if(revenue>0)c.push(candidate('rbt12','Faturamento em 12 meses (RBT12)',Math.abs(revenue),file.name,dreDoc||type==='Relatório de vendas'?'high':'medium',`Valor localizado em ${type}.`,fmtMoney(Math.abs(revenue))));
  if(cash!=null&&balanceDoc)c.push(candidate('cashAndEquivalents','Caixa e equivalentes',Math.abs(cash),file.name,'high','Caixa/disponibilidades localizado no balanço.',fmtMoney(Math.abs(cash))));
@@ -160,7 +160,7 @@ function applyImportCandidate(i,button){
  const c=brmiImport.candidates[i],el=$(c?.field);if(!c||!el)return;const targetButton=button||document.querySelector(`[data-import-index="${i}"]`);
  if(c.field==='cnpj'){el.value=typeof normalizeCnpjInput==='function'?normalizeCnpjInput(c.value):formatImportedCnpj(c.value);if(typeof markFieldAuto==='function')markFieldAuto('cnpj','IMPORTADO');syncImportCandidateButtons(c.field,i);if(typeof lookupCnpj==='function')lookupCnpj();return}
  el.value=Math.round(c.value*100)/100;
- if(c.field==='currentConsumptionTaxAnnual'&&$('currentConsumptionMode')){$('currentConsumptionMode').value='manual';el.readOnly=false}
+ if(c.field==='currentConsumptionTaxAnnual'&&$('currentConsumptionMode')){$('currentConsumptionMode').value='manual';el.readOnly=false;el.dataset.sourceNote=c.reason||'';if($('currentConsumptionTaxSource'))$('currentConsumptionTaxSource').textContent='Calculado a partir da DRE importada. '+(c.reason||'Revise a origem antes de concluir.')}
  if(c.field==='rbt12'&&$('revenueSync')?.checked&&typeof syncRevenue==='function'){syncRevenue('annual');if(typeof markFieldDerived==='function')markFieldDerived('monthlyRevenue','CALCULADO')}
  if(c.field==='monthlyRevenue'&&$('revenueSync')?.checked&&typeof syncRevenue==='function'){syncRevenue('monthly');if(typeof markFieldDerived==='function')markFieldDerived('rbt12','CALCULADO')}
  if(typeof markFieldAuto==='function')markFieldAuto(c.field,c.confidence==='low'?'REVISAR':'IMPORTADO');
@@ -172,11 +172,24 @@ function applyHighConfidenceCandidates(){
  Object.values(groups).forEach(arr=>{const high=arr.filter(c=>c.confidence==='high');if(!high.length)return;if(conflictGroup(high)){skipped++;return}applyImportCandidate(high[0]._index);applied++});
  const btn=$('importApplyHigh');if(btn){btn.textContent=applied?`${applied} sugest${applied===1?'ão aplicada':'ões aplicadas'}`:'Nenhuma sugestão segura para aplicar';if(skipped)btn.title=`${skipped} grupo(s) com valores divergentes não foram aplicados automaticamente.`}
 }
+
+function autoApplyDocumentCalculations(){
+ const groups=groupedImportCandidates();
+ const automaticFields=new Set(['currentConsumptionTaxAnnual','currentOperatingMarginPct','realAccountingProfitAnnual','debtStart','debtEnd','interestExpense']);
+ automaticFields.forEach(field=>{
+  const arr=groups[field]||[];if(!arr.length||conflictGroup(arr))return;
+  const ranked=[...arr].sort((a,b)=>({high:3,medium:2,low:1}[b.confidence]||0)-({high:3,medium:2,low:1}[a.confidence]||0));
+  const best=ranked[0];if(!best)return;
+  if(['debtStart','debtEnd','interestExpense','realAccountingProfitAnnual'].includes(field)&&best.confidence==='low')return;
+  applyImportCandidate(best._index);
+ });
+ if(typeof financialMetrics==='function')financialMetrics();
+}
 async function autoLookupImportedCompany(docs){const ids=[...new Set((docs||[]).map(d=>d.cnpj).filter(Boolean))];if(ids.length!==1)return;const raw=ids[0],el=$('cnpj'),status=$('lookupStatus');if(!el)return;const current=importedCnpjDigits(el.value);if(current&&current!==raw){if(status){status.className='status';status.textContent=`O documento contém o CNPJ ${formatImportedCnpj(raw)}, diferente do CNPJ já informado. Revise antes de aplicar.`}return}el.value=typeof normalizeCnpjInput==='function'?normalizeCnpjInput(raw):formatImportedCnpj(raw);if(typeof markFieldAuto==='function')markFieldAuto('cnpj','IMPORTADO');if(brmiImport.lastLookupCnpj===raw)return;brmiImport.lastLookupCnpj=raw;if(typeof lookupCnpj==='function')await lookupCnpj()}
 async function processImportFiles(files){
  const list=[...files];if(!list.length)return;brmiImport.files=list.map(f=>({name:f.name,ext:extOf(f.name),status:'Na fila'}));brmiImport.docs=[];brmiImport.candidates=[];renderImportFiles();const progress=$('importProgress');if(progress)progress.hidden=false;
  for(let i=0;i<list.length;i++){const f=list[i],row=brmiImport.files[i];row.status='Analisando';row.statusClass='';renderImportFiles();if($('importProgressTitle'))$('importProgressTitle').textContent=`Analisando ${f.name}`;if($('importProgressText'))$('importProgressText').textContent=`Arquivo ${i+1} de ${list.length}. Procurando faturamento, clientes, compras, caixa, BP, dívida, juros, folha e margem.`;try{const parsed=await readImportFile(f),doc=analyseImportDoc(f,parsed);row.type=doc.type;row.status=doc.candidates.length||doc.purchaseTotal?'Lido':'Sem indicador';row.statusClass=doc.candidates.length||doc.purchaseTotal?'ok':'warn';brmiImport.docs.push(doc);brmiImport.candidates.push(...doc.candidates)}catch(e){row.status='Não lido';row.statusClass='bad';row.type=e.message}renderImportFiles();await new Promise(r=>setTimeout(r,220))}
- buildCrossCandidates(brmiImport.docs,brmiImport.candidates);if(progress)progress.hidden=true;renderImportCandidates();await autoLookupImportedCompany(brmiImport.docs)
+ buildCrossCandidates(brmiImport.docs,brmiImport.candidates);if(progress)progress.hidden=true;renderImportCandidates();autoApplyDocumentCalculations();await autoLookupImportedCompany(brmiImport.docs)
 }
 function clearImport(){brmiImport.files=[];brmiImport.docs=[];brmiImport.candidates=[];renderImportFiles();if($('importSummary'))$('importSummary').hidden=true;if($('importEmpty'))$('importEmpty').hidden=true;const inp=$('importFiles');if(inp)inp.value=''}
 function initDocumentImport(){const setup=$('setupMount');if(!setup||$('importPanel'))return;setup.insertAdjacentHTML('beforeend',importMarkup());const input=$('importFiles'),drop=$('importDrop'),choose=$('importChooseBtn');choose?.addEventListener('click',e=>{e.stopPropagation();input?.click()});drop?.addEventListener('click',e=>{if(e.target!==choose)input?.click()});drop?.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();input?.click()}});input?.addEventListener('change',()=>processImportFiles(input.files));['dragenter','dragover'].forEach(ev=>drop?.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('drag')}));['dragleave','drop'].forEach(ev=>drop?.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('drag')}));drop?.addEventListener('drop',e=>processImportFiles(e.dataTransfer.files));$('importApplyHigh')?.addEventListener('click',applyHighConfidenceCandidates);$('importClear')?.addEventListener('click',clearImport)}
