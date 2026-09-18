@@ -131,7 +131,15 @@
   currentStep=Math.max(1,Math.min(4,Number(step)||1));document.body.classList.add('guidedReady');
   setup.querySelectorAll('[data-guided-step]').forEach(x=>x.classList.toggle('guidedStepActive',Number(x.dataset.guidedStep)===currentStep));
   document.querySelectorAll('[data-guided-nav]').forEach(b=>{const n=Number(b.dataset.guidedNav);b.classList.toggle('active',n===currentStep);b.classList.toggle('done',n<currentStep)});
-  byId('guidedBack').hidden=currentStep===1;byId('guidedNext').hidden=currentStep===4;byId('guidedStepText').textContent=`Etapa ${currentStep} de 4`;if(byId('erpStepMeta'))byId('erpStepMeta').textContent=`Etapa ${currentStep} de 4`;refreshAll();if(scroll)byId('guidedNav')?.scrollIntoView({behavior:'smooth',block:'start'});
+  byId('guidedBack').hidden=currentStep===1;byId('guidedNext').hidden=currentStep===4;byId('guidedStepText').textContent=`Etapa ${currentStep} de 4`;if(byId('erpStepMeta'))byId('erpStepMeta').textContent=`Etapa ${currentStep} de 4`;refreshAll();
+  if(scroll)requestAnimationFrame(()=>{
+   const target=[...setup.querySelectorAll(`[data-guided-step="${currentStep}"]`)].find(x=>x.classList.contains('guidedStepActive'));
+   if(!target)return;
+   const header=document.querySelector('.erpTopbar,.topbar'),deadline=byId('deadlineBanner');
+   const headerH=header?.getBoundingClientRect().height||0,deadlineH=deadline&&!deadline.hidden?(deadline.getBoundingClientRect().height||0):0;
+   const top=Math.max(0,target.getBoundingClientRect().top+window.scrollY-headerH-deadlineH-14);
+   window.scrollTo({top,behavior:'smooth'});
+  });
  }
 
  function init(){
