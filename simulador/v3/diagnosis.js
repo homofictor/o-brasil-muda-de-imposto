@@ -26,11 +26,11 @@ window.printDiagnosisReport=printDiagnosisReport;
 function diagnosisMarkup(){
  return `<section class="panel diagnosisGate" id="diagnosisGate">
   <div class="diagnosisIntro">
-   <div><span class="diagnosisEyebrow">Etapa final</span><h2>Pronto para gerar o diagnóstico?</h2><p>Vamos cruzar enquadramento, regimes aplicáveis, carga tributária, créditos, competitividade, caixa e efeito econômico antes de revelar o resultado.</p></div>
+   <div><span class="diagnosisEyebrow">Etapa final</span><h2>Gerar o diagnóstico da empresa</h2><p>O simulador vai consolidar os dados já informados e separar resultado executivo de memória técnica. Você não precisa revisar os cálculos antes de gerar.</p></div>
    <div class="diagnosisChecks"><span>Regimes aplicáveis</span><span>2027 a 2033</span><span>Crédito B2B</span><span>Split e caixa</span><span>Preço e margem</span></div>
   </div>
   <div id="diagnosisValidation" class="diagnosisValidation" hidden role="alert"></div>
-  <button id="generateDiagnosisBtn" class="diagnosisButton" type="button"><span>Gerar diagnóstico</span><small>Processar cenários e recomendações</small></button>
+  <button id="generateDiagnosisBtn" class="diagnosisButton" type="button"><span>Gerar meu diagnóstico</span><small>Consolidar cenários e abrir o resumo executivo</small></button>
   <div id="diagnosisWork" class="diagnosisWork" hidden aria-live="polite" aria-busy="true">
    <div class="diagnosisWorkHead"><span class="diagHourglass" aria-hidden="true">⌛</span><div><strong id="diagnosisWorkTitle">Preparando análise...</strong><small id="diagnosisWorkText">Organizando as premissas informadas.</small></div><b id="diagnosisProgressText">0%</b></div>
    <div class="diagnosisProgress"><i id="diagnosisProgressBar"></i></div>
@@ -56,8 +56,8 @@ function diagnosisStages(){
 
 function validateDiagnosisInputs(){
  const errors=[];
- if(num('monthlyRevenue')<=0)errors.push('Informe um faturamento médio mensal maior que zero.');
- if(num('rbt12')<=0)errors.push('Informe a receita acumulada em 12 meses (RBT12).');
+ if(num('monthlyRevenue')<=0)errors.push('Confirme o faturamento médio mensal ou o faturamento bruto anual.');
+ if(num('rbt12')<=0)errors.push('Informe o faturamento bruto dos últimos 12 meses.');
  const mix=['mixFull','mix30','mix40','mix60','mixZero'].reduce((s,id)=>s+num(id),0);
  if(Math.abs(mix-100)>.01)errors.push(`A composição do faturamento precisa somar 100%. No momento soma ${mix.toLocaleString('pt-BR',{maximumFractionDigits:1})}%.`);
  return errors;

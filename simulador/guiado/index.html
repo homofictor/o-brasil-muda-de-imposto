@@ -1,1 +1,57 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,follow"><meta http-equiv="refresh" content="0;url=/simulador/"><title>Simulador em aprimoramento | O Brasil muda de imposto</title><script>location.replace('/simulador/')</script></head><body><p>O simulador está em aprimoramento. <a href="/simulador/">Continuar</a></p></body></html>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#102640">
+<meta name="robots" content="noindex,follow">
+<title>Simulador Empresarial da Reforma Tributária | O Brasil muda de imposto</title><link rel="canonical" href="https://www.obrasilmudadeimposto.com.br/simulador/guiado/">
+<meta name="description" content="Simulador empresarial da Reforma Tributária com CNPJ, leitura de documentos, automação de dados e diagnóstico executivo.">
+<link rel="stylesheet" href="/simulador/v3/base.css?v=20260919-ux1">
+<link rel="stylesheet" href="/simulador/v3/results.css?v=20260919-ux1">
+<link rel="stylesheet" href="/simulador/v3/report-executive.css?v=20260919-ux1">
+<link rel="stylesheet" href="/simulador/v3/responsive.css?v=20260919-ux1">
+<link rel="stylesheet" href="/simulador/v3/enhanced-mobile.css?v=20260919-ux1">
+<link rel="stylesheet" href="/simulador/v3/diagnosis.css?v=20260919-ux1">
+<link rel="stylesheet" href="/simulador/v3/field-state.css?v=20260919-ux1">
+<link rel="stylesheet" href="/simulador/v3/economic-impact.css?v=20260919-ux1">
+<link rel="stylesheet" href="/simulador/guiado/guided.css?v=20260919-ux1">
+</head>
+<body class="guidedMode">
+<header class="topbar erpTopbar">
+ <div class="topinner">
+  <a class="brand erpBrand" href="/">
+   <img class="erpBrandLogo" src="/assets/homo-fictor-logo-header.png" alt="Homo Fictor Edições Independentes">
+   <span class="erpBrandCopy"><strong>Simulador Empresarial</strong><small>Reforma Tributária | IBS e CBS</small></span>
+  </a>
+  <div class="erpHeaderCenter"><span>Módulo tributário</span><strong id="erpCompanyContext">Novo diagnóstico</strong></div>
+  <div class="guidedHeaderTag"><i aria-hidden="true"></i>Simulador V3.2</div>
+  <div class="topactions">
+   <a class="linkbtn erpAction" href="/simulador/v3/" title="Abrir versão técnica"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg><b>Modo técnico</b></a>
+   <button class="linkbtn erpAction" id="printBtn" type="button" hidden title="Imprimir relatório"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v7H6z"/></svg><b>Imprimir</b></button>
+   <button class="linkbtn clearAllBtn erpAction" id="clearAllBtn" type="button" title="Limpar todos os dados"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 1-2.34-5.66L20 7.68M20 3v4.68h-4.68"/></svg><b>Limpar</b></button>
+   <a class="homebtn erpAction" href="/" title="Voltar ao site"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m3 11 9-8 9 8M5 10v11h14V10M9 21v-7h6v7"/></svg><b>Site</b></a>
+  </div>
+ </div>
+ <div class="erpSubbar"><div class="erpSubinner"><div class="erpBreadcrumb"><span>Painel</span><i>›</i><b>Simulação tributária</b><span class="erpVersion">Motor V3.2</span></div><div class="erpSession"><i aria-hidden="true"></i><span>Preenchimento em andamento</span><small id="erpStepMeta">Etapa 1 de 4</small></div></div></div>
+</header>
+<div class="deadline" id="deadlineBanner" hidden><div><strong>Decisão para 2027 em andamento.</strong> Consulte o prazo aplicável à sua empresa.</div><a href="https://www.gov.br/receitafederal/" target="_blank" rel="noopener">Fonte oficial</a></div>
+<main class="page">
+ <section class="hero guidedHero"><div class="guidedHeroCopy"><div class="kicker">Diagnóstico empresarial</div><h1>Simulação da Reforma Tributária</h1><p>Informe o CNPJ, envie documentos se tiver e avance. O simulador organiza os dados, sugere premissas e mostra somente o que precisa da sua confirmação.</p></div><div class="guidedHeroStats"><div><span>Entrada</span><b>CNPJ</b><small>Cadastro automático</small></div><div><span>Perfil</span><b>CNAE</b><small>Premissas sugeridas</small></div><div><span>Precisão</span><b>Documentos</b><small>BP · DRE · relatórios</small></div></div></section>
+ <div class="guidedNotice"><span aria-hidden="true">i</span><div><strong>Você não precisa dominar contabilidade para usar o simulador.</strong><small>Comece pelo CNPJ. Se tiver BP, DRE ou relatórios, envie os arquivos e o sistema aproveita o que conseguir identificar.</small></div></div>
+ <nav class="guidedNav" id="guidedNav" aria-label="Etapas da simulação">
+  <button type="button" data-guided-nav="1" class="active"><span>1</span><b>Empresa</b><small>CNPJ e faturamento</small></button>
+  <button type="button" data-guided-nav="2"><span>2</span><b>Operação</b><small>Clientes e compras</small></button>
+  <button type="button" data-guided-nav="3"><span>3</span><b>Finanças</b><small>Complete só o que faltar</small></button>
+  <button type="button" data-guided-nav="4"><span>4</span><b>Diagnóstico</b><small>Revisão e relatório</small></button>
+ </nav>
+ <div id="guidedAutomation" class="guidedAutomation" hidden></div>
+ <div id="setupMount"></div>
+ <div class="guidedActions" id="guidedActions"><button type="button" id="guidedBack">Voltar</button><div><span id="guidedStepText">Etapa 1 de 4</span><button type="button" id="guidedNext">Continuar</button></div></div>
+</main>
+<div id="reportModal" class="reportModal" hidden role="dialog" aria-modal="true" aria-labelledby="recommendationTitle"><div class="reportShell"><div class="reportToolbar"><div><strong>Relatório do diagnóstico</strong><span>Simulador Guiado · motor V3.2</span></div><div class="reportToolbarActions"><button id="reportPrintBtn" type="button">Imprimir resumo</button><button id="reportCloseBtn" type="button">Fechar</button></div></div><div id="resultsMount" hidden></div></div></div>
+ <footer><div><strong>O Brasil muda de imposto</strong><span>Wagner Rubim Rangel · Homo Fictor Edições Independentes</span></div><p>Ferramenta educativa. Não substitui planejamento tributário, parecer contábil ou jurídico.</p></footer>
+<script>
+(async()=>{const [a,b]=await Promise.all([fetch('/simulador/v3/partials/setup.html?v=20260919-ux1').then(r=>r.text()),fetch('/simulador/v3/partials/results.html?v=20260919-ux1').then(r=>r.text())]);document.getElementById('setupMount').innerHTML=a;document.getElementById('resultsMount').innerHTML=b;for(const name of ['data.js','money-format.js','field-state.js','cnpj.js','models.js','risk-cash.js','economic-impact.js','render.js','enhanced-results.js','diagnosis.js','audit-core.js','audit-render.js','boot.js','report-ui.js'])await new Promise((ok,fail)=>{const s=document.createElement('script');s.src='/simulador/v3/'+name+'?v=20260919-ux1';s.onload=ok;s.onerror=fail;document.body.appendChild(s)});await new Promise((ok,fail)=>{const s=document.createElement('script');s.src='/simulador/guiado/guided.js?v=20260919-ux1';s.onload=ok;s.onerror=fail;document.body.appendChild(s)})})().catch(err=>{console.error(err);document.getElementById('setupMount').innerHTML='<section class="panel"><h2>Não foi possível carregar o simulador.</h2><p>Atualize a página e tente novamente.</p></section>'});
+</script>
+</body></html>
