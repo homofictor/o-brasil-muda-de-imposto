@@ -39,15 +39,15 @@ jobs:
             page.on('pageerror', e => pageErrors.push(String(e)));
             page.on('console', msg => { if (msg.type() === 'error') consoleErrors.push(msg.text()); });
 
-            let scriptVersion = '';
+            let deployedVersion = '';
             for (let attempt = 0; attempt < 24; attempt++) {
               await page.goto(process.env.BASE_URL + '/simulador/guiado/', { waitUntil: 'domcontentloaded', timeout: 45000 });
-              const count = await page.locator('script[src*="guided.js"]').count();
-              scriptVersion = count ? (await page.locator('script[src*="guided.js"]').getAttribute('src') || '') : '';
-              if (/20260919-ux1/.test(scriptVersion)) break;
+              const versionLink = page.locator('link[href*="guided.css"]').first();
+              deployedVersion = await versionLink.count() ? (await versionLink.getAttribute('href') || '') : '';
+              if (/20260919-ux1/.test(deployedVersion)) break;
               await page.waitForTimeout(15000);
             }
-            assert.match(scriptVersion || '', /20260919-ux1/);
+            assert.match(deployedVersion || '', /20260919-ux1/);
             await page.waitForSelector('#cnpj', { timeout: 30000 });
             await page.waitForSelector('#importPanel', { timeout: 30000 });
             await page.waitForSelector('#guidedNav', { timeout: 30000 });
