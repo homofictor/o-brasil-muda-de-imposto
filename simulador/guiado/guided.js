@@ -64,7 +64,13 @@
   relabel('purchasesPct','Compras e despesas com tributos na nota','Matérias-primas, mercadorias, ativos e serviços adquiridos com tributos destacados ou embutidos no valor da operação.');
   relabel('eligibleCreditPct','Quanto dessas compras pode gerar crédito','Estimativa da parcela que atende às condições para aproveitamento de créditos de IBS/CBS.');
   relabel('regularSuppliersPct','Compras de fornecedores que destacam IBS/CBS','Percentual estimado de fornecedores no regime regular, capazes de gerar crédito conforme a operação.');
-  const mix=panel.querySelector('.mixbox');if(mix&&!mix.closest('.guidedReviewDetails')){const d=detailsBox('Revisar reduções e tratamentos específicos do IBS/CBS');mix.insertAdjacentElement('beforebegin',d);d.querySelector('.guidedReviewDetailsBody').appendChild(mix)}
+  const mainGrid=byId('b2bPct')?.closest('.grid4');
+  if(mainGrid&&!panel.querySelector('#guidedOperationSummary')){
+   const summary=document.createElement('div');summary.className='guidedOperationSummary';summary.id='guidedOperationSummary';
+   mainGrid.insertAdjacentElement('beforebegin',summary);
+   const d=detailsBox('Revisar os percentuais sugeridos');d.id='guidedOperationEditor';mainGrid.insertAdjacentElement('beforebegin',d);d.querySelector('.guidedReviewDetailsBody').appendChild(mainGrid);
+  }
+  const mix=panel.querySelector('.mixbox');if(mix&&!mix.closest('.guidedReviewDetails')){const d=detailsBox('Tratamentos específicos do IBS/CBS');d.id='guidedTaxTreatmentEditor';mix.insertAdjacentElement('beforebegin',d);d.querySelector('.guidedReviewDetailsBody').appendChild(mix)}
  }
 
  function prepareFinanceStep(panel){
