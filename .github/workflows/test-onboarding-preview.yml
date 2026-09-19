@@ -23,7 +23,7 @@ jobs:
           npx playwright install --with-deps chromium
       - name: Navigate all guided steps
         env:
-          TEST_URL: "https://o-brasil-muda-de-imposto-mwhkzurbu-wrubim-5047.vercel.app/simulador/guiado/?_vercel_share=fGcSOvUTDeK1zPmZz0d68dAlkwl5GBSs"
+          TEST_URL: "https://o-brasil-muda-de-imposto-p4l7v2rzb-wrubim-5047.vercel.app/simulador/guiado/?_vercel_share=5Vm7720XhrvEKi4cN6Xa3X3Wr76t4vDD"
         run: |
           node <<'NODE'
           const { chromium } = require('playwright');
@@ -40,6 +40,11 @@ jobs:
               await page.waitForSelector('#cnpj',{timeout:30000});
               await page.waitForSelector('#importPanel',{timeout:30000});
               await page.waitForFunction(()=>document.body.classList.contains('guidedReady'),{timeout:30000});
+              assert.equal(await page.locator('#guidedOperationSummary').count(),1);
+              assert.equal(await page.locator('#guidedNeedsPanel').count(),1);
+              assert.equal(await page.locator('#guidedOnboardingStatus').count(),1);
+              assert.equal(await page.locator('#guidedOperationEditor').count(),1);
+              assert.equal(await page.locator('#guidedTaxTreatmentEditor').count(),1);
               for(const step of [2,3,4,3,2,1,4,1,2,3,4]){
                 const started=Date.now();
                 await page.click(`[data-guided-nav="${step}"]`,{timeout:5000});
@@ -52,6 +57,15 @@ jobs:
               }
               const modePanel=await page.locator('#guidedAutomationMode').count();
               assert.equal(modePanel,1);
+              await page.click('[data-guided-nav="2"]');
+              const opVisible=await page.locator('#guidedOperationSummary').isVisible();
+              assert.equal(opVisible,true);
+              const editorOpen=await page.locator('#guidedOperationEditor').evaluate(el=>el.open);
+              assert.equal(editorOpen,false);
+              await page.click('[data-guided-nav="3"]');
+              assert.equal(await page.locator('#guidedNeedsPanel').isVisible(),true);
+              await page.click('[data-guided-nav="4"]');
+              assert.equal(await page.locator('#guidedReviewPanel').isVisible(),true);
               if(errors.length)throw new Error(JSON.stringify(errors));
               await page.close();
             }
