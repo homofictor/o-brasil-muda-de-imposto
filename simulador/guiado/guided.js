@@ -178,7 +178,7 @@
   const mode=typeof window.getBrmiAutomationMode==='function'?window.getBrmiAutomationMode():(localStorage.getItem('brmi_automation_mode')||'recommended');
   panel.querySelectorAll('[data-automation-mode]').forEach(btn=>btn.classList.toggle('active',btn.dataset.automationMode===mode));
   const q=confidenceSnapshot(),box=byId('guidedConfidenceBox');if(!box)return;
-  const level=q.total?(q.weighted>=85?'forte':q.weighted>=65?'intermediária':'exploratória'):'';
+  const level=q.total?(q.weighted>=85?'Boa':q.weighted>=65?'Intermediária':'Inicial'):'';
   const signature=[mode,identified?1:0,docs?1:0,q.high,q.medium,q.low,q.weighted||0].join('|');
   if(box.dataset.signature===signature)return;
   box.dataset.signature=signature;
@@ -186,7 +186,7 @@
    box.innerHTML='<div><b>Base automática inicial</b><span>Envie documentos ou consulte o CNPJ para ampliar os dados disponíveis.</span></div>';
    return;
   }
-  box.innerHTML=`<div class="guidedConfidenceScore"><span>Índice dos dados automáticos</span><b>${q.weighted}%</b><small>Base ${level}</small></div><div class="guidedConfidenceStats"><div><b>${q.high}</b><span>alta confiança</span></div><div><b>${q.medium}</b><span>calculados / média</span></div><div><b>${q.low}</b><span>estimados / baixa</span></div></div><p>Indicador operacional da qualidade das entradas automáticas. Não representa garantia do resultado tributário.</p>`;
+  box.innerHTML=`<div class="guidedConfidenceScore"><span>Qualidade dos dados automáticos</span><b>${level}</b><small>${q.weighted}% como indicador interno</small></div><div class="guidedConfidenceStats"><div><b>${q.high}</b><span>confirmados / alta</span></div><div><b>${q.medium}</b><span>calculados / média</span></div><div><b>${q.low}</b><span>estimados / baixa</span></div></div><p>O percentual serve apenas para orientar a revisão dos dados. Não é uma probabilidade de acerto do diagnóstico.</p>`;
  }
 
 
@@ -252,7 +252,7 @@
 
  function refreshFinance(){
   const box=byId('guidedFinanceCards');if(!box)return;
-  const rate=value('financeRate'),cclKnown=value('currentAssets')!==''&&value('currentLiabilities')!=='';box.innerHTML=`<div><span>Reserva financeira</span><b>${numeric('cashReserve')?money.format(numeric('cashReserve')):'Aguardando dados'}</b></div><div><span>Capital de giro líquido</span><b>${cclKnown?money.format(numeric('workingCapitalNet')):'Aguardando dados'}</b></div><div><span>Dívida financeira média</span><b>${numeric('debtAverage')?money.format(numeric('debtAverage')):'Aguardando dados'}</b></div><div><span>Custo financeiro anual</span><b>${rate!==''?percent(rate):'Aguardando dados'}</b></div>`;
+  const rate=value('financeRate'),cclKnown=value('currentAssets')!==''&&value('currentLiabilities')!=='';box.innerHTML=`<div><span>Reserva financeira</span><b>${provided('cashReserve')?money.format(numeric('cashReserve')):'Não disponível'}</b><small>${originLabel('cashReserve')}</small></div><div><span>Capital de giro líquido</span><b>${cclKnown?money.format(numeric('workingCapitalNet')):'Não disponível'}</b><small>${cclKnown?'Calculado':'Aguardando'}</small></div><div><span>Dívida financeira média</span><b>${provided('debtAverage')?money.format(numeric('debtAverage')):'Não disponível'}</b><small>${originLabel('debtAverage')}</small></div><div><span>Custo financeiro anual</span><b>${rate!==''?percent(rate):'Não disponível'}</b><small>${originLabel('financeRate')}</small></div>`;
  }
 
  function syncVerifiedProfitIntoGuided(){
