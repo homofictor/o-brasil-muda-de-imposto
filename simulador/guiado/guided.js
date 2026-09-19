@@ -264,37 +264,38 @@
   el.dataset.importVerified='1';el.dataset.importSource=verified.source||'DRE importada';
   if(typeof markFieldAuto==='function')markFieldAuto('realAccountingProfitAnnual','IMPORTADO');
  }
+
  function refreshReview(){
   syncVerifiedProfitIntoGuided();
   const grid=byId('guidedReviewGrid'),warnings=byId('guidedReviewWarnings');if(!grid||!warnings)return;
-  const provided=id=>String(value(id)).trim()!=='';
-  const revenueQuality=window.brmiImport?.revenueQuality,taxCandidates=(window.brmiImport?.candidates||[]).filter(x=>x?.field==='currentConsumptionTaxAnnual');
-  const taxStatus=provided('currentConsumptionTaxAnnual')?money.format(numeric('currentConsumptionTaxAnnual')):(revenueQuality||window.brmiImport?.docs?.length?'DRE sem abertura suficiente':'A calcular');
-  const cards=[['Empresa',byId('companyName')?.textContent||value('activity')||'Não identificada'],['Faturamento anual',provided('rbt12')?money.format(numeric('rbt12')):'Não informado'],['Regime atual',byId('simpleStatus')?.selectedOptions?.[0]?.textContent||'Não confirmado'],['Vendas para empresas',percent(numeric('b2bPct'))],['Compras com tributos na nota',percent(numeric('purchasesPct'))],['Crédito possível nas compras',percent(numeric('eligibleCreditPct'))],['Reserva financeira',provided('cashReserve')?money.format(numeric('cashReserve')):'Não informada'],['Lucro contábil',provided('realAccountingProfitAnnual')?money.format(numeric('realAccountingProfitAnnual')):'Não informado'],['Carga atual de consumo',taxStatus]];
-  grid.innerHTML=cards.map(([a,b])=>`<div><span>${escapeHtml(a)}</span><b>${escapeHtml(b)}</b></div>`).join('');
-  const notes=[];
-  if(!provided('rbt12')||numeric('rbt12')<=0)notes.push('Informe o faturamento bruto anual para liberar o diagnóstico.');
-  if(revenueQuality?.status==='net-only'){
-   const sameAsNet=provided('rbt12')&&Math.abs(numeric('rbt12')-Number(revenueQuality.net||0))<1;
-   notes.push(sameAsNet?'A DRE traz apenas Receita Líquida e esse mesmo valor está no faturamento anual. Confirme o faturamento bruto/RBT12 antes de usar o ranking tributário.':'A DRE traz apenas Receita Líquida. O faturamento bruto/RBT12 precisa ser confirmado separadamente.');
+  const revenueQuality=window.brmiImport?.revenueQuality;
+  const taxStatus=provided('currentConsumptionTaxAnnual')?money.format(numeric('currentConsumptionTaxAnnual')):(revenueQuality||window.brmiImport?.docs?.length?'Não identificado nos documentos':'Não informado');
+  const cards=[
+   ['Empresa',byId('companyName')?.textContent||value('activity')||'Não identificada',''],
+   ['Faturamento bruto anual',provided('rbt12')?money.format(numeric('rbt12')):'Pendente',originLabel('rbt12')],
+   ['Regime atual',byId('simpleStatus')?.selectedOptions?.[0]?.textContent||'Não confirmado',originLabel('simpleStatus')],
+   ['Perfil de clientes',percent(numeric('b2bPct'))+' para empresas',originLabel('b2bPct')],
+   ['Potencial de crédito nas compras',percent(numeric('eligibleCreditPct')),originLabel('eligibleCreditPct')],
+   ['Lucro contábil',provided('realAccountingProfitAnnual')?money.format(numeric('realAccountingProfitAnnual')):'Pendente',originLabel('realAccountingProfitAnnual')],
+   ['Carga atual de consumo',taxStatus,originLabel('currentConsumptionTaxAnnual')]
+  ];
+  grid.innerHTML=cards.map(([a,b,o])=>`<div><span>${escapeHtml(a)}</span><b>${escapeHtml(b)}</b>${o?`<small>${escapeHtml(o)}</small>`:''}</div>`).join('');
+  const req=reviewRequirements(),important=req.filter(x=>x.level==='required'||x.level==='important'),optional=req.filter(x=>x.level==='optional');
+  if(!important.length){
+   warnings.innerHTML=`<div class="ok"><span>✓</span><p><strong>Pronto para gerar o diagnóstico.</strong><small>${optional.length?'Alguns dados opcionais ainda podem melhorar preço, margem ou caixa, mas não impedem a análise principal.':'Os dados essenciais estão disponíveis.'}</small></p></div>`;
+   return;
   }
-  if(value('simpleStatus')==='unknown')notes.push('Confirme se a empresa está ou não no Simples Nacional.');
-  if(!provided('cashReserve'))notes.push('Sem caixa ou aplicações informados, a análise de caixa ficará menos precisa.');
-  if(!provided('realAccountingProfitAnnual'))notes.push('Sem lucro contábil antes de IRPJ e CSLL, o Lucro Real não entrará no ranking completo.');
-  if(!provided('monthlyCppBase')&&value('simpleStatus')!=='yes')notes.push('Informe a remuneração mensal sujeita à contribuição patronal para comparar corretamente Lucro Presumido e Lucro Real.');
-  if(!provided('legacyRate')&&value('simpleStatus')!=='yes')notes.push('Informe a carga efetiva atual de ICMS/ISS para a projeção de 2027 a 2032. Campo em branco não será mais tratado como zero.');
-  if((typeof sectorSuggestion!=='undefined'?sectorSuggestion:null)?.treatmentReview)notes.push('O CNAE indica comércio de produtos médico-hospitalares. Confirme o tratamento das receitas por NCM/cClassTrib, pois o CNAE sozinho não define redução ou alíquota zero de IBS/CBS.');
-  if(!provided('currentConsumptionTaxAnnual')&&value('simpleStatus')!=='yes')notes.push(taxCandidates.length?'Revise a carga atual de tributos sobre consumo identificada nos documentos.':'A DRE não contém abertura suficiente para calcular a carga atual de consumo. Importe uma DRE detalhada ou relatório fiscal com tributos/deduções sobre vendas.');
-  warnings.innerHTML=notes.length?notes.map(x=>`<div>${escapeHtml(x)}</div>`).join(''):'<div class="ok">Os dados essenciais estão preenchidos. O diagnóstico pode ser gerado.</div>';
+  warnings.innerHTML=`<div class="guidedReviewAlert"><div><span>!</span><p><strong>Complete ${important.length} ${important.length===1?'item':'itens'} para uma análise mais completa.</strong><small>Você será levado diretamente ao campo necessário.</small></p></div></div><div class="guidedReviewRequirementList">${important.map(x=>`<button type="button" data-focus-field="${x.field}" data-focus-step="${x.step}"><span>${x.level==='required'?'Necessário':'Recomendado'}</span><b>${x.title}</b><small>${x.why}</small><i>Corrigir →</i></button>`).join('')}</div>`;
  }
-
- function refreshAll(){refreshAutomation();refreshAutomationMode();refreshFinance();refreshReview()}
+ function refreshAll(){refreshAutomation();refreshAutomationMode();refreshOnboardingStatus();refreshOperationSummary();refreshFinance();refreshNeeds();refreshReview()}
 
  function showStep(step,scroll=true){
   currentStep=Math.max(1,Math.min(4,Number(step)||1));document.body.classList.add('guidedReady');
   setup.querySelectorAll('[data-guided-step]').forEach(x=>x.classList.toggle('guidedStepActive',Number(x.dataset.guidedStep)===currentStep));
   document.querySelectorAll('[data-guided-nav]').forEach(b=>{const n=Number(b.dataset.guidedNav);b.classList.toggle('active',n===currentStep);b.classList.toggle('done',n<currentStep)});
-  byId('guidedBack').hidden=currentStep===1;byId('guidedNext').hidden=currentStep===4;byId('guidedStepText').textContent=`Etapa ${currentStep} de 4`;if(byId('erpStepMeta'))byId('erpStepMeta').textContent=`Etapa ${currentStep} de 4`;refreshAll();
+  byId('guidedBack').hidden=currentStep===1;byId('guidedNext').hidden=currentStep===4;
+  const nextLabels={1:'Continuar para operação',2:'Aceitar e continuar',3:'Revisar diagnóstico'};if(byId('guidedNext'))byId('guidedNext').textContent=nextLabels[currentStep]||'Continuar';
+  byId('guidedStepText').textContent=`Etapa ${currentStep} de 4`;if(byId('erpStepMeta'))byId('erpStepMeta').textContent=`Etapa ${currentStep} de 4`;refreshAll();
   if(scroll)requestAnimationFrame(()=>{
    const target=[...setup.querySelectorAll(`[data-guided-step="${currentStep}"]`)].find(x=>x.classList.contains('guidedStepActive'));
    if(!target)return;
@@ -308,9 +309,10 @@
  function init(){
   const panels=[...setup.querySelectorAll(':scope > .panel')].filter(x=>!x.id);
   if(panels.length<4)return;
-  prepareCompanyStep(panels[0]);prepareOperationStep(panels[1]);prepareFinanceStep(panels[2]);prepareEconomicStep(panels[3]);createReviewPanel();attachImportPanel();createAutomationModePanel();
+  prepareCompanyStep(panels[0]);prepareOperationStep(panels[1]);prepareFinanceStep(panels[2]);prepareEconomicStep(panels[3]);createReviewPanel();attachImportPanel();createAutomationModePanel();createOnboardingStatus();
   document.querySelectorAll('[data-guided-nav]').forEach(b=>b.addEventListener('click',()=>showStep(b.dataset.guidedNav)));
   byId('guidedBack').addEventListener('click',()=>showStep(currentStep-1));byId('guidedNext').addEventListener('click',()=>showStep(currentStep+1));
+  document.addEventListener('click',e=>{const focus=e.target.closest?.('[data-focus-field]');if(focus){e.preventDefault();focusGuidedField(focus.dataset.focusField,Number(focus.dataset.focusStep)||1);return}const go=e.target.closest?.('[data-go-step]');if(go){e.preventDefault();showStep(Number(go.dataset.goStep)||1)}});
   document.addEventListener('input',refreshAll);document.addEventListener('change',refreshAll);
   const status=byId('lookupStatus');if(status)new MutationObserver(()=>setTimeout(refreshAll,50)).observe(status,{childList:true,subtree:true,characterData:true});
   const observer=new MutationObserver(()=>{if(attachImportPanel()){observer.disconnect();showStep(currentStep,false);refreshAutomationMode()}});observer.observe(setup,{childList:true});
