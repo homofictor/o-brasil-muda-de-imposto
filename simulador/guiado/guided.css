@@ -260,3 +260,77 @@
 @media(max-width:430px){
  .guidedConfidenceStats{grid-template-columns:1fr}
 }
+
+
+/* Refinamento final de UX empresarial */
+.guidedOperationSummary{margin:18px 0 12px;padding:16px;border:1px solid #cfe0ed;border-radius:14px;background:#f7fbfe}
+.guidedOperationSummaryHead{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
+.guidedOperationSummaryHead span{display:block;color:#8b6414;font-size:9px;font-weight:900;letter-spacing:.07em}
+.guidedOperationSummaryHead strong{display:block;margin-top:4px;color:#102640;font-size:15px}
+.guidedOperationSummaryHead>small{color:#667085;font-size:9px}
+.guidedOperationSummaryGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:13px}
+.guidedOperationSummaryGrid>div{padding:12px;border:1px solid #dde7ef;border-radius:10px;background:#fff}
+.guidedOperationSummaryGrid span{display:block;color:#667085;font-size:9px}
+.guidedOperationSummaryGrid b{display:block;margin-top:4px;color:#173a5e;font-size:17px}
+.guidedOperationSummaryGrid small{display:inline-block;margin-top:6px;padding:3px 6px;border-radius:999px;background:#eef3f7;color:#52616f;font-size:7px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+
+.guidedOnboardingStatus{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:14px 0;padding:14px 16px;border-radius:13px;border:1px solid #ecd49d;background:#fff9eb}
+.guidedOnboardingStatus[hidden]{display:none!important}
+.guidedOnboardingStatus>div:first-child{display:flex;align-items:flex-start;gap:10px}
+.guidedOnboardingStatus>div:first-child>span{display:grid;place-items:center;flex:0 0 26px;width:26px;height:26px;border-radius:50%;background:#f5dfac;color:#704900;font-weight:900}
+.guidedOnboardingStatus p{margin:0}
+.guidedOnboardingStatus strong{display:block;color:#2a3543;font-size:13px}
+.guidedOnboardingStatus small{display:block;margin-top:3px;color:#667085;font-size:10px;line-height:1.45}
+.guidedOnboardingStatus button{padding:9px 12px;border:1px solid #173a5e;border-radius:8px;background:#173a5e;color:#fff;font-size:10px;font-weight:850;cursor:pointer}
+.guidedOnboardingStatus.ready{border-color:#b8dfcf;background:#eefaf5}
+.guidedOnboardingStatus.ready>div:first-child>span{background:#d7f0e5;color:#116149}
+.guidedOnboardingActions{display:flex;gap:7px;flex-wrap:wrap}
+
+.guidedNeedsPanel{margin:12px 0 16px;padding:15px;border:1px solid #e0d2b3;border-radius:13px;background:#fffaf0}
+.guidedNeedsPanel.ready{border-color:#b8dfcf;background:#eefaf5}
+.guidedNeedsPanel.ready>div{display:flex;gap:10px;align-items:flex-start}
+.guidedNeedsPanel.ready>div>span{display:grid;place-items:center;width:25px;height:25px;border-radius:50%;background:#d7f0e5;color:#116149;font-weight:900}
+.guidedNeedsPanel.ready p{margin:0}.guidedNeedsPanel.ready strong{display:block;color:#116149;font-size:12px}.guidedNeedsPanel.ready small{display:block;margin-top:3px;color:#52616f;font-size:9px}
+.guidedNeedsHead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.guidedNeedsHead span{display:block;color:#8b6414;font-size:8px;font-weight:900;letter-spacing:.06em}
+.guidedNeedsHead strong{display:block;margin-top:3px;color:#3f3420;font-size:13px}
+.guidedNeedsHead>small{padding:4px 7px;border-radius:999px;background:#f6e8c8;color:#704900;font-size:8px;font-weight:800}
+.guidedNeedsList{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:11px}
+.guidedNeedsList button,.guidedReviewRequirementList button{position:relative;padding:11px 38px 11px 12px;border:1px solid #e3d6b9;border-radius:9px;background:#fff;text-align:left;cursor:pointer}
+.guidedNeedsList button span,.guidedReviewRequirementList button span{display:block;color:#8b6414;font-size:7px;font-weight:900;text-transform:uppercase;letter-spacing:.05em}
+.guidedNeedsList button b,.guidedReviewRequirementList button b{display:block;margin-top:3px;color:#253243;font-size:10px}
+.guidedNeedsList button small,.guidedReviewRequirementList button small{display:block;margin-top:3px;color:#667085;font-size:8.5px;line-height:1.4}
+.guidedNeedsList button i,.guidedReviewRequirementList button i{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:#173a5e;font-size:8px;font-style:normal;font-weight:900}
+
+.guidedReviewHead>span{display:block;color:#8b6414;font-size:9px;font-weight:900;letter-spacing:.07em}
+.guidedReviewHead h2{margin:4px 0 0}
+.guidedReviewHead p{margin:5px 0 16px;color:#667085;font-size:11px}
+.guidedReviewGrid div small{display:inline-block;margin-top:6px;padding:3px 6px;border-radius:999px;background:#e9eef3;color:#5e6d7d;font-size:7px;font-weight:800;text-transform:uppercase}
+.guidedReviewWarnings .ok{display:flex;gap:10px;align-items:flex-start;padding:13px}
+.guidedReviewWarnings .ok>span{display:grid;place-items:center;width:25px;height:25px;border-radius:50%;background:#d7f0e5;color:#116149;font-weight:900}
+.guidedReviewWarnings .ok p{margin:0}.guidedReviewWarnings .ok strong{display:block}.guidedReviewWarnings .ok small{display:block;margin-top:3px;color:#52616f;font-size:9px}
+.guidedReviewAlert{padding:12px 13px!important;background:#fff7e8!important}
+.guidedReviewAlert>div{display:flex;gap:10px;align-items:flex-start;padding:0!important;margin:0!important;background:transparent!important}
+.guidedReviewAlert span{display:grid;place-items:center;width:25px;height:25px;border-radius:50%;background:#f5dfac;color:#704900;font-weight:900}
+.guidedReviewAlert p{margin:0}.guidedReviewAlert strong{display:block}.guidedReviewAlert small{display:block;margin-top:3px;font-size:9px}
+.guidedReviewRequirementList{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:9px}
+.guidedReviewRequirementList button{border-color:#e6dac1}
+
+.guidedFieldFocus{outline:3px solid rgba(49,95,139,.22);outline-offset:4px;border-radius:9px;transition:outline .2s ease}
+.guidedFinanceCards small{display:inline-block;margin-top:5px;color:#748294;font-size:7.5px;text-transform:uppercase;font-weight:800}
+.guidedMode #guidedOperationEditor>summary,.guidedMode #guidedTaxTreatmentEditor>summary{font-size:11px}
+.guidedMode #guidedOperationEditor,.guidedMode #guidedTaxTreatmentEditor{margin-top:10px}
+.guidedActions div button{min-width:160px}
+
+@media(max-width:760px){
+ .guidedOperationSummaryGrid{grid-template-columns:1fr 1fr}
+ .guidedOnboardingStatus{align-items:stretch;flex-direction:column}
+ .guidedOnboardingStatus button{width:100%}
+ .guidedNeedsList,.guidedReviewRequirementList{grid-template-columns:1fr}
+ .guidedNeedsHead{flex-direction:column}
+ .guidedActions div button{min-width:0}
+}
+@media(max-width:430px){
+ .guidedOperationSummaryGrid{grid-template-columns:1fr 1fr}
+ .guidedOperationSummaryHead{flex-direction:column;gap:5px}
+}
