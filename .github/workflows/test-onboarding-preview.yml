@@ -39,10 +39,14 @@ jobs:
               await page.waitForSelector('#guidedNav',{timeout:30000});
               await page.waitForSelector('#cnpj',{timeout:30000});
               await page.waitForSelector('#importPanel',{timeout:30000});
-              for(const step of [2,3,4,3,2,1,4]){
+              await page.waitForFunction(()=>document.body.classList.contains('guidedReady'),{timeout:30000});
+              for(const step of [2,3,4,3,2,1,4,1,2,3,4]){
                 const started=Date.now();
                 await page.click(`[data-guided-nav="${step}"]`,{timeout:5000});
                 await page.waitForFunction(s=>document.querySelector(`[data-guided-nav="${s}"]`)?.classList.contains('active'),step,{timeout:5000});
+                const active=await page.locator('[data-guided-nav].active').getAttribute('data-guided-nav');
+                console.log('STEP',step,'ACTIVE',active,'MS',Date.now()-started);
+                assert.equal(active,String(step));
                 const elapsed=Date.now()-started;
                 assert.ok(elapsed<5000,`step ${step} took ${elapsed}ms`);
               }
