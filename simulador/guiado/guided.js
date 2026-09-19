@@ -243,13 +243,11 @@
  }
 
  function refreshAutomation(){
-  const card=byId('companyCard'),box=byId('guidedAutomation'),context=byId('erpCompanyContext');if(!box||!card||card.hidden){if(box)box.hidden=true;if(context)context.textContent='Novo diagnóstico';if(byId('deadlineBanner'))byId('deadlineBanner').hidden=true;return}
+  const card=byId('companyCard'),box=byId('guidedAutomation'),context=byId('erpCompanyContext');
+  if(box)box.hidden=true;
+  if(!card||card.hidden){if(context)context.textContent='Novo diagnóstico';if(byId('deadlineBanner'))byId('deadlineBanner').hidden=true;return}
   if(context)context.textContent=byId('companyName')?.textContent||value('activity')||'Empresa identificada';
-  const mix=[['mixFull','Integral'],['mix30','Redução de 30%'],['mix40','Redução de 40%'],['mix60','Redução de 60%'],['mixZero','Alíquota zero']].filter(([id])=>numeric(id)>0).map(([id,n])=>`${n}: ${percent(numeric(id))}`).join(' · ');
-  const sector=typeof sectorSuggestion!=='undefined'?sectorSuggestion:null,treatment=sector?.treatmentReview?'Revisar NCM/cClassTrib':(mix||'A revisar');
-  box.hidden=false;box.innerHTML=`<div class="guidedAutomationHead"><div><strong>Pré-diagnóstico automático criado pelo CNPJ e CNAE</strong><p>${escapeHtml(byId('companyCnae')?.textContent||value('activity'))}</p></div><span>REVISÁVEL</span></div><div class="guidedAutomationGrid"><div class="guidedAutoItem"><span>Vendas para empresas</span><b>${percent(numeric('b2bPct'))}</b></div><div class="guidedAutoItem"><span>Compras com tributos na nota</span><b>${percent(numeric('purchasesPct'))}</b></div><div class="guidedAutoItem"><span>Compras potencialmente creditáveis</span><b>${percent(numeric('eligibleCreditPct'))}</b></div><div class="guidedAutoItem"><span>Fornecedores no regime regular</span><b>${percent(numeric('regularSuppliersPct'))}</b></div><div class="guidedAutoItem"><span>Tratamento sugerido</span><b>${escapeHtml(treatment)}</b></div><div class="guidedAutoItem"><span>Simples Nacional</span><b>${escapeHtml(byId('simpleStatus')?.selectedOptions?.[0]?.textContent||'Não confirmado')}</b></div><div class="guidedAutoItem"><span>Anexo sugerido</span><b>${escapeHtml(value('annex')||'Não aplicável')}</b></div><div class="guidedAutoItem"><span>Atividade</span><b>${escapeHtml((value('activity')||'Não identificada').slice(0,55))}</b></div></div>`;
  }
-
  function refreshFinance(){
   const box=byId('guidedFinanceCards');if(!box)return;
   const rate=value('financeRate'),cclKnown=value('currentAssets')!==''&&value('currentLiabilities')!=='';box.innerHTML=`<div><span>Reserva financeira</span><b>${provided('cashReserve')?money.format(numeric('cashReserve')):'Não disponível'}</b><small>${originLabel('cashReserve')}</small></div><div><span>Capital de giro líquido</span><b>${cclKnown?money.format(numeric('workingCapitalNet')):'Não disponível'}</b><small>${cclKnown?'Calculado':'Aguardando'}</small></div><div><span>Dívida financeira média</span><b>${provided('debtAverage')?money.format(numeric('debtAverage')):'Não disponível'}</b><small>${originLabel('debtAverage')}</small></div><div><span>Custo financeiro anual</span><b>${rate!==''?percent(rate):'Não disponível'}</b><small>${originLabel('financeRate')}</small></div>`;
@@ -294,7 +292,7 @@
   setup.querySelectorAll('[data-guided-step]').forEach(x=>x.classList.toggle('guidedStepActive',Number(x.dataset.guidedStep)===currentStep));
   document.querySelectorAll('[data-guided-nav]').forEach(b=>{const n=Number(b.dataset.guidedNav);b.classList.toggle('active',n===currentStep);b.classList.toggle('done',n<currentStep)});
   byId('guidedBack').hidden=currentStep===1;byId('guidedNext').hidden=currentStep===4;
-  const nextLabels={1:'Continuar para operação',2:'Aceitar e continuar',3:'Revisar diagnóstico'};if(byId('guidedNext'))byId('guidedNext').textContent=nextLabels[currentStep]||'Continuar';
+  const nextLabels={1:'Continuar para operação',2:'Continuar com estas premissas',3:'Revisar diagnóstico'};if(byId('guidedNext'))byId('guidedNext').textContent=nextLabels[currentStep]||'Continuar';
   byId('guidedStepText').textContent=`Etapa ${currentStep} de 4`;if(byId('erpStepMeta'))byId('erpStepMeta').textContent=`Etapa ${currentStep} de 4`;refreshAll();
   if(scroll)requestAnimationFrame(()=>{
    const target=[...setup.querySelectorAll(`[data-guided-step="${currentStep}"]`)].find(x=>x.classList.contains('guidedStepActive'));
