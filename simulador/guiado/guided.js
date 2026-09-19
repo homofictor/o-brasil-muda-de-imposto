@@ -26,7 +26,7 @@
   showStep(step,false);
   requestAnimationFrame(()=>{
    const el=byId(id);if(!el)return;
-   const details=el.closest('details');if(details)details.open=true;
+   let node=el.parentElement;while(node){if(node.tagName==='DETAILS')node.open=true;node=node.parentElement}
    const field=el.closest('.field')||el;
    field.scrollIntoView({behavior:'smooth',block:'center'});
    setTimeout(()=>{try{el.focus({preventScroll:true})}catch(_){el.focus()}field.classList.add('guidedFieldFocus');setTimeout(()=>field.classList.remove('guidedFieldFocus'),1600)},300);
@@ -100,7 +100,7 @@
     grid.insertAdjacentElement('beforebegin',band);
    });
    const advanced=body.querySelector(':scope > .advanced');if(advanced)advanced.classList.add('guidedManualAdvanced');
-   cards.insertAdjacentElement('afterend',d);
+   needs.insertAdjacentElement('afterend',d);
   }
  }
 
@@ -286,6 +286,11 @@
   warnings.innerHTML=`<div class="guidedReviewAlert"><div><span>!</span><p><strong>Complete ${important.length} ${important.length===1?'item':'itens'} para uma análise mais completa.</strong><small>Você será levado diretamente ao campo necessário.</small></p></div></div><div class="guidedReviewRequirementList">${important.map(x=>`<button type="button" data-focus-field="${x.field}" data-focus-step="${x.step}"><span>${x.level==='required'?'Necessário':'Recomendado'}</span><b>${x.title}</b><small>${x.why}</small><i>Corrigir →</i></button>`).join('')}</div>`;
  }
  function refreshAll(){refreshAutomation();refreshAutomationMode();refreshOnboardingStatus();refreshOperationSummary();refreshFinance();refreshNeeds();refreshReview()}
+ let refreshQueued=false;
+ function scheduleRefresh(){
+  if(refreshQueued)return;refreshQueued=true;
+  requestAnimationFrame(()=>{refreshQueued=false;refreshAll()});
+ }
 
  function showStep(step,scroll=true){
   currentStep=Math.max(1,Math.min(4,Number(step)||1));document.body.classList.add('guidedReady');
@@ -311,7 +316,7 @@
   document.querySelectorAll('[data-guided-nav]').forEach(b=>b.addEventListener('click',()=>showStep(b.dataset.guidedNav)));
   byId('guidedBack').addEventListener('click',()=>showStep(currentStep-1));byId('guidedNext').addEventListener('click',()=>showStep(currentStep+1));
   document.addEventListener('click',e=>{const focus=e.target.closest?.('[data-focus-field]');if(focus){e.preventDefault();focusGuidedField(focus.dataset.focusField,Number(focus.dataset.focusStep)||1);return}const go=e.target.closest?.('[data-go-step]');if(go){e.preventDefault();showStep(Number(go.dataset.goStep)||1)}});
-  document.addEventListener('input',refreshAll);document.addEventListener('change',refreshAll);
+  document.addEventListener('input',scheduleRefresh);document.addEventListener('change',scheduleRefresh);
   const status=byId('lookupStatus');if(status)new MutationObserver(()=>setTimeout(refreshAll,50)).observe(status,{childList:true,subtree:true,characterData:true});
   const observer=new MutationObserver(()=>{if(attachImportPanel()){observer.disconnect();showStep(currentStep,false);refreshAutomationMode()}});observer.observe(setup,{childList:true});
   document.addEventListener('brmi:automation-mode',refreshAutomationMode);document.addEventListener('brmi:automation-applied',refreshAll);
