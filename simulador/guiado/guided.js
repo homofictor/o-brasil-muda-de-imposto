@@ -80,7 +80,8 @@
    const intro=document.createElement('div');intro.className='guidedFinancialIntro';intro.innerHTML='<strong>Revise os dados financeiros encontrados e complete somente o que faltar.</strong><p>Os documentos enviados na primeira etapa já alimentaram esta área. Corrija qualquer valor quando possuir uma informação mais precisa e preencha manualmente apenas as pendências relevantes.</p>';
    title.insertAdjacentElement('afterend',intro);
    const cards=document.createElement('div');cards.className='guidedFinanceCards';cards.id='guidedFinanceCards';intro.insertAdjacentElement('afterend',cards);
-   const d=detailsBox('Preencher ou corrigir os dados manualmente');d.id='guidedManualFields';const body=d.querySelector('.guidedReviewDetailsBody');
+   const needs=document.createElement('div');needs.className='guidedNeedsPanel';needs.id='guidedNeedsPanel';cards.insertAdjacentElement('afterend',needs);
+   const d=detailsBox('Ver ou corrigir dados financeiros');d.id='guidedManualFields';const body=d.querySelector('.guidedReviewDetailsBody');
    const moved=[...panel.children].filter(x=>x.classList?.contains('grid4')||x.classList?.contains('advanced'));
    moved.forEach(x=>body.appendChild(x));
    const groups=[
