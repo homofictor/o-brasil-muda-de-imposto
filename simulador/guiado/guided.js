@@ -125,7 +125,7 @@
   if(byId('guidedReviewPanel'))return byId('guidedReviewPanel');
   const gate=byId('diagnosisGate');if(!gate)return null;
   const panel=document.createElement('section');panel.className='panel guidedReviewPanel';panel.id='guidedReviewPanel';panel.dataset.guidedStep='4';
-  panel.innerHTML='<h2>Confira o que será levado ao diagnóstico</h2><p>O simulador usará todas as premissas, inclusive as preenchidas automaticamente ou importadas.</p><div class="guidedReviewGrid" id="guidedReviewGrid"></div><div class="guidedReviewWarnings" id="guidedReviewWarnings"></div>';
+  panel.innerHTML='<div class="guidedReviewHead"><span>REVISÃO FINAL</span><h2>O essencial antes do diagnóstico</h2><p>Você não precisa conferir a memória técnica agora. Veja apenas os dados que realmente afetam a leitura final.</p></div><div class="guidedReviewGrid" id="guidedReviewGrid"></div><div class="guidedReviewWarnings" id="guidedReviewWarnings"></div>';
   gate.parentNode.insertBefore(panel,gate);gate.dataset.guidedStep='4';return panel;
  }
 
