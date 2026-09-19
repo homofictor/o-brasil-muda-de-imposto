@@ -1,0 +1,57 @@
+name: Test onboarding preview navigation
+
+on:
+  push:
+    branches: [teste-onboarding-automacao-final]
+    paths:
+      - '.github/workflows/test-onboarding-preview.yml'
+      - 'simulador/**'
+  workflow_dispatch:
+
+jobs:
+  navigation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Navigate all guided steps
+        env:
+          TEST_URL: "https://o-brasil-muda-de-imposto-mwhkzurbu-wrubim-5047.vercel.app/simulador/guiado/?_vercel_share=fGcSOvUTDeK1zPmZz0d68dAlkwl5GBSs"
+        run: |
+          node <<'NODE'
+          const { chromium } = require('playwright');
+          const assert = require('node:assert/strict');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            for(const viewport of [{width:390,height:844},{width:1440,height:1000}]){
+              const page=await browser.newPage({viewport});
+              const errors=[];
+              page.on('pageerror',e=>errors.push(String(e)));
+              page.on('console',m=>{if(m.type()==='error'&&!/favicon/i.test(m.text()))errors.push(m.text())});
+              await page.goto(process.env.TEST_URL,{waitUntil:'domcontentloaded',timeout:45000});
+              await page.waitForSelector('#guidedNav',{timeout:30000});
+              await page.waitForSelector('#cnpj',{timeout:30000});
+              await page.waitForSelector('#importPanel',{timeout:30000});
+              for(const step of [2,3,4,3,2,1,4]){
+                const started=Date.now();
+                await page.click(`[data-guided-nav="${step}"]`,{timeout:5000});
+                await page.waitForFunction(s=>document.querySelector(`[data-guided-nav="${s}"]`)?.classList.contains('active'),step,{timeout:5000});
+                const elapsed=Date.now()-started;
+                assert.ok(elapsed<5000,`step ${step} took ${elapsed}ms`);
+              }
+              const modePanel=await page.locator('#guidedAutomationMode').count();
+              assert.equal(modePanel,1);
+              if(errors.length)throw new Error(JSON.stringify(errors));
+              await page.close();
+            }
+            await browser.close();
+            console.log('NAVIGATION_OK');
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
