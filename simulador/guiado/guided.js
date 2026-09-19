@@ -189,6 +189,59 @@
   box.innerHTML=`<div class="guidedConfidenceScore"><span>Índice dos dados automáticos</span><b>${q.weighted}%</b><small>Base ${level}</small></div><div class="guidedConfidenceStats"><div><b>${q.high}</b><span>alta confiança</span></div><div><b>${q.medium}</b><span>calculados / média</span></div><div><b>${q.low}</b><span>estimados / baixa</span></div></div><p>Indicador operacional da qualidade das entradas automáticas. Não representa garantia do resultado tributário.</p>`;
  }
 
+
+ function createOnboardingStatus(){
+  if(byId('guidedOnboardingStatus'))return byId('guidedOnboardingStatus');
+  const mode=byId('guidedAutomationMode'),company=byId('cnpj')?.closest('.panel');if(!company)return null;
+  const box=document.createElement('div');box.className='guidedOnboardingStatus';box.id='guidedOnboardingStatus';box.hidden=true;
+  (mode||company).insertAdjacentElement('afterend',box);return box;
+ }
+ function refreshOnboardingStatus(){
+  const box=createOnboardingStatus();if(!box)return;
+  const identified=!byId('companyCard')?.hidden,docs=(window.brmiImport?.docs||[]).length,rbt=provided('rbt12')&&numeric('rbt12')>0,simple=value('simpleStatus')!=='unknown';
+  if(!identified&&!docs){box.hidden=true;return}
+  box.hidden=false;
+  const missing=[];if(!rbt)missing.push({id:'rbt12',step:1,label:'faturamento bruto dos últimos 12 meses'});if(!simple)missing.push({id:'simpleStatus',step:1,label:'situação no Simples Nacional'});
+  if(!missing.length){
+   box.className='guidedOnboardingStatus ready';box.innerHTML=`<div><span>✓</span><p><strong>Base inicial pronta.</strong><small>Já temos o necessário para avançar. Nas próximas etapas, altere apenas o que souber com mais precisão.</small></p></div><button type="button" data-go-step="2">Continuar para a operação</button>`;
+  }else{
+   box.className='guidedOnboardingStatus pending';box.innerHTML=`<div><span>!</span><p><strong>Falta ${missing.length===1?'uma confirmação importante':'confirmar alguns dados importantes'}.</strong><small>${missing.map(x=>x.label).join(' e ')}.</small></p></div><div class="guidedOnboardingActions">${missing.map(x=>`<button type="button" data-focus-field="${x.id}" data-focus-step="${x.step}">Informar agora</button>`).join('')}</div>`;
+  }
+ }
+
+ function refreshOperationSummary(){
+  const box=byId('guidedOperationSummary');if(!box)return;
+  const items=[
+   ['b2bPct','Vendas para empresas'],
+   ['purchasesPct','Compras e despesas tributadas'],
+   ['eligibleCreditPct','Potencial de crédito'],
+   ['regularSuppliersPct','Fornecedores no regime regular']
+  ];
+  box.innerHTML=`<div class="guidedOperationSummaryHead"><div><span>PERFIL ESTIMADO DA OPERAÇÃO</span><strong>Se estes números fizerem sentido, apenas continue.</strong></div><small>Todos podem ser revisados.</small></div><div class="guidedOperationSummaryGrid">${items.map(([id,label])=>`<div><span>${label}</span><b>${percent(numeric(id))}</b><small>${originLabel(id)}</small></div>`).join('')}</div>`;
+ }
+
+ function reviewRequirements(){
+  const req=[],nonSimple=value('simpleStatus')==='no',sector=typeof sectorSuggestion!=='undefined'?sectorSuggestion:null;
+  if(!provided('rbt12')||numeric('rbt12')<=0)req.push({level:'required',field:'rbt12',step:1,title:'Confirmar faturamento bruto anual',why:'Sem esse valor o simulador não consegue comparar os regimes.'});
+  if(value('simpleStatus')==='unknown')req.push({level:'required',field:'simpleStatus',step:1,title:'Confirmar o regime atual',why:'Precisamos saber se a empresa está ou não no Simples Nacional.'});
+  if(nonSimple&&!provided('monthlyCppBase'))req.push({level:'required',field:'monthlyCppBase',step:3,title:'Informar a folha sujeita à contribuição patronal',why:'Necessária para comparar Presumido e Real sem tratar folha desconhecida como zero.'});
+  if(nonSimple&&!provided('realAccountingProfitAnnual'))req.push({level:'required',field:'realAccountingProfitAnnual',step:3,title:'Informar ou importar o lucro antes de IRPJ e CSLL',why:'Sem esse dado o Lucro Real fica fora da comparação completa.'});
+  if(nonSimple&&!provided('legacyRate'))req.push({level:'required',field:'legacyRate',step:3,title:'Confirmar a carga atual de ICMS/ISS',why:'Necessária para a transição de 2027 a 2032.'});
+  if(nonSimple&&!provided('currentConsumptionTaxAnnual'))req.push({level:'important',field:'currentConsumptionTaxAnnual',step:3,title:'Informar a carga atual sobre consumo',why:'Melhora a análise de preço, margem e resultado.'});
+  if(!provided('cashReserve'))req.push({level:'optional',field:'cashAndEquivalents',step:3,title:'Completar caixa e aplicações',why:'Permite medir melhor o impacto financeiro do split payment.'});
+  if(!provided('currentOperatingMarginPct'))req.push({level:'optional',field:'currentOperatingMarginPct',step:3,title:'Informar margem EBITDA atual',why:'Permite projetar a margem futura.'});
+  if(sector?.treatmentReview)req.push({level:'important',field:'mix30',step:2,title:'Revisar tratamento das receitas',why:'O CNAE sozinho pode não definir o tratamento de todos os produtos ou operações.'});
+  return req;
+ }
+
+ function refreshNeeds(){
+  const box=byId('guidedNeedsPanel');if(!box)return;
+  const req=reviewRequirements(),needed=req.filter(x=>x.level==='required'||x.level==='important'),optional=req.filter(x=>x.level==='optional');
+  if(!needed.length&&!optional.length){box.className='guidedNeedsPanel ready';box.innerHTML='<div><span>✓</span><p><strong>Dados financeiros suficientes para uma análise completa.</strong><small>Você pode continuar. Abra os detalhes somente se quiser conferir ou corrigir algum valor.</small></p></div>';return}
+  box.className='guidedNeedsPanel';
+  box.innerHTML=`<div class="guidedNeedsHead"><div><span>O SIMULADOR PRECISA DE VOCÊ</span><strong>${needed.length?`${needed.length} ${needed.length===1?'item importante':'itens importantes'} para completar a análise`:'Nenhum item obrigatório pendente'}</strong></div>${optional.length?`<small>+${optional.length} opciona${optional.length>1?'is':'l'} para aumentar a precisão</small>`:''}</div><div class="guidedNeedsList">${needed.slice(0,5).map(x=>`<button type="button" data-focus-field="${x.field}" data-focus-step="${x.step}"><span>${x.level==='required'?'Necessário':'Melhora a análise'}</span><b>${x.title}</b><small>${x.why}</small><i>Preencher →</i></button>`).join('')}</div>`;
+ }
+
  function refreshAutomation(){
   const card=byId('companyCard'),box=byId('guidedAutomation'),context=byId('erpCompanyContext');if(!box||!card||card.hidden){if(box)box.hidden=true;if(context)context.textContent='Novo diagnóstico';if(byId('deadlineBanner'))byId('deadlineBanner').hidden=true;return}
   if(context)context.textContent=byId('companyName')?.textContent||value('activity')||'Empresa identificada';
