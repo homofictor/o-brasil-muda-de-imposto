@@ -147,11 +147,14 @@
   const mode=typeof window.getBrmiAutomationMode==='function'?window.getBrmiAutomationMode():(localStorage.getItem('brmi_automation_mode')||'recommended');
   panel.querySelectorAll('[data-automation-mode]').forEach(btn=>btn.classList.toggle('active',btn.dataset.automationMode===mode));
   const q=confidenceSnapshot(),box=byId('guidedConfidenceBox');if(!box)return;
+  const level=q.total?(q.weighted>=85?'forte':q.weighted>=65?'intermediária':'exploratória'):'';
+  const signature=[mode,identified?1:0,docs?1:0,q.high,q.medium,q.low,q.weighted||0].join('|');
+  if(box.dataset.signature===signature)return;
+  box.dataset.signature=signature;
   if(!q.total){
    box.innerHTML='<div><b>Base automática inicial</b><span>Envie documentos ou consulte o CNPJ para ampliar os dados disponíveis.</span></div>';
    return;
   }
-  const level=q.weighted>=85?'forte':q.weighted>=65?'intermediária':'exploratória';
   box.innerHTML=`<div class="guidedConfidenceScore"><span>Índice dos dados automáticos</span><b>${q.weighted}%</b><small>Base ${level}</small></div><div class="guidedConfidenceStats"><div><b>${q.high}</b><span>alta confiança</span></div><div><b>${q.medium}</b><span>calculados / média</span></div><div><b>${q.low}</b><span>estimados / baixa</span></div></div><p>Indicador operacional da qualidade das entradas automáticas. Não representa garantia do resultado tributário.</p>`;
  }
 
@@ -228,7 +231,7 @@
   const status=byId('lookupStatus');if(status)new MutationObserver(()=>setTimeout(refreshAll,50)).observe(status,{childList:true,subtree:true,characterData:true});
   const observer=new MutationObserver(()=>{if(attachImportPanel()){observer.disconnect();showStep(currentStep,false);refreshAutomationMode()}});observer.observe(setup,{childList:true});
   document.addEventListener('brmi:automation-mode',refreshAutomationMode);document.addEventListener('brmi:automation-applied',refreshAll);
-  const importObserver=new MutationObserver(()=>refreshAutomationMode());importObserver.observe(setup,{childList:true,subtree:true,characterData:true});
+  // Atualizações do importador chegam pelos eventos brmi:* acima. Não observar o setup inteiro evita loop de DOM no mobile.
   relabel('monthlyRevenue','Faturamento médio mensal','Informe se souber. Caso contrário, envie os documentos logo abaixo e deixe o sistema procurar o valor.');
   relabel('rbt12','Faturamento bruto dos últimos 12 meses','Informe se souber. Receita líquida da DRE não será tratada automaticamente como faturamento bruto.');
   if(byId('monthlyRevenue'))byId('monthlyRevenue').placeholder='Informe o valor';
