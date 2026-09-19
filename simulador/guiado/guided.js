@@ -8,6 +8,30 @@
  const value=id=>byId(id)?.value??'';
  const numeric=id=>typeof parseMoneyValue==='function'?parseMoneyValue(value(id)):(Number(String(value(id)).replace(/\./g,'').replace(',','.'))||0);
  const escapeHtml=s=>String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+ const provided=id=>String(value(id)).trim()!=='';
+ function originLabel(id){
+  const el=byId(id),field=el?.closest('.field');
+  if(!el)return '';
+  if(el.dataset.userEdited==='1')return 'Informado';
+  if(el.dataset.importVerified==='1'){
+   if(el.dataset.importConfidence==='low')return 'Estimado';
+   if(el.dataset.importConfidence==='medium')return 'Calculado';
+   return 'Importado';
+  }
+  if(field?.classList.contains('state-derived'))return 'Calculado';
+  if(field?.classList.contains('state-auto')||field?.classList.contains('state-suggested'))return 'Sugerido';
+  return provided(id)?'Informado':'Aguardando';
+ }
+ function focusGuidedField(id,step){
+  showStep(step,false);
+  requestAnimationFrame(()=>{
+   const el=byId(id);if(!el)return;
+   const details=el.closest('details');if(details)details.open=true;
+   const field=el.closest('.field')||el;
+   field.scrollIntoView({behavior:'smooth',block:'center'});
+   setTimeout(()=>{try{el.focus({preventScroll:true})}catch(_){el.focus()}field.classList.add('guidedFieldFocus');setTimeout(()=>field.classList.remove('guidedFieldFocus'),1600)},300);
+  });
+ }
 
  function relabel(id,title,help){
   const input=byId(id),field=input?.closest('.field');if(!field)return;
