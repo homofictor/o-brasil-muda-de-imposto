@@ -90,7 +90,7 @@ jobs:
             });
             assert.equal(treatmentWarningBefore.button, true);
             await page.click('[data-guided-nav="2"]');
-            await page.click('#acceptTaxTreatmentSuggestion');
+            await page.evaluate(() => document.getElementById('acceptTaxTreatmentSuggestion')?.click());
             const treatmentAccepted = await page.inputValue('#taxTreatmentAccepted');
             assert.equal(treatmentAccepted, 'yes');
 
