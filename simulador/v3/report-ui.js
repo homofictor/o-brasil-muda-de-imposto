@@ -16,6 +16,11 @@
   document.querySelectorAll('[data-report-view]').forEach(btn=>{const active=btn.dataset.reportView===view;btn.classList.toggle('active',active);btn.setAttribute('aria-selected',active?'true':'false')});
  }
  window.setReportView=setReportView;
+ window.addEventListener('beforeprint',()=>{
+  const active=document.querySelector('[data-report-panel].active:not([hidden])')||document.querySelector('[data-report-panel]:not([hidden])');
+  document.querySelectorAll('[data-report-panel]').forEach(p=>p.classList.toggle('printTarget',p===active));
+ });
+ window.addEventListener('afterprint',()=>document.querySelectorAll('[data-report-panel].printTarget').forEach(p=>p.classList.remove('printTarget')));
 
  function copyText(from,to){const a=el(from),b=el(to);if(a&&b)b.textContent=a.textContent||'—'}
 
