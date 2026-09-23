@@ -290,7 +290,9 @@ function analyseImportDoc(file,parsed){
  return{file:file.name,type,text,candidates:c,cnpj:importedCnpj,extraction:parsed.extraction||'text',integrity,revenueGross:revenueGross==null?null:Math.abs(revenueGross),revenueNet:revenueNet==null?null:Math.abs(revenueNet),purchaseTotal:tab.purchaseTotal||((type==='Relatório de compras'&&costs)?Math.abs(costs):null)}
 }
 function buildCrossCandidates(docs,candidates){
- const revs=candidates.filter(x=>x.field==='rbt12').sort((a,b)=>(a.confidence==='high'?-1:1)),base=revs[0]?.value||(num('rbt12')>0?num('rbt12'):null);
+ const confScore={high:3,medium:2,low:1},typeScore={'Balanço + DRE':4,'DRE':3,'Balanço':3,'Relatório de vendas':2,'Relatório de compras':2,'Relatório':1},docByFile=Object.fromEntries(docs.map(d=>[d.file,d]));
+ candidates.forEach(x=>{const d=docByFile[x.source];x.sourceQuality=(confScore[x.confidence]||0)*10+(typeScore[d?.type]||0)+(d?.integrity?.ok===true?2:0)-(d?.integrity?.ok===false?3:0)+(d?.extraction==='structured'?2:d?.extraction==='text+ocr'?-1:0)});
+ const revs=candidates.filter(x=>x.field==='rbt12').sort((a,b)=>(b.sourceQuality||0)-(a.sourceQuality||0)),base=revs[0]?.value||(num('rbt12')>0?num('rbt12'):null);
  if(base>0)docs.forEach(d=>{if(d.purchaseTotal>0){const p=100*d.purchaseTotal/base;if(p>=0&&p<=300)candidates.push(candidate('purchasesPct','Compras/insumos sobre o faturamento',p,d.file,'medium','Compras/custos encontrados divididos pelo faturamento importado. CMV/CPV/CSP pode não ser igual a compras creditáveis.',fmtPct(p)))}});
 
  const dreDoc=docs.find(d=>d.type==='DRE'||d.type==='Balanço + DRE'),bpDoc=docs.find(d=>d.type==='Balanço'||d.type==='Balanço + DRE');
@@ -389,7 +391,7 @@ function autoApplyDocumentCalculations(){
  const fields=mode==='maximum'?Object.keys(groups).filter(f=>f!=='cnpj'):[...recommendedFields];
  fields.forEach(field=>{
   const arr=groups[field]||[];if(!arr.length||conflictGroup(arr))return;
-  const ranked=[...arr].sort((a,b)=>(score[b.confidence]||0)-(score[a.confidence]||0));
+  const ranked=[...arr].sort((a,b)=>(b.sourceQuality||score[b.confidence]||0)-(a.sourceQuality||score[a.confidence]||0));
   const best=ranked[0];if(!best)return;
   if(mode==='rigorous'&&best.confidence!=='high')return;
   if(mode==='recommended'){
