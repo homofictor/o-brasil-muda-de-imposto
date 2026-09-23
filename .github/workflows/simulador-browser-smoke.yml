@@ -44,10 +44,10 @@ jobs:
               await page.goto(process.env.BASE_URL + '/simulador/guiado/', { waitUntil: 'domcontentloaded', timeout: 45000 });
               const versionLink = page.locator('link[href*="guided.css"]').first();
               deployedVersion = await versionLink.count() ? (await versionLink.getAttribute('href') || '') : '';
-              if (/20260923-ownerbrief22/.test(deployedVersion)) break;
+              if (/20260923-fieldcount23/.test(deployedVersion)) break;
               await page.waitForTimeout(15000);
             }
-            assert.match(deployedVersion || '', /20260923-ownerbrief22/);
+            assert.match(deployedVersion || '', /20260923-fieldcount23/);
             await page.waitForSelector('#cnpj', { timeout: 30000 });
             await page.waitForSelector('#importPanel', { timeout: 30000 });
             assert.equal(await page.locator('#importPanel').isVisible(), true);
@@ -68,6 +68,8 @@ jobs:
             await page.waitForSelector('#cnpj');
             await page.waitForSelector('#importPanel', { timeout: 30000 });
             await page.waitForFunction(() => typeof window.lookupCnpj === 'function', { timeout: 30000 });
+            const initialCompletion = (await page.textContent('#fieldCompletionText') || '').trim();
+            assert.match(initialCompletion, /^0 de \d+ campos confirmados$/);
 
             const apiResponse = await page.request.get(process.env.BASE_URL + '/api/cnpj?cnpj=03204058000145');
             assert.equal(apiResponse.status(), 200);
