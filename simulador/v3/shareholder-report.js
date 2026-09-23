@@ -55,6 +55,7 @@
    if(topRegular&&!r.cppBaseKnown)pending.push('Informar folha/remunerações sujeitas à contribuição patronal e revisar a alíquota patronal efetiva, para completar o desembolso tributário total.');
    if(!impact?.known)pending.push('Informar a carga líquida atual de PIS/Cofins, ICMS, ISS e IPI, conforme aplicável, para calcular a variação real de preço, margem e resultado.');
    if(!Number.isFinite(margin))pending.push('Informar a margem EBITDA atual para medir quanto da variação tributária pode ser absorvida pela operação.');
+   if(cash?.reserveKnown)pending.push('Confirmar quanto do caixa e das aplicações considerados como reserva bruta está efetivamente livre para suportar a necessidade de liquidez do split payment.');
    if(fieldOrigin('b2bPct')==='Sugestão automática')pending.push('Confirmar o percentual real de vendas B2B com faturamento por cliente.');
    if(fieldOrigin('eligibleCreditPct')==='Sugestão automática'||fieldOrigin('regularSuppliersPct')==='Sugestão automática')pending.push('Substituir estimativas setoriais pelas compras efetivamente creditáveis e pelo regime dos principais fornecedores.');
    if(String(byId('taxTreatmentAccepted')?.value||'')!=='yes')pending.push('Confirmar a composição das receitas por tratamento/cClassTrib e eventuais reduções, benefícios ou regimes específicos.');
