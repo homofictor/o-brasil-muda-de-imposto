@@ -1,11 +1,18 @@
 module.exports = async function handler(req,res){
   res.setHeader('Cache-Control','no-store');
   if(req.method==='GET'){
-    return res.status(200).json({
-      ok:true,
-      service:'lead-capture',
-      configured:Boolean(process.env.GOOGLE_SHEETS_LEAD_WEBHOOK)
-    });
+    const webhook=process.env.GOOGLE_SHEETS_LEAD_WEBHOOK||'https://script.google.com/macros/s/AKfycbxy5SObxh5koYFYZgPrWgQSvMEpSw7AGhHAkxoLWcsEZ6jBbetf1ZBRpzriKJmTtjk4/exec';
+    if(String(req.query?.probe||'')==='1'){
+      try{
+        const r=await fetch(webhook,{method:'GET',redirect:'follow'});
+        const text=await r.text();
+        let data={};try{data=JSON.parse(text)}catch(_){data={raw:text.slice(0,200)}}
+        return res.status(r.ok?200:502).json({ok:r.ok,service:'lead-capture',configured:true,probe:data});
+      }catch(err){
+        return res.status(502).json({ok:false,service:'lead-capture',configured:true,error:err?.message||String(err)});
+      }
+    }
+    return res.status(200).json({ok:true,service:'lead-capture',configured:true});
   }
   if(req.method!=='POST'){
     res.setHeader('Allow','POST, GET');
@@ -19,7 +26,7 @@ module.exports = async function handler(req,res){
     return res.status(403).json({error:'Origem não permitida.'});
   }
 
-  const webhook=process.env.GOOGLE_SHEETS_LEAD_WEBHOOK;
+  const webhook=process.env.GOOGLE_SHEETS_LEAD_WEBHOOK||'https://script.google.com/macros/s/AKfycbxy5SObxh5koYFYZgPrWgQSvMEpSw7AGhHAkxoLWcsEZ6jBbetf1ZBRpzriKJmTtjk4/exec';
   if(!webhook){
     return res.status(503).json({error:'Integração com Google Sheets ainda não configurada.',code:'SHEETS_NOT_CONFIGURED'});
   }
