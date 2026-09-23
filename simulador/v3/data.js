@@ -96,7 +96,8 @@ function legalNatureBlocksSimple(d=companyData){
 }
 function factorRValue(){const r=num('rbt12');return r>0?(num('monthlyPayroll')*12)/r:0}
 function applyFactorR(){
- if(legalNatureBlocksSimple()||num('rbt12')>SIMPLES_LIMIT)return;
+ const eligibility=simpleEligibility(num('rbt12'));
+ if(!eligibility.confirmed)return;
  if(cnaeSuggestion?.factorR&&$('factorMode').value==='auto'){
   $('annex').value=factorRValue()>=.28?'III':'V';
   $('annexHint').textContent=`Fator R estimado em ${pct1(factorRValue())}. Sugestão automática: Anexo ${$('annex').value}.`;
@@ -145,7 +146,14 @@ function simpleEligibility(rbt12=num('rbt12')){
  return{confirmed:false,potential:true,status:'unknown',reason:'Situação no Simples não confirmada.'};
 }
 function refreshEligibilityUi(){
- const rbt12=num('rbt12'),e=simpleEligibility(rbt12),annex=$('annex'),factor=$('factorMode'),simple=$('simpleStatus'),mei=$('meiStatus'),note=$('simpleEligibilityNote');
+ const rbt12=num('rbt12'),e=simpleEligibility(rbt12),annex=$('annex'),factor=$('factorMode'),payroll=$('monthlyPayroll'),simple=$('simpleStatus'),mei=$('meiStatus'),note=$('simpleEligibilityNote'),payrollHint=$('factorPayrollHint');
+ const simpleInputsEnabled=e.confirmed;
+ if(annex)annex.disabled=!simpleInputsEnabled;
+ if(factor)factor.disabled=!simpleInputsEnabled;
+ if(payroll)payroll.disabled=!simpleInputsEnabled;
+ if(payrollHint)payrollHint.textContent=simpleInputsEnabled
+  ?'Use a composição própria do Fator R, incluindo remunerações e os encargos admitidos nessa regra. Este valor não é usado como base automática da contribuição patronal fora do Simples.'
+  :'Não aplicável enquanto a empresa não estiver confirmada como optante do Simples Nacional.';
  if(e.status==='legal_nature'){
   if(simple){simple.value='no';simple.disabled=true}
   if(mei){mei.value='no';mei.disabled=true}
@@ -166,7 +174,17 @@ function refreshEligibilityUi(){
   if($('companySimple')){$('companySimple').textContent='Simples: não elegível pelo faturamento';$('companySimple').className='chip bad'}
   if(typeof markFieldAuto==='function'){markFieldAuto('simpleStatus','AUTOMÁTICO');markFieldAuto('annex','N/A');markFieldAuto('factorMode','N/A')}
  }else{
-  if(simple)simple.disabled=false;if(mei)mei.disabled=false;if(annex)annex.disabled=false;if(factor)factor.disabled=false;
+  if(simple)simple.disabled=false;if(mei)mei.disabled=false;
+  if(!e.confirmed&&e.status!=='unknown'&&annex)annex.value='';
+  if(e.status==='not_optant'){
+   if($('annexHint'))$('annexHint').textContent='Não aplicável: a empresa não está confirmada como optante do Simples Nacional.';
+   if($('factorHint'))$('factorHint').textContent='Não aplicável: o Fator R só é utilizado quando o Simples Nacional estiver confirmado.';
+  }else if(e.status==='mei'){
+   if($('annexHint'))$('annexHint').textContent='Não aplicável ao MEI nesta comparação.';
+   if($('factorHint'))$('factorHint').textContent='Não aplicável ao MEI nesta comparação.';
+  }else if(e.status==='unknown'){
+   if($('factorHint'))$('factorHint').textContent='Confirme primeiro a situação no Simples Nacional para habilitar o Fator R.';
+  }
   if(note){note.hidden=e.status==='confirmed';if(!note.hidden){note.className='status';note.textContent=e.reason}}
  }
  return e;
