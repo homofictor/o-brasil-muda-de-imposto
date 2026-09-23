@@ -78,7 +78,8 @@
  };
 
  window.renderTimeline=function(all){
-  const table=$('timelineBody')?.closest('table');if(table?.querySelector('thead'))table.querySelector('thead').innerHTML='<tr><th>Ano</th><th>CBS efetiva</th><th>IBS efetivo</th><th>IBS/CBS bruto</th><th>Créditos aquisições</th><th>IBS/CBS líquido</th><th>ICMS/ISS residual fora do Simples</th><th>Total consumo regular</th><th>Melhor desembolso validado</th></tr>';
+  const regularPartial=all.some(r=>{const valid=(r.models||[]).filter(m=>m.valid!==false&&Number.isFinite(m.total)).sort((a,b)=>a.total-b.total).slice(0,2);return valid.length===2&&valid.every(m=>m.key==='real'||m.key==='presumed')&&!r.cppBaseKnown});
+  const table=$('timelineBody')?.closest('table');if(table?.querySelector('thead'))table.querySelector('thead').innerHTML=`<tr><th>Ano</th><th>CBS efetiva</th><th>IBS efetivo</th><th>IBS/CBS bruto</th><th>Créditos aquisições</th><th>IBS/CBS líquido</th><th>ICMS/ISS residual fora do Simples</th><th>Total consumo regular</th><th>${regularPartial?'Menor base comparável':'Menor desembolso validado'}</th></tr>`;
   $('timelineBody').innerHTML=all.map(r=>{const rec=recommendation(r);if(r.isMei)return`<tr class="${r.year===selectedYear?'selected':''}"><td><b>${r.year}</b></td><td colspan="7">Cálculo regular não aplicável ao DAS-MEI</td><td class="best">${rec.title}</td></tr>`;return`<tr class="${r.year===selectedYear?'selected':''}"><td><b>${r.year}</b></td><td>${pct1(r.rr.cbs*r.factor)}</td><td>${pct1(r.rr.ibs*r.factor)}</td><td>${brl.format(r.grossVat)}</td><td>${brl.format(r.inputCredit)}</td><td>${brl.format(r.netVat)}</td><td>${brl.format(r.legacy)}</td><td>${brl.format(r.netVat+r.legacy)}</td><td class="best">${rec.title}</td></tr>`}).join('');
  };
 
