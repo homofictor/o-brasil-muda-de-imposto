@@ -147,6 +147,20 @@ function comparativeCategoryTotal(text,labelGroups,exclude=[]){
  }
  return{end:0,start:null,ordered:false,count:0}
 }
+function accountDepth(line){
+ const s=String(line||'').trim(),m=s.match(/^((?:\d+[.\- ]){1,6}\d*)\s+/);
+ if(m)return(m[1].match(/\d+/g)||[]).length;
+ const lead=(String(line||'').match(/^\s*/)||[''])[0].length;return Math.floor(lead/2)+1
+}
+function hierarchicalCategoryTotal(text,matcher,exclude=[]){
+ const order=comparativeOrder(text),rows=statementRows(text),hits=[];
+ rows.forEach((row,index)=>{const n=normImport(row);if(!matcher(n)||exclude.some(x=>n.includes(x)))return;const vals=orderedLineValues(row,order);if(vals.latest==null)return;hits.push({row,index,n,depth:accountDepth(row),vals})});
+ if(!hits.length)return{end:0,start:null,count:0,method:'none'};
+ const parents=hits.filter(h=>hits.some(k=>k.index>h.index&&k.index<=h.index+12&&k.depth>h.depth));
+ const chosen=parents.length?parents.filter(p=>!parents.some(q=>q.index<p.index&&p.index<=q.index+12&&p.depth>q.depth)):hits.filter(h=>!hits.some(p=>p.index<h.index&&h.index<=p.index+12&&h.depth>p.depth));
+ const use=chosen.length?chosen:hits,end=use.reduce((s,h)=>s+Math.abs(h.vals.latest),0),priorKnown=use.every(h=>h.vals.prior!=null),start=priorKnown?use.reduce((s,h)=>s+Math.abs(h.vals.prior),0):null;
+ return{end,start,count:use.length,method:parents.length?'hierarchy':'lines'}
+}
 function financialDebtBalances(text){
  const order=comparativeOrder(text),rows=statementRows(text);
  const make=()=>({specificEnd:0,specificStart:0,specificCount:0,specificPriorCount:0,broadEnd:0,broadStart:null,taxEnd:0,taxStart:0,taxCount:0,taxPriorCount:0});
@@ -233,6 +247,9 @@ function analyseImportDoc(file,parsed){
  const accountingProfit=pretaxProfit!=null?pretaxProfit:(netProfit!=null&&(irpjExpense>0||csllExpense>0)?netProfit+irpjExpense+csllExpense:null);
  const payrollCosts=latestLineValue(dreText,['custos com pessoal','mao de obra e encargos','custos de pessoal']),payrollExpenses=latestLineValue(dreText,['despesas com pessoal','despesas de pessoal']),payroll=(payrollCosts||0)+(payrollExpenses||0)||latestLineValue(dreText,['folha de pagamento','salarios e encargos','salarios ordenados e encargos','pessoal e encargos','remuneracoes e encargos']);
  const debtBalances=financialDebtBalances(bpText),debtEnd=debtBalances.end,debtStart=debtBalances.start,debtOrdered=debtBalances.ordered;
+ const receivables=hierarchicalCategoryTotal(bpText,n=>/clientes|duplicatas a receber|contas a receber/.test(n),['provisao','perdas estimadas','longo prazo']);
+ const inventory=hierarchicalCategoryTotal(bpText,n=>/estoques?|mercadorias para revenda|produtos acabados|materias primas/.test(n),['provisao']);
+ const suppliers=hierarchicalCategoryTotal(bpText,n=>/fornecedores|contas a pagar a fornecedores/.test(n),['adiantamento']);
  const interestRaw=firstLatestLineValue(dreText,[['juros e encargos da divida','juros e encargos financeiros'],['juros sobre emprestimos','juros de emprestimos','juros de empréstimos'],['juros sobre financiamentos','juros de financiamentos'],['encargos de emprestimos','encargos de financiamentos'],['encargos financeiros de emprestimos','encargos financeiros de financiamentos'],['juros passivos','juros bancarios','juros bancários']]);
  const genericFinanceRaw=latestLineValue(dreText,['despesas financeiras'],['receitas financeiras','resultado financeiro']);
  const interest=interestRaw==null?null:Math.abs(interestRaw),genericFinance=genericFinanceRaw==null?null:Math.abs(genericFinanceRaw);
@@ -256,6 +273,9 @@ function analyseImportDoc(file,parsed){
  if(cash!=null&&balanceDoc)c.push(candidate('cashAndEquivalents','Caixa e bancos',Math.abs(cash),file.name,conf('high',true),cashComponents!=null?'Caixa e bancos conta movimento somados sem duplicar aplicações financeiras.':'Total de caixa e equivalentes usado porque o balanço não detalhou caixa e bancos separadamente.',fmtMoney(Math.abs(cash))));
  if(investments!=null&&Math.abs(investments)>0&&balanceDoc&&(cashComponents!=null||explicitCash==null))c.push(candidate('liquidInvestments','Aplicações de liquidez imediata',Math.abs(investments),file.name,conf('medium',true),'Aplicações financeiras localizadas separadamente do caixa e bancos. Confirme se possuem liquidez imediata.',fmtMoney(Math.abs(investments))));
  if(currentAssets!=null&&Math.abs(currentAssets)>0&&balanceDoc)c.push(candidate('currentAssets','Ativo circulante',Math.abs(currentAssets),file.name,conf('high',true),'Total do ativo circulante localizado no balanço.',fmtMoney(Math.abs(currentAssets))));
+ if(receivables.end>0&&balanceDoc)c.push(candidate('accountsReceivable','Clientes / contas a receber',receivables.end,file.name,conf(receivables.method==='hierarchy'?'high':'medium',true),'Saldo de clientes/contas a receber consolidado respeitando a hierarquia das contas para evitar dupla contagem.',fmtMoney(receivables.end)));
+ if(inventory.end>0&&balanceDoc)c.push(candidate('inventory','Estoques',inventory.end,file.name,conf(inventory.method==='hierarchy'?'high':'medium',true),'Saldo de estoques consolidado sem somar simultaneamente subtotal e contas analíticas.',fmtMoney(inventory.end)));
+ if(suppliers.end>0&&balanceDoc)c.push(candidate('suppliersPayable','Fornecedores',suppliers.end,file.name,conf(suppliers.method==='hierarchy'?'high':'medium',true),'Saldo de fornecedores consolidado respeitando subtotais e contas analíticas.',fmtMoney(suppliers.end)));
  if(currentLiabilities!=null&&Math.abs(currentLiabilities)>0&&balanceDoc)c.push(candidate('currentLiabilities','Passivo circulante',Math.abs(currentLiabilities),file.name,conf('high',true),'Total do passivo circulante localizado no balanço.',fmtMoney(Math.abs(currentLiabilities))));
  if(debtEnd>0&&balanceDoc)c.push(candidate('debtEnd','Dívida financeira final',debtEnd,file.name,conf(debtOrdered?'high':'medium',true),'Soma das obrigações financeiras identificadas no passivo circulante e não circulante, incluindo empréstimos/financiamentos, terceiros, parcelamentos fiscais e mútuos quando existentes.',fmtMoney(debtEnd)));
  if(debtStart!=null&&debtStart>=0&&balanceDoc)c.push(candidate('debtStart','Dívida financeira inicial',debtStart,file.name,conf(debtOrdered?'high':'medium',true),'Saldo inicial das mesmas obrigações financeiras utilizadas na dívida final.',fmtMoney(debtStart)));
