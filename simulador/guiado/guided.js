@@ -86,7 +86,7 @@
    moved.forEach(x=>body.appendChild(x));
    const groups=[
     ['Premissas tributárias e indicadores','Alíquotas de referência e indicadores calculados automaticamente pelo sistema.'],
-    ['Folha, contribuição patronal e lucro','Dados necessários para comparar corretamente os regimes fora do Simples.'],
+    ['Folha, contribuição patronal e lucro','A folha completa a carga total projetada; o lucro contábil é necessário para calcular corretamente o Lucro Real.'],
     ['Lucro Presumido','Percentuais de presunção de IRPJ e CSLL aplicáveis à atividade e regras de elegibilidade.'],
     ['Caixa e capital de giro','Caixa, bancos, aplicações e saldos circulantes usados na análise financeira.'],
     ['Dívida financeira','Obrigações financeiras do início e do fim do período e despesas financeiras associadas.'],
@@ -221,10 +221,11 @@
  }
 
  function reviewRequirements(){
-  const req=[],nonSimple=value('simpleStatus')==='no',sector=typeof sectorSuggestion!=='undefined'?sectorSuggestion:null;
+  const req=[],nonSimple=value('simpleStatus')==='no',simpleConfirmed=value('simpleStatus')==='yes',sector=typeof sectorSuggestion!=='undefined'?sectorSuggestion:null;
   if(!provided('rbt12')||numeric('rbt12')<=0)req.push({level:'required',field:'rbt12',step:1,title:'Confirmar faturamento bruto anual',why:'Sem esse valor o simulador não consegue comparar os regimes.'});
   if(value('simpleStatus')==='unknown')req.push({level:'required',field:'simpleStatus',step:1,title:'Confirmar o regime atual',why:'Precisamos saber se a empresa está ou não no Simples Nacional.'});
-  if(nonSimple&&!provided('monthlyCppBase'))req.push({level:'required',field:'monthlyCppBase',step:3,title:'Informar a folha sujeita à contribuição patronal',why:'Necessária para comparar Presumido e Real sem tratar folha desconhecida como zero.'});
+  if(simpleConfirmed&&!provided('monthlyCppBase'))req.push({level:'required',field:'monthlyCppBase',step:3,title:'Informar remunerações sujeitas à contribuição patronal',why:'Necessária para comparar o Simples com os regimes regulares em bases completas.'});
+  if(nonSimple&&!provided('monthlyCppBase'))req.push({level:'important',field:'monthlyCppBase',step:3,title:'Completar contribuição patronal da projeção',why:'Não impede a comparação entre Lucro Real e Presumido, mas é necessária para apresentar a carga tributária total projetada de 2027 a 2033.'});
   if(nonSimple&&!provided('realAccountingProfitAnnual'))req.push({level:'required',field:'realAccountingProfitAnnual',step:3,title:'Informar ou importar o lucro antes de IRPJ e CSLL',why:'Sem esse dado o Lucro Real fica fora da comparação completa.'});
   if(nonSimple&&!provided('legacyRate'))req.push({level:'required',field:'legacyRate',step:3,title:'Confirmar a carga atual de ICMS/ISS',why:'Necessária para a transição de 2027 a 2032.'});
   if(nonSimple&&!provided('currentConsumptionTaxAnnual'))req.push({level:'important',field:'currentConsumptionTaxAnnual',step:3,title:'Informar a carga atual sobre consumo',why:'Melhora a análise de preço, margem e resultado.'});
