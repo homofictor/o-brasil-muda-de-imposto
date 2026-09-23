@@ -366,6 +366,12 @@ function analyseImportDoc(file,parsed){
  if(adminExpenses!=null&&dreDoc)c.push(candidate('adminExpenses','Despesas administrativas',Math.abs(adminExpenses),file.name,conf('high'),'Despesas administrativas identificadas na DRE.',fmtMoney(Math.abs(adminExpenses))));
  if(taxExpenses!=null&&dreDoc)c.push(candidate('taxExpenses','Despesas tributárias',Math.abs(taxExpenses),file.name,conf('high'),'Despesas tributárias identificadas na DRE. Não são tratadas automaticamente como tributos sobre consumo.',fmtMoney(Math.abs(taxExpenses))));
  if(netProfit!=null&&dreDoc)c.push(candidate('netProfit','Resultado do exercício',netProfit,file.name,conf('high'),'Resultado do exercício localizado na DRE.',fmtMoney(netProfit)));
+ const canonicalAdds=[
+  ['cashAndEquivalents','Caixa e bancos',canonicalCash],['liquidInvestments','Aplicações financeiras',canonicalInvestments],
+  ['accountsReceivable','Clientes / contas a receber',canonicalReceivables],['inventory','Estoques',canonicalInventory],
+  ['suppliersPayable','Fornecedores',canonicalSuppliers],['debtEnd','Dívida financeira final',canonicalDebt]
+ ];
+ for(const [field,label,data] of canonicalAdds){if(data?.latest>0&&!c.some(x=>x&&x.field===field))c.push(candidate(field,label,data.latest,file.name,conf(data.method==='canonical-hierarchy'?'high':'medium',balanceDoc),'Classificação pelo mapa contábil canônico, com hierarquia e prevenção de dupla contagem.',fmtMoney(data.latest)))}
  if(importedCnpj)c.push(candidate('cnpj','CNPJ da empresa',importedCnpj,file.name,conf('high'),'CNPJ validado e identificado no cabeçalho da demonstração contábil.',formatImportedCnpj(importedCnpj)));
  if(revenueForRbt12>0)c.push(candidate('rbt12','Faturamento em 12 meses (RBT12)',Math.abs(revenueForRbt12),file.name,conf(revenueGross!=null?'high':'medium'),revenueGross!=null?'Receita bruta/faturamento localizado no documento.':'Total de vendas localizado no relatório comercial.',fmtMoney(Math.abs(revenueForRbt12))));
  if(cash!=null&&balanceDoc)c.push(candidate('cashAndEquivalents','Caixa e bancos',Math.abs(cash),file.name,conf('high',true),cashComponents!=null?'Caixa e bancos conta movimento somados sem duplicar aplicações financeiras.':'Total de caixa e equivalentes usado porque o balanço não detalhou caixa e bancos separadamente.',fmtMoney(Math.abs(cash))));
@@ -388,7 +394,7 @@ function analyseImportDoc(file,parsed){
  return{file:file.name,type,text,candidates:c,cnpj:importedCnpj,extraction:parsed.extraction||'text',integrity,canonicalAudit,canonical,revenueGross:revenueGross==null?null:Math.abs(revenueGross),revenueNet:revenueNet==null?null:Math.abs(revenueNet),purchaseTotal:tab.purchaseTotal||((type==='Relatório de compras'&&costs)?Math.abs(costs):null)}
 }
 function buildCrossCandidates(docs,candidates){
- const confScore={high:3,medium:2,low:1},typeScore={'Balanço + DRE':4,'DRE':3,'Balanço':3,'Relatório de vendas':2,'Relatório de compras':2,'Relatório':1},docByFile=Object.fromEntries(docs.map(d=>[d.file,d]));
+ const confScore={high:3,medium:2,low:1},typeScore={'Balanço + DRE':4,'DRE':3,'Balanço':3,'Balancete':3,'Relatório de vendas':2,'Relatório de compras':2,'Relatório':1},docByFile=Object.fromEntries(docs.map(d=>[d.file,d]));
  candidates.forEach(x=>{const d=docByFile[x.source];x.sourceQuality=(confScore[x.confidence]||0)*10+(typeScore[d?.type]||0)+(d?.integrity?.ok===true?2:0)-(d?.integrity?.ok===false?3:0)+(d?.extraction==='structured'?2:d?.extraction==='text+ocr'?-1:0)});
  const revs=candidates.filter(x=>x.field==='rbt12').sort((a,b)=>(b.sourceQuality||0)-(a.sourceQuality||0)),base=revs[0]?.value||(num('rbt12')>0?num('rbt12'):null);
  if(base>0)docs.forEach(d=>{if(d.purchaseTotal>0){const p=100*d.purchaseTotal/base;if(p>=0&&p<=300)candidates.push(candidate('purchasesPct','Compras/insumos sobre o faturamento',p,d.file,'medium','Compras/custos encontrados divididos pelo faturamento importado. CMV/CPV/CSP pode não ser igual a compras creditáveis.',fmtPct(p)))}});
