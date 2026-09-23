@@ -44,10 +44,10 @@ jobs:
               await page.goto(process.env.BASE_URL + '/simulador/guiado/', { waitUntil: 'domcontentloaded', timeout: 45000 });
               const versionLink = page.locator('link[href*="guided.css"]').first();
               deployedVersion = await versionLink.count() ? (await versionLink.getAttribute('href') || '') : '';
-              if (/20260923-factor-r1/.test(deployedVersion)) break;
+              if (/20260923-factor-r2/.test(deployedVersion)) break;
               await page.waitForTimeout(15000);
             }
-            assert.match(deployedVersion || '', /20260923-factor-r1/);
+            assert.match(deployedVersion || '', /20260923-factor-r2/);
             await page.waitForSelector('#cnpj', { timeout: 30000 });
             await page.waitForSelector('#importPanel', { timeout: 30000 });
             await page.waitForSelector('#guidedNav', { timeout: 30000 });
@@ -113,6 +113,10 @@ jobs:
             assert.equal(factorRState.outside.factorDisabled, true);
             assert.equal(factorRState.outside.annexDisabled, true);
             assert.match(factorRState.outside.payrollHint, /Não aplicável/i);
+            const payrollBadge = await page.locator('#monthlyPayroll').locator('xpath=ancestor::*[contains(concat(" ", normalize-space(@class), " "), " field ")][1]').locator(':scope > .fieldStateBadge').textContent();
+            const factorBadge = await page.locator('#factorMode').locator('xpath=ancestor::*[contains(concat(" ", normalize-space(@class), " "), " field ")][1]').locator(':scope > .fieldStateBadge').textContent();
+            assert.equal((payrollBadge || '').trim(), 'N/A');
+            assert.equal((factorBadge || '').trim(), 'N/A');
             assert.equal(factorRState.inside.payrollDisabled, false);
             assert.equal(factorRState.inside.factorDisabled, false);
             assert.equal(factorRState.inside.annexDisabled, false);
