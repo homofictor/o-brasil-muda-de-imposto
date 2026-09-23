@@ -28,18 +28,19 @@
    const marginRaw=String(byId('currentOperatingMarginPct')?.value??'').trim(),margin=marginRaw===''?null:Number(marginRaw)/100;
    let cash=null;try{cash=typeof cashMetrics==='function'?cashMetrics(r):null}catch(_){}
    set('ownerCurrentTax',impact?.known?money(impact.currentTax):'PENDENTE');
-   set('ownerCurrentTaxNote',impact?.known?'Carga líquida anual usada como base da comparação.':'Informe ou importe a carga líquida atual para medir o efeito da reforma.');
+   set('ownerCurrentTaxNote',impact?.known?(impact.confidence==='low'?'Estimativa preliminar · origem com baixa confiança.':impact.confidence==='medium'?'Estimativa de cenário · premissas ainda sujeitas a validação.':'Carga líquida anual usada como base da comparação.'):'Informe ou importe a carga líquida atual para medir o efeito da reforma.');
    set('ownerCurrentMargin',Number.isFinite(margin)?pct(margin):'PENDENTE');
    set('ownerBestTotal',best?money(best.total):'—');
    set('ownerBestTotalNote',best?(((best.key==='real'||best.key==='presumed')&&!best.totalComplete)?'Base comparável sem CPP patronal.':'Desembolso anual nas premissas informadas.'):'Sem cenário validado');
    set('ownerGap',gap==null?'—':money(gap));set('ownerSecondRegime',second?'vs. '+second.name:'Sem segundo regime validado');
    set('ownerFutureConsumption',money((r.netVat||0)+(r.legacy||0)));
    set('ownerWorkingCapital',cash?.working==null?'—':money(cash.working));
+   set('ownerResultEffectLabel',impact?.known?'Efeito no resultado com repasse de '+pct(impact.transferRate):'Efeito anual no resultado');
    let result='PENDENTE',resultNote='Depende da carga atual de consumo e do percentual de repasse a preços.';
    if(impact?.known){
     if(impact.financeCostKnown){
      result=impact.resultEffect>1?'+ '+money(impact.resultEffect):impact.resultEffect<-1?'− '+money(Math.abs(impact.resultEffect)):money(0);
-     resultNote='Após tributos, repasse a preços e custo financeiro estimado.';
+     resultNote=(impact.confidence==='low'?'Estimativa preliminar. ':impact.confidence==='medium'?'Estimativa de cenário. ':'')+'Após tributos, repasse a preços e custo financeiro estimado.'+(impact.transferRate>=.999?' Se o mercado não aceitar o repasse integral, parte da variação será absorvida pela margem.':'');
     }else{result='PARCIAL';resultNote='Sem custo financeiro completo do gap.'}
    }
    set('ownerResultEffect',result);set('ownerResultEffectNote',resultNote);set('ownerB2bCredit',money(r.regularClientCredit||0));
@@ -54,6 +55,7 @@
    const pending=[],topRegular=best&&second&&[best.key,second.key].every(k=>k==='real'||k==='presumed');
    if(topRegular&&!r.cppBaseKnown)pending.push('Informar folha/remunerações sujeitas à contribuição patronal e revisar a alíquota patronal efetiva, para completar o desembolso tributário total.');
    if(!impact?.known)pending.push('Informar a carga líquida atual de PIS/Cofins, ICMS, ISS e IPI, conforme aplicável, para calcular a variação real de preço, margem e resultado.');
+   else if(impact.confidence==='low')pending.push('Confirmar a carga líquida atual de tributos sobre consumo: ela foi extraída com baixa confiança e afeta diretamente preço, margem e efeito no resultado.');
    if(!Number.isFinite(margin))pending.push('Informar a margem EBITDA atual para medir quanto da variação tributária pode ser absorvida pela operação.');
    if(cash?.reserveKnown)pending.push('Confirmar quanto do caixa e das aplicações considerados como reserva bruta está efetivamente livre para suportar a necessidade de liquidez do split payment.');
    if(fieldOrigin('b2bPct')==='Sugestão automática')pending.push('Confirmar o percentual real de vendas B2B com faturamento por cliente.');
@@ -66,7 +68,7 @@
     ['Vendas B2B',Number(byId('b2bPct')?.value||0).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%',fieldOrigin('b2bPct')],
     ['Aquisições creditáveis',Number(byId('eligibleCreditPct')?.value||0).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%',fieldOrigin('eligibleCreditPct')],
     ['Fornecedores no regime regular',Number(byId('regularSuppliersPct')?.value||0).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%',fieldOrigin('regularSuppliersPct')],
-    ['Carga atual de consumo',impact?.known?money(impact.currentTax):'Não informada',fieldOrigin('currentConsumptionTaxAnnual')],
+    ['Carga atual de consumo',impact?.known?money(impact.currentTax):'Não informada',impact?.confidence==='low'?'Baixa confiança · confirmar':fieldOrigin('currentConsumptionTaxAnnual')],
     ['Margem EBITDA',Number.isFinite(margin)?pct(margin):'Não informada',fieldOrigin('currentOperatingMarginPct')],
     ['Tratamento IBS/CBS',String(byId('taxTreatmentAccepted')?.value||'')==='yes'?'Confirmado':'A confirmar',String(byId('taxTreatmentAccepted')?.value||'')==='yes'?'Revisado pelo usuário':'Pendente']
    ];
