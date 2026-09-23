@@ -81,7 +81,7 @@ async function readImportFile(file){
  }
  throw new Error('Formato não suportado.')
 }
-function detectDoc(text,rows){const t=normImport(text),balance=/ativo circulante/.test(t)&&/passivo/.test(t)&&/patrimonio liquido/.test(t),dre=/receitas? (brutas?|operacionais?|liquidas?)/.test(t)&&(/lucro bruto|lucro liquido|resultado do exercicio|resultado antes|despesas operacionais|despesas financeiras|custos e despesas|ebitda|lajida/.test(t));if(balance&&dre)return'Balanço + DRE';if(balance)return'Balanço';if(dre)return'DRE';if(rows&&/fornecedor|compra|entrada|contas a pagar/.test(t))return'Relatório de compras';if(rows&&/cliente|venda|faturamento|nota fiscal|contas a receber/.test(t))return'Relatório de vendas';if(/folha de pagamento|salarios|pro labore/.test(t))return'Folha / pessoal';return'Relatório'}
+function detectDoc(text,rows){const t=normImport(text),balance=/ativo circulante/.test(t)&&/passivo/.test(t)&&/patrimonio liquido/.test(t),dre=/receitas? (brutas?|operacionais?|liquidas?)/.test(t)&&(/lucro bruto|lucro liquido|resultado do exercicio|resultado antes|despesas operacionais|despesas financeiras|custos e despesas|ebitda|lajida/.test(t));if(balance&&dre)return'Balanço + DRE';if(balance)return'Balanço';if(dre)return'DRE';if(rows&&/fornecedor|compra|entrada|contas a pagar/.test(t))return'Relatório de compras';if(rows&&/cliente|venda|faturamento|nota fiscal|contas a receber/.test(t))return'Relatório de vendas';if(/folha de pagamento|salarios|pro labore/.test(t))return'Folha / pessoal';if(/saldo anterior|saldo inicial/.test(t)&&/debito|debitos/.test(t)&&/credito|creditos/.test(t)&&/saldo atual|saldo final/.test(t))return'Balancete';return'Relatório'}
 function importStatementSections(text){const source=String(text||''),bpStart=source.search(/balan[cç]o patrimonial/i),dreStart=source.search(/demonstra[cç][aã]o\s+(?:d[eo]\s+)?resultado/i);return{balance:bpStart>=0?source.slice(bpStart,dreStart>bpStart?dreStart:undefined):source,dre:dreStart>=0?source.slice(dreStart):source}}
 function lineValue(text,labels,exclude=[]){const lines=String(text||'').split(/\r?\n/);for(const line of lines){const n=normImport(line);if(!labels.some(x=>n.includes(x))||exclude.some(x=>n.includes(x)))continue;const matches=line.match(/(?:R\$\s*)?-?\d{1,3}(?:\.\d{3})*(?:,\d{1,2})|-?\d+(?:[.,]\d{1,2})?/g)||[];const nums=matches.map(brNum).filter(Number.isFinite);if(nums.length)return nums[nums.length-1]}return null}
 function firstLineValue(text,labelGroups){for(const labels of labelGroups){const v=lineValue(text,labels);if(v!=null)return v}return null}
@@ -203,6 +203,22 @@ function financialDebtBalances(text){
  return{end,start:startKnown&&components?start:null,ordered:order!=null,components,order}
 }
 
+function detectTrialBalanceColumns(rows){
+ if(!rows||rows.length<2)return null;
+ for(let i=0;i<Math.min(35,rows.length);i++){
+  const h=rows[i].map(normImport),find=(terms)=>h.findIndex(x=>terms.some(t=>x.includes(t)));
+  const code=find(['codigo','cod. conta','cod conta','conta']),desc=find(['descricao','nome da conta','historico']),opening=find(['saldo anterior','saldo inicial']),debit=find(['debito','debitos']),credit=find(['credito','creditos']),closing=find(['saldo atual','saldo final','saldo do periodo']);
+  if(desc>=0&&closing>=0&&(opening>=0||debit>=0||credit>=0))return{header:i,code,desc,opening,debit,credit,closing}
+ }
+ return null
+}
+function trialBalanceMetrics(rows){
+ const cols=detectTrialBalanceColumns(rows);if(!cols)return null;
+ const entries=rows.slice(cols.header+1).map(r=>({code:cols.code>=0?String(r[cols.code]||'').trim():'',desc:String(r[cols.desc]||'').trim(),opening:cols.opening>=0?brNum(r[cols.opening]):null,debit:cols.debit>=0?brNum(r[cols.debit]):null,credit:cols.credit>=0?brNum(r[cols.credit]):null,closing:brNum(r[cols.closing])})).filter(x=>x.desc&&Number.isFinite(x.closing));
+ const pick=(patterns,exclude=[])=>entries.filter(x=>{const n=normImport(x.desc);return patterns.some(p=>n.includes(p))&&!exclude.some(p=>n.includes(p))});
+ const aggregate=(patterns,exclude=[])=>{const hits=pick(patterns,exclude);if(!hits.length)return null;const coded=hits.filter(x=>x.code),parents=coded.filter(a=>coded.some(b=>b!==a&&b.code.startsWith(a.code)&&b.code.length>a.code.length));const use=parents.length?parents.filter(a=>!parents.some(p=>p!==a&&a.code.startsWith(p.code)&&a.code.length>p.code.length)):hits;return{closing:use.reduce((s,x)=>s+Math.abs(x.closing),0),opening:use.every(x=>Number.isFinite(x.opening))?use.reduce((s,x)=>s+Math.abs(x.opening),0):null,count:use.length,method:parents.length?'account-code':'description'}};
+ return{cols,entries,receivables:aggregate(['clientes','duplicatas a receber','contas a receber'],['fornecedores']),inventory:aggregate(['estoque','mercadorias para revenda','produtos acabados','materias primas']),suppliers:aggregate(['fornecedores','contas a pagar fornecedores']),debt:aggregate(['emprestimos','financiamentos','mutuos','parcelamentos tributarios','parcelamentos fiscais']),cash:aggregate(['caixa','bancos conta movimento','bancos conta corrente'],['equivalentes']),investments:aggregate(['aplicacoes financeiras','liquidez imediata'])}
+}
 function tabularMetrics(rows){
  if(!rows||rows.length<2)return{};let hi=-1;
  for(let i=0;i<Math.min(15,rows.length);i++){const h=rows[i].map(normImport);if(h.some(x=>/cliente|cpf|cnpj|documento|fornecedor|valor|total|regime/.test(x))){hi=i;break}}
@@ -229,7 +245,7 @@ function extractionConfidence(base,parsed,integrity,relevant){
 function candidate(field,label,value,source,confidence,reason,display){if(field==='cnpj'){if(!validImportedCnpj(value))return null}else if(!Number.isFinite(value))return null;return{field,label,value,source,confidence,reason,display:display||(field==='cnpj'?formatImportedCnpj(value):(field.toLowerCase().includes('pct')||field==='realProfitMargin'?fmtPct(value):fmtMoney(value)))}}
 
 function analyseImportDoc(file,parsed){
- const text=parsed.text,type=detectDoc(text,parsed.rows),tab=tabularMetrics(parsed.rows),c=[],sections=importStatementSections(text),balanceDoc=type==='Balanço'||type==='Balanço + DRE',dreDoc=type==='DRE'||type==='Balanço + DRE',bpText=balanceDoc?sections.balance:text,dreText=dreDoc?sections.dre:text,integrity=balanceDoc?accountingIntegrity(bpText):{known:false,ok:null},conf=(base,relevant=false)=>extractionConfidence(base,parsed,integrity,relevant),importedCnpj=detectImportedCnpj(text,type),dreMonths=Math.max(1,Math.min(12,Number($('dreMonths')?.value)||12)),annualFactor=12/dreMonths;
+ const text=parsed.text,type=detectDoc(text,parsed.rows),tab=tabularMetrics(parsed.rows),trial=trialBalanceMetrics(parsed.rows),c=[],sections=importStatementSections(text),balanceDoc=type==='Balanço'||type==='Balanço + DRE',dreDoc=type==='DRE'||type==='Balanço + DRE',bpText=balanceDoc?sections.balance:text,dreText=dreDoc?sections.dre:text,integrity=balanceDoc?accountingIntegrity(bpText):{known:false,ok:null},conf=(base,relevant=false)=>extractionConfidence(base,parsed,integrity,relevant),importedCnpj=detectImportedCnpj(text,type),dreMonths=Math.max(1,Math.min(12,Number($('dreMonths')?.value)||12)),annualFactor=12/dreMonths;
  const revenueGross=firstLatestLineValue(dreText,[['receita bruta','receita operacional bruta','receita bruta de vendas','receita bruta de vendas e servicos','receita bruta com vendas','faturamento bruto','faturamento total','vendas brutas'],['servicos prestados','prestacao de servicos','vendas de mercadorias','vendas de produtos','receita de vendas','receita de servicos']]);
  const revenueNet=firstLatestLineValue(dreText,[['receita liquida','receita operacional liquida','receita liquida de vendas','receita liquida de vendas e servicos','vendas liquidas']]);
  const revenueOperational=firstLatestLineValue(dreText,[['receitas operacionais']]);
@@ -268,6 +284,16 @@ function analyseImportDoc(file,parsed){
  const amortization=Math.abs(firstLatestLineValue(dreText,[['amortizacao','amortizacoes']],['depreciacao e amortizacao','depreciacoes e amortizacoes'])||0);
  const ebitda=explicitEbitda!=null?explicitEbitda:(operatingProfit!=null?operatingProfit+depreciation+amortization:null);
  const revenueNetForMargin=revenueNet>0?Math.abs(revenueNet):(revenueGross>0?Math.max(0,Math.abs(revenueGross)-deductions):0);const ebitdaMargin=ebitda!=null&&revenueNetForMargin>0?100*ebitda/revenueNetForMargin:null;
+  if(trial){
+  const tc=trial.cash,ti=trial.investments,tr=trial.receivables,ts=trial.inventory,tf=trial.suppliers,td=trial.debt,reason=trial.cols.code>=0?'Balancete estruturado por código de conta, preservando contas sintéticas e evitando dupla contagem.':'Balancete reconhecido por descrição e colunas de saldo.';
+  if(tc?.closing>0)c.push(candidate('cashAndEquivalents','Caixa e bancos',tc.closing,file.name,conf(tc.method==='account-code'?'high':'medium'),reason,fmtMoney(tc.closing)));
+  if(ti?.closing>0)c.push(candidate('liquidInvestments','Aplicações de liquidez imediata',ti.closing,file.name,conf(ti.method==='account-code'?'high':'medium'),reason,fmtMoney(ti.closing)));
+  if(td?.closing>0)c.push(candidate('debtEnd','Dívida financeira final',td.closing,file.name,conf(td.method==='account-code'?'high':'medium'),reason,fmtMoney(td.closing)));
+  if(td?.opening!=null)c.push(candidate('debtStart','Dívida financeira inicial',td.opening,file.name,conf(td.method==='account-code'?'high':'medium'),reason,fmtMoney(td.opening)));
+  if(tr?.closing>0)c.push(candidate('accountsReceivable','Clientes / contas a receber',tr.closing,file.name,conf(tr.method==='account-code'?'high':'medium'),reason,fmtMoney(tr.closing)));
+  if(ts?.closing>0)c.push(candidate('inventory','Estoques',ts.closing,file.name,conf(ts.method==='account-code'?'high':'medium'),reason,fmtMoney(ts.closing)));
+  if(tf?.closing>0)c.push(candidate('suppliersPayable','Fornecedores',tf.closing,file.name,conf(tf.method==='account-code'?'high':'medium'),reason,fmtMoney(tf.closing)));
+ }
  if(importedCnpj)c.push(candidate('cnpj','CNPJ da empresa',importedCnpj,file.name,conf('high'),'CNPJ validado e identificado no cabeçalho da demonstração contábil.',formatImportedCnpj(importedCnpj)));
  if(revenueForRbt12>0)c.push(candidate('rbt12','Faturamento em 12 meses (RBT12)',Math.abs(revenueForRbt12),file.name,conf(revenueGross!=null?'high':'medium'),revenueGross!=null?'Receita bruta/faturamento localizado no documento.':'Total de vendas localizado no relatório comercial.',fmtMoney(Math.abs(revenueForRbt12))));
  if(cash!=null&&balanceDoc)c.push(candidate('cashAndEquivalents','Caixa e bancos',Math.abs(cash),file.name,conf('high',true),cashComponents!=null?'Caixa e bancos conta movimento somados sem duplicar aplicações financeiras.':'Total de caixa e equivalentes usado porque o balanço não detalhou caixa e bancos separadamente.',fmtMoney(Math.abs(cash))));
