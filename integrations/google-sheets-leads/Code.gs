@@ -1,3 +1,4 @@
+const SPREADSHEET_ID='1Qzasp1umfaPpMN3UxYriH39zcA7FVrU7V6K7gBGm8NA';
 const SHEET_LEADS='Leads';
 const SHEET_DASH='Painel';
 
@@ -16,7 +17,7 @@ function doPost(e){
     if(!profile)return json_({ok:false,error:'Perfil ausente'});
     if(body.consent!==true)return json_({ok:false,error:'Consentimento ausente'});
 
-    const ss=SpreadsheetApp.getActiveSpreadsheet();
+    const ss=SpreadsheetApp.openById(SPREADSHEET_ID);
     let sheet=ss.getSheetByName(SHEET_LEADS);
     if(!sheet)sheet=createLeadsSheet_(ss);
 
@@ -41,7 +42,7 @@ function doPost(e){
 }
 
 function setup(){
-  const ss=SpreadsheetApp.getActiveSpreadsheet();
+  const ss=SpreadsheetApp.openById(SPREADSHEET_ID);
   if(!ss.getSheetByName(SHEET_LEADS))createLeadsSheet_(ss);
   if(!ss.getSheetByName(SHEET_DASH))createDashboard_(ss);
   refreshDashboard_(ss);
