@@ -398,7 +398,17 @@ function syncImportCandidateButtons(field,activeIndex){
  document.querySelectorAll('[data-import-index]').forEach(btn=>{const idx=Number(btn.dataset.importIndex),item=brmiImport.candidates[idx];if(!item||item.field!==field)return;const active=candidateValuesEqual(item,activeItem);item.applied=active;btn.textContent=active?'Aplicado ✓':'Usar este valor';btn.classList.toggle('importApplied',active);btn.disabled=active})
 }
 function applyImportCandidate(i,button){
- const c=brmiImport.candidates[i],el=$(c?.field);if(!c||!el)return false;
+ const c=brmiImport.candidates[i];if(!c)return false;
+ const el=$(c.field);
+ if(!el){
+  if(button){
+   c.applied=true;c.accepted=true;
+   button.textContent='Confirmado ✓';button.classList.add('importApplied');button.disabled=true;
+   document.dispatchEvent(new CustomEvent('brmi:auxiliary-import-accepted',{detail:{field:c.field,value:c.value,source:c.source,confidence:c.confidence}}));
+   return true
+  }
+  return false
+ }
  const explicit=!!button,currentText=String(el.value||'').trim(),currentValue=typeof parseMoneyValue==='function'?parseMoneyValue(currentText):Number(currentText||0),alreadyImported=el.dataset.importVerified==='1'||el.dataset.importSource;
  if(!explicit&&el.dataset.userEdited==='1')return false;
  if(!explicit&&currentText&&!alreadyImported&&Number.isFinite(currentValue)&&Math.abs(currentValue)>.000001&&c.field!=='cnpj')return false;
