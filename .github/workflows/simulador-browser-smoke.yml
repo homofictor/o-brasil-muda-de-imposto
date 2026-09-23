@@ -191,6 +191,7 @@ jobs:
               };
             });
 
+            console.log('REGIME_CHECK', JSON.stringify(regimeCheck));
             assert.equal(regimeCheck.withoutCpp.presumed, true);
             assert.equal(regimeCheck.withoutCpp.real, true);
             assert.equal(regimeCheck.withoutCpp.presumedTotalComplete, false);
