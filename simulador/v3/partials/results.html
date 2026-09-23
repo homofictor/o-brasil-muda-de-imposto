@@ -87,6 +87,28 @@
       <ol id="execActions" class="execActions"></ol>
     </section>
 
+    <section class="execSection leadCapture" id="leadCapture">
+  <div class="leadCaptureHead">
+    <div>
+      <span>CONTATO OPCIONAL</span>
+      <h2>Quer receber atualizações do simulador e da Reforma Tributária?</h2>
+      <p>Seu diagnóstico já está disponível. Se quiser receber novidades, materiais e avisos de atualização, deixe seu contato. Isso não interfere no uso do simulador.</p>
+    </div>
+  </div>
+  <form id="simulatorLeadForm" class="leadForm">
+    <div class="leadGrid">
+      <label><span>Nome</span><input id="leadName" name="name" autocomplete="name" maxlength="100" placeholder="Seu nome"></label>
+      <label><span>E-mail *</span><input id="leadEmail" name="email" type="email" autocomplete="email" maxlength="160" required placeholder="voce@empresa.com.br"></label>
+      <label><span>WhatsApp</span><input id="leadWhatsapp" name="whatsapp" type="tel" autocomplete="tel" maxlength="30" placeholder="Opcional"></label>
+      <label><span>Empresa</span><input id="leadCompany" name="company" autocomplete="organization" maxlength="120" placeholder="Opcional"></label>
+      <label class="leadProfile"><span>Seu perfil *</span><select id="leadProfile" required><option value="">Selecione</option><option>Empresário ou gestor</option><option>Contador</option><option>Consultor</option><option>Advogado</option><option>Administrador ou economista</option><option>Outro</option></select></label>
+    </div>
+    <label class="leadConsent"><input id="leadConsent" type="checkbox" required><span>Quero receber atualizações do livro, do site, do simulador e conteúdos relacionados à Reforma Tributária. Li a <a href="/privacidade.html" target="_blank" rel="noopener">política de privacidade</a>.</span></label>
+    <div class="leadActions"><button class="leadPrimary" type="submit">Enviar meu contato</button><button id="leadSkipBtn" type="button">Agora não</button></div>
+    <div class="leadStatus" id="leadStatus" hidden role="status"></div>
+    <small class="leadNote">Ao enviar, seu aplicativo de e-mail será aberto para você confirmar o envio dos dados.</small>
+  </form>
+</section>
     <div class="execFooterNote"><strong>Leitura executiva.</strong> O relatório resume a decisão. Bases, transição anual, composição dos regimes, memória de cálculo, limitações e fontes permanecem disponíveis na aba <strong>Detalhamento técnico</strong>.</div>
   </div>
 
