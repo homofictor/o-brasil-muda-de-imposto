@@ -65,6 +65,34 @@
  function percent(value){return Number.isFinite(value)?pct1(value):'—'}
  function setText(id,value){const node=document.getElementById(id);if(node)node.textContent=value==null?'—':String(value)}
 
+ function fieldConfidence(id){
+  const node=document.getElementById(id);if(!node||String(node.value||'').trim()==='')return'unknown';
+  if(node.dataset?.userEdited==='1')return'high';
+  if(node.dataset?.importVerified==='1')return node.dataset.importConfidence==='low'?'low':node.dataset.importConfidence==='medium'?'medium':'high';
+  const box=node.closest?.('.field,.mix');
+  if(box?.classList.contains('state-auto')||box?.classList.contains('state-suggested')||box?.classList.contains('state-premise'))return'medium';
+  if(box?.classList.contains('state-complete'))return'high';
+  return'medium';
+ }
+ function minConfidence(list){
+  const score={low:0,unknown:0,medium:1,high:2},known=list.filter(Boolean);if(!known.length)return'unknown';
+  return known.reduce((a,b)=>(score[b]??0)<(score[a]??0)?b:a,'high');
+ }
+ function futureConsumptionConfidence(){
+  const values=['purchasesPct','eligibleCreditPct','regularSuppliersPct','fullCbs','fullIbs'].map(fieldConfidence);
+  if(String(document.getElementById('taxTreatmentAccepted')?.value||'')!=='yes')values.push('low');
+  return minConfidence(values);
+ }
+ function setConfidenceNote(id,confidence){
+  const node=document.getElementById(id);if(!node)return;
+  if(confidence==='low'){
+   node.hidden=false;node.className='economicConfidenceNote low';
+   node.innerHTML='<strong>Estimativa preliminar</strong><span>Uma ou mais premissas críticas foram extraídas com baixa confiança. Os valores de preço, margem e resultado abaixo são indicativos e devem ser confirmados antes de qualquer decisão.</span>';
+  }else if(confidence==='medium'){
+   node.hidden=false;node.className='economicConfidenceNote medium';
+   node.innerHTML='<strong>Estimativa de cenário</strong><span>Os valores dependem de premissas automáticas ou parâmetros de referência ainda sujeitos a validação.</span>';
+  }else{node.hidden=true;node.textContent=''}
+ }
  function currentOperatingRevenueBase(r){
   const docs=root.brmiImport?.docs||[],dre=docs.find(d=>(d.type==='DRE'||d.type==='Balanço + DRE')&&Number(d.revenueNet)>0);
   if(!dre)return r?.annualRevenue||0;
@@ -78,6 +106,8 @@
   const input=document.getElementById('currentConsumptionTaxAnnual');
   const manual=hasField('currentConsumptionTaxAnnual')?Math.max(0,fieldNumber('currentConsumptionTaxAnnual')):null;
   const currentTax=mode==='auto'?automatic:manual;
+  const currentTaxConfidence=mode==='auto'?(automatic==null?'unknown':'medium'):fieldConfidence('currentConsumptionTaxAnnual');
+  const futureTaxConfidence=futureConsumptionConfidence(),confidence=minConfidence([currentTaxConfidence,futureTaxConfidence]);
   const source=document.getElementById('currentConsumptionTaxSource');
   if(input){input.readOnly=mode==='auto';if(mode==='auto')input.value=automatic==null?'':Math.round(automatic*100)/100}
   if(source){
@@ -89,8 +119,8 @@
   const futureTax=modelConsumptionTax(r,model?.key);
   const margin=hasField('currentOperatingMarginPct')?fieldNumber('currentOperatingMarginPct')/100:null;
   let financeCost=0,financeCostKnown=true;try{const cm=root.cashMetrics?root.cashMetrics(r):cashMetrics(r);if(cm?.cost==null){financeCostKnown=false;financeCost=0}else financeCost=cm.cost}catch(_){financeCostKnown=false;financeCost=0}
-  if(currentTax==null||futureTax==null)return{known:false,currentTax,futureTax,modelKey:model?.key||null,financeCostKnown};
-  return{known:true,modelKey:model.key,financeCostKnown,...calculateEconomicImpact({annualRevenue:r.annualRevenue,currentOperatingRevenue:currentOperatingRevenueBase(r),currentConsumptionTax:currentTax,futureConsumptionTax:futureTax,priceTransferRate:fieldNumber('priceTransferPct')/100,currentOperatingMargin:margin,financeCost})};
+  if(currentTax==null||futureTax==null)return{known:false,currentTax,futureTax,modelKey:model?.key||null,financeCostKnown,currentTaxConfidence,futureTaxConfidence,confidence};
+  return{known:true,modelKey:model.key,financeCostKnown,currentTaxConfidence,futureTaxConfidence,confidence,...calculateEconomicImpact({annualRevenue:r.annualRevenue,currentOperatingRevenue:currentOperatingRevenueBase(r),currentConsumptionTax:currentTax,futureConsumptionTax:futureTax,priceTransferRate:fieldNumber('priceTransferPct')/100,currentOperatingMargin:margin,financeCost})};
  }
 
  function impactTone(impact){if(!impact?.known)return'pending';if(impact.resultEffect>1)return'positive';if(impact.resultEffect<-1)return'negative';return'neutral'}
@@ -101,6 +131,9 @@
   const valid=(r?.models||[]).filter(m=>m.valid!==false&&Number.isFinite(m.total)).sort((a,b)=>a.total-b.total),model=valid[0],impact=economicImpactFor(r,model);
   root.lastEconomicImpact=impact;
   const pending='Informe a carga atual líquida dos tributos sobre consumo para comparar preço, margem e resultado.';
+  setConfidenceNote('economicConfidenceNote',impact.confidence);setConfidenceNote('execEconomicConfidenceNote',impact.confidence);
+  const transferLabel='Efeito no resultado com repasse de '+percent(impact.transferRate);
+  setText('techResultEffectLabel',transferLabel);setText('execResultEffectLabel',transferLabel);
   if(!impact.known){
    ['execCurrentConsumptionTax','execFutureConsumptionTax','execTaxDelta','execRequiredPrice','execProjectedMargin','execResultEffect','techCurrentConsumptionTax','techFutureConsumptionTax','techTaxDelta','techPriceTransfer','techUnabsorbedDelta','techFinanceEffect','techResultEffect'].forEach(id=>setText(id,'—'));
    setText('economicImpactStatus','Comparação pendente');setText('economicImpactText',pending);setText('technicalEconomicText',pending);
@@ -112,9 +145,12 @@
   setText('execEconomicModel',model.name);setText('execEconomicYear',r.year);setText('techProjectedMargin',impact.projectedOperatingMargin==null?'Informe a margem atual':percent(impact.projectedOperatingMargin));
   setText('economicImpactStatus',impact.taxDelta>1?'Pressão sobre a margem':impact.taxDelta<-1?'Potencial de ganho':'Impacto tributário neutro');
   const transfer=percent(impact.transferRate),direction=impact.taxDelta>=0?'acréscimo':'redução';
-  setText('economicImpactText',impact.financeCostKnown?`O cenário transfere ${transfer} da variação tributária ao preço. O ${direction} anual de preço estimado é ${money(Math.abs(impact.priceChange))}. Após o efeito tributário não transferido e o custo financeiro estimado, o impacto no resultado é ${resultLabel(impact.resultEffect).toLowerCase()}.`:`O cenário transfere ${transfer} da variação tributária ao preço. O ${direction} anual de preço estimado é ${money(Math.abs(impact.priceChange))}. O efeito no resultado antes do custo financeiro é ${resultLabel(impact.resultEffect).toLowerCase()}; informe reserva e taxa financeira para completar a análise.`);
+  const confidencePrefix=impact.confidence==='low'?'Estimativa preliminar. ':impact.confidence==='medium'?'Estimativa de cenário. ':'';
+  const fullTransferNote=impact.transferRate>=.999?' Se o mercado não aceitar o repasse integral, parte da variação tributária será absorvida pela margem.':'';
+  setText('economicImpactText',confidencePrefix+(impact.financeCostKnown?`O cenário transfere ${transfer} da variação tributária ao preço. O ${direction} anual de preço estimado é ${money(Math.abs(impact.priceChange))}. Após o efeito tributário não transferido e o custo financeiro estimado, o impacto no resultado é ${resultLabel(impact.resultEffect).toLowerCase()}.${fullTransferNote}`:`O cenário transfere ${transfer} da variação tributária ao preço. O ${direction} anual de preço estimado é ${money(Math.abs(impact.priceChange))}. O efeito no resultado antes do custo financeiro é ${resultLabel(impact.resultEffect).toLowerCase()}; informe reserva e taxa financeira para completar a análise.${fullTransferNote}`));
   setText('techCurrentConsumptionTax',money(impact.currentTax));setText('techFutureConsumptionTax',money(impact.futureTax));setText('techTaxDelta',deltaLabel(impact.taxDelta));setText('techPriceTransfer',money(impact.priceChange));setText('techUnabsorbedDelta',money(impact.unabsorbedDelta));setText('techFinanceEffect',impact.financeCostKnown?money(impact.financeCost):'Não calculado');setText('techResultEffect',impact.financeCostKnown?resultLabel(impact.resultEffect):'Parcial · antes do custo financeiro');
-  setText('technicalEconomicText',`A comparação usa ${model.name} como modelo de menor desembolso validado em ${r.year}. A carga de consumo futura considera IBS/CBS e ICMS/ISS residual aplicável. A margem EBITDA usa a receita líquida da DRE quando disponível, enquanto a base tributária usa o faturamento bruto confirmado.`);
+  const modelPhrase=((model.key==='real'||model.key==='presumed')&&!model.totalComplete)?'como menor base comparável':'como modelo de menor desembolso validado';
+  setText('technicalEconomicText',confidencePrefix+`A comparação usa ${model.name} ${modelPhrase} em ${r.year}. A carga de consumo futura considera IBS/CBS e ICMS/ISS residual aplicável. A margem EBITDA usa a receita líquida da DRE quando disponível, enquanto a base tributária usa o faturamento bruto confirmado.`+fullTransferNote);
   const card=document.getElementById('economicImpactCard');if(card)card.dataset.tone=impactTone(impact);
   return impact;
  }
