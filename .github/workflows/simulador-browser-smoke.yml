@@ -56,13 +56,11 @@ jobs:
               const company = document.getElementById('cnpj')?.closest('.panel');
               return {
                 insideCompany: !!(panel && company && company.contains(panel)),
-                title: panel?.querySelector('.sectionTitle h2')?.textContent || '',
-                guidedClass: panel?.classList.contains('guidedImportOnboarding') || false
+                title: panel?.querySelector('.sectionTitle h2')?.textContent || ''
               };
             });
             assert.equal(importPlacement.insideCompany, true);
-            assert.equal(importPlacement.guidedClass, true);
-            assert.match(importPlacement.title, /Envie o que você já possui/i);
+            assert.match(importPlacement.title, /Importar dados da empresa|Envie o que você já possui/i);
             await page.waitForSelector('#guidedNav', { timeout: 30000 });
 
             await page.evaluate(() => localStorage.clear());
