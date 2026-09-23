@@ -89,6 +89,7 @@ jobs:
               };
             });
             assert.equal(treatmentWarningBefore.button, true);
+            await page.click('[data-guided-nav="2"]');
             await page.click('#acceptTaxTreatmentSuggestion');
             const treatmentAccepted = await page.inputValue('#taxTreatmentAccepted');
             assert.equal(treatmentAccepted, 'yes');
@@ -203,7 +204,6 @@ jobs:
               };
             });
 
-            console.log('REGIME_CHECK', JSON.stringify(regimeCheck));
             assert.equal(regimeCheck.withoutCpp.presumed, true);
             assert.equal(regimeCheck.withoutCpp.real, true);
             assert.equal(regimeCheck.withoutCpp.presumedTotalComplete, false);
