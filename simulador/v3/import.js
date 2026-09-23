@@ -170,6 +170,41 @@ function hierarchicalCategoryTotal(text,matcher,exclude=[]){
  const use=chosen.length?chosen:hits,end=use.reduce((s,h)=>s+Math.abs(h.vals.latest),0),priorKnown=use.every(h=>h.vals.prior!=null),start=priorKnown?use.reduce((s,h)=>s+Math.abs(h.vals.prior),0):null;
  return{end,start,count:use.length,method:parents.length?'hierarchy':'lines'}
 }
+function accountingCanonicalMap(text,docType){
+ const order=comparativeOrder(text),rows=statementRows(text),out=[];let section='',parent='';
+ const rules=[
+  ['asset.current.cash',/^(caixa|bancos conta|depositos bancarios)/],['asset.current.investments',/aplicacoes financeiras|titulos e valores mobiliarios/],
+  ['asset.current.receivables',/clientes|duplicatas a receber|contas a receber/],['asset.current.inventory',/estoques?|mercadorias para revenda|produtos acabados|materias primas/],
+  ['asset.current.taxCredits',/impostos.*compensar|tributos a recuperar|impostos a recuperar/],['asset.noncurrent.fixedAssets',/imobilizado/],
+  ['liability.current.suppliers',/fornecedores|contas a pagar.*fornecedores/],['liability.tax',/impostos a pagar|tributos a recolher|impostos a recolher/],
+  ['liability.financialDebt',/emprestimos?|financiamentos?|mutuos?|arrendamento mercantil|leasing|parcelamentos? (?:fiscais|tributarios|de impostos|de tributos)/],
+  ['equity',/patrimonio liquido/],['income.grossRevenue',/receita bruta|faturamento bruto|vendas brutas/],['income.netRevenue',/receita liquida|vendas liquidas/],
+  ['expense.directCosts',/custos? diretos?/],['expense.indirectCosts',/custos? indiretos?/],['expense.payroll',/mao de obra|salarios|ordenados|pessoal e encargos|pro labore/],
+  ['expense.admin',/despesas? (?:gerais da )?administrativas?/],['expense.financial',/despesas? financeiras|juros passivos|encargos financeiros/],
+  ['expense.tax',/despesas? tributarias/],['expense.depreciation',/depreciacao|amortizacao/],['result.net',/resultado (?:do )?exercicio|lucro liquido/]
+ ];
+ for(const row of rows){const n=normImport(row),vals=orderedLineValues(row,order);
+  if(/^ativo( total)?(?: |$)/.test(n)){section='asset';parent='asset';}
+  if(/^passivo(?: |$)/.test(n)){section='liability';parent='liability';}
+  if(/^(nao circulante|exigivel a longo prazo)(?: |$)/.test(n))parent=section+'.noncurrent';
+  else if(/^circulante(?: |$)/.test(n))parent=section+'.current';
+  if(/patrimonio liquido/.test(n)){section='equity';parent='equity'}
+  if(/receita|custos?|despesas?|resultado|lucro/.test(n)&&docType!=='Balanço')section='income';
+  let canonical=null;for(const [key,re] of rules){if(re.test(n)){canonical=key;break}}
+  if(canonical&&vals.latest!=null)out.push({canonical,row,n,latest:vals.latest,prior:vals.prior,ordered:vals.ordered,depth:accountDepth(row),section,parent});
+ }
+ return out
+}
+function canonicalTotal(map,key){
+ const hits=map.filter(x=>x.canonical===key);if(!hits.length)return null;
+ const parents=hits.filter(a=>hits.some(b=>b!==a&&b.depth>a.depth));
+ const use=parents.length?parents.filter(a=>!parents.some(p=>p!==a&&p.depth<a.depth)):hits;
+ return{latest:use.reduce((s,x)=>s+Math.abs(x.latest),0),prior:use.every(x=>x.prior!=null)?use.reduce((s,x)=>s+Math.abs(x.prior),0):null,count:use.length,method:parents.length?'canonical-hierarchy':'canonical-lines'}
+}
+function accountingAudit(map){
+ const counts={};map.forEach(x=>counts[x.canonical]=(counts[x.canonical]||0)+1);
+ return{classified:map.length,concepts:Object.keys(counts).length,counts}
+}
 function financialDebtBalances(text){
  const order=comparativeOrder(text),rows=statementRows(text);
  const make=()=>({specificEnd:0,specificStart:0,specificCount:0,specificPriorCount:0,broadEnd:0,broadStart:null,taxEnd:0,taxStart:0,taxCount:0,taxPriorCount:0});
@@ -255,7 +290,7 @@ function extractionConfidence(base,parsed,integrity,relevant){
 function candidate(field,label,value,source,confidence,reason,display){if(field==='cnpj'){if(!validImportedCnpj(value))return null}else if(!Number.isFinite(value))return null;return{field,label,value,source,confidence,reason,display:display||(field==='cnpj'?formatImportedCnpj(value):(field.toLowerCase().includes('pct')||field==='realProfitMargin'?fmtPct(value):fmtMoney(value)))}}
 
 function analyseImportDoc(file,parsed){
- const text=parsed.text,type=detectDoc(text,parsed.rows),tab=tabularMetrics(parsed.rows),trial=trialBalanceMetrics(parsed.rows),c=[],sections=importStatementSections(text),balanceDoc=type==='Balanço'||type==='Balanço + DRE',dreDoc=type==='DRE'||type==='Balanço + DRE',bpText=balanceDoc?sections.balance:text,dreText=dreDoc?sections.dre:text,integrity=balanceDoc?accountingIntegrity(bpText):{known:false,ok:null},conf=(base,relevant=false)=>extractionConfidence(base,parsed,integrity,relevant),importedCnpj=detectImportedCnpj(text,type),dreMonths=Math.max(1,Math.min(12,Number($('dreMonths')?.value)||12)),annualFactor=12/dreMonths;
+ const text=parsed.text,type=detectDoc(text,parsed.rows),tab=tabularMetrics(parsed.rows),trial=trialBalanceMetrics(parsed.rows),canonical=accountingCanonicalMap(text,type),canonicalAudit=accountingAudit(canonical),c=[],sections=importStatementSections(text),balanceDoc=type==='Balanço'||type==='Balanço + DRE',dreDoc=type==='DRE'||type==='Balanço + DRE',bpText=balanceDoc?sections.balance:text,dreText=dreDoc?sections.dre:text,integrity=balanceDoc?accountingIntegrity(bpText):{known:false,ok:null},conf=(base,relevant=false)=>extractionConfidence(base,parsed,integrity,relevant),importedCnpj=detectImportedCnpj(text,type),dreMonths=Math.max(1,Math.min(12,Number($('dreMonths')?.value)||12)),annualFactor=12/dreMonths;
  const revenueGross=firstLatestLineValue(dreText,[['receita bruta','receita operacional bruta','receita bruta de vendas','receita bruta de vendas e servicos','receita bruta com vendas','faturamento bruto','faturamento total','vendas brutas'],['servicos prestados','prestacao de servicos','vendas de mercadorias','vendas de produtos','receita de vendas','receita de servicos']]);
  const revenueNet=firstLatestLineValue(dreText,[['receita liquida','receita operacional liquida','receita liquida de vendas','receita liquida de vendas e servicos','vendas liquidas']]);
  const revenueOperational=firstLatestLineValue(dreText,[['receitas operacionais']]);
@@ -263,7 +298,7 @@ function analyseImportDoc(file,parsed){
  const deductions=Math.abs(firstLatestLineValue(dreText,[['deducoes da receita bruta','deducao de receita bruta','deducoes sobre vendas','deducao sobre vendas','deducoes da receita'],['impostos, devolucoes e abatimentos']])||0);
  const costs=firstLatestLineValue(dreText,[['cmv','cpv','csp','custo das mercadorias','custo dos produtos','custo dos servicos'],['custos das atividades empresariais'],['custos gerais','custos operacionais']]);
  const explicitCash=firstLatestLineValue(bpText,[['caixa e equivalentes','caixa e equivalentes de caixa'],['disponibilidades','disponivel'],['caixa bancos','caixa e bancos']]),cashBox=firstLatestLineValue(bpText,[['caixa geral'],['caixa']],['equivalentes']),banks=firstLatestLineValue(bpText,[['bancos conta movimento'],['bancos c/ movimento'],['bancos conta corrente'],['depositos bancarios a vista']]),cashComponents=((cashBox||0)+(banks||0))||null,cash=cashComponents!=null?cashComponents:explicitCash;
- const investments=firstLatestLineValue(bpText,[['aplicacoes financeiras de liquidez imediata','aplicacoes financeiras imediatas'],['aplicacoes de liquidez imediata','investimentos de liquidez imediata'],['aplicacoes financeiras','titulos e valores mobiliarios']],['caixa e equivalentes','longo prazo']);
+ const canonicalCash=canonicalTotal(canonical,'asset.current.cash'),canonicalInvestments=canonicalTotal(canonical,'asset.current.investments'),canonicalReceivables=canonicalTotal(canonical,'asset.current.receivables'),canonicalInventory=canonicalTotal(canonical,'asset.current.inventory'),canonicalSuppliers=canonicalTotal(canonical,'liability.current.suppliers'),canonicalDebt=canonicalTotal(canonical,'liability.financialDebt');\n const investments=firstLatestLineValue(bpText,[['aplicacoes financeiras de liquidez imediata','aplicacoes financeiras imediatas'],['aplicacoes de liquidez imediata','investimentos de liquidez imediata'],['aplicacoes financeiras','titulos e valores mobiliarios']],['caixa e equivalentes','longo prazo']);
  const currentAssetsDirect=latestLineValues(bpText,['ativo circulante'],['total do ativo','nao circulante']),currentAssetsCtx=currentAssetsDirect.latest==null?sectionLineValue(bpText,['ativo'],['circulante'],['nao circulante']):currentAssetsDirect,currentAssets=currentAssetsCtx.latest;
  const currentLiabilitiesDirect=latestLineValues(bpText,['passivo circulante'],['nao circulante']),currentLiabilitiesCtx=currentLiabilitiesDirect.latest==null?sectionLineValue(bpText,['passivo'],['circulante'],['nao circulante']):currentLiabilitiesDirect,currentLiabilities=currentLiabilitiesCtx.latest;
  const totalAssets=firstLatestLineValue(bpText,[['ativo total'],['total do ativo'],['ativo']],['circulante','permanente','imobilizado']);
@@ -350,7 +385,7 @@ function analyseImportDoc(file,parsed){
  if(payroll)c.push(candidate('monthlyPayroll','Folha mensal estimada',dreDoc?Math.abs(payroll)/dreMonths:Math.abs(payroll),file.name,conf('medium'),dreDoc?`Valor de pessoal dividido pelos ${dreMonths} meses cobertos pela DRE. Confirme a composição válida para o Fator R.`:'Valor de folha localizado no relatório. Confirme a periodicidade.',fmtMoney(dreDoc?Math.abs(payroll)/dreMonths:Math.abs(payroll))));
  if(tab.b2bPct!=null)c.push(candidate('b2bPct','Vendas para clientes PJ (B2B)',tab.b2bPct,file.name,conf('high'),'Calculado pelos documentos CPF/CNPJ ou identificação de clientes nas linhas do relatório.',fmtPct(tab.b2bPct)));
  if(tab.regularSuppliersPct!=null)c.push(candidate('regularSuppliersPct','Fornecedores no regime regular',tab.regularSuppliersPct,file.name,conf('medium'),'Calculado pelas linhas que identificam o regime dos fornecedores.',fmtPct(tab.regularSuppliersPct)));
- return{file:file.name,type,text,candidates:c,cnpj:importedCnpj,extraction:parsed.extraction||'text',integrity,revenueGross:revenueGross==null?null:Math.abs(revenueGross),revenueNet:revenueNet==null?null:Math.abs(revenueNet),purchaseTotal:tab.purchaseTotal||((type==='Relatório de compras'&&costs)?Math.abs(costs):null)}
+ return{file:file.name,type,text,candidates:c,cnpj:importedCnpj,extraction:parsed.extraction||'text',integrity,canonicalAudit,canonical,revenueGross:revenueGross==null?null:Math.abs(revenueGross),revenueNet:revenueNet==null?null:Math.abs(revenueNet),purchaseTotal:tab.purchaseTotal||((type==='Relatório de compras'&&costs)?Math.abs(costs):null)}
 }
 function buildCrossCandidates(docs,candidates){
  const confScore={high:3,medium:2,low:1},typeScore={'Balanço + DRE':4,'DRE':3,'Balanço':3,'Relatório de vendas':2,'Relatório de compras':2,'Relatório':1},docByFile=Object.fromEntries(docs.map(d=>[d.file,d]));
