@@ -44,10 +44,10 @@ jobs:
               await page.goto(process.env.BASE_URL + '/simulador/guiado/', { waitUntil: 'domcontentloaded', timeout: 45000 });
               const versionLink = page.locator('link[href*="guided.css"]').first();
               deployedVersion = await versionLink.count() ? (await versionLink.getAttribute('href') || '') : '';
-              if (/20260923-fieldcount24/.test(deployedVersion)) break;
+              if (/20260923-governance25/.test(deployedVersion)) break;
               await page.waitForTimeout(15000);
             }
-            assert.match(deployedVersion || '', /20260923-fieldcount24/);
+            assert.match(deployedVersion || '', /20260923-governance25/);
             await page.waitForSelector('#cnpj', { timeout: 30000 });
             await page.waitForSelector('#importPanel', { timeout: 30000 });
             assert.equal(await page.locator('#importPanel').isVisible(), true);
@@ -258,6 +258,34 @@ jobs:
             assert.match(ownerBrief.badge, /MELHOR BASE COMPARÁVEL/i);
 
             await page.evaluate(() => {
+              const mode = document.getElementById('currentConsumptionMode');
+              const tax = document.getElementById('currentConsumptionTaxAnnual');
+              const transfer = document.getElementById('priceTransferPct');
+              if (mode) mode.value = 'manual';
+              if (tax) {
+                tax.value = '2842049.06';
+                tax.dataset.importVerified = '1';
+                tax.dataset.importConfidence = 'low';
+                delete tax.dataset.userEdited;
+              }
+              if (transfer) transfer.value = '100';
+              if (typeof calculate === 'function') calculate();
+            });
+            await page.waitForFunction(() => /Estimativa preliminar/i.test(document.getElementById('economicConfidenceNote')?.textContent || ''));
+            const confidenceCheck = await page.evaluate(() => ({
+              note: document.getElementById('economicConfidenceNote')?.textContent || '',
+              execNote: document.getElementById('execEconomicConfidenceNote')?.textContent || '',
+              resultLabel: document.getElementById('techResultEffectLabel')?.textContent || '',
+              ownerTaxNote: document.getElementById('ownerCurrentTaxNote')?.textContent || '',
+              narrative: document.getElementById('narrativeText')?.textContent || ''
+            }));
+            assert.match(confidenceCheck.note, /Estimativa preliminar/i);
+            assert.match(confidenceCheck.execNote, /Estimativa preliminar/i);
+            assert.match(confidenceCheck.resultLabel, /repasse de 100/i);
+            assert.match(confidenceCheck.ownerTaxNote, /baixa confiança/i);
+            assert.doesNotMatch(confidenceCheck.narrative, /melhor alternativa validada/i);
+
+            await page.evaluate(() => {
               if (typeof setReportView === 'function') setReportView('technical');
               const modal = document.getElementById('reportModal');
               if (modal) modal.hidden = false;
@@ -278,6 +306,7 @@ jobs:
                 executiveHidden: !executive || getComputedStyle(executive).display === 'none',
                 compareFits: !compare || compare.scrollWidth <= compare.clientWidth + 3,
                 timelineFits: !timeline || timeline.scrollWidth <= timeline.clientWidth + 3,
+                timelineAvoidsSplit: !timeline || ['avoid','avoid-page'].includes(getComputedStyle(timeline).breakInside),
                 title: document.title,
                 literalSlashN: [...document.body.childNodes].some(n => n.nodeType === Node.TEXT_NODE && /\\\\n/.test(n.textContent || ''))
               };
@@ -288,6 +317,7 @@ jobs:
             assert.equal(printLayout.executiveHidden, true);
             assert.equal(printLayout.compareFits, true);
             assert.equal(printLayout.timelineFits, true);
+            assert.equal(printLayout.timelineAvoidsSplit, true);
             assert.equal(printLayout.literalSlashN, false);
             assert.match(printLayout.title, /Relatório técnico/i);
             await page.emulateMedia({ media: 'screen' });
