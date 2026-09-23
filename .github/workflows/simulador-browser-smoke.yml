@@ -44,12 +44,25 @@ jobs:
               await page.goto(process.env.BASE_URL + '/simulador/guiado/', { waitUntil: 'domcontentloaded', timeout: 45000 });
               const versionLink = page.locator('link[href*="guided.css"]').first();
               deployedVersion = await versionLink.count() ? (await versionLink.getAttribute('href') || '') : '';
-              if (/20260923-treatment1/.test(deployedVersion)) break;
+              if (/20260923-importrestore17/.test(deployedVersion)) break;
               await page.waitForTimeout(15000);
             }
-            assert.match(deployedVersion || '', /20260923-treatment1/);
+            assert.match(deployedVersion || '', /20260923-importrestore17/);
             await page.waitForSelector('#cnpj', { timeout: 30000 });
             await page.waitForSelector('#importPanel', { timeout: 30000 });
+            assert.equal(await page.locator('#importPanel').isVisible(), true);
+            const importPlacement = await page.evaluate(() => {
+              const panel = document.getElementById('importPanel');
+              const company = document.getElementById('cnpj')?.closest('.panel');
+              return {
+                insideCompany: !!(panel && company && company.contains(panel)),
+                title: panel?.querySelector('.sectionTitle h2')?.textContent || '',
+                guidedClass: panel?.classList.contains('guidedImportOnboarding') || false
+              };
+            });
+            assert.equal(importPlacement.insideCompany, true);
+            assert.equal(importPlacement.guidedClass, true);
+            assert.match(importPlacement.title, /Envie o que você já possui/i);
             await page.waitForSelector('#guidedNav', { timeout: 30000 });
 
             await page.evaluate(() => localStorage.clear());
