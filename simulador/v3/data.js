@@ -184,6 +184,8 @@ function refreshEligibilityUi(){
    if($('factorHint'))$('factorHint').textContent='Não aplicável ao MEI nesta comparação.';
   }else if(e.status==='unknown'){
    if($('factorHint'))$('factorHint').textContent='Confirme primeiro a situação no Simples Nacional para habilitar o Fator R.';
+  }else if(e.status==='confirmed'){
+   if($('factorHint'))$('factorHint').textContent=cnaeSuggestion?.factorR?'O limite de 28% será aplicado à sugestão automática.':'Disponível apenas se a atividade efetivamente estiver sujeita ao Fator R.';
   }
   if(note){note.hidden=e.status==='confirmed';if(!note.hidden){note.className='status';note.textContent=e.reason}}
  }
