@@ -2,31 +2,6 @@ module.exports = async function handler(req,res){
   res.setHeader('Cache-Control','no-store');
   if(req.method==='GET'){
     const webhook=process.env.GOOGLE_SHEETS_LEAD_WEBHOOK||'https://script.google.com/macros/s/AKfycbxy5SObxh5koYFYZgPrWgQSvMEpSw7AGhHAkxoLWcsEZ6jBbetf1ZBRpzriKJmTtjk4/exec';
-    if(String(req.query?.selftest||'')==='1'){
-      const testEmail='teste-integracao-20260923@obrasilmudadeimposto.com.br';
-      try{
-        const r=await fetch(webhook,{
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({
-            name:'TESTE INTEGRAÇÃO',
-            email:testEmail,
-            whatsapp:'',
-            company:'TESTE AUTOMÁTICO',
-            profile:'Outro',
-            source:'/api/lead?selftest=1',
-            consent:true,
-            submittedAt:new Date().toISOString()
-          }),
-          redirect:'follow'
-        });
-        const text=await r.text();
-        let data={};try{data=JSON.parse(text)}catch(_){data={raw:text.slice(0,200)}}
-        return res.status(r.ok&&data?.ok!==false?200:502).json({ok:r.ok&&data?.ok!==false,selftest:true,email:testEmail,response:data});
-      }catch(err){
-        return res.status(502).json({ok:false,selftest:true,error:err?.message||String(err)});
-      }
-    }
     if(String(req.query?.probe||'')==='1'){
       try{
         const r=await fetch(webhook,{method:'GET',redirect:'follow'});
