@@ -58,6 +58,7 @@
    if(fieldOrigin('b2bPct')==='Sugestão automática')pending.push('Confirmar o percentual real de vendas B2B com faturamento por cliente.');
    if(fieldOrigin('eligibleCreditPct')==='Sugestão automática'||fieldOrigin('regularSuppliersPct')==='Sugestão automática')pending.push('Substituir estimativas setoriais pelas compras efetivamente creditáveis e pelo regime dos principais fornecedores.');
    if(String(byId('taxTreatmentAccepted')?.value||'')!=='yes')pending.push('Confirmar a composição das receitas por tratamento/cClassTrib e eventuais reduções, benefícios ou regimes específicos.');
+   pending.push('Tratar as alíquotas de referência de CBS/IBS como premissas de cenário e confirmar os valores oficiais aplicáveis ao ano analisado.');
    pending.push('Validar benefícios fiscais, operações interestaduais, exportações, créditos específicos e particularidades de IRPJ/CSLL não capturadas pelo modelo padrão.');
    const ul=byId('ownerPending');if(ul)ul.innerHTML=[...new Set(pending)].slice(0,6).map(x=>'<li>'+x+'</li>').join('');
    const evidence=[
