@@ -238,7 +238,7 @@ jobs:
             assert.match(reviewText || '', /contribuição patronal/i);
             assert.doesNotMatch(reviewText || '', /Revisar tratamento das receitas/i);
 
-            await page.waitForSelector('.shareholderBrief');
+            await page.waitForSelector('.shareholderBrief', { state: 'attached' });
             const ownerBrief = await page.evaluate(() => ({
               currentTax: document.getElementById('ownerCurrentTax')?.textContent || '',
               bestTotal: document.getElementById('ownerBestTotal')?.textContent || '',
