@@ -7,10 +7,15 @@
  const validModels=r=>[...(r?.models||[])].filter(m=>m.valid!==false&&Number.isFinite(m.total)).sort((a,b)=>a.total-b.total);
  function fieldOrigin(id){
   const input=byId(id),raw=String(input?.value??'').trim();if(!raw)return'Pendente';
-  if(input?.dataset?.importSource)return'Importado de documento';
+  if(input?.dataset?.userEdited==='1')return'Informado pelo usuário';
+  if(input?.dataset?.importVerified==='1'){
+   if(input.dataset.importConfidence==='low')return'Extraído com baixa confiança';
+   if(input.dataset.importConfidence==='medium')return'Extraído e calculado';
+   return'Importado de documento';
+  }
   const box=input?.closest?.('.field,.mix');
-  if(box?.classList.contains('state-auto'))return'Sugestão automática';
   if(box?.classList.contains('state-derived'))return'Calculado pelo simulador';
+  if(box?.classList.contains('state-auto')||box?.classList.contains('state-suggested'))return'Sugestão automática';
   if(box?.classList.contains('state-complete'))return'Informado ou revisado';
   return'Informado';
  }
