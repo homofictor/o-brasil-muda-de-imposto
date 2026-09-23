@@ -44,10 +44,10 @@ jobs:
               await page.goto(process.env.BASE_URL + '/simulador/guiado/', { waitUntil: 'domcontentloaded', timeout: 45000 });
               const versionLink = page.locator('link[href*="guided.css"]').first();
               deployedVersion = await versionLink.count() ? (await versionLink.getAttribute('href') || '') : '';
-              if (/20260919-ux1/.test(deployedVersion)) break;
+              if (/20260923-factor-r1/.test(deployedVersion)) break;
               await page.waitForTimeout(15000);
             }
-            assert.match(deployedVersion || '', /20260919-ux1/);
+            assert.match(deployedVersion || '', /20260923-factor-r1/);
             await page.waitForSelector('#cnpj', { timeout: 30000 });
             await page.waitForSelector('#importPanel', { timeout: 30000 });
             await page.waitForSelector('#guidedNav', { timeout: 30000 });
@@ -80,6 +80,42 @@ jobs:
             assert.match(company || '', /ORTHOHEAD/i);
             assert.match(activity || '', /4664-8\/00|4664800|odonto|médico|medico/i);
             assert.equal(b2b, '95');
+
+            const factorRState = await page.evaluate(() => {
+              const simple = document.getElementById('simpleStatus');
+              const payroll = document.getElementById('monthlyPayroll');
+              const factor = document.getElementById('factorMode');
+              const annex = document.getElementById('annex');
+
+              simple.value = 'no';
+              calculate();
+              const outside = {
+                payrollDisabled: payroll.disabled,
+                factorDisabled: factor.disabled,
+                annexDisabled: annex.disabled,
+                payrollHint: document.getElementById('factorPayrollHint')?.textContent || ''
+              };
+
+              simple.value = 'yes';
+              calculate();
+              const inside = {
+                payrollDisabled: payroll.disabled,
+                factorDisabled: factor.disabled,
+                annexDisabled: annex.disabled
+              };
+
+              simple.value = 'no';
+              calculate();
+              return { outside, inside };
+            });
+
+            assert.equal(factorRState.outside.payrollDisabled, true);
+            assert.equal(factorRState.outside.factorDisabled, true);
+            assert.equal(factorRState.outside.annexDisabled, true);
+            assert.match(factorRState.outside.payrollHint, /Não aplicável/i);
+            assert.equal(factorRState.inside.payrollDisabled, false);
+            assert.equal(factorRState.inside.factorDisabled, false);
+            assert.equal(factorRState.inside.annexDisabled, false);
 
             const importCheck = await page.evaluate(() => {
               const profit = document.getElementById('realAccountingProfitAnnual');
