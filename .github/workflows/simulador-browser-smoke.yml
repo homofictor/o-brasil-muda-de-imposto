@@ -44,10 +44,10 @@ jobs:
               await page.goto(process.env.BASE_URL + '/simulador/guiado/', { waitUntil: 'domcontentloaded', timeout: 45000 });
               const versionLink = page.locator('link[href*="guided.css"]').first();
               deployedVersion = await versionLink.count() ? (await versionLink.getAttribute('href') || '') : '';
-              if (/20260923-cpp2/.test(deployedVersion)) break;
+              if (/20260923-treatment1/.test(deployedVersion)) break;
               await page.waitForTimeout(15000);
             }
-            assert.match(deployedVersion || '', /20260923-cpp2/);
+            assert.match(deployedVersion || '', /20260923-treatment1/);
             await page.waitForSelector('#cnpj', { timeout: 30000 });
             await page.waitForSelector('#importPanel', { timeout: 30000 });
             await page.waitForSelector('#guidedNav', { timeout: 30000 });
@@ -80,6 +80,18 @@ jobs:
             assert.match(company || '', /ORTHOHEAD/i);
             assert.match(activity || '', /4664-8\/00|4664800|odonto|médico|medico/i);
             assert.equal(b2b, '95');
+
+            const treatmentWarningBefore = await page.evaluate(() => {
+              const btn = document.getElementById('acceptTaxTreatmentSuggestion');
+              return {
+                button: !!btn,
+                accepted: document.getElementById('taxTreatmentAccepted')?.value || ''
+              };
+            });
+            assert.equal(treatmentWarningBefore.button, true);
+            await page.click('#acceptTaxTreatmentSuggestion');
+            const treatmentAccepted = await page.inputValue('#taxTreatmentAccepted');
+            assert.equal(treatmentAccepted, 'yes');
 
             const factorRState = await page.evaluate(() => {
               const simple = document.getElementById('simpleStatus');
@@ -213,6 +225,7 @@ jobs:
             const reviewText = await page.textContent('#guidedReviewPanel');
             assert.match(reviewText || '', /Lucro contábil/i);
             assert.match(reviewText || '', /contribuição patronal/i);
+            assert.doesNotMatch(reviewText || '', /Revisar tratamento das receitas/i);
 
             const relevantConsoleErrors = consoleErrors.filter(x => !/favicon|Failed to load resource.*404/i.test(x));
             if (pageErrors.length || relevantConsoleErrors.length) {
