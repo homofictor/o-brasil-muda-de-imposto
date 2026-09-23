@@ -23,7 +23,7 @@ module.exports = async function handler(req,res){
     'documents_selected','automation_mode_selected',
     'step_2','step_3','step_4',
     'diagnosis_started','diagnosis_generated','report_opened',
-    'lead_form_view','lead_email_prepared','lead_skipped',
+    'lead_form_view','lead_saved','lead_email_prepared','lead_fallback_email','lead_skipped',
     'feedback_email_prepared'
   ]);
   const event=String(body.event||'').slice(0,60);
