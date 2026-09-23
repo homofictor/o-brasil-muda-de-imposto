@@ -44,10 +44,10 @@ jobs:
               await page.goto(process.env.BASE_URL + '/simulador/guiado/', { waitUntil: 'domcontentloaded', timeout: 45000 });
               const versionLink = page.locator('link[href*="guided.css"]').first();
               deployedVersion = await versionLink.count() ? (await versionLink.getAttribute('href') || '') : '';
-              if (/20260923-importrestore17/.test(deployedVersion)) break;
+              if (/20260923-reportprint18/.test(deployedVersion)) break;
               await page.waitForTimeout(15000);
             }
-            assert.match(deployedVersion || '', /20260923-importrestore17/);
+            assert.match(deployedVersion || '', /20260923-reportprint18/);
             await page.waitForSelector('#cnpj', { timeout: 30000 });
             await page.waitForSelector('#importPanel', { timeout: 30000 });
             assert.equal(await page.locator('#importPanel').isVisible(), true);
@@ -239,6 +239,40 @@ jobs:
             assert.match(reviewText || '', /Lucro contábil/i);
             assert.match(reviewText || '', /contribuição patronal/i);
             assert.doesNotMatch(reviewText || '', /Revisar tratamento das receitas/i);
+
+            await page.evaluate(() => {
+              if (typeof setReportView === 'function') setReportView('technical');
+              const modal = document.getElementById('reportModal');
+              if (modal) modal.hidden = false;
+              document.body.classList.add('reportOpen');
+              window.dispatchEvent(new Event('beforeprint'));
+            });
+            await page.emulateMedia({ media: 'print' });
+            const printLayout = await page.evaluate(() => {
+              const cover = document.querySelector('.technicalPrintCover');
+              const compare = document.querySelector('.technicalReport .compareWrap');
+              const timeline = document.querySelector('.technicalReport .timelineWrap');
+              const technical = document.getElementById('technicalReport');
+              const executive = document.getElementById('executiveReport');
+              return {
+                coverVisible: !!cover && getComputedStyle(cover).display !== 'none',
+                technicalVisible: !!technical && getComputedStyle(technical).display !== 'none',
+                executiveHidden: !executive || getComputedStyle(executive).display === 'none',
+                compareFits: !compare || compare.scrollWidth <= compare.clientWidth + 3,
+                timelineFits: !timeline || timeline.scrollWidth <= timeline.clientWidth + 3,
+                title: document.title,
+                literalSlashN: [...document.body.childNodes].some(n => n.nodeType === Node.TEXT_NODE && /\\\\n/.test(n.textContent || ''))
+              };
+            });
+            assert.equal(printLayout.coverVisible, true);
+            assert.equal(printLayout.technicalVisible, true);
+            assert.equal(printLayout.executiveHidden, true);
+            assert.equal(printLayout.compareFits, true);
+            assert.equal(printLayout.timelineFits, true);
+            assert.equal(printLayout.literalSlashN, false);
+            assert.match(printLayout.title, /Relatório técnico/i);
+            await page.emulateMedia({ media: 'screen' });
+            await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
 
             const relevantConsoleErrors = consoleErrors.filter(x => !/favicon|Failed to load resource.*404/i.test(x));
             if (pageErrors.length || relevantConsoleErrors.length) {
