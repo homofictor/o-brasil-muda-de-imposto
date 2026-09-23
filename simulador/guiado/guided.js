@@ -216,8 +216,11 @@
  }
 
  function taxTreatmentConfirmed(){return value('taxTreatmentAccepted')==='yes'}
+ function persistTaxTreatmentConfirmation(valueToSave){
+  try{const saved=JSON.parse(localStorage.getItem('brmi_v3')||'{}');saved.taxTreatmentAccepted=valueToSave;localStorage.setItem('brmi_v3',JSON.stringify(saved))}catch(_){}
+ }
  function confirmTaxTreatment(source='suggestion'){
-  const flag=byId('taxTreatmentAccepted');if(flag)flag.value='yes';
+  const flag=byId('taxTreatmentAccepted');if(flag)flag.value='yes';persistTaxTreatmentConfirmation('yes');
   ['mix30','mix40','mix60','mixZero'].forEach(id=>{if(typeof markFieldComplete==='function')markFieldComplete(id,'CONFIRMADO')});
   if(typeof markFieldDerived==='function')markFieldDerived('mixFull','CALCULADO');
   const hint=byId('mixHint');if(hint)hint.textContent=source==='manual'
@@ -229,7 +232,7 @@
   scheduleRefresh();
  }
  function resetTaxTreatmentConfirmation(){
-  const flag=byId('taxTreatmentAccepted');if(flag)flag.value='';
+  const flag=byId('taxTreatmentAccepted');if(flag)flag.value='';persistTaxTreatmentConfirmation('');
   const btn=byId('acceptTaxTreatmentSuggestion');if(btn){btn.textContent='Usar sugestão do CNAE/atividade';btn.classList.remove('confirmed')}
   const status=byId('taxTreatmentConfirmStatus');if(status)status.textContent='Confirme a sugestão se ela já representa adequadamente suas receitas.';
  }
