@@ -44,10 +44,10 @@ jobs:
               await page.goto(process.env.BASE_URL + '/simulador/guiado/', { waitUntil: 'domcontentloaded', timeout: 45000 });
               const versionLink = page.locator('link[href*="guided.css"]').first();
               deployedVersion = await versionLink.count() ? (await versionLink.getAttribute('href') || '') : '';
-              if (/20260923-reportprint18/.test(deployedVersion)) break;
+              if (/20260923-ownerbrief21/.test(deployedVersion)) break;
               await page.waitForTimeout(15000);
             }
-            assert.match(deployedVersion || '', /20260923-reportprint18/);
+            assert.match(deployedVersion || '', /20260923-ownerbrief21/);
             await page.waitForSelector('#cnpj', { timeout: 30000 });
             await page.waitForSelector('#importPanel', { timeout: 30000 });
             assert.equal(await page.locator('#importPanel').isVisible(), true);
@@ -238,6 +238,23 @@ jobs:
             assert.match(reviewText || '', /contribuição patronal/i);
             assert.doesNotMatch(reviewText || '', /Revisar tratamento das receitas/i);
 
+            await page.waitForSelector('.shareholderBrief');
+            const ownerBrief = await page.evaluate(() => ({
+              currentTax: document.getElementById('ownerCurrentTax')?.textContent || '',
+              bestTotal: document.getElementById('ownerBestTotal')?.textContent || '',
+              pending: document.getElementById('ownerPending')?.textContent || '',
+              why: document.getElementById('ownerWhy')?.textContent || '',
+              simpleText: document.querySelector('#technicalReport')?.textContent || '',
+              badge: document.querySelector('.modelCard.recommended .badge')?.textContent || ''
+            }));
+            assert.match(ownerBrief.currentTax, /PENDENTE/i);
+            assert.doesNotMatch(ownerBrief.bestTotal, /^—$/);
+            assert.match(ownerBrief.pending, /contribuição patronal/i);
+            assert.match(ownerBrief.pending, /carga líquida atual/i);
+            assert.match(ownerBrief.why, /IRPJ e CSLL/i);
+            assert.match(ownerBrief.simpleText, /Simples Nacional não aplicável pelo faturamento informado/i);
+            assert.match(ownerBrief.badge, /MELHOR BASE COMPARÁVEL/i);
+
             await page.evaluate(() => {
               if (typeof setReportView === 'function') setReportView('technical');
               const modal = document.getElementById('reportModal');
@@ -254,6 +271,7 @@ jobs:
               const executive = document.getElementById('executiveReport');
               return {
                 coverVisible: !!cover && getComputedStyle(cover).display !== 'none',
+                ownerBriefVisible: !!document.querySelector('.shareholderBrief') && getComputedStyle(document.querySelector('.shareholderBrief')).display !== 'none',
                 technicalVisible: !!technical && getComputedStyle(technical).display !== 'none',
                 executiveHidden: !executive || getComputedStyle(executive).display === 'none',
                 compareFits: !compare || compare.scrollWidth <= compare.clientWidth + 3,
@@ -263,6 +281,7 @@ jobs:
               };
             });
             assert.equal(printLayout.coverVisible, true);
+            assert.equal(printLayout.ownerBriefVisible, true);
             assert.equal(printLayout.technicalVisible, true);
             assert.equal(printLayout.executiveHidden, true);
             assert.equal(printLayout.compareFits, true);
