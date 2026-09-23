@@ -36,7 +36,12 @@ function markFieldPremise(id,label='PREMISSA'){setFieldState(id,'premise',label)
 function updateFieldCompletion(){
  const applicable=fieldStateIds.filter(id=>{const box=fieldStateContainer(id);return box&&!box.classList.contains('state-na')});
  const total=applicable.length;
- const complete=applicable.filter(id=>fieldStateContainer(id)?.classList.contains('state-complete')).length;
+ const hasBusinessContext=!!(
+  (typeof companyData!=='undefined'&&companyData)||
+  (window.brmiImport?.docs?.length)||
+  fieldStateIds.some(id=>$(id)?.dataset?.fieldConfirmed==='1')
+ );
+ const complete=hasBusinessContext?applicable.filter(id=>fieldStateContainer(id)?.classList.contains('state-complete')).length:0;
  const el=$('fieldCompletionText');if(el)el.textContent=`${complete} de ${total} campos confirmados`;
  const bar=$('fieldCompletionBar');if(bar)bar.style.width=`${total?Math.round((complete/total)*100):0}%`;
 }
@@ -58,7 +63,7 @@ function initFieldStates(){
   if(premiseIds.has(id))setFieldState(id,'premise','PREMISSA');
   else setFieldState(id,'pending',saved?'REVISAR':'REVISAR');
   const el=$(id);if(!el||el.dataset.fieldStateBound)return;el.dataset.fieldStateBound='1';
-  const confirm=e=>{if(e?.isTrusted)markFieldComplete(id)};
+  const confirm=e=>{if(e?.isTrusted){el.dataset.fieldConfirmed='1';markFieldComplete(id)}};
   el.addEventListener('input',confirm);el.addEventListener('change',confirm);
  });
  ['cashReserve','workingCapitalNet','debtAverage'].forEach(id=>{const el=$(id);if(el&&String(el.value).trim()!=='')markFieldDerived(id,'CALCULADO');else markFieldPending(id)});
