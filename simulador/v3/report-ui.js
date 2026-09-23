@@ -16,11 +16,34 @@
   document.querySelectorAll('[data-report-view]').forEach(btn=>{const active=btn.dataset.reportView===view;btn.classList.toggle('active',active);btn.setAttribute('aria-selected',active?'true':'false')});
  }
  window.setReportView=setReportView;
+ let reportTitleBeforePrint='';
+ function syncTechnicalPrintCover(){
+  const company=(el('companyName')?.textContent||el('erpCompanyContext')?.textContent||'Empresa analisada').trim();
+  const cnpj=(el('cnpj')?.value||'—').trim()||'—';
+  const year=String(el('yearRange')?.value||window.selectedYear||'—');
+  const decision=(el('yearDecision')?.textContent||el('recommendationTitle')?.textContent||'—').trim();
+  const reason=(el('yearReason')?.textContent||el('recommendationText')?.textContent||'—').trim();
+  const issued=new Intl.DateTimeFormat('pt-BR',{dateStyle:'long',timeStyle:'short'}).format(new Date());
+  safeText('technicalPrintCompany',company&&company!=='—'?company:'Empresa analisada');
+  safeText('technicalPrintCnpj',cnpj);
+  safeText('technicalPrintYear',year);
+  safeText('technicalPrintDate',issued);
+  safeText('technicalPrintDecision',decision);
+  safeText('technicalPrintReason',reason);
+  const title=el('technicalPrintTitle');if(title)title.textContent=company&&company!=='—'?company:'Análise tributária empresarial';
+ }
  window.addEventListener('beforeprint',()=>{
   const active=document.querySelector('[data-report-panel].active:not([hidden])')||document.querySelector('[data-report-panel]:not([hidden])');
   document.querySelectorAll('[data-report-panel]').forEach(p=>p.classList.toggle('printTarget',p===active));
+  syncTechnicalPrintCover();
+  reportTitleBeforePrint=document.title;
+  const company=(el('technicalPrintCompany')?.textContent||'Empresa analisada').trim();
+  document.title=(active?.dataset?.reportPanel==='technical'?'Relatório técnico':'Resumo executivo')+' | '+company;
  });
- window.addEventListener('afterprint',()=>document.querySelectorAll('[data-report-panel].printTarget').forEach(p=>p.classList.remove('printTarget')));
+ window.addEventListener('afterprint',()=>{
+  document.querySelectorAll('[data-report-panel].printTarget').forEach(p=>p.classList.remove('printTarget'));
+  if(reportTitleBeforePrint)document.title=reportTitleBeforePrint;
+ });
 
  function copyText(from,to){const a=el(from),b=el(to);if(a&&b)b.textContent=a.textContent||'—'}
 
