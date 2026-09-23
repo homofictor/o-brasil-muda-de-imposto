@@ -52,8 +52,7 @@
   const amountHead=tbody.closest('table')?.querySelector('thead th:nth-child(3)');if(amountHead)amountHead.textContent=cppPartial?'Base anual comparável':'Desembolso anual';
   if(!valid.length){tbody.innerHTML='<tr><td colspan="5">Nenhum modelo possui dados suficientes para formar ranking.</td></tr>';return}
   tbody.innerHTML=valid.map((m,i)=>{
-   const rate=r.annualRevenue>0?m.total/r.annualRevenue:0,credit=creditFor(r,m),lead=i===0?(incomplete?'Menor entre os modelos validados':'Recomendado nas premissas atuais'):'';
-   const partial=(m.key==='real'||m.key==='presumed')&&!m.totalComplete;
+   const rate=r.annualRevenue>0?m.total/r.annualRevenue:0,credit=creditFor(r,m),partial=(m.key==='real'||m.key==='presumed')&&!m.totalComplete,lead=i===0?(incomplete?'Menor entre os modelos validados':partial?'Menor base comparável · projeção total incompleta':'Recomendado nas premissas atuais'):'';
    return `<tr class="${i===0?(incomplete?'partialLeader':'winner'):''}"><td><span class="rankPill">${i+1}º</span></td><td><strong>${m.name}</strong>${lead?`<small>${lead}</small>`:''}${partial?'<small>CPP patronal não incluída no total</small>':''}</td><td>${money(m.total)}</td><td>${pct(rate)}</td><td>${money(credit)}</td></tr>`;
   }).join('');
  }
