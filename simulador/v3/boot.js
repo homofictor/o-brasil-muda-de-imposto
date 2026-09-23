@@ -120,6 +120,8 @@ $('monthlyRevenue').addEventListener('input',()=>{if(typeof markFieldComplete===
 $('rbt12').addEventListener('input',()=>{if(typeof markFieldComplete==='function')markFieldComplete('rbt12');syncRevenue('annual',true);dirty()});
 $('revenueSync').addEventListener('change',()=>{if($('revenueSync').checked)syncRevenue(lastRevenueSource,true);dirty()});
 $('financeRateMode')?.addEventListener('change',()=>{if($('financeRateMode').value==='manual'&&$('financeRateSource'))$('financeRateSource').textContent='Premissa manual informada pelo usuário.';dirty()});
+$('simpleStatus')?.addEventListener('change',()=>{calculate();dirty()});
+$('meiStatus')?.addEventListener('change',()=>{calculate();dirty()});
 ['mix30','mix40','mix60','mixZero'].forEach(id=>$(id)?.addEventListener('input',()=>{if(typeof syncMixFull==='function')syncMixFull(true);revenueRateFactor();dirty()}));
 $('printBtn').addEventListener('click',()=>typeof printDiagnosisReport==='function'?printDiagnosisReport():window.print());
 $('clearAllBtn')?.addEventListener('click',clearAllSimulatorData);
