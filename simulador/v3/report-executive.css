@@ -157,3 +157,25 @@
  .technicalReport.printTarget .actionsSection,
  .technicalReport.printTarget .narrativeSection{break-before:auto!important;page-break-before:auto!important}
 }
+
+
+/* Visão executiva dos sócios */
+.shareholderBrief{background:#fff}
+.shareholderKpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.shareholderKpis>div{border:1px solid #dce4ec;border-radius:12px;padding:13px 14px;background:#f9fbfd;min-height:96px}
+.shareholderKpis span,.shareholderKpis small{display:block}.shareholderKpis span{font-size:9px;text-transform:uppercase;letter-spacing:.045em;font-weight:900;color:#728093}.shareholderKpis strong{display:block;margin:7px 0 5px;color:#102640;font-size:17px;line-height:1.18}.shareholderKpis small{font-size:9px;line-height:1.4;color:#667585}
+.shareholderDecisionGrid{display:grid;grid-template-columns:1.08fr .92fr;gap:10px;margin-top:11px}.shareholderDecisionGrid article{border:1px solid #dce4ec;border-radius:12px;padding:14px 15px}.shareholderDecisionGrid h3,.shareholderEvidence h3{margin:0 0 7px;color:#102640;font-size:12px}.shareholderWhy{background:#f3f8fc}.shareholderWhy p{margin:0;color:#405268;font-size:10px;line-height:1.55}.shareholderPending{background:#fffaf0;border-color:#ead6a1!important}.shareholderPending ul{margin:0;padding-left:18px;color:#5f5138;font-size:9.5px;line-height:1.5}.shareholderPending li+li{margin-top:4px}
+.shareholderEvidence{margin-top:11px;padding-top:11px;border-top:1px solid #e1e7ed}.shareholderEvidence>div{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.shareholderEvidence>div>div{border:1px solid #e1e7ed;border-radius:10px;padding:10px 11px;background:#fff}.shareholderEvidence span,.shareholderEvidence small{display:block}.shareholderEvidence span{font-size:8.5px;color:#6f7d8d}.shareholderEvidence strong{display:block;margin:4px 0;color:#102640;font-size:12px}.shareholderEvidence small{font-size:8px;color:#7a8795}
+.shareholderQuestion{display:flex;gap:8px;margin-top:11px;padding:11px 13px;border-left:4px solid #15855e;border-radius:0 9px 9px 0;background:#eef8f3;color:#315a49;font-size:10px;line-height:1.45}.shareholderQuestion strong{color:#174c39;white-space:nowrap}
+@media(max-width:900px){.shareholderKpis{grid-template-columns:1fr 1fr}.shareholderDecisionGrid{grid-template-columns:1fr}.shareholderEvidence>div{grid-template-columns:1fr 1fr}.shareholderQuestion{display:block}.shareholderQuestion strong{display:block;margin-bottom:4px}}
+@media(max-width:520px){.shareholderKpis,.shareholderEvidence>div{grid-template-columns:1fr}}
+@media print{
+ .technicalReport.printTarget .shareholderBrief{break-after:page;page-break-after:always;margin-top:0!important;padding:7mm!important;border:1px solid #d8e2eb!important}
+ .technicalReport.printTarget .shareholderKpis{grid-template-columns:repeat(4,1fr)!important;gap:2.5mm!important}
+ .technicalReport.printTarget .shareholderKpis>div{min-height:0!important;padding:3.2mm!important;border-radius:2.5mm!important;break-inside:avoid!important}
+ .technicalReport.printTarget .shareholderKpis span{font-size:6.4pt!important}.technicalReport.printTarget .shareholderKpis strong{font-size:11.5pt!important;margin:1.5mm 0 1mm!important}.technicalReport.printTarget .shareholderKpis small{font-size:6.7pt!important}
+ .technicalReport.printTarget .shareholderDecisionGrid{grid-template-columns:1.08fr .92fr!important;gap:3mm!important;margin-top:3mm!important}.technicalReport.printTarget .shareholderDecisionGrid article{padding:3.5mm!important;border-radius:2.5mm!important;break-inside:avoid!important}
+ .technicalReport.printTarget .shareholderDecisionGrid h3,.technicalReport.printTarget .shareholderEvidence h3{font-size:8.5pt!important;margin-bottom:1.5mm!important}.technicalReport.printTarget .shareholderWhy p,.technicalReport.printTarget .shareholderPending ul{font-size:7.2pt!important;line-height:1.45!important}
+ .technicalReport.printTarget .shareholderEvidence{margin-top:3mm!important;padding-top:3mm!important}.technicalReport.printTarget .shareholderEvidence>div{grid-template-columns:repeat(3,1fr)!important;gap:2mm!important}.technicalReport.printTarget .shareholderEvidence>div>div{padding:2.5mm!important;break-inside:avoid!important}.technicalReport.printTarget .shareholderEvidence span{font-size:6.2pt!important}.technicalReport.printTarget .shareholderEvidence strong{font-size:8.5pt!important;margin:1mm 0!important}.technicalReport.printTarget .shareholderEvidence small{font-size:6pt!important}
+ .technicalReport.printTarget .shareholderQuestion{margin-top:3mm!important;padding:2.8mm 3mm!important;font-size:7.2pt!important;break-inside:avoid!important}
+}
