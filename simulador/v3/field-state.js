@@ -10,10 +10,12 @@ function fieldStateBadge(container){
 }
 function setFieldState(id,state='complete',label){
  const box=fieldStateContainer(id);if(!box)return;
- box.classList.remove('state-pending','state-complete','state-auto','state-derived');
+ box.classList.remove('state-pending','state-complete','state-auto','state-derived','state-na');
  const badge=fieldStateBadge(box);
  if(state==='pending'){
   box.classList.add('state-pending');if(badge)badge.textContent=label||'REVISAR';
+ }else if(state==='na'){
+  box.classList.add('state-na');if(badge)badge.textContent=label||'N/A';
  }else{
   box.classList.add('state-complete');
   if(state==='auto')box.classList.add('state-auto');
@@ -26,10 +28,12 @@ function markFieldComplete(id,label='OK'){setFieldState(id,'complete',label)}
 function markFieldAuto(id,label='AUTO'){setFieldState(id,'auto',label)}
 function markFieldDerived(id,label='CALCULADO'){setFieldState(id,'derived',label)}
 function markFieldPending(id,label='REVISAR'){setFieldState(id,'pending',label)}
+function markFieldNotApplicable(id,label='N/A'){setFieldState(id,'na',label)}
 
 function updateFieldCompletion(){
- const total=fieldStateIds.filter(id=>fieldStateContainer(id)).length;
- const complete=fieldStateIds.filter(id=>fieldStateContainer(id)?.classList.contains('state-complete')).length;
+ const applicable=fieldStateIds.filter(id=>{const box=fieldStateContainer(id);return box&&!box.classList.contains('state-na')});
+ const total=applicable.length;
+ const complete=applicable.filter(id=>fieldStateContainer(id)?.classList.contains('state-complete')).length;
  const el=$('fieldCompletionText');if(el)el.textContent=`${complete} de ${total} campos confirmados`;
  const bar=$('fieldCompletionBar');if(bar)bar.style.width=`${total?Math.round((complete/total)*100):0}%`;
 }
