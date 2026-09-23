@@ -10,12 +10,14 @@ function fieldStateBadge(container){
 }
 function setFieldState(id,state='complete',label){
  const box=fieldStateContainer(id);if(!box)return;
- box.classList.remove('state-pending','state-complete','state-auto','state-derived','state-na');
+ box.classList.remove('state-pending','state-complete','state-auto','state-derived','state-premise','state-na');
  const badge=fieldStateBadge(box);
  if(state==='pending'){
   box.classList.add('state-pending');if(badge)badge.textContent=label||'REVISAR';
  }else if(state==='na'){
   box.classList.add('state-na');if(badge)badge.textContent=label||'N/A';
+ }else if(state==='premise'){
+  box.classList.add('state-premise');if(badge)badge.textContent=label||'PREMISSA';
  }else{
   box.classList.add('state-complete');
   if(state==='auto')box.classList.add('state-auto');
@@ -29,6 +31,7 @@ function markFieldAuto(id,label='AUTO'){setFieldState(id,'auto',label)}
 function markFieldDerived(id,label='CALCULADO'){setFieldState(id,'derived',label)}
 function markFieldPending(id,label='REVISAR'){setFieldState(id,'pending',label)}
 function markFieldNotApplicable(id,label='N/A'){setFieldState(id,'na',label)}
+function markFieldPremise(id,label='PREMISSA'){setFieldState(id,'premise',label)}
 
 function updateFieldCompletion(){
  const applicable=fieldStateIds.filter(id=>{const box=fieldStateContainer(id);return box&&!box.classList.contains('state-na')});
@@ -40,7 +43,7 @@ function updateFieldCompletion(){
 function insertFieldLegend(){
  const first=$('setupMount')?.querySelector('.panel');if(!first||$('fieldStateLegend'))return;
  const legend=document.createElement('div');legend.id='fieldStateLegend';legend.className='fieldStateLegend';
- legend.innerHTML=`<div class="fieldLegendText"><strong>Preenchimento guiado</strong><span><i class="legendDot pending"></i> amarelo: falta revisar ou confirmar</span><span><i class="legendDot complete"></i> verde: preenchido, calculado ou sugerido</span></div><div class="fieldCompletion"><b id="fieldCompletionText">0 campos confirmados</b><div><i id="fieldCompletionBar"></i></div></div>`;
+ legend.innerHTML=`<div class="fieldLegendText"><strong>Preenchimento guiado</strong><span><i class="legendDot pending"></i> amarelo: falta revisar ou confirmar</span><span><i class="legendDot complete"></i> verde: confirmado, calculado ou sugerido</span><span><i class="legendDot premise"></i> azul: premissa padrão, ainda não confirmada</span></div><div class="fieldCompletion"><b id="fieldCompletionText">0 campos confirmados</b><div><i id="fieldCompletionBar"></i></div></div>`;
  const anchor=first.querySelector('.sectionTitle');anchor?.insertAdjacentElement('afterend',legend);
 }
 function resetAutoFieldStates(){
@@ -49,17 +52,19 @@ function resetAutoFieldStates(){
 function initFieldStates(){
  insertFieldLegend();
  let restored={};try{restored=JSON.parse(localStorage.getItem('brmi_v3')||'{}')}catch(_){}
+ const premiseIds=new Set(['fullCbs','fullIbs','employerRatePct','dreMonths','financeRateMode','splitPct','floatDays','refundDays','capturePct','currentConsumptionMode','priceTransferPct']);
  fieldStateIds.forEach(id=>{
-  if(Object.prototype.hasOwnProperty.call(restored,id)&&String(restored[id]).trim()!=='')setFieldState(id,'complete','SALVO');
-  else setFieldState(id,'pending');
+  const saved=Object.prototype.hasOwnProperty.call(restored,id)&&String(restored[id]).trim()!=='';
+  if(premiseIds.has(id))setFieldState(id,'premise','PREMISSA');
+  else setFieldState(id,'pending',saved?'REVISAR':'REVISAR');
   const el=$(id);if(!el||el.dataset.fieldStateBound)return;el.dataset.fieldStateBound='1';
-  const confirm=()=>markFieldComplete(id);
+  const confirm=e=>{if(e?.isTrusted)markFieldComplete(id)};
   el.addEventListener('input',confirm);el.addEventListener('change',confirm);
  });
- ['cashReserve','workingCapitalNet','debtAverage','mixFull'].forEach(id=>markFieldDerived(id,'CALCULADO'));
- ['fullCbs','fullIbs'].forEach(id=>markFieldAuto(id,'PREMISSA'));
+ ['cashReserve','workingCapitalNet','debtAverage'].forEach(id=>{const el=$(id);if(el&&String(el.value).trim()!=='')markFieldDerived(id,'CALCULADO');else markFieldPending(id)});
+ markFieldPending('mixFull','REVISAR');
  const cnpj=$('cnpj');if(cnpj&&!cnpj.dataset.fieldStateBound){
-  cnpj.dataset.fieldStateBound='1';cnpj.addEventListener('input',()=>{const raw=cnpj.value.replace(/[^A-Z0-9]/gi,'');const box=fieldStateContainer('cnpj');if(box){box.classList.remove('state-complete','state-auto','state-derived');box.classList.add('state-pending');const b=fieldStateBadge(box);if(b)b.textContent=raw.length===14?'BUSCAR':'REVISAR'};resetAutoFieldStates();updateFieldCompletion()});
+  cnpj.dataset.fieldStateBound='1';cnpj.addEventListener('input',()=>{const raw=cnpj.value.replace(/[^A-Z0-9]/gi,'');const box=fieldStateContainer('cnpj');if(box){box.classList.remove('state-complete','state-auto','state-derived','state-premise');box.classList.add('state-pending');const b=fieldStateBadge(box);if(b)b.textContent=raw.length===14?'BUSCAR':'REVISAR'};resetAutoFieldStates();updateFieldCompletion()});
   setFieldState('cnpj','pending','REVISAR');
  }
  updateFieldCompletion();
