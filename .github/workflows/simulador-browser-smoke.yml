@@ -167,22 +167,41 @@ jobs:
               const a = modelForYear(2027);
               set('monthlyCppBase', 100000);
               const b = modelForYear(2027);
+              const ap = a.allModels.find(x => x.key === 'presumed');
+              const ar = a.allModels.find(x => x.key === 'real');
+              const bp = b.allModels.find(x => x.key === 'presumed');
+              const br = b.allModels.find(x => x.key === 'real');
               return {
                 withoutCpp: {
-                  presumed: a.allModels.find(x => x.key === 'presumed').valid,
-                  real: a.allModels.find(x => x.key === 'real').valid
+                  presumed: ap.valid,
+                  real: ar.valid,
+                  presumedTotalComplete: ap.totalComplete,
+                  realTotalComplete: ar.totalComplete,
+                  difference: ap.total - ar.total,
+                  cpp: a.cpp
                 },
                 withCpp: {
-                  presumed: b.allModels.find(x => x.key === 'presumed').valid,
-                  real: b.allModels.find(x => x.key === 'real').valid
+                  presumed: bp.valid,
+                  real: br.valid,
+                  presumedTotalComplete: bp.totalComplete,
+                  realTotalComplete: br.totalComplete,
+                  difference: bp.total - br.total,
+                  cpp: b.cpp
                 }
               };
             });
 
             assert.equal(regimeCheck.withoutCpp.presumed, true);
             assert.equal(regimeCheck.withoutCpp.real, true);
+            assert.equal(regimeCheck.withoutCpp.presumedTotalComplete, false);
+            assert.equal(regimeCheck.withoutCpp.realTotalComplete, false);
+            assert.equal(regimeCheck.withoutCpp.cpp, 0);
             assert.equal(regimeCheck.withCpp.presumed, true);
             assert.equal(regimeCheck.withCpp.real, true);
+            assert.equal(regimeCheck.withCpp.presumedTotalComplete, true);
+            assert.equal(regimeCheck.withCpp.realTotalComplete, true);
+            assert.ok(regimeCheck.withCpp.cpp > 0);
+            assert.equal(regimeCheck.withoutCpp.difference, regimeCheck.withCpp.difference);
 
             await page.click('[data-guided-nav="4"]');
             await page.waitForSelector('#guidedReviewGrid');
