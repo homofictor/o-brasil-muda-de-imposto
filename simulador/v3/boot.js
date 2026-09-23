@@ -125,7 +125,7 @@ $('meiStatus')?.addEventListener('change',()=>{calculate();dirty()});
 ['mix30','mix40','mix60','mixZero'].forEach(id=>$(id)?.addEventListener('input',()=>{if(typeof syncMixFull==='function')syncMixFull(true);revenueRateFactor();dirty()}));
 $('printBtn').addEventListener('click',()=>typeof printDiagnosisReport==='function'?printDiagnosisReport():window.print());
 $('clearAllBtn')?.addEventListener('click',clearAllSimulatorData);
-document.querySelectorAll('input,select').forEach(el=>{
+document.querySelectorAll('#setupMount input,#setupMount select').forEach(el=>{
  if(!['cnpj','yearRange','monthlyRevenue','rbt12','revenueSync'].includes(el.id))el.addEventListener('input',dirty);
  if(!['yearRange','monthlyRevenue','rbt12','revenueSync'].includes(el.id))el.addEventListener('change',dirty)
 });
