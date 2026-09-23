@@ -266,6 +266,15 @@ function analyseImportDoc(file,parsed){
  const investments=firstLatestLineValue(bpText,[['aplicacoes financeiras de liquidez imediata','aplicacoes financeiras imediatas'],['aplicacoes de liquidez imediata','investimentos de liquidez imediata'],['aplicacoes financeiras','titulos e valores mobiliarios']],['caixa e equivalentes','longo prazo']);
  const currentAssetsDirect=latestLineValues(bpText,['ativo circulante'],['total do ativo','nao circulante']),currentAssetsCtx=currentAssetsDirect.latest==null?sectionLineValue(bpText,['ativo'],['circulante'],['nao circulante']):currentAssetsDirect,currentAssets=currentAssetsCtx.latest;
  const currentLiabilitiesDirect=latestLineValues(bpText,['passivo circulante'],['nao circulante']),currentLiabilitiesCtx=currentLiabilitiesDirect.latest==null?sectionLineValue(bpText,['passivo'],['circulante'],['nao circulante']):currentLiabilitiesDirect,currentLiabilities=currentLiabilitiesCtx.latest;
+ const totalAssets=firstLatestLineValue(bpText,[['ativo total'],['total do ativo'],['ativo']],['circulante','permanente','imobilizado']);
+ const equity=firstLatestLineValue(bpText,[['patrimonio liquido']]);
+ const fixedAssets=firstLatestLineValue(bpText,[['imobilizado']]);
+ const taxesRecoverable=firstLatestLineValue(bpText,[['impostos diversos a compensar','tributos a recuperar','impostos a recuperar']]);
+ const taxesPayable=firstLatestLineValue(bpText,[['imposto a pagar','impostos a pagar','tributos a recolher','impostos a recolher']]);
+ const directCosts=firstLatestLineValue(dreText,[['custos diretos']]);
+ const indirectCosts=firstLatestLineValue(dreText,[['custos indiretos da producao','custos indiretos']]);
+ const adminExpenses=firstLatestLineValue(dreText,[['despesas gerais da administracao','despesas administrativas']]);
+ const taxExpenses=firstLatestLineValue(dreText,[['despesas tributarias']]);
  const pretaxProfit=firstLatestLineValue(dreText,[['lucro liquido antes provisao irpj e csll','lucro liquido antes da provisao irpj e csll','lucro antes do irpj e csll','lucro antes do irpj','lucro antes do imposto de renda','resultado antes do irpj','resultado antes dos tributos sobre o lucro','resultado antes dos impostos sobre o lucro'],['lucro antes dos tributos','resultado antes dos tributos']]);
  const netProfit=firstLatestLineValue(dreText,[['lucro liquido do exercicio','resultado liquido do exercicio','resultado do exercicio','resultado exercicio'],['lucro liquido','resultado liquido']],['antes']);
  const irpjExpense=Math.abs(firstLatestLineValue(dreText,[['provisao p imposto de renda','provisao para imposto de renda','imposto de renda corrente','irpj corrente','despesa de irpj'],['imposto de renda']],['antes'])||0);
@@ -312,6 +321,16 @@ function analyseImportDoc(file,parsed){
   if(ts?.closing>0)c.push(candidate('inventory','Estoques',ts.closing,file.name,conf(ts.method==='account-code'?'high':'medium'),reason,fmtMoney(ts.closing)));
   if(tf?.closing>0)c.push(candidate('suppliersPayable','Fornecedores',tf.closing,file.name,conf(tf.method==='account-code'?'high':'medium'),reason,fmtMoney(tf.closing)));
  }
+ if(totalAssets!=null&&balanceDoc)c.push(candidate('totalAssets','Ativo total',Math.abs(totalAssets),file.name,conf('high',true),'Total do ativo localizado no balanço.',fmtMoney(Math.abs(totalAssets))));
+ if(equity!=null&&balanceDoc)c.push(candidate('equity','Patrimônio líquido',Math.abs(equity),file.name,conf('high',true),'Patrimônio líquido localizado no balanço.',fmtMoney(Math.abs(equity))));
+ if(fixedAssets!=null&&balanceDoc)c.push(candidate('fixedAssets','Imobilizado',Math.abs(fixedAssets),file.name,conf('high',true),'Saldo do imobilizado localizado no balanço.',fmtMoney(Math.abs(fixedAssets))));
+ if(taxesRecoverable!=null&&balanceDoc)c.push(candidate('taxesRecoverable','Tributos a recuperar/compensar',Math.abs(taxesRecoverable),file.name,conf('high',true),'Créditos tributários apresentados no ativo.',fmtMoney(Math.abs(taxesRecoverable))));
+ if(taxesPayable!=null&&balanceDoc)c.push(candidate('taxesPayable','Tributos a pagar/recolher',Math.abs(taxesPayable),file.name,conf('high',true),'Obrigações tributárias apresentadas no passivo.',fmtMoney(Math.abs(taxesPayable))));
+ if(directCosts!=null&&dreDoc)c.push(candidate('directCosts','Custos diretos',Math.abs(directCosts),file.name,conf('high'),'Custos diretos identificados na DRE.',fmtMoney(Math.abs(directCosts))));
+ if(indirectCosts!=null&&dreDoc)c.push(candidate('indirectCosts','Custos indiretos',Math.abs(indirectCosts),file.name,conf('high'),'Custos indiretos identificados na DRE.',fmtMoney(Math.abs(indirectCosts))));
+ if(adminExpenses!=null&&dreDoc)c.push(candidate('adminExpenses','Despesas administrativas',Math.abs(adminExpenses),file.name,conf('high'),'Despesas administrativas identificadas na DRE.',fmtMoney(Math.abs(adminExpenses))));
+ if(taxExpenses!=null&&dreDoc)c.push(candidate('taxExpenses','Despesas tributárias',Math.abs(taxExpenses),file.name,conf('high'),'Despesas tributárias identificadas na DRE. Não são tratadas automaticamente como tributos sobre consumo.',fmtMoney(Math.abs(taxExpenses))));
+ if(netProfit!=null&&dreDoc)c.push(candidate('netProfit','Resultado do exercício',netProfit,file.name,conf('high'),'Resultado do exercício localizado na DRE.',fmtMoney(netProfit)));
  if(importedCnpj)c.push(candidate('cnpj','CNPJ da empresa',importedCnpj,file.name,conf('high'),'CNPJ validado e identificado no cabeçalho da demonstração contábil.',formatImportedCnpj(importedCnpj)));
  if(revenueForRbt12>0)c.push(candidate('rbt12','Faturamento em 12 meses (RBT12)',Math.abs(revenueForRbt12),file.name,conf(revenueGross!=null?'high':'medium'),revenueGross!=null?'Receita bruta/faturamento localizado no documento.':'Total de vendas localizado no relatório comercial.',fmtMoney(Math.abs(revenueForRbt12))));
  if(cash!=null&&balanceDoc)c.push(candidate('cashAndEquivalents','Caixa e bancos',Math.abs(cash),file.name,conf('high',true),cashComponents!=null?'Caixa e bancos conta movimento somados sem duplicar aplicações financeiras.':'Total de caixa e equivalentes usado porque o balanço não detalhou caixa e bancos separadamente.',fmtMoney(Math.abs(cash))));
