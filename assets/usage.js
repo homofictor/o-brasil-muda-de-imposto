@@ -104,7 +104,7 @@
   }
   if(isSim)watchLookup();
 
-  document.addEventListener('submit',e=>{
+  document.addEventListener('submit',async e=>{
     if(e.target?.id==='feedbackForm'){
       send('feedback_email_prepared',{page:path});
     }
@@ -112,24 +112,55 @@
     e.preventDefault();
     const form=e.target;
     if(!form.reportValidity())return;
+
     const val=id=>(document.getElementById(id)?.value||'').trim();
     const profile=val('leadProfile')||'Não informado';
-    send('lead_email_prepared',{page:path,profile});
+    const payload={
+      name:val('leadName'),
+      email:val('leadEmail'),
+      whatsapp:val('leadWhatsapp'),
+      company:val('leadCompany'),
+      profile,
+      consent:Boolean(document.getElementById('leadConsent')?.checked),
+      source:location.pathname
+    };
+    const status=document.getElementById('leadStatus');
+    const submit=form.querySelector('button[type="submit"]');
+    if(submit){submit.disabled=true;submit.textContent='Enviando...'}
+    if(status){status.hidden=false;status.textContent='Registrando seu contato...'}
+
+    try{
+      const r=await fetch('/api/lead',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(payload)
+      });
+      let data={};try{data=await r.json()}catch(_){}
+      if(r.ok&&data?.ok){
+        send('lead_saved',{page:path,profile});
+        if(status)status.textContent='Contato recebido. Obrigado. Você continuará no seu diagnóstico.';
+        if(submit){submit.textContent='Contato enviado';submit.disabled=true}
+        form.querySelectorAll('input,select').forEach(el=>{el.disabled=true});
+        return;
+      }
+      if(r.status!==503)throw new Error(data?.error||'Falha ao registrar o contato.');
+    }catch(err){
+      console.warn('Falha no cadastro automático; usando e-mail como contingência.',err);
+    }
+
+    send('lead_fallback_email',{page:path,profile});
     const lines=[
       'CONTATO DO SIMULADOR - O BRASIL MUDA DE IMPOSTO','',
-      'Nome: '+(val('leadName')||'Não informado'),
-      'E-mail: '+val('leadEmail'),
-      'WhatsApp: '+(val('leadWhatsapp')||'Não informado'),
-      'Empresa: '+(val('leadCompany')||'Não informada'),
+      'Nome: '+(payload.name||'Não informado'),
+      'E-mail: '+payload.email,
+      'WhatsApp: '+(payload.whatsapp||'Não informado'),
+      'Empresa: '+(payload.company||'Não informada'),
       'Perfil: '+profile,'',
       'Autorização: Quero receber atualizações do livro, do site, do simulador e conteúdos relacionados à Reforma Tributária.',
       'Origem: '+location.href
     ];
-    const status=document.getElementById('leadStatus');
-    if(status){
-      status.hidden=false;
-      status.textContent='Seu aplicativo de e-mail será aberto. Confirme o envio para concluir o cadastro.';
-    }
+    if(status)status.textContent='A integração automática ainda está sendo concluída. Confirme o envio no seu aplicativo de e-mail.';
+    if(submit){submit.disabled=false;submit.textContent='Enviar meu contato'}
     const subject='Lead Simulador: '+profile;
     location.href='mailto:wrubim@hotmail.com?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(lines.join('\n'));
   },true);
