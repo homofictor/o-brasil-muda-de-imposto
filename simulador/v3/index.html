@@ -7,14 +7,14 @@
 <title>Simulador V3.2 da Reforma Tributária | O Brasil muda de imposto</title>
 <meta name="description" content="Simulador empresarial da Reforma Tributária com análise dinâmica dos regimes aplicáveis, transição 2027-2033, créditos, split payment, capital de giro e custo financeiro.">
 <meta name="robots" content="noindex,nofollow">
-<link rel="stylesheet" href="/simulador/v3/base.css?v=20260919-ux1">
-<link rel="stylesheet" href="/simulador/v3/results.css?v=20260919-ux1">
-<link rel="stylesheet" href="/simulador/v3/report-executive.css?v=20260919-ux1">
-<link rel="stylesheet" href="/simulador/v3/responsive.css?v=20260919-ux1">
-<link rel="stylesheet" href="/simulador/v3/enhanced-mobile.css?v=20260919-ux1">
-<link rel="stylesheet" href="/simulador/v3/diagnosis.css?v=20260919-ux1">
-<link rel="stylesheet" href="/simulador/v3/field-state.css?v=20260919-ux1">
-<link rel="stylesheet" href="/simulador/v3/economic-impact.css?v=20260919-ux1">
+<link rel="stylesheet" href="/simulador/v3/base.css?v=20260922-metrics1">
+<link rel="stylesheet" href="/simulador/v3/results.css?v=20260922-metrics1">
+<link rel="stylesheet" href="/simulador/v3/report-executive.css?v=20260922-metrics1">
+<link rel="stylesheet" href="/simulador/v3/responsive.css?v=20260922-metrics1">
+<link rel="stylesheet" href="/simulador/v3/enhanced-mobile.css?v=20260922-metrics1">
+<link rel="stylesheet" href="/simulador/v3/diagnosis.css?v=20260922-metrics1">
+<link rel="stylesheet" href="/simulador/v3/field-state.css?v=20260922-metrics1">
+<link rel="stylesheet" href="/simulador/v3/economic-impact.css?v=20260922-metrics1">
 <style>
 .hfSignature{display:flex;align-items:center;gap:7px;padding:5px 8px;border:1px solid rgba(255,255,255,.24);border-radius:9px;background:rgba(255,255,255,.95);text-decoration:none;white-space:nowrap;box-shadow:0 1px 6px rgba(0,0,0,.08)}
 .hfMonogram{font:800 15px/1 Georgia,serif;letter-spacing:-1px;color:#7d1e24;border-right:1px solid #d7dce2;padding-right:7px}
@@ -32,6 +32,7 @@
 <div id="reportModal" class="reportModal" hidden role="dialog" aria-modal="true" aria-labelledby="recommendationTitle"><div class="reportShell"><div class="reportToolbar"><div><strong>Relatório do diagnóstico</strong><span>Simulador Empresarial da Reforma Tributária · V3.2</span></div><div class="reportToolbarActions"><button id="reportPrintBtn" type="button">Imprimir resumo</button><button id="reportCloseBtn" type="button">Fechar</button></div></div><div id="resultsMount" hidden></div></div></div>
 <a class="feedbackFab" href="/feedback.html?origem=simulador" target="_blank" rel="noopener">Dar feedback</a><footer><div><strong>O Brasil muda de imposto</strong><span>Wagner Rubim Rangel · Homo Fictor Edições Independentes</span></div><p>Ferramenta educativa. Não substitui planejamento tributário, parecer contábil ou jurídico. <a href="/feedback.html?origem=simulador" target="_blank" rel="noopener">Envie sua crítica ou sugestão.</a></p></footer>
 <script>
-(async()=>{const [a,b]=await Promise.all([fetch('/simulador/v3/partials/setup.html?v=20260919-ux1').then(r=>r.text()),fetch('/simulador/v3/partials/results.html?v=20260919-ux1').then(r=>r.text())]);document.getElementById('setupMount').innerHTML=a;document.getElementById('resultsMount').innerHTML=b;for(const name of ['data.js','money-format.js','field-state.js','cnpj.js','models.js','risk-cash.js','economic-impact.js','render.js','enhanced-results.js','diagnosis.js','audit-core.js','audit-render.js','boot.js','report-ui.js'])await new Promise((ok,fail)=>{const s=document.createElement('script');s.src='/simulador/v3/'+name+'?v=20260919-ux1';s.onload=ok;s.onerror=fail;document.body.appendChild(s)})})().catch(err=>{console.error(err);document.getElementById('setupMount').innerHTML='<section class="panel"><h2>Não foi possível carregar o simulador.</h2><p>Atualize a página e tente novamente.</p></section>'});
+(async()=>{const [a,b]=await Promise.all([fetch('/simulador/v3/partials/setup.html?v=20260922-metrics1').then(r=>r.text()),fetch('/simulador/v3/partials/results.html?v=20260922-metrics1').then(r=>r.text())]);document.getElementById('setupMount').innerHTML=a;document.getElementById('resultsMount').innerHTML=b;for(const name of ['data.js','money-format.js','field-state.js','cnpj.js','models.js','risk-cash.js','economic-impact.js','render.js','enhanced-results.js','diagnosis.js','audit-core.js','audit-render.js','boot.js','report-ui.js'])await new Promise((ok,fail)=>{const s=document.createElement('script');s.src='/simulador/v3/'+name+'?v=20260922-metrics1';s.onload=ok;s.onerror=fail;document.body.appendChild(s)})})().catch(err=>{console.error(err);document.getElementById('setupMount').innerHTML='<section class="panel"><h2>Não foi possível carregar o simulador.</h2><p>Atualize a página e tente novamente.</p></section>'});
 </script>
+<script defer src="/assets/usage.js?v=20260922-metrics1"></script>
 </body></html>
