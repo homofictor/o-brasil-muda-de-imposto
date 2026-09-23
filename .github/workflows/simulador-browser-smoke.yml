@@ -203,10 +203,15 @@ jobs:
             assert.ok(regimeCheck.withCpp.cpp > 0);
             assert.equal(regimeCheck.withoutCpp.difference, regimeCheck.withCpp.difference);
 
+            await page.evaluate(() => {
+              document.getElementById('monthlyCppBase').value = '';
+              calculate();
+            });
             await page.click('[data-guided-nav="4"]');
             await page.waitForSelector('#guidedReviewGrid');
             const reviewText = await page.textContent('#guidedReviewPanel');
             assert.match(reviewText || '', /Lucro contábil/i);
+            assert.match(reviewText || '', /contribuição patronal/i);
 
             const relevantConsoleErrors = consoleErrors.filter(x => !/favicon|Failed to load resource.*404/i.test(x));
             if (pageErrors.length || relevantConsoleErrors.length) {
