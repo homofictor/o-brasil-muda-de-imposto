@@ -274,12 +274,13 @@ function tabularMetrics(rows){
  const out={};if(totalNum>0)out.b2bPct=100*b2bNum/totalNum;if(purchaseTotal>0)out.purchaseTotal=purchaseTotal;if(supTotal>0&&regimeIdx>=0)out.regularSuppliersPct=100*regular/supTotal;return out
 }
 function accountingIntegrity(text){
- const asset=latestLineValue(text,['total do ativo','ativo total'],['circulante']);
- const liability=latestLineValue(text,['total do passivo','passivo total'],['circulante','nao circulante','patrimonio']);
- const equity=latestLineValue(text,['patrimonio liquido','total do patrimonio liquido']);
- if(asset==null||liability==null||equity==null)return{known:false,ok:null};
- const a=Math.abs(asset),p=Math.abs(liability),e=Math.abs(equity),diff=Math.abs(a-(p+e)),tol=Math.max(2,a*.005);
- return{known:true,ok:diff<=tol,asset:a,liability:p,equity:e,diff};
+ const asset=firstLatestLineValue(text,[['total do ativo'],['ativo total']]);
+ const combined=firstLatestLineValue(text,[['passivo e patrimonio liquido'],['total do passivo e patrimonio liquido']]);
+ if(asset!=null&&combined!=null){const a=Math.abs(asset),pc=Math.abs(combined),diff=Math.abs(a-pc),tol=Math.max(2,a*.005);return{known:true,ok:diff<=tol,asset:a,combined:pc,diff,method:'combined'}}
+ const current=firstLatestLineValue(text,[['passivo circulante']]),noncurrent=firstLatestLineValue(text,[['passivo nao circulante'],['exigivel a longo prazo']]),equity=firstLatestLineValue(text,[['patrimonio liquido'],['total do patrimonio liquido']]);
+ if(asset==null||equity==null||(current==null&&noncurrent==null))return{known:false,ok:null};
+ const a=Math.abs(asset),p=Math.abs(current||0)+Math.abs(noncurrent||0),e=Math.abs(equity),diff=Math.abs(a-(p+e)),tol=Math.max(2,a*.005);
+ return{known:true,ok:diff<=tol,asset:a,liability:p,equity:e,diff,method:'components'};
 }
 function extractionConfidence(base,parsed,integrity,relevant){
  let conf=base;
