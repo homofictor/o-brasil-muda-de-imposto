@@ -334,3 +334,32 @@
  .guidedOperationSummaryGrid{grid-template-columns:1fr 1fr}
  .guidedOperationSummaryHead{flex-direction:column;gap:5px}
 }
+
+
+/* Lead capture */
+.leadCapture{border:1px solid #cddce8;background:linear-gradient(145deg,#f8fbfd,#fff)}
+.leadCaptureHead span{display:block;color:#8b6414;font-size:9px;font-weight:900;letter-spacing:.08em}
+.leadCaptureHead h2{margin:5px 0 5px;color:#102640;font-size:21px}
+.leadCaptureHead p{margin:0;color:#667085;font-size:11px;max-width:780px}
+.leadForm{margin-top:15px}
+.leadGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.leadGrid label{display:flex;flex-direction:column;gap:5px}
+.leadGrid label>span{font-size:9px;font-weight:850;color:#33465b}
+.leadGrid input,.leadGrid select{width:100%;min-height:40px;padding:9px 10px;border:1px solid #ccd7e1;border-radius:8px;background:#fff;color:#172033;font:inherit;font-size:11px}
+.leadGrid input:focus,.leadGrid select:focus{outline:3px solid rgba(35,89,142,.12);border-color:#23598e}
+.leadProfile{grid-column:1/-1}
+.leadConsent{display:flex;align-items:flex-start;gap:9px;margin-top:12px;padding:11px 12px;border-radius:9px;background:#f5f7fa;color:#52616f;font-size:9px;line-height:1.45}
+.leadConsent input{flex:0 0 auto;width:16px;height:16px;margin-top:1px}
+.leadConsent a{color:#23598e}
+.leadActions{display:flex;gap:8px;margin-top:12px}
+.leadActions button{padding:10px 14px;border-radius:8px;font-weight:850;font-size:10px;cursor:pointer}
+.leadPrimary{border:1px solid #102640;background:#102640;color:#fff}
+.leadActions #leadSkipBtn{border:1px solid #ccd7e1;background:#fff;color:#52616f}
+.leadStatus{margin-top:10px;padding:9px 11px;border-radius:8px;background:#edf8f3;color:#126046;font-size:9px}
+.leadNote{display:block;margin-top:8px;color:#7a8794;font-size:8px}
+@media(max-width:650px){
+ .leadGrid{grid-template-columns:1fr}
+ .leadProfile{grid-column:auto}
+ .leadActions{flex-direction:column}
+ .leadActions button{width:100%}
+}
