@@ -179,3 +179,38 @@
  .technicalReport.printTarget .shareholderEvidence{margin-top:3mm!important;padding-top:3mm!important}.technicalReport.printTarget .shareholderEvidence>div{grid-template-columns:repeat(3,1fr)!important;gap:2mm!important}.technicalReport.printTarget .shareholderEvidence>div>div{padding:2.5mm!important;break-inside:avoid!important}.technicalReport.printTarget .shareholderEvidence span{font-size:6.2pt!important}.technicalReport.printTarget .shareholderEvidence strong{font-size:8.5pt!important;margin:1mm 0!important}.technicalReport.printTarget .shareholderEvidence small{font-size:6pt!important}
  .technicalReport.printTarget .shareholderQuestion{margin-top:3mm!important;padding:2.8mm 3mm!important;font-size:7.2pt!important;break-inside:avoid!important}
 }
+
+
+/* Governança de confiança e paginação técnica */
+.economicConfidenceNote{display:flex;gap:10px;align-items:flex-start;margin:0 0 12px;padding:11px 13px;border-radius:10px;border:1px solid #d7e1ea;background:#f6f9fc;color:#405268;font-size:10px;line-height:1.45}
+.economicConfidenceNote[hidden]{display:none!important}
+.economicConfidenceNote strong{flex:0 0 auto;color:#102640;font-size:9px;text-transform:uppercase;letter-spacing:.05em}
+.economicConfidenceNote.low{background:#fff7e8;border-color:#e9c77d;color:#6b5529}
+.economicConfidenceNote.low strong{color:#8a5a00}
+.economicConfidenceNote.medium{background:#f3f7fb;border-color:#bfd0e1;color:#456078}
+.economicConfidenceNote.medium strong{color:#315a7d}
+.timelineTitle{margin:12px 0 7px;color:#102640;font-size:12px}
+.sourcesNote{margin:9px 0 0;color:#6a7683;font-size:9px;line-height:1.45}
+
+@media print{
+ .technicalReport.printTarget .economicConfidenceNote{display:flex!important;margin:0 0 3mm!important;padding:2.8mm 3mm!important;border-radius:2mm!important;font-size:7pt!important;break-inside:avoid!important}
+ .technicalReport.printTarget .economicConfidenceNote[hidden]{display:none!important}
+ .technicalReport.printTarget .economicConfidenceNote strong{font-size:6.5pt!important}
+ .technicalReport.printTarget .timelineTitle{margin:2.5mm 0 1.5mm!important;font-size:8pt!important;break-after:avoid!important;page-break-after:avoid!important}
+ .technicalReport.printTarget .transitionSection{padding:4mm 4.5mm!important}
+ .technicalReport.printTarget .transitionSection .sectionTitle.compact{margin-bottom:2.5mm!important;padding-bottom:2.5mm!important}
+ .technicalReport.printTarget .transitionSection .explainBox{margin:2mm 0!important;padding:2.2mm 2.8mm!important}
+ .technicalReport.printTarget .transitionSection .compareTable th,
+ .technicalReport.printTarget .transitionSection .compareTable td{padding:1.35mm 1.4mm!important;font-size:6.6pt!important;line-height:1.2!important}
+ .technicalReport.printTarget .transitionSection .compareTable th{font-size:5.9pt!important}
+ .technicalReport.printTarget .transitionSection .vatSummary{gap:1.7mm!important;margin-top:2mm!important}
+ .technicalReport.printTarget .transitionSection .vatSummary>div{padding:2.1mm!important}
+ .technicalReport.printTarget .transitionSection .vatSummary span{font-size:5.9pt!important}
+ .technicalReport.printTarget .transitionSection .vatSummary strong{font-size:10.2pt!important}
+ .technicalReport.printTarget .transitionSection .vatSummary small{font-size:5.9pt!important;line-height:1.3!important}
+ .technicalReport.printTarget .transitionSection .timelineWrap{break-inside:avoid!important;page-break-inside:avoid!important;margin-top:0!important}
+ .technicalReport.printTarget .transitionSection .timeline th,
+ .technicalReport.printTarget .transitionSection .timeline td{padding:.95mm .75mm!important;font-size:5.35pt!important;line-height:1.15!important}
+ .technicalReport.printTarget .transitionSection .timeline th{font-size:5pt!important}
+ .technicalReport.printTarget .sourcesNote{font-size:6.5pt!important;margin-top:2mm!important}
+}
