@@ -7,7 +7,7 @@ function diagnosisDelay(ms){return new Promise(resolve=>setTimeout(resolve,ms))}
 function openDiagnosisReport(){
  const modal=$('reportModal'),mount=$('resultsMount');
  if(!modal||!mount||mount.hidden)return;
- modal.hidden=false;document.body.classList.add('reportOpen');modal.scrollTop=0;
+ modal.hidden=false;document.body.classList.add('reportOpen');modal.scrollTop=0;document.dispatchEvent(new CustomEvent('brmi:report-opened'));
  setTimeout(()=>$('reportCloseBtn')?.focus(),50);
 }
 function closeDiagnosisReport(){
@@ -119,7 +119,7 @@ async function generateDiagnosis(){
   renderDiagnosisSteps(-1,diagnosisStages().length-1);
   if($('diagnosisProgressBar'))$('diagnosisProgressBar').style.width='100%';if($('diagnosisProgressText'))$('diagnosisProgressText').textContent='100%';
   calculate();await diagnosisDelay(300);
-  window.diagnosisGenerated=true;window.diagnosisDirty=false;
+  window.diagnosisGenerated=true;window.diagnosisDirty=false;document.dispatchEvent(new CustomEvent('brmi:diagnosis-generated'));
   if(work)work.hidden=true;if(mount)mount.hidden=false;if(result){result.hidden=false;result.classList.remove('diagnosisReveal');void result.offsetWidth;result.classList.add('diagnosisReveal')};if(print)print.hidden=false;
   if(done){const now=new Date();done.hidden=false;done.className='diagnosisDone ready';done.innerHTML=`<span>Diagnóstico gerado às ${now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}. O relatório foi aberto em uma janela própria para leitura e impressão.</span><button id="reopenReportBtn" type="button">Abrir relatório novamente</button>`;$('reopenReportBtn')?.addEventListener('click',openDiagnosisReport)}
   if(btn){btn.disabled=false;btn.classList.remove('working');btn.querySelector('span').textContent='Atualizar diagnóstico';btn.querySelector('small').textContent='Reprocessar com as premissas atuais';}
