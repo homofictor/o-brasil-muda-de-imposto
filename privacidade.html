@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#102640">
+<meta name="robots" content="index,follow">
+<title>Privacidade | O Brasil muda de imposto</title>
+<meta name="description" content="Como o site O Brasil muda de imposto trata métricas de uso, documentos do simulador e dados de contato.">
+<link rel="canonical" href="https://www.obrasilmudadeimposto.com.br/privacidade.html">
+<style>
+:root{--navy:#102640;--ink:#17212b;--muted:#5b6670;--line:#dfe5ea;--bg:#f5f7f9;--gold:#d9a441}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif}
+.top{background:var(--navy);color:#fff;padding:16px 22px}
+.top div{max-width:900px;margin:auto;display:flex;justify-content:space-between;gap:18px}
+.top a{color:#fff;text-decoration:none}
+main{max-width:900px;margin:30px auto;padding:32px;background:#fff;border:1px solid var(--line);border-radius:16px}
+h1,h2{color:var(--navy)}h1{font-size:36px;line-height:1.1;margin:0 0 10px}h2{font-size:21px;margin-top:30px}
+.lead{color:var(--muted);font-size:17px}.box{padding:14px 16px;border-left:4px solid var(--gold);background:#f8fafc;border-radius:0 9px 9px 0}
+.small{color:var(--muted);font-size:13px}a{color:#1e5b8f}
+@media(max-width:700px){main{margin:0;padding:24px;border:0;border-radius:0}h1{font-size:30px}}
+</style>
+</head>
+<body>
+<header class="top"><div><strong>O BRASIL MUDA DE IMPOSTO</strong><a href="/">Voltar ao site</a></div></header>
+<main>
+<h1>Privacidade e uso de dados</h1>
+<p class="lead">Esta página explica, em linguagem direta, quais informações são utilizadas para operar e melhorar o site e o Simulador Empresarial da Reforma Tributária.</p>
+
+<h2>Métricas de uso</h2>
+<p>O site registra eventos operacionais para sabermos, por exemplo, quantas vezes o simulador foi aberto, se a consulta de CNPJ funcionou, se documentos foram selecionados, quais etapas foram alcançadas e quantos diagnósticos foram gerados.</p>
+<div class="box"><strong>Esses eventos não recebem nome, e-mail, telefone, CPF, CNPJ nem conteúdo dos documentos.</strong> As métricas servem para medir uso, identificar falhas e melhorar o fluxo da ferramenta.</div>
+
+<h2>CNPJ e consulta cadastral</h2>
+<p>Quando o usuário solicita a consulta de um CNPJ, o número é usado para consultar a base pública integrada ao simulador. O CNPJ não é incluído nos eventos de métricas de uso descritos acima.</p>
+
+<h2>Documentos enviados ao simulador</h2>
+<p>Na versão atual, PDF com texto pesquisável, CSV, XLS e XLSX são lidos no próprio navegador. O conteúdo desses arquivos não é enviado pelo módulo de métricas e não é encaminhado a uma API de inteligência artificial para interpretação documental.</p>
+
+<h2>Dados salvos no navegador</h2>
+<p>O simulador pode manter algumas premissas no armazenamento local do navegador para permitir continuidade da análise. O comando <strong>Limpar</strong> ou <strong>Refazer simulação</strong> permite iniciar um novo caso.</p>
+
+<h2>Contato opcional</h2>
+<p>Ao final do diagnóstico, o usuário pode informar nome, e-mail, WhatsApp, empresa e perfil profissional para receber atualizações. Na implementação atual, esses dados permanecem no navegador até que o usuário clique em enviar. O aplicativo de e-mail é então aberto com uma mensagem preparada, e o envio só ocorre após a confirmação do próprio usuário.</p>
+<p>O fornecimento do contato é opcional e não condiciona o acesso ao diagnóstico.</p>
+
+<h2>Finalidade e solicitações</h2>
+<p>Os dados enviados voluntariamente por e-mail são utilizados para responder ao contato e, quando autorizado, enviar informações relacionadas ao livro, ao site, ao simulador e à Reforma Tributária. Solicitações de correção, interrupção de comunicações ou exclusão de dados de contato podem ser enviadas para <a href="mailto:wrubim@hotmail.com">wrubim@hotmail.com</a>.</p>
+<p class="small">Última atualização: setembro de 2026.</p>
+</main>
+<script defer src="/assets/usage.js?v=20260922-metrics1"></script>
+</body>
+</html>
