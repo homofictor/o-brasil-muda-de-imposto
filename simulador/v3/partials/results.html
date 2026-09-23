@@ -74,7 +74,7 @@
         <article class="economicMetric"><span>Variação tributária anual</span><strong id="execTaxDelta">—</strong><small>Diferença que precisa ser absorvida ou transferida ao preço.</small></article>
       </div>
       <article class="economicImpactCard" id="economicImpactCard" data-tone="pending">
-        <div class="economicStatus"><div><span>Leitura econômica</span><strong id="economicImpactStatus">Comparação pendente</strong></div><div><span>Efeito anual no resultado</span><strong id="execResultEffect">—</strong></div></div>
+        <div id="execEconomicConfidenceNote" class="economicConfidenceNote" hidden></div><div class="economicStatus"><div><span>Leitura econômica</span><strong id="economicImpactStatus">Comparação pendente</strong></div><div><span id="execResultEffectLabel">Efeito anual no resultado</span><strong id="execResultEffect">—</strong></div></div>
         <div class="economicDetailGrid"><div><span>Ajuste integral de preço</span><strong id="execRequiredPrice">—</strong></div><div><span>Margem EBITDA projetada</span><strong id="execProjectedMargin">—</strong></div><div><span>Modelo analisado</span><strong id="execEconomicModel">—</strong></div><div><span>Ano</span><strong id="execEconomicYear">—</strong></div></div>
         <p id="economicImpactText">Informe a carga atual para comparar preço, margem e resultado.</p>
       </article>
@@ -146,9 +146,9 @@
         <div><span>Menor base tributária em 2027</span><strong id="ownerBestTotal">—</strong><small id="ownerBestTotalNote">—</small></div>
         <div><span>Diferença para o 2º regime</span><strong id="ownerGap">—</strong><small id="ownerSecondRegime">—</small></div>
         <div><span>Tributos sobre consumo em 2027</span><strong id="ownerFutureConsumption">—</strong><small>IBS/CBS líquido + ICMS/ISS residual, conforme o cenário.</small></div>
-        <div><span>Capital de giro adicional</span><strong id="ownerWorkingCapital">—</strong><small>Cenário financeiro do split payment.</small></div>
-        <div><span>Efeito anual no resultado</span><strong id="ownerResultEffect">—</strong><small id="ownerResultEffectNote">Depende da carga atual e do repasse a preços.</small></div>
-        <div><span>Crédito potencial dos clientes B2B</span><strong id="ownerB2bCredit">—</strong><small>Crédito do cliente, não economia direta da empresa.</small></div>
+        <div><span>Necessidade adicional de liquidez</span><strong id="ownerWorkingCapital">—</strong><small>Cenário financeiro do split payment.</small></div>
+        <div><span id="ownerResultEffectLabel">Efeito anual no resultado</span><strong id="ownerResultEffect">—</strong><small id="ownerResultEffectNote">Depende da carga atual e do repasse a preços.</small></div>
+        <div><span>Crédito potencial dos clientes B2B</span><strong id="ownerB2bCredit">—</strong><small>Não representa economia tributária da empresa. É crédito potencial do cliente.</small></div>
       </div>
       <div class="shareholderDecisionGrid">
         <article class="shareholderWhy"><h3>Por que este cenário ficou à frente?</h3><p id="ownerWhy">—</p></article>
@@ -161,12 +161,12 @@
       <div class="shareholderQuestion"><strong>Pergunta central para o contador:</strong><span id="ownerAccountantQuestion">—</span></div>
     </section>
 
-    <section class="resultSection">
+    <section class="resultSection transitionSection">
       <div class="sectionTitle compact"><div><span>A</span><h2 id="vatCompareTitle">IBS/CBS: referência atual × 2027 × 2033</h2></div><p>O relatório separa a parcela do DAS ligada aos tributos substituídos da cobrança regular de IBS/CBS. Quando o Simples não é aplicável, a coluna do DAS é marcada como não aplicável.</p></div>
       <div class="compareWrap"><table class="compareTable"><thead><tr><th>Componente</th><th id="currentDasHead">Referência atual no DAS</th><th class="focus">2027 · início da cobrança regular</th><th>2033 · regime pleno</th></tr></thead><tbody><tr><td>CBS / tributos federais substituídos</td><td id="cmpCurrentCbs">—</td><td id="cmp2027Cbs" class="focus">—</td><td id="cmp2033Cbs">—</td></tr><tr><td>IBS / ICMS-ISS substituídos</td><td id="cmpCurrentIbs">—</td><td id="cmp2027Ibs" class="focus">—</td><td id="cmp2033Ibs">—</td></tr><tr class="strong"><td>Débito bruto destacado</td><td id="cmpCurrentGross">—</td><td id="cmp2027Gross" class="focus">—</td><td id="cmp2033Gross">—</td></tr><tr><td>(−) Crédito sobre insumos</td><td>—</td><td id="cmp2027Credit" class="focus">—</td><td id="cmp2033Credit">—</td></tr><tr class="strong"><td>(=) Carga líquida de IBS/CBS</td><td id="cmpCurrentNet">—</td><td id="cmp2027Net" class="focus">—</td><td id="cmp2033Net">—</td></tr></tbody></table></div>
       <div class="explainBox"><strong>Como ler esta tabela</strong><p>Em 2027, a CBS passa à alíquota cheia de referência e o IBS entra com 0,1%. Em 2033, o regime regular chega ao desenho pleno das premissas informadas. O débito bruto é ponderado pela composição dos tratamentos tributários; a carga líquida desconta os créditos estimados das aquisições.</p></div>
       <div class="vatSummary" id="vatSummary"></div>
-      <div class="timelineWrap"><table class="timeline"><thead><tr><th>Ano</th><th>CBS</th><th>IBS</th><th>Débito bruto</th><th>Crédito insumos</th><th>IBS/CBS líquido</th><th>IBS/CBS no DAS</th><th>Melhor saída tributária</th></tr></thead><tbody id="timelineBody"></tbody></table></div>
+      <h3 class="timelineTitle">Cronograma anual 2027–2033</h3><div class="timelineWrap"><table class="timeline"><thead><tr><th>Ano</th><th>CBS</th><th>IBS</th><th>Débito bruto</th><th>Crédito insumos</th><th>IBS/CBS líquido</th><th>IBS/CBS no DAS</th><th>Melhor saída tributária</th></tr></thead><tbody id="timelineBody"></tbody></table></div>
     </section>
 
     <section class="resultSection">
@@ -182,12 +182,13 @@
 
     <section class="resultSection cash">
       <div class="sectionTitle compact"><div><span>D</span><h2>Split payment, caixa e financiamento</h2></div><p>Esta parte não trata a retenção como custo novo. Ela separa tributo, dinheiro que deixa de transitar pelo caixa, reserva financeira disponível e necessidade de reposição da liquidez.</p></div>
-      <div class="cashGrid"><div class="cashHero"><span>Capital de giro adicional estimado</span><strong id="workingCapital">—</strong><small id="workingCapitalText">—</small></div><div class="cashMetrics"><div><span>Valor mensal potencialmente segregado</span><b id="grossSplit">—</b></div><div><span>Reposição do float tributário</span><b id="floatReplacement">—</b></div><div><span>Retenção temporária excedente</span><b id="temporaryExcess">—</b></div><div><span>Necessidade de financiamento após reserva</span><b id="financingGap">—</b></div><div><span>Custo financeiro anual do gap</span><b id="financingCost">—</b></div><div><span>Caixa que permanece de cada R$ 100</span><b id="cashPer100">—</b></div></div></div>
+      <div class="cashGrid"><div class="cashHero"><span>Necessidade adicional de liquidez estimada</span><strong id="workingCapital">—</strong><small id="workingCapitalText">—</small></div><div class="cashMetrics"><div><span>Valor mensal potencialmente segregado</span><b id="grossSplit">—</b></div><div><span>Reposição do float tributário</span><b id="floatReplacement">—</b></div><div><span>Retenção temporária excedente</span><b id="temporaryExcess">—</b></div><div><span>Necessidade de financiamento externo após reserva</span><b id="financingGap">—</b></div><div><span>Custo financeiro anual do gap</span><b id="financingCost">—</b></div><div><span>Caixa que permanece de cada R$ 100</span><b id="cashPer100">—</b></div></div></div>
     </section>
 
     <section class="resultSection economicTechnical">
       <div class="sectionTitle compact"><div><span>E</span><h2>Preço, margem e efeito econômico</h2></div><p>O cálculo compara apenas tributos sobre consumo em bases equivalentes. IRPJ, CSLL e contribuição patronal permanecem na comparação dos regimes.</p></div>
-      <div class="economicDetailGrid"><div><span>Carga atual líquida</span><strong id="techCurrentConsumptionTax">—</strong></div><div><span>Carga futura líquida</span><strong id="techFutureConsumptionTax">—</strong></div><div><span>Variação tributária</span><strong id="techTaxDelta">—</strong></div><div><span>Variação transferida ao preço</span><strong id="techPriceTransfer">—</strong></div><div><span>Variação absorvida pela empresa</span><strong id="techUnabsorbedDelta">—</strong></div><div><span>Custo financeiro do gap</span><strong id="techFinanceEffect">—</strong></div><div><span>Efeito anual no resultado</span><strong id="techResultEffect">—</strong></div><div><span>Margem projetada</span><strong id="techProjectedMargin">—</strong></div></div>
+      <div id="economicConfidenceNote" class="economicConfidenceNote" hidden></div>
+      <div class="economicDetailGrid"><div><span>Carga atual líquida</span><strong id="techCurrentConsumptionTax">—</strong></div><div><span>Carga futura líquida</span><strong id="techFutureConsumptionTax">—</strong></div><div><span>Variação tributária</span><strong id="techTaxDelta">—</strong></div><div><span>Variação transferida ao preço</span><strong id="techPriceTransfer">—</strong></div><div><span>Variação absorvida pela empresa</span><strong id="techUnabsorbedDelta">—</strong></div><div><span>Custo financeiro do gap</span><strong id="techFinanceEffect">—</strong></div><div><span id="techResultEffectLabel">Efeito anual no resultado</span><strong id="techResultEffect">—</strong></div><div><span>Margem projetada</span><strong id="techProjectedMargin">—</strong></div></div>
       <div class="economicFormula"><b>Fórmula:</b> efeito no resultado = variação tributária transferida ao preço − variação da carga líquida − custo financeiro estimado.</div>
       <div class="insight" id="technicalEconomicText">Informe a carga atual para gerar a comparação econômica.</div>
     </section>
@@ -205,7 +206,7 @@
     <section class="methodology">
       <div class="methodCard info"><h3>ⓘ Como calculamos</h3><p>O motor usa as faixas do Simples apenas quando o regime é elegível, a partilha CBS/IBS por anexo e ano, a transição do IBS e premissas editáveis para as alíquotas de referência. No regime regular, débito e crédito consideram a composição tributária das receitas, compras potencialmente creditáveis e fornecedores no regime regular.</p></div>
       <div class="methodCard warn"><h3>⚠ Aviso importante</h3><p>cClassTrib, benefícios, regimes específicos, substituições, créditos presumidos, operações interestaduais, particularidades de IRPJ/CSLL e outras regras podem alterar significativamente o resultado. A recomendação é preliminar e deve ser validada por profissional responsável.</p></div>
-      <div class="sources"><h3>Fontes principais</h3><a href="https://www.gov.br/receitafederal/pt-br/acesso-a-informacao/acoes-e-programas/programas-e-atividades/reforma-tributaria-do-consumo/entenda" target="_blank" rel="noopener">Receita Federal: transição da Reforma</a><a href="https://www.planalto.gov.br/ccivil_03/leis/lcp/lcp214compilado.htm" target="_blank" rel="noopener">LC 214/2025 compilada</a><a href="https://www8.receita.fazenda.gov.br/SimplesNacional/" target="_blank" rel="noopener">Portal do Simples Nacional</a></div>
+      <div class="sources"><h3>Fontes oficiais principais</h3><a href="https://www.gov.br/receitafederal/pt-br/acesso-a-informacao/acoes-e-programas/programas-e-atividades/reforma-tributaria-do-consumo/entenda" target="_blank" rel="noopener">Receita Federal · Reforma Tributária do Consumo</a><a href="https://www.planalto.gov.br/ccivil_03/leis/lcp/lcp214compilado.htm" target="_blank" rel="noopener">Planalto · Lei Complementar nº 214/2025, texto compilado</a><a href="https://www8.receita.fazenda.gov.br/SimplesNacional/" target="_blank" rel="noopener">Receita Federal · Portal do Simples Nacional</a><p class="sourcesNote">Legislação, regulamentação e atos complementares devem ser verificados nas fontes oficiais na data da decisão.</p></div>
     </section>
   </div>
 </section>
