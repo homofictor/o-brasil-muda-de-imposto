@@ -71,6 +71,12 @@
    const d=detailsBox('Revisar os percentuais sugeridos');d.id='guidedOperationEditor';mainGrid.insertAdjacentElement('beforebegin',d);d.querySelector('.guidedReviewDetailsBody').appendChild(mainGrid);
   }
   const mix=panel.querySelector('.mixbox');if(mix&&!mix.closest('.guidedReviewDetails')){const d=detailsBox('Tratamentos específicos do IBS/CBS');d.id='guidedTaxTreatmentEditor';mix.insertAdjacentElement('beforebegin',d);d.querySelector('.guidedReviewDetailsBody').appendChild(mix)}
+  if(mix&&!byId('acceptTaxTreatmentSuggestion')){
+   const head=mix.querySelector('.mixhead');
+   const action=document.createElement('div');action.className='guidedTaxTreatmentConfirm';
+   action.innerHTML='<button type="button" id="acceptTaxTreatmentSuggestion">Usar sugestão do CNAE/atividade</button><small id="taxTreatmentConfirmStatus">Confirme a sugestão se ela já representa adequadamente suas receitas.</small>';
+   head?.insertAdjacentElement('afterend',action);
+  }
  }
 
  function prepareFinanceStep(panel){
@@ -209,6 +215,25 @@
   }
  }
 
+ function taxTreatmentConfirmed(){return value('taxTreatmentAccepted')==='yes'}
+ function confirmTaxTreatment(source='suggestion'){
+  const flag=byId('taxTreatmentAccepted');if(flag)flag.value='yes';
+  ['mix30','mix40','mix60','mixZero'].forEach(id=>{if(typeof markFieldComplete==='function')markFieldComplete(id,'CONFIRMADO')});
+  if(typeof markFieldDerived==='function')markFieldDerived('mixFull','CALCULADO');
+  const hint=byId('mixHint');if(hint)hint.textContent=source==='manual'
+   ?'Composição revisada pelo usuário. O sistema usará estes percentuais no diagnóstico.'
+   :'Sugestão do CNAE/atividade confirmada pelo usuário. O sistema usará esta composição no diagnóstico.';
+  const btn=byId('acceptTaxTreatmentSuggestion');if(btn){btn.textContent='Tratamento confirmado';btn.classList.add('confirmed')}
+  const status=byId('taxTreatmentConfirmStatus');if(status)status.textContent='Esta composição não será tratada como pendência enquanto não houver nova alteração cadastral.';
+  if(typeof markDiagnosisDirty==='function')markDiagnosisDirty('tax-treatment-confirmed');
+  scheduleRefresh();
+ }
+ function resetTaxTreatmentConfirmation(){
+  const flag=byId('taxTreatmentAccepted');if(flag)flag.value='';
+  const btn=byId('acceptTaxTreatmentSuggestion');if(btn){btn.textContent='Usar sugestão do CNAE/atividade';btn.classList.remove('confirmed')}
+  const status=byId('taxTreatmentConfirmStatus');if(status)status.textContent='Confirme a sugestão se ela já representa adequadamente suas receitas.';
+ }
+
  function refreshOperationSummary(){
   const box=byId('guidedOperationSummary');if(!box)return;
   const items=[
@@ -231,7 +256,7 @@
   if(nonSimple&&!provided('currentConsumptionTaxAnnual'))req.push({level:'important',field:'currentConsumptionTaxAnnual',step:3,title:'Informar a carga atual sobre consumo',why:'Melhora a análise de preço, margem e resultado.'});
   if(!provided('cashReserve'))req.push({level:'optional',field:'cashAndEquivalents',step:3,title:'Completar caixa e aplicações',why:'Permite medir melhor o impacto financeiro do split payment.'});
   if(!provided('currentOperatingMarginPct'))req.push({level:'optional',field:'currentOperatingMarginPct',step:3,title:'Informar margem EBITDA atual',why:'Permite projetar a margem futura.'});
-  if(sector?.treatmentReview)req.push({level:'important',field:'mix30',step:2,title:'Revisar tratamento das receitas',why:'O CNAE sozinho pode não definir o tratamento de todos os produtos ou operações.'});
+  if(sector?.treatmentReview&&!taxTreatmentConfirmed())req.push({level:'important',field:'mix30',step:2,title:'Revisar tratamento das receitas',why:'O CNAE sozinho pode não definir o tratamento de todos os produtos ou operações. Se a sugestão já atende, confirme-a sem alterar os percentuais.'});
   return req;
  }
 
@@ -316,8 +341,16 @@
   prepareCompanyStep(panels[0]);prepareOperationStep(panels[1]);prepareFinanceStep(panels[2]);prepareEconomicStep(panels[3]);createReviewPanel();attachImportPanel();createAutomationModePanel();createOnboardingStatus();
   document.querySelectorAll('[data-guided-nav]').forEach(b=>b.addEventListener('click',()=>showStep(b.dataset.guidedNav)));
   byId('guidedBack').addEventListener('click',()=>showStep(currentStep-1));byId('guidedNext').addEventListener('click',()=>showStep(currentStep+1));
-  document.addEventListener('click',e=>{const focus=e.target.closest?.('[data-focus-field]');if(focus){e.preventDefault();focusGuidedField(focus.dataset.focusField,Number(focus.dataset.focusStep)||1);return}const go=e.target.closest?.('[data-go-step]');if(go){e.preventDefault();showStep(Number(go.dataset.goStep)||1)}});
-  document.addEventListener('input',scheduleRefresh);document.addEventListener('change',scheduleRefresh);
+  document.addEventListener('click',e=>{const accept=e.target.closest?.('#acceptTaxTreatmentSuggestion');if(accept){e.preventDefault();confirmTaxTreatment('suggestion');return}const focus=e.target.closest?.('[data-focus-field]');if(focus){e.preventDefault();focusGuidedField(focus.dataset.focusField,Number(focus.dataset.focusStep)||1);return}const go=e.target.closest?.('[data-go-step]');if(go){e.preventDefault();showStep(Number(go.dataset.goStep)||1)}});
+  document.addEventListener('input',e=>{
+   if(['mix30','mix40','mix60','mixZero'].includes(e.target?.id)&&e.isTrusted)confirmTaxTreatment('manual');
+   if(e.target?.id==='cnpj'&&e.isTrusted)resetTaxTreatmentConfirmation();
+   scheduleRefresh();
+  });
+  document.addEventListener('change',e=>{
+   if(e.target?.id==='professionalReduction30'&&['yes','no'].includes(e.target.value))confirmTaxTreatment('manual');
+   scheduleRefresh();
+  });
   const status=byId('lookupStatus');if(status)new MutationObserver(()=>setTimeout(refreshAll,50)).observe(status,{childList:true,subtree:true,characterData:true});
   const observer=new MutationObserver(()=>{if(attachImportPanel()){observer.disconnect();showStep(currentStep,false);refreshAutomationMode()}});observer.observe(setup,{childList:true});
   document.addEventListener('brmi:automation-mode',refreshAutomationMode);document.addEventListener('brmi:automation-applied',refreshAll);
@@ -326,6 +359,8 @@
   relabel('rbt12','Faturamento bruto dos últimos 12 meses','Informe se souber. Receita líquida da DRE não será tratada automaticamente como faturamento bruto.');
   if(byId('monthlyRevenue'))byId('monthlyRevenue').placeholder='Informe o valor';
   if(byId('rbt12'))byId('rbt12').placeholder='Informe o valor';
+  if(byId('taxTreatmentAccepted')?.value==='yes')confirmTaxTreatment('suggestion');
+  else if(['yes','no'].includes(value('professionalReduction30')))confirmTaxTreatment('manual');
   showStep(1,false);setTimeout(refreshAll,600);
  }
 
