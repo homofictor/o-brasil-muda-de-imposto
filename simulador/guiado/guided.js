@@ -356,7 +356,7 @@
   });
   const status=byId('lookupStatus');if(status)new MutationObserver(()=>setTimeout(refreshAll,50)).observe(status,{childList:true,subtree:true,characterData:true});
   const observer=new MutationObserver(()=>{if(attachImportPanel()){observer.disconnect();showStep(currentStep,false);refreshAutomationMode()}});observer.observe(setup,{childList:true});
-  document.addEventListener('brmi:automation-mode',refreshAutomationMode);document.addEventListener('brmi:automation-applied',refreshAll);
+  document.addEventListener('brmi:import-ready',()=>{attachImportPanel();showStep(currentStep,false);refreshAutomationMode();refreshAll()});document.addEventListener('brmi:automation-mode',refreshAutomationMode);document.addEventListener('brmi:automation-applied',refreshAll);
   // Atualizações do importador chegam pelos eventos brmi:* acima. Não observar o setup inteiro evita loop de DOM no mobile.
   relabel('monthlyRevenue','Faturamento médio mensal','Informe se souber. Caso contrário, envie os documentos logo abaixo e deixe o sistema procurar o valor.');
   relabel('rbt12','Faturamento bruto dos últimos 12 meses','Informe se souber. Receita líquida da DRE não será tratada automaticamente como faturamento bruto.');
