@@ -153,7 +153,20 @@ function refreshEligibilityUi(){
  if(payroll)payroll.disabled=!simpleInputsEnabled;
  if(payrollHint)payrollHint.textContent=simpleInputsEnabled
   ?'Use a composição própria do Fator R, incluindo remunerações e os encargos admitidos nessa regra. Este valor não é usado como base automática da contribuição patronal fora do Simples.'
-  :'Não aplicável enquanto a empresa não estiver confirmada como optante do Simples Nacional.';
+  :'Não aplicável enquanto a empresa não estiver confirmada como optante do Simples Nacional.'; if(typeof markFieldNotApplicable==='function'&&typeof markFieldPending==='function'){
+  if(simpleInputsEnabled){
+   ['annex','factorMode','monthlyPayroll'].forEach(id=>{
+    const box=fieldStateContainer?.(id);
+    if(box?.classList.contains('state-na')){
+     const el=$(id);
+     if(el&&String(el.value??'').trim()!=='')markFieldComplete(id);
+     else markFieldPending(id);
+    }
+   });
+  }else{
+   ['annex','factorMode','monthlyPayroll'].forEach(id=>markFieldNotApplicable(id,'N/A'));
+  }
+ }
  if(e.status==='legal_nature'){
   if(simple){simple.value='no';simple.disabled=true}
   if(mei){mei.value='no';mei.disabled=true}
@@ -164,7 +177,7 @@ function refreshEligibilityUi(){
   if(note){note.hidden=false;note.className='status';note.textContent=e.reason}
   if($('companySimple')){$('companySimple').textContent='Simples: não permitido pela natureza jurídica';$('companySimple').className='chip bad'}
   if($('companyMei')){$('companyMei').textContent='MEI: não permitido';$('companyMei').className='chip bad'}
-  if(typeof markFieldAuto==='function'){markFieldAuto('simpleStatus','AUTOMÁTICO');markFieldAuto('meiStatus','AUTOMÁTICO');markFieldAuto('annex','N/A');markFieldAuto('factorMode','N/A')}
+  if(typeof markFieldAuto==='function'){markFieldAuto('simpleStatus','AUTOMÁTICO');markFieldAuto('meiStatus','AUTOMÁTICO')}if(typeof markFieldNotApplicable==='function'){markFieldNotApplicable('annex','N/A');markFieldNotApplicable('factorMode','N/A');markFieldNotApplicable('monthlyPayroll','N/A')}
  }else if(e.status==='over_limit'){
   if(simple){simple.value='no';simple.disabled=true}
   if(annex)annex.disabled=true;if(factor)factor.disabled=true;
@@ -172,7 +185,7 @@ function refreshEligibilityUi(){
   if($('factorHint'))$('factorHint').textContent='Fator R não é aplicável à análise prospectiva fora do Simples.';
   if(note){note.hidden=false;note.className='status bad';note.textContent=`Não elegível ao Simples pelo faturamento. ${e.reason}${e.historical?' O cadastro pode refletir situação histórica ou transitória, que deve ser tratada separadamente.':''}`}
   if($('companySimple')){$('companySimple').textContent='Simples: não elegível pelo faturamento';$('companySimple').className='chip bad'}
-  if(typeof markFieldAuto==='function'){markFieldAuto('simpleStatus','AUTOMÁTICO');markFieldAuto('annex','N/A');markFieldAuto('factorMode','N/A')}
+  if(typeof markFieldAuto==='function'){markFieldAuto('simpleStatus','AUTOMÁTICO')}if(typeof markFieldNotApplicable==='function'){markFieldNotApplicable('annex','N/A');markFieldNotApplicable('factorMode','N/A');markFieldNotApplicable('monthlyPayroll','N/A')}
  }else{
   if(simple)simple.disabled=false;if(mei)mei.disabled=false;
   if(!e.confirmed&&e.status!=='unknown'&&annex)annex.value='';
