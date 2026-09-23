@@ -81,7 +81,7 @@ async function readImportFile(file){
  }
  throw new Error('Formato não suportado.')
 }
-function detectDoc(text,rows){const t=normImport(text),balance=/ativo circulante/.test(t)&&/passivo/.test(t)&&/patrimonio liquido/.test(t),dre=/receitas? (brutas?|operacionais?|liquidas?)/.test(t)&&(/lucro bruto|lucro liquido|resultado do exercicio|resultado antes|despesas operacionais|despesas financeiras|custos e despesas|ebitda|lajida/.test(t));if(balance&&dre)return'Balanço + DRE';if(balance)return'Balanço';if(dre)return'DRE';if(rows&&/fornecedor|compra|entrada|contas a pagar/.test(t))return'Relatório de compras';if(rows&&/cliente|venda|faturamento|nota fiscal|contas a receber/.test(t))return'Relatório de vendas';if(/saldo anterior|saldo inicial/.test(t)&&/debito|debitos/.test(t)&&/credito|creditos/.test(t)&&/saldo atual|saldo final/.test(t))return'Balancete';if(/folha de pagamento|salarios|pro labore/.test(t))return'Folha / pessoal';return'Relatório'}
+function detectDoc(text,rows){const t=normImport(text),balance=(/balanco patrimonial/.test(t)||((/ativo circulante/.test(t)||(/\bativo\b/.test(t)&&/\bcirculante\b/.test(t)))&&/\bpassivo\b/.test(t)&&/patrimonio liquido/.test(t))),dre=/receitas? (brutas?|operacionais?|liquidas?)/.test(t)&&(/lucro bruto|lucro liquido|resultado do exercicio|resultado antes|despesas operacionais|despesas financeiras|custos e despesas|ebitda|lajida/.test(t));if(balance&&dre)return'Balanço + DRE';if(balance)return'Balanço';if(dre)return'DRE';if(rows&&/fornecedor|compra|entrada|contas a pagar/.test(t))return'Relatório de compras';if(rows&&/cliente|venda|faturamento|nota fiscal|contas a receber/.test(t))return'Relatório de vendas';if(/saldo anterior|saldo inicial/.test(t)&&/debito|debitos/.test(t)&&/credito|creditos/.test(t)&&/saldo atual|saldo final/.test(t))return'Balancete';if(/folha de pagamento|salarios|pro labore/.test(t))return'Folha / pessoal';return'Relatório'}
 function importStatementSections(text){const source=String(text||''),bpStart=source.search(/balan[cç]o patrimonial/i),dreStart=source.search(/demonstra[cç][aã]o\s+(?:d[eo]\s+)?resultado/i);return{balance:bpStart>=0?source.slice(bpStart,dreStart>bpStart?dreStart:undefined):source,dre:dreStart>=0?source.slice(dreStart):source}}
 function lineValue(text,labels,exclude=[]){const lines=String(text||'').split(/\r?\n/);for(const line of lines){const n=normImport(line);if(!labels.some(x=>n.includes(x))||exclude.some(x=>n.includes(x)))continue;const matches=line.match(/(?:R\$\s*)?-?\d{1,3}(?:\.\d{3})*(?:,\d{1,2})|-?\d+(?:[.,]\d{1,2})?/g)||[];const nums=matches.map(brNum).filter(Number.isFinite);if(nums.length)return nums[nums.length-1]}return null}
 function firstLineValue(text,labelGroups){for(const labels of labelGroups){const v=lineValue(text,labels);if(v!=null)return v}return null}
@@ -133,6 +133,15 @@ function latestLineValues(text,labels,exclude=[]){
  return{latest:null,prior:null,ordered:false}
 }
 function latestLineValue(text,labels,exclude=[]){return latestLineValues(text,labels,exclude).latest}
+function sectionLineValue(text,sectionLabels,childLabels,exclude=[]){
+ const order=comparativeOrder(text),rows=statementRows(text);let section=false;
+ for(const row of rows){const n=normImport(row);
+  if(sectionLabels.some(x=>n===x||n.startsWith(x+' '))){section=true;continue}
+  if(section&&/^(passivo|ativo|patrimonio liquido|permanente|nao circulante|passivo exigivel)/.test(n)&&!childLabels.some(x=>n.includes(x)))break;
+  if(section&&childLabels.some(x=>n===x||n.startsWith(x+' '))&&!exclude.some(x=>n.includes(x))){const v=orderedLineValues(row,order);if(v.latest!=null)return v}
+ }return{latest:null,prior:null,ordered:false}
+}
+
 function firstLatestLineValue(text,labelGroups,exclude=[]){for(const labels of labelGroups){const v=latestLineValue(text,labels,exclude);if(v!=null)return v}return null}
 function comparativeCategoryTotal(text,labelGroups,exclude=[]){
  const order=comparativeOrder(text),lines=statementRows(text);
@@ -179,7 +188,7 @@ function financialDebtBalances(text){
   const tax=/parcelament(o|os) (de )?(impostos|tributos)|parcelament(o|os) (fiscais|tributarios)/.test(n);
   const mutual=/mutuo|emprestimos? de socios|emprestimos? de pessoas ligadas|emprestimos? de partes relacionadas/.test(n);
   const specific=/emprestimos? e financiamentos?.*(banco|bancari|terceir)|financiamentos? bancari|emprestimos? bancari|arrendamento mercantil|leasing/.test(n);
-  const broad=/emprestimos? e financiamentos?/.test(n)&&!specific&&!mutual;
+  const broad=/(^| )emprestimos?( |$)|emprestimos? e financiamentos?/.test(n)&&!specific&&!mutual;
   if(tax){addTax(s,vals);continue}
   if(mutual||specific){addSpecific(s,vals);continue}
   if(broad){
@@ -251,18 +260,18 @@ function analyseImportDoc(file,parsed){
  const revenueNet=firstLatestLineValue(dreText,[['receita liquida','receita operacional liquida','receita liquida de vendas','receita liquida de vendas e servicos','vendas liquidas']]);
  const revenueOperational=firstLatestLineValue(dreText,[['receitas operacionais']]);
  const revenueForRbt12=revenueGross||(type==='Relatório de vendas'?revenueOperational||revenueNet:null);
- const deductions=Math.abs(firstLatestLineValue(dreText,[['deducoes da receita bruta','deducoes sobre vendas','deducoes da receita'],['impostos, devolucoes e abatimentos']])||0);
+ const deductions=Math.abs(firstLatestLineValue(dreText,[['deducoes da receita bruta','deducao de receita bruta','deducoes sobre vendas','deducao sobre vendas','deducoes da receita'],['impostos, devolucoes e abatimentos']])||0);
  const costs=firstLatestLineValue(dreText,[['cmv','cpv','csp','custo das mercadorias','custo dos produtos','custo dos servicos'],['custos das atividades empresariais'],['custos gerais','custos operacionais']]);
  const explicitCash=firstLatestLineValue(bpText,[['caixa e equivalentes','caixa e equivalentes de caixa'],['disponibilidades','disponivel'],['caixa bancos','caixa e bancos']]),cashBox=firstLatestLineValue(bpText,[['caixa geral'],['caixa']],['equivalentes']),banks=firstLatestLineValue(bpText,[['bancos conta movimento'],['bancos c/ movimento'],['bancos conta corrente'],['depositos bancarios a vista']]),cashComponents=((cashBox||0)+(banks||0))||null,cash=cashComponents!=null?cashComponents:explicitCash;
  const investments=firstLatestLineValue(bpText,[['aplicacoes financeiras de liquidez imediata','aplicacoes financeiras imediatas'],['aplicacoes de liquidez imediata','investimentos de liquidez imediata'],['aplicacoes financeiras','titulos e valores mobiliarios']],['caixa e equivalentes','longo prazo']);
- const currentAssets=latestLineValue(bpText,['ativo circulante'],['total do ativo','nao circulante']);
- const currentLiabilities=latestLineValue(bpText,['passivo circulante'],['nao circulante']);
+ const currentAssetsDirect=latestLineValues(bpText,['ativo circulante'],['total do ativo','nao circulante']),currentAssetsCtx=currentAssetsDirect.latest==null?sectionLineValue(bpText,['ativo'],['circulante'],['nao circulante']):currentAssetsDirect,currentAssets=currentAssetsCtx.latest;
+ const currentLiabilitiesDirect=latestLineValues(bpText,['passivo circulante'],['nao circulante']),currentLiabilitiesCtx=currentLiabilitiesDirect.latest==null?sectionLineValue(bpText,['passivo'],['circulante'],['nao circulante']):currentLiabilitiesDirect,currentLiabilities=currentLiabilitiesCtx.latest;
  const pretaxProfit=firstLatestLineValue(dreText,[['lucro liquido antes provisao irpj e csll','lucro liquido antes da provisao irpj e csll','lucro antes do irpj e csll','lucro antes do irpj','lucro antes do imposto de renda','resultado antes do irpj','resultado antes dos tributos sobre o lucro','resultado antes dos impostos sobre o lucro'],['lucro antes dos tributos','resultado antes dos tributos']]);
  const netProfit=firstLatestLineValue(dreText,[['lucro liquido do exercicio','resultado liquido do exercicio','resultado do exercicio','resultado exercicio'],['lucro liquido','resultado liquido']],['antes']);
  const irpjExpense=Math.abs(firstLatestLineValue(dreText,[['provisao p imposto de renda','provisao para imposto de renda','imposto de renda corrente','irpj corrente','despesa de irpj'],['imposto de renda']],['antes'])||0);
  const csllExpense=Math.abs(firstLatestLineValue(dreText,[['provisao p contribuicao social','provisao para contribuicao social','contribuicao social corrente','csll corrente','despesa de csll'],['contribuicao social sobre o lucro','csll']],['antes'])||0);
  const accountingProfit=pretaxProfit!=null?pretaxProfit:(netProfit!=null&&(irpjExpense>0||csllExpense>0)?netProfit+irpjExpense+csllExpense:null);
- const payrollCosts=latestLineValue(dreText,['custos com pessoal','mao de obra e encargos','custos de pessoal']),payrollExpenses=latestLineValue(dreText,['despesas com pessoal','despesas de pessoal']),payroll=(payrollCosts||0)+(payrollExpenses||0)||latestLineValue(dreText,['folha de pagamento','salarios e encargos','salarios ordenados e encargos','pessoal e encargos','remuneracoes e encargos']);
+ const payrollCosts=latestLineValue(dreText,['custos com pessoal','mao de obra e encargos','custos de pessoal']),payrollExpenses=latestLineValue(dreText,['despesas com pessoal','despesas de pessoal']),directLabor=latestLineValue(dreText,['mao de obra direta']),indirectLabor=latestLineValue(dreText,['mao de obra indireta']),payroll=(payrollCosts||0)+(payrollExpenses||0)||((directLabor||0)+(indirectLabor||0))||latestLineValue(dreText,['folha de pagamento','salarios e encargos','salarios ordenados e encargos','pessoal e encargos','remuneracoes e encargos']);
  const debtBalances=financialDebtBalances(bpText),debtEnd=debtBalances.end,debtStart=debtBalances.start,debtOrdered=debtBalances.ordered;
  const receivables=hierarchicalCategoryTotal(bpText,n=>/clientes|duplicatas a receber|contas a receber/.test(n),['provisao','perdas estimadas','longo prazo']);
  const inventory=hierarchicalCategoryTotal(bpText,n=>/estoques?|mercadorias para revenda|produtos acabados|materias primas/.test(n),['provisao']);
