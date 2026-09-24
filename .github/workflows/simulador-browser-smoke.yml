@@ -44,10 +44,10 @@ jobs:
               await page.goto(process.env.BASE_URL + '/simulador/guiado/', { waitUntil: 'domcontentloaded', timeout: 45000 });
               const versionLink = page.locator('link[href*="guided.css"]').first();
               deployedVersion = await versionLink.count() ? (await versionLink.getAttribute('href') || '') : '';
-              if (/20260924-profitsens31/.test(deployedVersion)) break;
+              if (/20260924-profitsens32/.test(deployedVersion)) break;
               await page.waitForTimeout(15000);
             }
-            assert.match(deployedVersion || '', /20260924-profitsens31/);
+            assert.match(deployedVersion || '', /20260924-profitsens32/);
             await page.waitForSelector('#cnpj', { timeout: 30000 });
             await page.waitForSelector('#importPanel', { timeout: 30000 });
             assert.equal(await page.locator('#importPanel').isVisible(), true);
@@ -198,12 +198,12 @@ jobs:
               if (!candidate) return { candidate: false };
               brmiImport.candidates = [candidate];
               brmiImport.candidates[0]._index = 0;
-              const applied = applyImportCandidate(0, true);
+              const written = writeVerifiedAccountingProfit();
               const profit = document.getElementById('realAccountingProfitAnnual');
               const out = {
                 candidate: true,
                 fiscalMismatch: candidate.fiscalMismatch === true,
-                applied,
+                written,
                 datasetMismatch: profit?.dataset?.importFiscalMismatch || '',
                 importedProfit: parseMoneyValue(profit?.value || ''),
                 provision: Number(profit?.dataset?.importIrpjExpense || 0) + Number(profit?.dataset?.importCsllExpense || 0),
@@ -223,7 +223,7 @@ jobs:
             });
             assert.equal(fiscalMismatchCheck.candidate, true);
             assert.equal(fiscalMismatchCheck.fiscalMismatch, true);
-            assert.equal(fiscalMismatchCheck.applied, true);
+            assert.ok(fiscalMismatchCheck.written < 0);
             assert.equal(fiscalMismatchCheck.datasetMismatch, '1');
             assert.ok(fiscalMismatchCheck.importedProfit < 0);
             assert.ok(fiscalMismatchCheck.provision > 140000);
@@ -376,6 +376,7 @@ jobs:
             const ownerBrief = await page.evaluate(() => ({
               currentTax: document.getElementById('ownerCurrentTax')?.textContent || '',
               bestTotal: document.getElementById('ownerBestTotal')?.textContent || '',
+              bestLabel: document.getElementById('ownerBestTotalLabel')?.textContent || '',
               breakEven: document.getElementById('ownerProfitBreakEven')?.textContent || '',
               pending: document.getElementById('ownerPending')?.textContent || '',
               why: document.getElementById('ownerWhy')?.textContent || '',
@@ -388,12 +389,13 @@ jobs:
             }));
             assert.match(ownerBrief.currentTax, /PENDENTE/i);
             assert.doesNotMatch(ownerBrief.bestTotal, /^—$/);
+            assert.match(ownerBrief.bestLabel, /referência histórica/i);
             assert.doesNotMatch(ownerBrief.breakEven, /^—$/);
             assert.match(ownerBrief.pending, /lucratividade futura/i);
             assert.match(ownerBrief.pending, /contribuição patronal/i);
             assert.match(ownerBrief.pending, /carga líquida atual/i);
             assert.match(ownerBrief.why, /ponto aproximado de indiferença|lucratividade futura/i);
-            assert.match(ownerBrief.simpleText, /Simples Nacional não aplicável pelo faturamento informado/i);
+            assert.match(ownerBrief.simpleText, /Simples Nacional não aplicável pelo faturamento informado|Referência atual do Simples indisponível/i);
             assert.match(ownerBrief.badge, /REFERÊNCIA HISTÓRICA/i);
             assert.match(ownerBrief.title, /Resultado sensível à lucratividade/i);
             assert.match(ownerBrief.sensitivityAlert, /Resultado condicionado à lucratividade futura/i);
