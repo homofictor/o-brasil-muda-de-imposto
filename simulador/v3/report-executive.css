@@ -249,3 +249,86 @@
  .technicalReport.printTarget .profitSensitivityTable th{font-size:5.7pt!important}
  .technicalReport.printTarget .profitSensitivityFoot{margin-top:2.5mm!important;padding:2.3mm 2.8mm!important;font-size:6.6pt!important;break-inside:avoid!important}
 }
+
+
+/* Revisão cirúrgica da impressão · 2026-09-24 */
+@media print{
+  /* margem zero impede o cabeçalho/rodapé automático do Chromium;
+     as margens passam a ser controladas pelo próprio relatório */
+  @page{size:A4 portrait;margin:0!important}
+  html,body{margin:0!important;padding:0!important}
+  .technicalReport.printTarget{margin:0!important;padding:0!important;background:#fff!important}
+
+  /* capa com área segura própria */
+  .technicalReport.printTarget .technicalPrintCover{
+    width:192mm!important;height:279mm!important;min-height:279mm!important;
+    margin:9mm!important;padding:11mm 11mm 9mm!important;
+    border-radius:4mm!important;box-sizing:border-box!important
+  }
+  .technicalReport.printTarget .technicalPrintBrand{gap:4mm!important;padding-bottom:5mm!important;overflow:visible!important}
+  .technicalReport.printTarget .technicalPrintBrand img{
+    display:block!important;width:29mm!important;height:auto!important;max-height:22mm!important;
+    object-fit:contain!important;object-position:center!important;padding:0!important;
+    border:0!important;border-radius:0!important;background:transparent!important;
+    overflow:visible!important;clip-path:none!important
+  }
+  .technicalReport.printTarget .technicalPrintEyebrow{margin-top:18mm!important}
+  .technicalReport.printTarget .technicalPrintMeta{margin-top:12mm!important}
+  .technicalReport.printTarget .technicalPrintDecision{margin-top:8mm!important}
+
+  /* margem editorial dos blocos internos */
+  .technicalReport.printTarget>.resultSection,
+  .technicalReport.printTarget>.methodology{
+    width:192mm!important;box-sizing:border-box!important;
+    margin-left:9mm!important;margin-right:9mm!important;
+  }
+  .technicalReport.printTarget>.resultSection{margin-top:5mm!important;margin-bottom:4mm!important}
+  .technicalReport.printTarget>.technicalPrintCover + .resultSection{margin-top:9mm!important}
+
+  /* a página executiva deve caber inteira */
+  .technicalReport.printTarget .shareholderBrief{
+    padding:5mm!important;margin-bottom:0!important;
+    break-after:page!important;page-break-after:always!important
+  }
+  .technicalReport.printTarget .shareholderKpis{gap:1.8mm!important}
+  .technicalReport.printTarget .shareholderKpis>div{padding:2.6mm!important}
+  .technicalReport.printTarget .shareholderDecisionGrid{gap:2.2mm!important;margin-top:2.2mm!important}
+  .technicalReport.printTarget .shareholderDecisionGrid article{padding:2.8mm!important}
+  .technicalReport.printTarget .shareholderEvidence{margin-top:2.2mm!important;padding-top:2.2mm!important}
+  .technicalReport.printTarget .shareholderEvidence>div{gap:1.6mm!important}
+  .technicalReport.printTarget .shareholderEvidence>div>div{padding:2.1mm!important}
+  .technicalReport.printTarget .shareholderQuestion{margin-top:2.2mm!important;padding:2.3mm 2.7mm!important}
+
+  /* evita páginas quase vazias no fechamento do relatório */
+  .technicalReport.printTarget .actionsSection{padding:4mm 4.5mm!important;margin-bottom:3mm!important}
+  .technicalReport.printTarget .actionList{gap:1.8mm!important}
+  .technicalReport.printTarget .actionList li{padding:2.2mm 2.4mm 2.2mm 9mm!important;font-size:7.1pt!important;line-height:1.34!important}
+  .technicalReport.printTarget .actionList li:before{left:2.2mm!important;top:2mm!important;width:5.5mm!important;height:5.5mm!important}
+  .technicalReport.printTarget .narrativeSection{padding:4mm 4.5mm!important;margin-bottom:2.5mm!important}
+  .technicalReport.printTarget .narrativeText{gap:1.5mm!important}
+  .technicalReport.printTarget .narrativeText p{padding:2.2mm 2.8mm!important;font-size:7.35pt!important;line-height:1.38!important}
+  .technicalReport.printTarget>.methodology{
+    display:grid!important;grid-template-columns:1fr 1fr!important;gap:2mm!important;
+    margin-top:2.5mm!important;margin-bottom:7mm!important;padding:3mm 3.5mm!important;
+    break-inside:avoid-page!important;page-break-inside:avoid!important
+  }
+  .technicalReport.printTarget .methodCard,
+  .technicalReport.printTarget .sources{padding:3mm!important}
+  .technicalReport.printTarget .methodology h3{font-size:8.8pt!important;margin-bottom:1.4mm!important}
+  .technicalReport.printTarget .methodology p,
+  .technicalReport.printTarget .methodology a{font-size:6.8pt!important;line-height:1.35!important}
+  .technicalReport.printTarget .sources a{margin:1mm 4mm 0 0!important}
+  .technicalReport.printTarget .sourcesNote{margin-top:1.4mm!important}
+
+  /* alerta fiscal: separar visualmente a segunda mensagem */
+  .technicalReport.printTarget .profitSensitivityAlert span{display:block!important;margin-top:1.5mm!important}
+
+  /* rodapé próprio do relatório, substitui o rodapé do navegador */
+  .technicalReport.printTarget .technicalPrintRunningFooter{
+    display:flex!important;position:fixed!important;left:9mm!important;right:9mm!important;bottom:2.5mm!important;
+    justify-content:space-between!important;gap:8mm!important;
+    color:#768393!important;font-size:6.3pt!important;line-height:1!important
+  }
+  .technicalReport.printTarget .technicalPrintCover .technicalPrintCoverFooter{margin-bottom:2mm!important}
+}
+.technicalPrintRunningFooter{display:none}
