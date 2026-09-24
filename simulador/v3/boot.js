@@ -114,6 +114,18 @@ function restore(){
   if($('cnpj'))$('cnpj').value='';
  }catch(_){}
 }
+function guardInitialCnpjBlank(){
+ const el=$('cnpj');if(!el)return;
+ let userTouched=false;
+ const touch=e=>{if(e?.isTrusted)userTouched=true};
+ ['keydown','pointerdown','paste','input'].forEach(evt=>el.addEventListener(evt,touch,{passive:true}));
+ const clearLateAutofill=()=>{if(userTouched||el.dataset.importVerified==='1'||el.dataset.importAccepted==='1')return;el.value='';delete el.dataset.importSource;delete el.dataset.importConfidence};
+ el.value='';
+ requestAnimationFrame(clearLateAutofill);
+ setTimeout(clearLateAutofill,120);
+ setTimeout(clearLateAutofill,650);
+ window.addEventListener('pageshow',e=>{if(!e.persisted)return;setTimeout(clearLateAutofill,0)});
+}
 function clearAllSimulatorData(){const confirmed=window.confirm('Limpar todas as informações do simulador?\n\nEssa ação removerá os campos preenchidos, os dados da empresa, os documentos importados e o diagnóstico salvo neste navegador.');if(!confirmed)return;try{localStorage.removeItem('brmi_v3')}catch(_){}window.location.reload()}
 let revenueSyncing=false,lastRevenueSource='monthly';
 function syncRevenue(source,markDerived=false){
@@ -145,4 +157,4 @@ document.querySelectorAll('#setupMount input,#setupMount select').forEach(el=>{
  if(!['cnpj','yearRange','monthlyRevenue','rbt12','revenueSync'].includes(el.id))el.addEventListener('input',dirty);
  if(!['yearRange','monthlyRevenue','rbt12','revenueSync'].includes(el.id))el.addEventListener('change',dirty)
 });
-restore();if(typeof initFieldStates==='function')initFieldStates();if(typeof syncMixFull==='function')syncMixFull(true);if($('revenueSync')?.checked)syncRevenue('monthly',false);financialMetrics();refreshEligibilityUi();if(typeof initEnhancedResults==='function')initEnhancedResults();if(typeof initDiagnosisFlow==='function')initDiagnosisFlow();calculate();
+restore();guardInitialCnpjBlank();if(typeof initFieldStates==='function')initFieldStates();if(typeof syncMixFull==='function')syncMixFull(true);if($('revenueSync')?.checked)syncRevenue('monthly',false);financialMetrics();refreshEligibilityUi();if(typeof initEnhancedResults==='function')initEnhancedResults();if(typeof initDiagnosisFlow==='function')initDiagnosisFlow();calculate();
