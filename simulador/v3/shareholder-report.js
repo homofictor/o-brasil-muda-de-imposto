@@ -56,6 +56,7 @@
    }
    const pending=[],topRegular=best&&second&&[best.key,second.key].every(k=>k==='real'||k==='presumed');
    if(topRegular&&r.realDecisionSensitive)pending.push('Projetar a lucratividade futura. O resultado histórico é apenas referência e não deve ser repetido automaticamente em 2027–2033.');
+   if(byId('realAccountingProfitAnnual')?.dataset?.importFiscalMismatch==='1')pending.push('Conferir a apuração fiscal: a DRE combina resultado contábil negativo com provisão de IRPJ/CSLL, portanto não é seguro assumir base fiscal zero sem revisar adições, exclusões e compensações.');
    if(topRegular&&!r.cppBaseKnown)pending.push('Informar folha/remunerações sujeitas à contribuição patronal e revisar a alíquota patronal efetiva, para completar o desembolso tributário total.');
    if(!impact?.known)pending.push('Informar a carga líquida atual de PIS/Cofins, ICMS, ISS e IPI, conforme aplicável, para calcular a variação real de preço, margem e resultado.');
    else if(impact.confidence==='low')pending.push('Confirmar a carga líquida atual de tributos sobre consumo: ela foi extraída com baixa confiança e afeta diretamente preço, margem e efeito no resultado.');
