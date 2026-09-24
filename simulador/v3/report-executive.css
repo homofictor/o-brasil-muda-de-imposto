@@ -375,3 +375,43 @@
  .technicalReport.printTarget .explainFormula{margin-top:1.6mm!important;padding:1.8mm 2mm!important;font-size:6.3pt!important}
  .technicalReport.printTarget .diagnosisExplainCaveat{margin-top:2.4mm!important;padding:2.3mm 2.6mm!important;font-size:6.5pt!important;line-height:1.35!important}
 }
+
+
+/* Ponte da variação tributária */
+.taxBridgeHeadline{padding:12px 14px;border-left:4px solid #a97713;background:#fff8e8;border-radius:0 10px 10px 0;color:#5e4e2d;font-size:10px;font-weight:800;line-height:1.45}
+.taxBridgeFlow{display:grid;grid-template-columns:1.15fr auto 1fr 1fr 1fr auto 1.15fr 1fr;gap:8px;align-items:stretch;margin-top:12px}
+.taxBridgeFlow>div{padding:11px 10px;border:1px solid #dce4ec;border-radius:10px;background:#fff}
+.taxBridgeFlow>i{align-self:center;font-style:normal;color:#8a98a8;font-weight:900}
+.taxBridgeFlow span{display:block;font-size:8px;text-transform:uppercase;letter-spacing:.035em;color:#718093;font-weight:900}
+.taxBridgeFlow strong{display:block;margin-top:5px;color:#102640;font-size:12px}
+.taxBridgeFlow .taxBridgeDelta{background:#f2f7fb;border-color:#c8d8e8}
+.taxBridgeDrivers{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.taxBridgeDrivers article{padding:12px 13px;border:1px solid #dce4ec;border-radius:11px;background:#fafcfe}
+.taxBridgeDrivers span{font-size:8px;text-transform:uppercase;letter-spacing:.04em;color:#708092;font-weight:900}
+.taxBridgeDrivers strong{display:block;margin:5px 0;color:#102640;font-size:12px}
+.taxBridgeDrivers p{margin:0;color:#556779;font-size:9px;line-height:1.45}
+.taxBridgeContributionWrap{margin-top:11px;overflow:auto;border:1px solid #dce4ec;border-radius:10px}
+.taxBridgeTable{width:100%;border-collapse:collapse;min-width:700px}
+.taxBridgeTable th,.taxBridgeTable td{padding:9px 10px;border-bottom:1px solid #e5ebf0;text-align:left;font-size:9px}
+.taxBridgeTable th{background:#f3f6f9;color:#6f7e8f;font-size:8px;text-transform:uppercase;letter-spacing:.035em}
+.taxBridgeTable td.up{color:#9b4d00;font-weight:900}.taxBridgeTable td.down{color:#13734f;font-weight:900}.taxBridgeTable td.flat{color:#536579;font-weight:900}
+.taxBridgeTable tfoot th{background:#f8fafc;color:#102640}
+.taxBridgeNote{margin-top:10px;padding:9px 11px;border-left:3px solid #315a7d;background:#f6f9fc;color:#59697a;font-size:9px;line-height:1.45}
+@media(max-width:980px){.taxBridgeFlow{grid-template-columns:1fr 1fr 1fr}.taxBridgeFlow>i{display:none}}
+@media(max-width:700px){.taxBridgeFlow,.taxBridgeDrivers{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.taxBridgeFlow,.taxBridgeDrivers{grid-template-columns:1fr}}
+@media print{
+ .technicalReport.printTarget .taxBridgeSection{padding:4.5mm!important;break-inside:auto!important}
+ .technicalReport.printTarget .taxBridgeHeadline{padding:2.5mm 3mm!important;font-size:6.9pt!important}
+ .technicalReport.printTarget .taxBridgeFlow{grid-template-columns:1.05fr auto .9fr .9fr .95fr auto 1.05fr .9fr!important;gap:1.5mm!important;margin-top:2.5mm!important}
+ .technicalReport.printTarget .taxBridgeFlow>div{padding:2.1mm!important;border-radius:1.8mm!important}
+ .technicalReport.printTarget .taxBridgeFlow span{font-size:5.4pt!important}.technicalReport.printTarget .taxBridgeFlow strong{font-size:7.4pt!important;margin-top:1mm!important}
+ .technicalReport.printTarget .taxBridgeDrivers{gap:2mm!important;margin-top:2mm!important}
+ .technicalReport.printTarget .taxBridgeDrivers article{padding:2.4mm!important;border-radius:2mm!important;break-inside:avoid!important}
+ .technicalReport.printTarget .taxBridgeDrivers span{font-size:5.5pt!important}.technicalReport.printTarget .taxBridgeDrivers strong{font-size:7.8pt!important;margin:1mm 0!important}.technicalReport.printTarget .taxBridgeDrivers p{font-size:6.2pt!important}
+ .technicalReport.printTarget .taxBridgeContributionWrap{margin-top:2.3mm!important;overflow:visible!important;break-inside:avoid!important}
+ .technicalReport.printTarget .taxBridgeTable{min-width:0!important;table-layout:fixed!important}
+ .technicalReport.printTarget .taxBridgeTable th,.technicalReport.printTarget .taxBridgeTable td{padding:1.7mm 1.5mm!important;font-size:6pt!important}
+ .technicalReport.printTarget .taxBridgeTable th{font-size:5.4pt!important}
+ .technicalReport.printTarget .taxBridgeNote{margin-top:2mm!important;padding:2mm 2.4mm!important;font-size:6.2pt!important}
+}
