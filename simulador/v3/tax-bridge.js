@@ -29,7 +29,7 @@
   if(!r||!model||!impact?.known)return{known:false};
   const current=Math.max(0,Number(impact.currentTax||0)),future=Math.max(0,Number(impact.futureTax||0)),delta=future-current,parts=futureParts(r,model.key,future),detail=currentBreakdown();
   if(!parts)return{known:false};
-  const tolerance=Math.max(100,current*.02),difference=detail.sum-current,reconciled=detail.filled.length>0&&Math.abs(difference)<=tolerance;
+  const tolerance=Math.max(100,current*.02),difference=detail.sum-current,baseReconciled=detail.filled.length>0&&Math.abs(difference)<=tolerance,otherTreatmentPending=detail.other>0,reconciled=baseReconciled&&!otherTreatmentPending;
   const federalFuture=parts.cbsNet,subnationalFuture=parts.ibsNet+parts.legacy;
   const contributions=[
    {key:'federal',label:'PIS/Cofins atuais → CBS líquida',current:detail.federal,future:federalFuture,value:federalFuture-detail.federal},
@@ -47,7 +47,7 @@
    ];
    primary=[...futureComponents].sort((a,b)=>b.value-a.value)[0]||null;
   }
-  return{known:true,current,future,delta,rate:current>0?delta/current:null,parts,detail,reconciled,tolerance,difference,contributions,primary,modelKey:model.key,year:r.year}
+  return{known:true,current,future,delta,rate:current>0?delta/current:null,parts,detail,reconciled,baseReconciled,otherTreatmentPending,tolerance,difference,contributions,primary,modelKey:model.key,year:r.year}
  }
  function signedMoney(v){if(!Number.isFinite(v))return'—';if(Math.abs(v)<.005)return money(0);return(v>0?'+ ':'− ')+money(Math.abs(v))}
  function renderStatus(bridge){
@@ -84,9 +84,14 @@
     set('bridgeAttributionText','Os componentes atuais somam aproximadamente a carga total usada no diagnóstico. A variação pode ser decomposta matematicamente por blocos.');
    }else if(b.primary){
     set('bridgePrimaryDriver',b.primary.label);
-    set('bridgePrimaryDriverText','É o maior componente identificado na carga futura, no valor de '+money(b.primary.value)+'. Sem conciliação da composição atual, ele não é apresentado como causa exclusiva da variação.');
-    set('bridgeAttributionQuality',b.detail.filled.length?'Composição não conciliada':'Atribuição indicativa');
-    set('bridgeAttributionText',b.detail.filled.length?'Os valores detalhados da carga atual não fecham com o total usado no diagnóstico. Corrija a diferença para obter atribuição causal por blocos.':'A carga atual está agregada. O simulador mostra a formação futura, mas evita atribuir a diferença a um tributo específico sem base documental.');
+    set('bridgePrimaryDriverText','É o maior componente identificado na carga futura, no valor de '+money(b.primary.value)+'. Sem conciliação completa, ele não é apresentado como causa exclusiva da variação.');
+    if(b.otherTreatmentPending&&b.baseReconciled){
+     set('bridgeAttributionQuality','Atribuição parcial');
+     set('bridgeAttributionText','A composição atual fecha com o total, mas existe IPI/outro tributo informado sem tratamento futuro separado no motor. Por segurança, a ponte não declara um responsável causal definitivo.');
+    }else{
+     set('bridgeAttributionQuality',b.detail.filled.length?'Composição não conciliada':'Atribuição indicativa');
+     set('bridgeAttributionText',b.detail.filled.length?'Os valores detalhados da carga atual não fecham com o total usado no diagnóstico. Corrija a diferença para obter atribuição causal por blocos.':'A carga atual está agregada. O simulador mostra a formação futura, mas evita atribuir a diferença a um tributo específico sem base documental.');
+    }
    }
    const wrap=$('taxBridgeContributionWrap'),body=$('taxBridgeContributionBody');
    if(wrap)wrap.hidden=!b.reconciled;
@@ -94,8 +99,9 @@
    set('taxBridgeContributionTotal',signedMoney(b.delta));
    const note=$('taxBridgeNote');
    if(note){
-    if(b.reconciled)note.textContent='A soma das contribuições reproduz a variação total dentro da tolerância de conciliação. Se houver IPI ou outro tributo atual relevante, confirme se ele está corretamente incluído no detalhamento antes de interpretar a atribuição.';
-    else note.textContent='Sem composição atual conciliada, a ponte mostra com precisão a carga futura e seus componentes, mas não inventa uma decomposição histórica. Preencha PIS/Cofins, ICMS, ISS e, se aplicável, IPI/outros para identificar o principal responsável pela variação.'
+    if(b.reconciled)note.textContent='A soma das contribuições reproduz a variação total dentro da tolerância de conciliação e permite identificar o principal bloco responsável pelo aumento ou redução.';
+    else if(b.otherTreatmentPending&&b.baseReconciled)note.textContent='A composição atual está conciliada, mas existe IPI/outro tributo relevante sem linha futura específica no motor. O relatório preserva a variação total, porém não atribui causalidade definitiva até esse tratamento ser confirmado.';
+    else note.textContent='Sem composição atual conciliada, a ponte mostra com precisão a carga futura e seus componentes, mas não inventa uma decomposição histórica. Preencha PIS/Cofins, ICMS e ISS para identificar o principal responsável pela variação; informe IPI/outros apenas quando aplicável.'
    }
    return b
   }catch(err){console.error('Ponte da variação tributária:',err);return{known:false,error:String(err)}}
