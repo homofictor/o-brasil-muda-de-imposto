@@ -637,8 +637,11 @@ function writeVerifiedAccountingProfit(){
  if(el.dataset.userEdited==='1')return null;
  if(currentText&&!alreadyImported&&Number.isFinite(currentValue)&&Math.abs(currentValue)>.000001)return null;
  if(typeof setMoneyInputValue==='function')setMoneyInputValue(el,best.value);else el.value=Math.round(best.value*100)/100;
- el.dataset.importVerified='1';el.dataset.importSource=best.source||'DRE importada';
- brmiImport.verifiedAccountingProfit={value:best.value,source:best.source||'DRE importada',confidence:best.confidence};
+ el.dataset.importVerified='1';el.dataset.importSource=best.source||'DRE importada';el.dataset.importConfidence=best.confidence||'';
+ if(best.fiscalMismatch)el.dataset.importFiscalMismatch='1';else delete el.dataset.importFiscalMismatch;
+ if(best.irpjExpense!=null)el.dataset.importIrpjExpense=String(best.irpjExpense);else delete el.dataset.importIrpjExpense;
+ if(best.csllExpense!=null)el.dataset.importCsllExpense=String(best.csllExpense);else delete el.dataset.importCsllExpense;
+ brmiImport.verifiedAccountingProfit={value:best.value,source:best.source||'DRE importada',confidence:best.confidence,fiscalMismatch:!!best.fiscalMismatch,irpjExpense:best.irpjExpense||0,csllExpense:best.csllExpense||0};
  try{
   const saved=JSON.parse(localStorage.getItem('brmi_v3')||'{}');saved.realAccountingProfitAnnual=String(el.value);localStorage.setItem('brmi_v3',JSON.stringify(saved));
  }catch(_){}
