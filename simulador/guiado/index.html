@@ -7,16 +7,16 @@
 <meta name="robots" content="noindex,follow">
 <title>Simulador Empresarial da Reforma Tributária | O Brasil muda de imposto</title><link rel="canonical" href="https://www.obrasilmudadeimposto.com.br/simulador/guiado/">
 <meta name="description" content="Simulador empresarial da Reforma Tributária com CNPJ, leitura de documentos, automação de dados e diagnóstico executivo.">
-<link rel="stylesheet" href="/simulador/v3/base.css?v=20260924-clean36">
-<link rel="stylesheet" href="/simulador/v3/results.css?v=20260924-clean36">
-<link rel="stylesheet" href="/simulador/v3/report-executive.css?v=20260924-clean36">
-<link rel="stylesheet" href="/simulador/v3/responsive.css?v=20260924-clean36">
-<link rel="stylesheet" href="/simulador/v3/enhanced-mobile.css?v=20260924-clean36">
-<link rel="stylesheet" href="/simulador/v3/diagnosis.css?v=20260924-clean36">
-<link rel="stylesheet" href="/simulador/v3/field-state.css?v=20260924-clean36">
-<link rel="stylesheet" href="/simulador/v3/economic-impact.css?v=20260924-clean36">
-<link rel="stylesheet" href="/simulador/v3/import.css?v=20260924-clean36">
-<link rel="stylesheet" href="/simulador/guiado/guided.css?v=20260924-clean36">
+<link rel="stylesheet" href="/simulador/v3/base.css?v=20260924-explain37">
+<link rel="stylesheet" href="/simulador/v3/results.css?v=20260924-explain37">
+<link rel="stylesheet" href="/simulador/v3/report-executive.css?v=20260924-explain37">
+<link rel="stylesheet" href="/simulador/v3/responsive.css?v=20260924-explain37">
+<link rel="stylesheet" href="/simulador/v3/enhanced-mobile.css?v=20260924-explain37">
+<link rel="stylesheet" href="/simulador/v3/diagnosis.css?v=20260924-explain37">
+<link rel="stylesheet" href="/simulador/v3/field-state.css?v=20260924-explain37">
+<link rel="stylesheet" href="/simulador/v3/economic-impact.css?v=20260924-explain37">
+<link rel="stylesheet" href="/simulador/v3/import.css?v=20260924-explain37">
+<link rel="stylesheet" href="/simulador/guiado/guided.css?v=20260924-explain37">
 </head>
 <body class="guidedMode">
 <header class="topbar erpTopbar">
@@ -53,7 +53,7 @@
 <div id="reportModal" class="reportModal" hidden role="dialog" aria-modal="true" aria-labelledby="recommendationTitle"><div class="reportShell"><div class="reportToolbar"><div><strong>Relatório do diagnóstico</strong><span>Simulador Guiado · motor V3.2</span></div><div class="reportToolbarActions"><button id="reportPrintBtn" type="button">Imprimir resumo</button><button id="reportCloseBtn" type="button">Fechar</button></div></div><div id="resultsMount" hidden></div></div></div>
  <footer><div><strong>O Brasil muda de imposto</strong><span>Wagner Rubim Rangel · Homo Fictor Edições Independentes</span></div><p>Ferramenta educativa. Não substitui planejamento tributário, parecer contábil ou jurídico.</p></footer>
 <script>
-(async()=>{const [a,b]=await Promise.all([fetch('/simulador/v3/partials/setup.html?v=20260924-clean36').then(r=>r.text()),fetch('/simulador/v3/partials/results.html?v=20260924-clean36').then(r=>r.text())]);document.getElementById('setupMount').innerHTML=a;document.getElementById('resultsMount').innerHTML=b;for(const name of ['data.js','money-format.js','import.js','field-state.js','cnpj.js','models.js','risk-cash.js','economic-impact.js','render.js','enhanced-results.js','diagnosis.js','audit-core.js','audit-render.js','profit-sensitivity.js','boot.js','report-ui.js','shareholder-report.js'])await new Promise((ok,fail)=>{const s=document.createElement('script');s.src='/simulador/v3/'+name+'?v=20260924-clean36';s.onload=ok;s.onerror=fail;document.body.appendChild(s)});if(typeof initDocumentImport==='function')initDocumentImport();await new Promise((ok,fail)=>{const s=document.createElement('script');s.src='/simulador/guiado/guided.js?v=20260924-clean36';s.onload=ok;s.onerror=fail;document.body.appendChild(s)})})().catch(err=>{console.error(err);document.getElementById('setupMount').innerHTML='<section class="panel"><h2>Não foi possível carregar o simulador.</h2><p>Atualize a página e tente novamente.</p></section>'});
+(async()=>{const [a,b]=await Promise.all([fetch('/simulador/v3/partials/setup.html?v=20260924-explain37').then(r=>r.text()),fetch('/simulador/v3/partials/results.html?v=20260924-explain37').then(r=>r.text())]);document.getElementById('setupMount').innerHTML=a;document.getElementById('resultsMount').innerHTML=b;for(const name of ['data.js','money-format.js','import.js','field-state.js','cnpj.js','models.js','risk-cash.js','economic-impact.js','render.js','enhanced-results.js','diagnosis.js','audit-core.js','audit-render.js','profit-sensitivity.js','diagnosis-explain.js','boot.js','report-ui.js','shareholder-report.js'])await new Promise((ok,fail)=>{const s=document.createElement('script');s.src='/simulador/v3/'+name+'?v=20260924-explain37';s.onload=ok;s.onerror=fail;document.body.appendChild(s)});if(typeof initDocumentImport==='function')initDocumentImport();await new Promise((ok,fail)=>{const s=document.createElement('script');s.src='/simulador/guiado/guided.js?v=20260924-explain37';s.onload=ok;s.onerror=fail;document.body.appendChild(s)})})().catch(err=>{console.error(err);document.getElementById('setupMount').innerHTML='<section class="panel"><h2>Não foi possível carregar o simulador.</h2><p>Atualize a página e tente novamente.</p></section>'});
 </script>
 <script defer src="/assets/usage.js?v=20260922-metrics1"></script>
 </body></html>
