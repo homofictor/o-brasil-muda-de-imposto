@@ -164,6 +164,20 @@
       <div class="shareholderQuestion"><strong>Pergunta central para o contador:</strong><span id="ownerAccountantQuestion">—</span></div>
     </section>
 
+    <section class="resultSection diagnosisExplainSection">
+      <div class="sectionTitle compact"><div><span>✓</span><h2>Entenda o seu diagnóstico</h2></div><p>Leitura automática gerada por regras do simulador a partir dos números e premissas desta simulação. Não utiliza texto livre de inteligência artificial.</p></div>
+      <div class="diagnosisExplainLead" id="diagnosisExplainLead">Gere o diagnóstico para visualizar a explicação dos principais resultados.</div>
+      <div class="diagnosisExplainGrid">
+        <article><h3>1. Por que este regime aparece à frente?</h3><p id="explainRegimeText">—</p><div class="explainFormula" id="explainRegimeFormula">—</div></article>
+        <article><h3>2. Como foi calculada a carga futura de consumo?</h3><p id="explainConsumptionText">—</p><div class="explainFormula" id="explainConsumptionFormula">—</div></article>
+        <article><h3>3. Por que os impostos aumentam ou diminuem?</h3><p id="explainVariationText">—</p><div class="explainFormula" id="explainVariationFormula">—</div></article>
+        <article><h3>4. Qual é o principal fator identificado?</h3><p id="explainDriverText">—</p><div class="explainFormula" id="explainDriverFormula">—</div></article>
+        <article><h3>5. Qual é o papel dos créditos?</h3><p id="explainCreditText">—</p><div class="explainFormula" id="explainCreditFormula">—</div></article>
+        <article><h3>6. O que a empresa deve validar?</h3><p id="explainActionText">—</p><div class="explainFormula" id="explainActionFormula">—</div></article>
+      </div>
+      <div class="diagnosisExplainCaveat" id="diagnosisExplainCaveat">A identificação exata da causa da variação depende da qualidade da carga atual informada e, quando disponível, de sua composição por PIS/Cofins, ICMS, ISS e IPI.</div>
+    </section>
+
     <section class="resultSection transitionSection">
       <div class="sectionTitle compact"><div><span>A</span><h2 id="vatCompareTitle">IBS/CBS: referência atual × 2027 × 2033</h2></div><p>O relatório separa a parcela do DAS ligada aos tributos substituídos da cobrança regular de IBS/CBS. Quando o Simples não é aplicável, a coluna do DAS é marcada como não aplicável.</p></div>
       <div class="compareWrap"><table class="compareTable"><thead><tr><th>Componente</th><th id="currentDasHead">Referência atual no DAS</th><th class="focus">2027 · início da cobrança regular</th><th>2033 · regime pleno</th></tr></thead><tbody><tr><td>CBS / tributos federais substituídos</td><td id="cmpCurrentCbs">—</td><td id="cmp2027Cbs" class="focus">—</td><td id="cmp2033Cbs">—</td></tr><tr><td>IBS / ICMS-ISS substituídos</td><td id="cmpCurrentIbs">—</td><td id="cmp2027Ibs" class="focus">—</td><td id="cmp2033Ibs">—</td></tr><tr class="strong"><td>Débito bruto destacado</td><td id="cmpCurrentGross">—</td><td id="cmp2027Gross" class="focus">—</td><td id="cmp2033Gross">—</td></tr><tr><td>(−) Crédito sobre insumos</td><td>—</td><td id="cmp2027Credit" class="focus">—</td><td id="cmp2033Credit">—</td></tr><tr class="strong"><td>(=) Carga líquida de IBS/CBS</td><td id="cmpCurrentNet">—</td><td id="cmp2027Net" class="focus">—</td><td id="cmp2033Net">—</td></tr></tbody></table></div>
