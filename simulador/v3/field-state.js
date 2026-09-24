@@ -1,4 +1,4 @@
-const fieldStateIds=['activity','simpleStatus','meiStatus','annex','monthlyRevenue','rbt12','monthlyPayroll','factorMode','b2bPct','purchasesPct','eligibleCreditPct','regularSuppliersPct','professionalReduction30','mixFull','mix30','mix40','mix60','mixZero','fullCbs','fullIbs','monthlyCppBase','employerRatePct','presumedIrpjPct','presumedCsllPct','realAccountingProfitAnnual','cashAndEquivalents','liquidInvestments','cashReserve','currentAssets','currentLiabilities','workingCapitalNet','interestExpense','debtStart','debtEnd','debtAverage','dreMonths','financeRateMode','financeRate','splitPct','floatDays','refundDays','capturePct','hybridCompliance','fullCompliance','legacyRate','realAdditionsAnnual','realExclusionsAnnual','irpjLossCarryforward','csllNegativeBase','currentConsumptionMode','currentConsumptionTaxAnnual','currentOperatingMarginPct','priceTransferPct'];
+const fieldStateIds=['activity','simpleStatus','meiStatus','annex','monthlyRevenue','rbt12','monthlyPayroll','factorMode','b2bPct','purchasesPct','eligibleCreditPct','regularSuppliersPct','professionalReduction30','mixFull','mix30','mix40','mix60','mixZero','fullCbs','fullIbs','monthlyCppBase','employerRatePct','presumedIrpjPct','presumedCsllPct','realAccountingProfitAnnual','profitProjectionMode','projectedRealProfitAnnual','cashAndEquivalents','liquidInvestments','cashReserve','currentAssets','currentLiabilities','workingCapitalNet','interestExpense','debtStart','debtEnd','debtAverage','dreMonths','financeRateMode','financeRate','splitPct','floatDays','refundDays','capturePct','hybridCompliance','fullCompliance','legacyRate','realAdditionsAnnual','realExclusionsAnnual','irpjLossCarryforward','csllNegativeBase','currentConsumptionMode','currentConsumptionTaxAnnual','currentOperatingMarginPct','priceTransferPct'];
 
 function fieldStateContainer(id){
  const el=$(id);return el?.closest('.field,.mix')||null;
@@ -57,7 +57,7 @@ function resetAutoFieldStates(){
 function initFieldStates(){
  insertFieldLegend();
  let restored={};try{restored=JSON.parse(localStorage.getItem('brmi_v3')||'{}')}catch(_){}
- const premiseIds=new Set(['fullCbs','fullIbs','employerRatePct','dreMonths','financeRateMode','splitPct','floatDays','refundDays','capturePct','currentConsumptionMode','priceTransferPct']);
+ const premiseIds=new Set(['fullCbs','fullIbs','employerRatePct','dreMonths','financeRateMode','profitProjectionMode','splitPct','floatDays','refundDays','capturePct','currentConsumptionMode','priceTransferPct']);
  fieldStateIds.forEach(id=>{
   const saved=Object.prototype.hasOwnProperty.call(restored,id)&&String(restored[id]).trim()!=='';
   if(premiseIds.has(id))setFieldState(id,'premise','PREMISSA');
