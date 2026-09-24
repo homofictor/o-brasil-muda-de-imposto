@@ -214,3 +214,38 @@
  .technicalReport.printTarget .transitionSection .timeline th{font-size:5pt!important}
  .technicalReport.printTarget .sourcesNote{font-size:6.5pt!important;margin-top:2mm!important}
 }
+
+
+/* Sensibilidade da lucratividade Real x Presumido */
+.profitProjectionGrid{margin-top:12px}
+.projectionDisabled{opacity:.68}
+.profitSensitivityAlert{margin:0 0 12px;padding:12px 14px;border:1px solid #bfd0e1;border-radius:10px;background:#f3f7fb;color:#3e5870;font-size:10px;line-height:1.5}
+.profitSensitivityAlert.warning{border-color:#e4c36e;background:#fff8e8;color:#6e5724}
+.profitSensitivityAlert strong{display:block;margin-bottom:3px;color:#102640}
+.profitSensitivityKpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.profitSensitivityKpis>div{padding:12px 13px;border:1px solid #dce4ec;border-radius:11px;background:#f9fbfd}
+.profitSensitivityKpis span,.profitSensitivityKpis small{display:block}
+.profitSensitivityKpis span{font-size:8.5px;font-weight:900;text-transform:uppercase;letter-spacing:.045em;color:#728093}
+.profitSensitivityKpis strong{display:block;margin:6px 0 4px;font-size:15px;line-height:1.2;color:#102640}
+.profitSensitivityKpis small{font-size:8.5px;line-height:1.4;color:#667585}
+.profitSensitivityTableWrap{margin-top:12px;overflow:auto;border:1px solid #dce4ec;border-radius:11px}
+.profitSensitivityTable{width:100%;border-collapse:collapse;min-width:660px}
+.profitSensitivityTable th,.profitSensitivityTable td{padding:9px 10px;border-bottom:1px solid #e5ebf0;text-align:left;font-size:9px}
+.profitSensitivityTable th{background:#f3f6f9;color:#6f7e8f;font-size:8px;text-transform:uppercase;letter-spacing:.04em}
+.profitSensitivityTable td strong,.profitSensitivityTable td small{display:block}.profitSensitivityTable td small{margin-top:2px;color:#778392}
+.profitSensitivityTable td.real{color:#13734f;font-weight:900}.profitSensitivityTable td.presumed{color:#8a5a00;font-weight:900}.profitSensitivityTable td.equal{color:#315a7d;font-weight:900}
+.profitSensitivityFoot{margin-top:9px;padding:9px 11px;border-left:3px solid #315a7d;background:#f6f9fc;color:#59697a;font-size:9px;line-height:1.45}
+@media(max-width:900px){.profitSensitivityKpis{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.profitSensitivityKpis{grid-template-columns:1fr}}
+@media print{
+ .technicalReport.printTarget .profitSensitivitySection{break-inside:auto!important}
+ .technicalReport.printTarget .profitSensitivityAlert{margin:0 0 3mm!important;padding:2.8mm 3mm!important;font-size:7.1pt!important;break-inside:avoid!important}
+ .technicalReport.printTarget .profitSensitivityKpis{grid-template-columns:repeat(4,1fr)!important;gap:2.2mm!important}
+ .technicalReport.printTarget .profitSensitivityKpis>div{padding:2.7mm!important;border-radius:2mm!important;break-inside:avoid!important}
+ .technicalReport.printTarget .profitSensitivityKpis span{font-size:5.8pt!important}.technicalReport.printTarget .profitSensitivityKpis strong{font-size:10pt!important;margin:1.2mm 0!important}.technicalReport.printTarget .profitSensitivityKpis small{font-size:6.2pt!important}
+ .technicalReport.printTarget .profitSensitivityTableWrap{margin-top:3mm!important;overflow:visible!important;border-radius:2mm!important;break-inside:avoid!important}
+ .technicalReport.printTarget .profitSensitivityTable{min-width:0!important;table-layout:fixed!important}
+ .technicalReport.printTarget .profitSensitivityTable th,.technicalReport.printTarget .profitSensitivityTable td{padding:1.8mm 1.5mm!important;font-size:6.3pt!important;line-height:1.3!important}
+ .technicalReport.printTarget .profitSensitivityTable th{font-size:5.7pt!important}
+ .technicalReport.printTarget .profitSensitivityFoot{margin-top:2.5mm!important;padding:2.3mm 2.8mm!important;font-size:6.6pt!important;break-inside:avoid!important}
+}
