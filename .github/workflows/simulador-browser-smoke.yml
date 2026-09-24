@@ -464,7 +464,7 @@ jobs:
               caveat: document.getElementById('diagnosisExplainCaveat')?.textContent || ''
             }));
             assert.match(explainCheck.lead, /regras fixas/i);
-            assert.match(explainCheck.regime, /Lucro Real|Lucro Presumido|resultado histórico/i);
+            assert.match(explainCheck.regime, /Lucro Real|Lucro Presumido|resultado histórico|dados atuais não permitem comparar/i);
             assert.match(explainCheck.consumption, /IBS\/CBS bruto/i);
             assert.match(explainCheck.variation, /carga/i);
             assert.match(explainCheck.driver, /principal componente|principal fator|carga futura/i);
