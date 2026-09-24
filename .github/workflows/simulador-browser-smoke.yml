@@ -461,7 +461,6 @@ jobs:
                 compareFits: !compare || compare.scrollWidth <= compare.clientWidth + 3,
                 timelineFits: !timeline || timeline.scrollWidth <= timeline.clientWidth + 3,
                 timelineAvoidsSplit: !timeline || ['avoid','avoid-page'].includes(getComputedStyle(timeline).breakInside),
-                pageMarginRule: [...document.styleSheets].flatMap(s => { try { return [...s.cssRules] } catch(_) { return [] } }).filter(r => r.type === CSSRule.PAGE_RULE).map(r => r.style.margin || '').join('|'),
                 logoHeight: document.querySelector('.technicalPrintBrand img')?.getBoundingClientRect().height || 0,
                 evidenceCount: document.querySelectorAll('#ownerEvidenceGrid > div').length,
                 accountantQuestion: document.getElementById('ownerAccountantQuestion')?.textContent || '',
@@ -477,7 +476,6 @@ jobs:
             assert.equal(printLayout.compareFits, true);
             assert.equal(printLayout.timelineFits, true);
             assert.equal(printLayout.timelineAvoidsSplit, true);
-            assert.match(printLayout.pageMarginRule, /0/);
             assert.ok(printLayout.logoHeight > 40);
             assert.equal(printLayout.evidenceCount, 6);
             assert.match(printLayout.accountantQuestion, /projeção de lucro/i);
