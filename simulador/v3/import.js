@@ -461,9 +461,8 @@ function groupedImportCandidates(){
    const sources=[...new Set([...(same._sources||[]),item.source].filter(Boolean))],reasons=[...new Set([...(same._reasons||[]),item.reason].filter(Boolean))],accepted=!!(same.accepted||item.accepted),applied=!!(same.applied||item.applied);
    if((rank[item.confidence]||0)>(rank[same.confidence]||0)||(Number(item.sourceQuality)||0)>(Number(same.sourceQuality)||0)){const keep={_sources:sources,_reasons:reasons,accepted,applied};Object.assign(same,item,keep)}
    else{same._sources=sources;same._reasons=reasons;same.accepted=accepted;same.applied=applied}
-   same.source=sources.join(' + ');
-   if(sources.length>1)same.reason=(same.reason||reasons[0]||'')+' Mesmo valor localizado em '+sources.length+' fontes.';
   });
+  unique.forEach(item=>{const sources=item._sources||[];if(sources.length)item.source=sources.join(' + ');if(sources.length>1)item.reason=((item._reasons||[])[0]||item.reason||'')+' Mesmo valor localizado em '+sources.length+' fontes.'});
   out[field]=unique;
  });
  return out
@@ -496,13 +495,13 @@ function renderImportCandidates(){
  syncApplyHighButtonState(groups)
 }function candidateValuesEqual(a,b){
  if(!a||!b||a.field!==b.field)return false;
- if(a.field==='cnpj')return String(a.value)===String(b.value);
+ if(a.field==='cnpj')return importedCnpjDigits(a.value)===importedCnpjDigits(b.value);
  if(!Number.isFinite(a.value)||!Number.isFinite(b.value))return false;
  return Math.abs(a.value-b.value)<=Math.max(.01,Math.abs(a.value)*.000001);
 }
 function syncImportCandidateButtons(field,activeIndex){
  const activeItem=brmiImport.candidates[activeIndex];
- brmiImport.candidates.forEach(item=>{if(!item||item.field!==field)return;const active=candidateValuesEqual(item,activeItem);item.applied=active;if(active&&activeItem?.accepted)item.accepted=true});
+ brmiImport.candidates.forEach(item=>{if(!item||item.field!==field)return;const active=candidateValuesEqual(item,activeItem);item.applied=active;item.accepted=active?!!activeItem?.accepted:false});
  document.querySelectorAll('[data-import-index]').forEach(btn=>{const idx=Number(btn.dataset.importIndex),item=brmiImport.candidates[idx];if(!item||item.field!==field)return;const s=importCandidateButtonState(item);btn.textContent=s.label;btn.classList.toggle('importApplied',s.cls==='importApplied');btn.classList.toggle('importAutoFilled',s.cls==='importAutoFilled');btn.disabled=s.disabled});
  syncApplyHighButtonState()
 }
@@ -519,7 +518,7 @@ function applyImportCandidate(i,button){
   return false
  }
  const currentText=String(el.value||'').trim(),currentValue=typeof parseMoneyValue==='function'?parseMoneyValue(currentText):Number(currentText||0),alreadyImported=el.dataset.importVerified==='1'||el.dataset.importSource;
- if(!explicit&&el.dataset.userEdited==='1')return false;
+ if(!explicit&&(el.dataset.userEdited==='1'||el.dataset.importAccepted==='1'))return false;
  if(!explicit&&currentText&&!alreadyImported&&Number.isFinite(currentValue)&&Math.abs(currentValue)>.000001&&c.field!=='cnpj')return false;
  if(explicit){delete el.dataset.userEdited;el.dataset.importAccepted='1';c.accepted=true}
  if(c.field==='cnpj'){el.value=typeof normalizeCnpjInput==='function'?normalizeCnpjInput(c.value):formatImportedCnpj(c.value);el.dataset.importVerified='1';el.dataset.importSource=c.source||'';if(typeof markFieldAuto==='function')markFieldAuto('cnpj','IMPORTADO');syncImportCandidateButtons(c.field,i);if(typeof lookupCnpj==='function')lookupCnpj();return true}
@@ -607,7 +606,7 @@ function refreshNetToGrossTaxApproximation(){
 function clearImportedDocumentValues(){
  const fields=new Set((brmiImport.candidates||[]).map(x=>x?.field).filter(Boolean));['realAccountingProfitAnnual','currentConsumptionTaxAnnual','currentOperatingMarginPct','debtStart','debtEnd','interestExpense','cashAndEquivalents','liquidInvestments','currentAssets','currentLiabilities'].forEach(x=>fields.add(x));
  const cleared=[];
- fields.forEach(id=>{if(id==='cnpj')return;const el=$(id);if(!el||el.dataset.userEdited==='1'||el.dataset.importVerified!=='1')return;el.value='';delete el.dataset.importVerified;delete el.dataset.importSource;delete el.dataset.importDerivedKey;delete el.dataset.sourceNote;cleared.push(id);if(typeof markFieldPending==='function')markFieldPending(id,'REVISAR')});
+ fields.forEach(id=>{if(id==='cnpj')return;const el=$(id);if(!el||el.dataset.userEdited==='1'||el.dataset.importVerified!=='1')return;el.value='';delete el.dataset.importVerified;delete el.dataset.importSource;delete el.dataset.importConfidence;delete el.dataset.importAccepted;delete el.dataset.importDerivedKey;delete el.dataset.sourceNote;cleared.push(id);if(typeof markFieldPending==='function')markFieldPending(id,'REVISAR')});
  if(cleared.includes('rbt12')&&$('revenueSync')?.checked&&$('monthlyRevenue')){$('monthlyRevenue').value='';cleared.push('monthlyRevenue')}
  try{const saved=JSON.parse(localStorage.getItem('brmi_v3')||'{}');cleared.forEach(id=>delete saved[id]);localStorage.setItem('brmi_v3',JSON.stringify(saved))}catch(_){}
  brmiImport.verifiedAccountingProfit=null;brmiImport.revenueQuality=null;
@@ -657,7 +656,7 @@ async function processImportFiles(files){
 }
 function clearImport(){clearImportedDocumentValues();brmiImport.files=[];brmiImport.docs=[];brmiImport.candidates=[];brmiImport.lastLookupCnpj=null;renderImportFiles();if($('importSummary'))$('importSummary').hidden=true;if($('importEmpty'))$('importEmpty').hidden=true;const inp=$('importFiles');if(inp)inp.value=''}
 function initDocumentImport(){const setup=$('setupMount'),mount=$('documentImportMount')||setup;if(!setup||!mount)return;if($('importPanel')){const panel=$('importPanel');if(panel.parentElement!==mount)mount.appendChild(panel);return;}
- ['rbt12','realAccountingProfitAnnual','currentConsumptionTaxAnnual','currentOperatingMarginPct','debtStart','debtEnd','interestExpense','cashAndEquivalents','liquidInvestments','currentAssets','currentLiabilities'].forEach(id=>{const el=$(id);if(!el||el.dataset.importProvenanceBound)return;el.dataset.importProvenanceBound='1';const userEdit=e=>{if(e.isTrusted){el.dataset.userEdited='1';delete el.dataset.importVerified;delete el.dataset.importSource}};el.addEventListener('input',userEdit);el.addEventListener('change',userEdit)});
+ ['rbt12','realAccountingProfitAnnual','currentConsumptionTaxAnnual','currentOperatingMarginPct','debtStart','debtEnd','interestExpense','cashAndEquivalents','liquidInvestments','currentAssets','currentLiabilities'].forEach(id=>{const el=$(id);if(!el||el.dataset.importProvenanceBound)return;el.dataset.importProvenanceBound='1';const userEdit=e=>{if(e.isTrusted){el.dataset.userEdited='1';delete el.dataset.importVerified;delete el.dataset.importSource;delete el.dataset.importConfidence;delete el.dataset.importAccepted;(brmiImport.candidates||[]).forEach(x=>{if(x?.field===id){x.applied=false;x.accepted=false}});if(e.type==='change')renderImportCandidates()}};el.addEventListener('input',userEdit);el.addEventListener('change',userEdit)});
  bindImportedCompanyIntegrity();
  const revenue=$('rbt12');if(revenue&&!revenue.dataset.importGrossNetBound){revenue.dataset.importGrossNetBound='1';const refresh=()=>{if(brmiImport.docs?.length){refreshNetToGrossTaxApproximation();updateEconomicMetricAvailability();if(typeof calculate==='function')calculate()}};revenue.addEventListener('change',refresh);revenue.addEventListener('blur',refresh)}
  mount.insertAdjacentHTML('beforeend',importMarkup());document.dispatchEvent(new CustomEvent('brmi:import-ready'));const input=$('importFiles'),drop=$('importDrop'),choose=$('importChooseBtn');choose?.addEventListener('click',e=>{e.stopPropagation();input?.click()});drop?.addEventListener('click',e=>{if(e.target!==choose)input?.click()});drop?.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();input?.click()}});input?.addEventListener('change',()=>processImportFiles(input.files));['dragenter','dragover'].forEach(ev=>drop?.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('drag')}));['dragleave','drop'].forEach(ev=>drop?.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('drag')}));drop?.addEventListener('drop',e=>processImportFiles(e.dataTransfer.files));$('importApplyHigh')?.addEventListener('click',applyHighConfidenceCandidates);$('importClear')?.addEventListener('click',clearImport)}
