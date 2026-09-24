@@ -324,11 +324,7 @@
   .technicalReport.printTarget .profitSensitivityAlert span{display:block!important;margin-top:1.5mm!important}
 
   /* rodapé próprio do relatório, substitui o rodapé do navegador */
-  .technicalReport.printTarget .technicalPrintRunningFooter{
-    display:flex!important;position:fixed!important;left:9mm!important;right:9mm!important;bottom:2.5mm!important;
-    justify-content:space-between!important;gap:8mm!important;
-    color:#768393!important;font-size:6.3pt!important;line-height:1!important
-  }
+  .technicalReport.printTarget .technicalPrintRunningFooter{display:none!important}
   .technicalReport.printTarget .technicalPrintCover .technicalPrintCoverFooter{margin-bottom:2mm!important}
 }
 .technicalPrintRunningFooter{display:none}
