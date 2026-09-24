@@ -44,10 +44,10 @@ jobs:
               await page.goto(process.env.BASE_URL + '/simulador/guiado/', { waitUntil: 'domcontentloaded', timeout: 45000 });
               const versionLink = page.locator('link[href*="guided.css"]').first();
               deployedVersion = await versionLink.count() ? (await versionLink.getAttribute('href') || '') : '';
-              if (/20260924-profitsens30/.test(deployedVersion)) break;
+              if (/20260924-profitsens31/.test(deployedVersion)) break;
               await page.waitForTimeout(15000);
             }
-            assert.match(deployedVersion || '', /20260924-profitsens30/);
+            assert.match(deployedVersion || '', /20260924-profitsens31/);
             await page.waitForSelector('#cnpj', { timeout: 30000 });
             await page.waitForSelector('#importPanel', { timeout: 30000 });
             assert.equal(await page.locator('#importPanel').isVisible(), true);
@@ -317,6 +317,49 @@ jobs:
             assert.equal(projectionSwitch.highKey, 'presumed');
             assert.equal(projectionSwitch.lowSensitive, false);
             assert.equal(projectionSwitch.highSensitive, false);
+
+            const pedraSensitivity = await page.evaluate(() => {
+              const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = String(v); };
+              set('monthlyRevenue', 360789.1741666667);
+              set('rbt12', 4329470.09);
+              set('simpleStatus', 'no');
+              set('monthlyCppBase', '');
+              set('legacyRate', 10);
+              set('presumedIrpjPct', 8);
+              set('presumedCsllPct', 12);
+              set('realAdditionsAnnual', '');
+              set('realExclusionsAnnual', '');
+              set('irpjLossCarryforward', '');
+              set('csllNegativeBase', '');
+              set('profitProjectionMode', 'sensitivity');
+              set('projectedRealProfitAnnual', '');
+              set('realAccountingProfitAnnual', -183865.94);
+              const sensitivity = modelForYear(2027);
+              const recSensitivity = recommendation(sensitivity);
+              const point = sensitivity.breakEven?.profit || 0;
+              set('profitProjectionMode', 'manual');
+              set('projectedRealProfitAnnual', 300000);
+              const low = modelForYear(2027), lowRec = recommendation(low);
+              set('projectedRealProfitAnnual', 500000);
+              const high = modelForYear(2027), highRec = recommendation(high);
+              set('profitProjectionMode', 'sensitivity');
+              set('projectedRealProfitAnnual', '');
+              calculate();
+              return {
+                point,
+                margin: sensitivity.breakEven?.margin || 0,
+                rec: recSensitivity.key,
+                sensitive: sensitivity.realDecisionSensitive,
+                low: lowRec.key,
+                high: highRec.key
+              };
+            });
+            assert.equal(pedraSensitivity.sensitive, true);
+            assert.equal(pedraSensitivity.rec, 'sensitive');
+            assert.ok(pedraSensitivity.point > 391000 && pedraSensitivity.point < 393500);
+            assert.ok(pedraSensitivity.margin > 0.09 && pedraSensitivity.margin < 0.092);
+            assert.equal(pedraSensitivity.low, 'real');
+            assert.equal(pedraSensitivity.high, 'presumed');
 
             await page.evaluate(() => {
               document.getElementById('monthlyCppBase').value = '';
