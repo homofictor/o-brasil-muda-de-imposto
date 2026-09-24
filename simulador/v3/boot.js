@@ -82,7 +82,7 @@ function calculate(){
  $('structuralDecision').textContent=srec.title;$('structuralReason').textContent=srec.text;
  const fr=factorRValue();$('factorResult').textContent=r.simpleEligible?pct1(fr):'N/A';$('factorResultText').textContent=r.simpleEligible?(cnaeSuggestion?.factorR?(fr>=.28?'Pelas premissas, tende ao Anexo III.':'Pelas premissas, tende ao Anexo V.'):'Exibido como indicador de referência.'):'Fator R não entra na análise prospectiva quando o Simples não é alternativa confirmada.';
  if(typeof renderReferenceComparison==='function')renderReferenceComparison(all);
- renderVatSummary(r);renderTimeline(all);renderModels(r,rec);renderCompetition(r);renderCash(r);if(typeof renderEconomicImpact==='function')renderEconomicImpact(r);renderActions(r,rec);renderNarrative(r,rec,structural,srec);if(typeof renderProfitSensitivity==='function')renderProfitSensitivity();if(typeof refreshMoneyInputs==='function')refreshMoneyInputs();
+ renderVatSummary(r);renderTimeline(all);renderModels(r,rec);renderCompetition(r);renderCash(r);if(typeof renderEconomicImpact==='function')renderEconomicImpact(r);renderActions(r,rec);renderNarrative(r,rec,structural,srec);if(typeof renderProfitSensitivity==='function')renderProfitSensitivity();if(typeof renderDiagnosisExplanation==='function')renderDiagnosisExplanation();if(typeof refreshMoneyInputs==='function')refreshMoneyInputs();
  try{localStorage.setItem('brmi_v3',JSON.stringify(Object.fromEntries([...document.querySelectorAll('input,select')].filter(el=>el.id&&!['yearRange','cnpj','cashReserve','workingCapitalNet','debtAverage'].includes(el.id)).map(el=>[el.id,el.type==='checkbox'?el.checked:el.value]))))}catch(_){}
 }
 function restore(){
