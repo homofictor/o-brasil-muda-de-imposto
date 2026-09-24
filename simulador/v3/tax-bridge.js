@@ -64,7 +64,7 @@
   try{
    renderStatus();
    if(typeof root.modelForYear!=='function')return;
-   const year=typeof root.selectedYear!=='undefined'?root.selectedYear:2027,r=root.modelForYear(year),models=validModels(r),model=models[0];
+   const year=Math.max(2027,Math.min(2033,Number($('yearRange')?.value)||2027)),r=root.modelForYear(year),models=validModels(r),model=models[0];
    let impact=root.lastEconomicImpact;if((!impact||impact.modelKey!==model?.key)&&typeof root.economicImpactFor==='function'&&model)impact=root.economicImpactFor(r,model);
    const b=buildTaxBridge(r,model,impact);root.lastTaxBridge=b;
    const set=(id,v)=>{const n=$(id);if(n)n.textContent=v==null?'—':String(v)};
