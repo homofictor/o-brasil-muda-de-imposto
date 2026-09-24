@@ -44,10 +44,10 @@ jobs:
               await page.goto(process.env.BASE_URL + '/simulador/guiado/', { waitUntil: 'domcontentloaded', timeout: 45000 });
               const versionLink = page.locator('link[href*="guided.css"]').first();
               deployedVersion = await versionLink.count() ? (await versionLink.getAttribute('href') || '') : '';
-              if (/20260924-print33/.test(deployedVersion)) break;
+              if (/20260924-print34/.test(deployedVersion)) break;
               await page.waitForTimeout(15000);
             }
-            assert.match(deployedVersion || '', /20260924-print33/);
+            assert.match(deployedVersion || '', /20260924-print34/);
             await page.waitForSelector('#cnpj', { timeout: 30000 });
             await page.waitForSelector('#importPanel', { timeout: 30000 });
             assert.equal(await page.locator('#importPanel').isVisible(), true);
@@ -461,7 +461,8 @@ jobs:
                 compareFits: !compare || compare.scrollWidth <= compare.clientWidth + 3,
                 timelineFits: !timeline || timeline.scrollWidth <= timeline.clientWidth + 3,
                 timelineAvoidsSplit: !timeline || ['avoid','avoid-page'].includes(getComputedStyle(timeline).breakInside),
-                logoHeight: document.querySelector('.technicalPrintBrand img')?.getBoundingClientRect().height || 0,
+                logoHeight: document.querySelector('.technicalPrintLogoMark img')?.getBoundingClientRect().height || 0,
+                publisherWordmark: document.querySelector('.technicalPrintPublisherWordmark')?.textContent || '',
                 evidenceCount: document.querySelectorAll('#ownerEvidenceGrid > div').length,
                 accountantQuestion: document.getElementById('ownerAccountantQuestion')?.textContent || '',
                 title: document.title,
@@ -476,7 +477,9 @@ jobs:
             assert.equal(printLayout.compareFits, true);
             assert.equal(printLayout.timelineFits, true);
             assert.equal(printLayout.timelineAvoidsSplit, true);
-            assert.ok(printLayout.logoHeight > 40);
+            assert.ok(printLayout.logoHeight > 35);
+            assert.match(printLayout.publisherWordmark, /HOMO FICTOR/i);
+            assert.match(printLayout.publisherWordmark, /EDIÇÕES INDEPENDENTES/i);
             assert.equal(printLayout.evidenceCount, 6);
             assert.match(printLayout.accountantQuestion, /projeção de lucro/i);
             assert.equal(printLayout.literalSlashN, false);
