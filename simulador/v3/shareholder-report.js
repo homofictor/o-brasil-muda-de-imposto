@@ -30,8 +30,9 @@
    set('ownerCurrentTax',impact?.known?money(impact.currentTax):'PENDENTE');
    set('ownerCurrentTaxNote',impact?.known?(impact.confidence==='low'?'Estimativa preliminar · origem com baixa confiança.':impact.confidence==='medium'?'Estimativa de cenário · premissas ainda sujeitas a validação.':'Carga líquida anual usada como base da comparação.'):'Informe ou importe a carga líquida atual para medir o efeito da reforma.');
    set('ownerCurrentMargin',Number.isFinite(margin)?pct(margin):'PENDENTE');
+   set('ownerBestTotalLabel',r.realDecisionSensitive?'Base comparável na referência histórica':'Menor base tributária em '+r.year);
    set('ownerBestTotal',best?money(best.total):'—');
-   set('ownerBestTotalNote',best?(((best.key==='real'||best.key==='presumed')&&!best.totalComplete)?'Base comparável sem CPP patronal.':'Desembolso anual nas premissas informadas.'):'Sem cenário validado');
+   set('ownerBestTotalNote',best?(r.realDecisionSensitive?'Usa o resultado histórico apenas para referência; a decisão futura depende da lucratividade projetada.':((best.key==='real'||best.key==='presumed')&&!best.totalComplete)?'Base comparável sem CPP patronal.':'Desembolso anual nas premissas informadas.'):'Sem cenário validado');
    set('ownerGap',gap==null?'—':money(gap));set('ownerSecondRegime',second?'vs. '+second.name:'Sem segundo regime validado');
    set('ownerFutureConsumption',money((r.netVat||0)+(r.legacy||0)));
    set('ownerWorkingCapital',cash?.working==null?'—':money(cash.working));
