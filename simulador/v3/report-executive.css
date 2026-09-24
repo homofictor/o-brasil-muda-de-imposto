@@ -334,11 +334,12 @@
  .technicalReport.printTarget .technicalPrintBrand{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:7mm!important}
  .technicalReport.printTarget .technicalPrintPublisherBrand{display:flex!important;align-items:center!important;gap:2.8mm!important;flex:0 0 auto!important}
  .technicalReport.printTarget .technicalPrintLogoMark{
-   display:block!important;width:19mm!important;height:13mm!important;overflow:hidden!important;flex:0 0 19mm!important
+   display:flex!important;align-items:center!important;justify-content:center!important;
+   width:20mm!important;height:12mm!important;overflow:visible!important;flex:0 0 20mm!important
  }
  .technicalReport.printTarget .technicalPrintLogoMark img{
-   display:block!important;width:19mm!important;height:auto!important;max-height:none!important;
-   margin:0!important;padding:0!important;border:0!important;transform:translateY(-.4mm)!important
+   display:block!important;width:20mm!important;height:12mm!important;object-fit:contain!important;object-position:center!important;
+   margin:0!important;padding:0!important;border:0!important;transform:none!important
  }
  .technicalReport.printTarget .technicalPrintPublisherWordmark{display:block!important;line-height:1.05!important}
  .technicalReport.printTarget .technicalPrintPublisherWordmark b{
