@@ -27,7 +27,8 @@
   if(section.hidden)return;
   const hist=byId('sensHistoricalProfit'),proj=byId('sensProjectedProfit'),alert=byId('profitSensitivityAlert');
   if(hist)hist.textContent=r.historicalProfitKnown?money(r.historicalAccountingProfit):'Não informado';
-  if(byId('sensHistoricalNote'))byId('sensHistoricalNote').textContent=r.historicalProfitKnown?(r.historicalAccountingProfit<0?'Prejuízo histórico. Não é projeção automática de 2027.':'Referência histórica. Não é projeção automática de 2027.'):'Sem DRE histórica suficiente.';
+  const source=byId('realAccountingProfitAnnual')?.dataset?.importSource||'',yearMatch=String(source).match(/20\d{2}/),sourceYear=yearMatch?yearMatch[0]:'';
+  if(byId('sensHistoricalNote'))byId('sensHistoricalNote').textContent=r.historicalProfitKnown?((r.historicalAccountingProfit<0?'Prejuízo histórico':'Resultado histórico')+(sourceYear?' de '+sourceYear:'')+'. Não é projeção automática de 2027.'):'Sem DRE histórica suficiente.';
   if(proj)proj.textContent=r.projectedProfitKnown?money(r.projectedAccountingProfit):'Não informado';
   if(byId('sensProjectedNote'))byId('sensProjectedNote').textContent=r.projectedProfitKnown?'Valor prospectivo informado pelo usuário.':mode==='historical'?'Histórico usado como hipótese por escolha do usuário.':'A análise permanece em modo de sensibilidade.';
   if(byId('sensBreakEvenProfit'))byId('sensBreakEvenProfit').textContent=money(be.profit);
