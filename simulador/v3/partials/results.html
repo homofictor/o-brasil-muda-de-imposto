@@ -144,7 +144,7 @@
         <div><span>Tributos atuais sobre consumo</span><strong id="ownerCurrentTax">—</strong><small id="ownerCurrentTaxNote">Base atual para medir a reforma.</small></div>
         <div><span>Margem EBITDA atual</span><strong id="ownerCurrentMargin">—</strong><small>Indicador operacional informado ou importado.</small></div>
         <div><span>Menor base tributária em 2027</span><strong id="ownerBestTotal">—</strong><small id="ownerBestTotalNote">—</small></div>
-        <div><span>Diferença para o 2º regime</span><strong id="ownerGap">—</strong><small id="ownerSecondRegime">—</small></div>
+        <div><span>Diferença para o 2º regime</span><strong id="ownerGap">—</strong><small id="ownerSecondRegime">—</small></div><div><span>Ponto de indiferença Real x Presumido</span><strong id="ownerProfitBreakEven">—</strong><small id="ownerProfitBreakEvenNote">Depende do faturamento e das premissas fiscais.</small></div>
         <div><span>Tributos sobre consumo em 2027</span><strong id="ownerFutureConsumption">—</strong><small>IBS/CBS líquido + ICMS/ISS residual, conforme o cenário.</small></div>
         <div><span>Necessidade adicional de liquidez</span><strong id="ownerWorkingCapital">—</strong><small>Cenário financeiro do split payment.</small></div>
         <div><span id="ownerResultEffectLabel">Efeito anual no resultado</span><strong id="ownerResultEffect">—</strong><small id="ownerResultEffectNote">Depende da carga atual e do repasse a preços.</small></div>
@@ -172,6 +172,19 @@
     <section class="resultSection">
       <div class="sectionTitle compact"><div><span>B</span><h2>Memória comparativa dos regimes</h2></div><p id="modelSectionText">O ranking tributário considera impostos estimados e custo operacional informado. A análise comercial aparece separadamente.</p></div>
       <div class="models" id="modelCards"></div>
+    </section>
+
+    <section class="resultSection profitSensitivitySection">
+      <div class="sectionTitle compact"><div><span>B.1</span><h2>Rentabilidade futura: o que pode mudar a decisão</h2></div><p>O resultado contábil histórico é referência. A escolha prospectiva entre Lucro Real e Lucro Presumido depende do lucro tributável que a empresa efetivamente gerar nos próximos anos.</p></div>
+      <div class="profitSensitivityAlert" id="profitSensitivityAlert">Aguardando dados suficientes para calcular a sensibilidade.</div>
+      <div class="profitSensitivityKpis">
+        <div><span>Resultado histórico de referência</span><strong id="sensHistoricalProfit">—</strong><small id="sensHistoricalNote">DRE importada ou valor informado.</small></div>
+        <div><span>Lucro projetado usado no cenário</span><strong id="sensProjectedProfit">—</strong><small id="sensProjectedNote">Não informado.</small></div>
+        <div><span>Ponto de indiferença aproximado</span><strong id="sensBreakEvenProfit">—</strong><small id="sensBreakEvenMargin">—</small></div>
+        <div><span>Leitura para 2027</span><strong id="sensDecision">—</strong><small id="sensDecisionNote">—</small></div>
+      </div>
+      <div class="profitSensitivityTableWrap"><table class="profitSensitivityTable"><thead><tr><th>Cenário de margem</th><th>Lucro anual</th><th>IRPJ + CSLL no Real</th><th>IRPJ + CSLL no Presumido</th><th>Leitura</th></tr></thead><tbody id="profitSensitivityBody"></tbody></table></div>
+      <div class="profitSensitivityFoot" id="profitSensitivityFoot">A análise de sensibilidade não substitui orçamento, projeção de resultados, e-Lalur/e-Lacs nem conferência dos ajustes fiscais.</div>
     </section>
 
     <section class="resultSection competition">
