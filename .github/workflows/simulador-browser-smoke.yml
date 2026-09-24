@@ -44,10 +44,10 @@ jobs:
               await page.goto(process.env.BASE_URL + '/simulador/guiado/', { waitUntil: 'domcontentloaded', timeout: 45000 });
               const versionLink = page.locator('link[href*="guided.css"]').first();
               deployedVersion = await versionLink.count() ? (await versionLink.getAttribute('href') || '') : '';
-              if (/20260923-governance25/.test(deployedVersion)) break;
+              if (/20260924-profitsens30/.test(deployedVersion)) break;
               await page.waitForTimeout(15000);
             }
-            assert.match(deployedVersion || '', /20260923-governance25/);
+            assert.match(deployedVersion || '', /20260924-profitsens30/);
             await page.waitForSelector('#cnpj', { timeout: 30000 });
             await page.waitForSelector('#importPanel', { timeout: 30000 });
             assert.equal(await page.locator('#importPanel').isVisible(), true);
@@ -182,6 +182,53 @@ jobs:
             assert.equal(importCheck.profit, 100000);
             assert.equal(importCheck.rbt12Candidates, 0);
 
+            const fiscalMismatchCheck = await page.evaluate(() => {
+              const syntheticLossDre = [
+                'DEMONSTRAÇÃO DO RESULTADO DO EXERCÍCIO',
+                '2025',
+                'RECEITA OPERACIONAL BRUTA 4.329.470,09',
+                'RECEITA OPERACIONAL LÍQUIDA 3.770.667,11',
+                'RESULTADO ANTES DOS TRIBUTOS S/ LUCRO (183.865,94)',
+                'PROVISÃO PARA CSLL (51.304,39)',
+                'PROVISÃO PARA IRPJ (91.319,32)',
+                'RESULTADO DO EXERCÍCIO (326.489,65)'
+              ].join('\n');
+              const doc = analyseImportDoc({ name: 'dre2025-pedra-lisa.pdf' }, { text: syntheticLossDre, rows: null });
+              const candidate = doc.candidates.find(x => x.field === 'realAccountingProfitAnnual');
+              if (!candidate) return { candidate: false };
+              brmiImport.candidates = [candidate];
+              brmiImport.candidates[0]._index = 0;
+              const applied = applyImportCandidate(0, true);
+              const profit = document.getElementById('realAccountingProfitAnnual');
+              const out = {
+                candidate: true,
+                fiscalMismatch: candidate.fiscalMismatch === true,
+                applied,
+                datasetMismatch: profit?.dataset?.importFiscalMismatch || '',
+                importedProfit: parseMoneyValue(profit?.value || ''),
+                provision: Number(profit?.dataset?.importIrpjExpense || 0) + Number(profit?.dataset?.importCsllExpense || 0),
+                reason: candidate.reason || ''
+              };
+              if (profit) {
+                delete profit.dataset.importFiscalMismatch;
+                delete profit.dataset.importIrpjExpense;
+                delete profit.dataset.importCsllExpense;
+                delete profit.dataset.importAccepted;
+                delete profit.dataset.importVerified;
+                delete profit.dataset.importSource;
+                delete profit.dataset.importConfidence;
+              }
+              brmiImport.candidates = [];
+              return out;
+            });
+            assert.equal(fiscalMismatchCheck.candidate, true);
+            assert.equal(fiscalMismatchCheck.fiscalMismatch, true);
+            assert.equal(fiscalMismatchCheck.applied, true);
+            assert.equal(fiscalMismatchCheck.datasetMismatch, '1');
+            assert.ok(fiscalMismatchCheck.importedProfit < 0);
+            assert.ok(fiscalMismatchCheck.provision > 140000);
+            assert.match(fiscalMismatchCheck.reason, /base fiscal zero|ajustes fiscais/i);
+
             const regimeCheck = await page.evaluate(() => {
               const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = String(v); };
               set('monthlyRevenue', 1000000);
@@ -189,6 +236,8 @@ jobs:
               set('simpleStatus', 'no');
               set('monthlyCppBase', '');
               set('legacyRate', 10);
+              set('profitProjectionMode', 'sensitivity');
+              set('projectedRealProfitAnnual', '');
               set('realAccountingProfitAnnual', 100000);
               const a = modelForYear(2027);
               set('monthlyCppBase', 100000);
@@ -197,7 +246,15 @@ jobs:
               const ar = a.allModels.find(x => x.key === 'real');
               const bp = b.allModels.find(x => x.key === 'presumed');
               const br = b.allModels.find(x => x.key === 'real');
+              const rec = recommendation(a);
               return {
+                sensitivity: {
+                  active: a.realDecisionSensitive,
+                  breakEvenProfit: a.breakEven?.profit || 0,
+                  breakEvenMargin: a.breakEven?.margin || 0,
+                  scenarios: a.profitSensitivity?.length || 0,
+                  recommendationKey: rec.key
+                },
                 withoutCpp: {
                   presumed: ap.valid,
                   real: ar.valid,
@@ -217,6 +274,11 @@ jobs:
               };
             });
 
+            assert.equal(regimeCheck.sensitivity.active, true);
+            assert.ok(regimeCheck.sensitivity.breakEvenProfit > 0);
+            assert.ok(regimeCheck.sensitivity.breakEvenMargin > 0);
+            assert.equal(regimeCheck.sensitivity.scenarios, 3);
+            assert.equal(regimeCheck.sensitivity.recommendationKey, 'sensitive');
             assert.equal(regimeCheck.withoutCpp.presumed, true);
             assert.equal(regimeCheck.withoutCpp.real, true);
             assert.equal(regimeCheck.withoutCpp.presumedTotalComplete, false);
@@ -229,6 +291,33 @@ jobs:
             assert.ok(regimeCheck.withCpp.cpp > 0);
             assert.equal(regimeCheck.withoutCpp.difference, regimeCheck.withCpp.difference);
 
+            const projectionSwitch = await page.evaluate(() => {
+              const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = String(v); };
+              set('monthlyCppBase', '');
+              set('profitProjectionMode', 'manual');
+              const base = modelForYear(2027);
+              const point = base.breakEven?.profit || 0;
+              set('projectedRealProfitAnnual', point * 0.60);
+              const low = modelForYear(2027), lowRec = recommendation(low);
+              set('projectedRealProfitAnnual', point * 1.40);
+              const high = modelForYear(2027), highRec = recommendation(high);
+              set('profitProjectionMode', 'sensitivity');
+              set('projectedRealProfitAnnual', '');
+              calculate();
+              return {
+                point,
+                lowKey: lowRec.key,
+                highKey: highRec.key,
+                lowSensitive: low.realDecisionSensitive,
+                highSensitive: high.realDecisionSensitive
+              };
+            });
+            assert.ok(projectionSwitch.point > 0);
+            assert.equal(projectionSwitch.lowKey, 'real');
+            assert.equal(projectionSwitch.highKey, 'presumed');
+            assert.equal(projectionSwitch.lowSensitive, false);
+            assert.equal(projectionSwitch.highSensitive, false);
+
             await page.evaluate(() => {
               document.getElementById('monthlyCppBase').value = '';
               calculate();
@@ -236,7 +325,7 @@ jobs:
             await page.click('[data-guided-nav="4"]');
             await page.waitForSelector('#guidedReviewGrid');
             const reviewText = await page.textContent('#guidedReviewPanel');
-            assert.match(reviewText || '', /Lucro contábil/i);
+            assert.match(reviewText || '', /Lucro|resultado contábil|lucratividade/i);
             assert.match(reviewText || '', /contribuição patronal/i);
             assert.doesNotMatch(reviewText || '', /Revisar tratamento das receitas/i);
 
@@ -244,18 +333,29 @@ jobs:
             const ownerBrief = await page.evaluate(() => ({
               currentTax: document.getElementById('ownerCurrentTax')?.textContent || '',
               bestTotal: document.getElementById('ownerBestTotal')?.textContent || '',
+              breakEven: document.getElementById('ownerProfitBreakEven')?.textContent || '',
               pending: document.getElementById('ownerPending')?.textContent || '',
               why: document.getElementById('ownerWhy')?.textContent || '',
               simpleText: document.querySelector('#technicalReport')?.textContent || '',
-              badge: document.querySelector('.modelCard.recommended .badge')?.textContent || ''
+              badge: document.querySelector('.modelCard.recommended .badge')?.textContent || '',
+              title: document.getElementById('recommendationTitle')?.textContent || '',
+              sensitivityAlert: document.getElementById('profitSensitivityAlert')?.textContent || '',
+              sensitivityRows: document.querySelectorAll('#profitSensitivityBody tr').length,
+              timeline: document.getElementById('timelineBody')?.textContent || ''
             }));
             assert.match(ownerBrief.currentTax, /PENDENTE/i);
             assert.doesNotMatch(ownerBrief.bestTotal, /^—$/);
+            assert.doesNotMatch(ownerBrief.breakEven, /^—$/);
+            assert.match(ownerBrief.pending, /lucratividade futura/i);
             assert.match(ownerBrief.pending, /contribuição patronal/i);
             assert.match(ownerBrief.pending, /carga líquida atual/i);
-            assert.match(ownerBrief.why, /IRPJ e CSLL/i);
+            assert.match(ownerBrief.why, /ponto aproximado de indiferença|lucratividade futura/i);
             assert.match(ownerBrief.simpleText, /Simples Nacional não aplicável pelo faturamento informado/i);
-            assert.match(ownerBrief.badge, /MELHOR BASE COMPARÁVEL/i);
+            assert.match(ownerBrief.badge, /REFERÊNCIA HISTÓRICA/i);
+            assert.match(ownerBrief.title, /Resultado sensível à lucratividade/i);
+            assert.match(ownerBrief.sensitivityAlert, /Resultado condicionado à lucratividade futura/i);
+            assert.equal(ownerBrief.sensitivityRows, 3);
+            assert.match(ownerBrief.timeline, /Sensível à margem futura/i);
 
             await page.evaluate(() => {
               const mode = document.getElementById('currentConsumptionMode');
@@ -302,6 +402,7 @@ jobs:
               return {
                 coverVisible: !!cover && getComputedStyle(cover).display !== 'none',
                 ownerBriefVisible: !!document.querySelector('.shareholderBrief') && getComputedStyle(document.querySelector('.shareholderBrief')).display !== 'none',
+                sensitivityVisible: !!document.querySelector('.profitSensitivitySection') && getComputedStyle(document.querySelector('.profitSensitivitySection')).display !== 'none',
                 technicalVisible: !!technical && getComputedStyle(technical).display !== 'none',
                 executiveHidden: !executive || getComputedStyle(executive).display === 'none',
                 compareFits: !compare || compare.scrollWidth <= compare.clientWidth + 3,
@@ -313,6 +414,7 @@ jobs:
             });
             assert.equal(printLayout.coverVisible, true);
             assert.equal(printLayout.ownerBriefVisible, true);
+            assert.equal(printLayout.sensitivityVisible, true);
             assert.equal(printLayout.technicalVisible, true);
             assert.equal(printLayout.executiveHidden, true);
             assert.equal(printLayout.compareFits, true);
