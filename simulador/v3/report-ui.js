@@ -52,7 +52,7 @@
   const amountHead=tbody.closest('table')?.querySelector('thead th:nth-child(3)');if(amountHead)amountHead.textContent=cppPartial?'Base anual comparável':'Desembolso anual';
   if(!valid.length){tbody.innerHTML='<tr><td colspan="5">Nenhum modelo possui dados suficientes para formar ranking.</td></tr>';return}
   tbody.innerHTML=valid.map((m,i)=>{
-   const rate=r.annualRevenue>0?m.total/r.annualRevenue:0,credit=creditFor(r,m),partial=(m.key==='real'||m.key==='presumed')&&!m.totalComplete,lead=i===0?(incomplete?'Menor entre os modelos validados':partial?'Menor base comparável · projeção total incompleta':'Recomendado nas premissas atuais'):'';
+   const rate=r.annualRevenue>0?m.total/r.annualRevenue:0,credit=creditFor(r,m),partial=(m.key==='real'||m.key==='presumed')&&!m.totalComplete,lead=i===0?(r.realDecisionSensitive?'Referência histórica · resultado sensível à lucratividade futura':incomplete?'Menor entre os modelos validados':partial?'Menor base comparável · projeção total incompleta':'Recomendado nas premissas atuais'):'';
    return `<tr class="${i===0?(incomplete?'partialLeader':'winner'):''}"><td><span class="rankPill">${i+1}º</span></td><td><strong>${m.name}</strong>${lead?`<small>${lead}</small>`:''}${partial?'<small>CPP patronal não incluída no total</small>':''}</td><td>${money(m.total)}</td><td>${pct(rate)}</td><td>${money(credit)}</td></tr>`;
   }).join('');
  }
@@ -140,7 +140,7 @@
   safeText('recommendationText',lead);
   safeText('yearDecision',r.realDecisionSensitive?'Resultado sensível à lucratividade':incomplete?'Comparação incompleta':best?.name||rec.title);safeText('yearReason',r.realDecisionSensitive&&r.breakEven?`Ponto de indiferença: ${money(r.breakEven.profit)} por ano · ${pct(r.breakEven.margin)} da receita`:best?`${incomplete?'Menor modelo validado: ':cppPartial&&regularPair?'Base comparativa sem CPP: ':''}${money(best.total)} por ano · ${pct(r.annualRevenue>0?best.total/r.annualRevenue:0)} da receita`:'Dados insuficientes');
   safeText('execSavings',gap==null?'—':money(gap));safeText('execSecond',second?`vs. ${second.name}`:'Sem segundo modelo validado');
-  safeText('structuralDecision',srec?.title||'—');safeText('structuralReason',srec?.key==='partial'?'Comparação estrutural ainda incompleta.':cppPartial?(srec?.key===rec.key?'Mantém a menor base comparável no regime pleno.':'A menor base comparável muda no cenário estrutural.'):(srec?.key===rec.key?'Mantém a alternativa de menor desembolso no regime pleno.':'A alternativa de menor desembolso muda no cenário estrutural.'));
+  safeText('structuralDecision',srec?.title||'—');safeText('structuralReason',srec?.key==='sensitive'?'Sem projeção de lucratividade futura, a visão estrutural permanece sensível e não confirma automaticamente o regime histórico.':srec?.key==='partial'?'Comparação estrutural ainda incompleta.':cppPartial?(srec?.key===rec.key?'Mantém a menor base comparável no regime pleno.':'A menor base comparável muda no cenário estrutural.'):(srec?.key===rec.key?'Mantém a alternativa de menor desembolso no regime pleno.':'A alternativa de menor desembolso muda no cenário estrutural.'));
   const exec=el('executiveReport');if(exec)exec.dataset.year=String(r.year);
   renderRanking(r);renderPending(r);renderTransition(all);renderImpacts(r);renderConclusion(r,rec,all,srec);renderActionsExecutive(r);
  }
