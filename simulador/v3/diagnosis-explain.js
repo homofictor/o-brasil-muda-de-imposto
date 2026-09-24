@@ -66,13 +66,17 @@
    }
 
    const finalParts=[{key:'legacy',label:'ICMS/ISS residual da transição',value:legacy},{key:'netVat',label:'IBS/CBS líquido após créditos',value:net}].sort((a,b)=>b.value-a.value);
-   const main=finalParts[0],futureTotal=net+legacy;
+   const main=finalParts[0],futureTotal=net+legacy,bridge=window.lastTaxBridge;
    if(impact?.known&&Math.abs(delta)>1){
-    if(delta>0){
-      set('explainDriverText','O principal componente de pressão identificado na carga futura é '+main.label+', com '+money(main.value)+(futureTotal>0?' ('+pct(main.value/futureTotal)+' da carga futura)':'')+'. Os créditos de aquisições reduzem essa pressão em '+money(credit)+'. Como a carga atual foi informada de forma agregada, o sistema identifica o principal componente da carga futura, mas não atribui artificialmente toda a variação a um único tributo.');
+    if(bridge?.reconciled&&bridge.primary){
+      const effect=bridge.primary.value>=0?'pressão':'alívio';
+      set('explainDriverText','A ponte conciliada identifica como principal fator '+bridge.primary.label+'. Esse bloco produz '+effect+' de '+money(Math.abs(bridge.primary.value))+' na variação total. Como a soma dos tributos atuais detalhados fecha com a carga de referência, esta atribuição é matematicamente reconciliada com o aumento ou redução total.');
+      set('explainDriverFormula','Principal contribuição: '+bridge.primary.label+' = '+(bridge.primary.value>=0?'+ ':'− ')+money(Math.abs(bridge.primary.value)));
+    }else if(delta>0){
+      set('explainDriverText','O principal componente de pressão identificado na carga futura é '+main.label+', com '+money(main.value)+(futureTotal>0?' ('+pct(main.value/futureTotal)+' da carga futura)':'')+'. Os créditos de aquisições reduzem essa pressão em '+money(credit)+'. Sem a composição atual conciliada, o sistema identifica o maior componente futuro, mas não o apresenta como causa exclusiva da variação.');
       set('explainDriverFormula','Maior pressão futura: '+main.label+' = '+money(main.value));
     }else{
-      set('explainDriverText','A redução ocorre porque a carga líquida futura fica abaixo da carga atual. O principal fator de alívio diretamente mensurável no novo cálculo são os créditos sobre aquisições, que reduzem o débito bruto de IBS/CBS antes da comparação final.');
+      set('explainDriverText','A redução ocorre porque a carga líquida futura fica abaixo da carga atual. O principal fator de alívio diretamente mensurável no novo cálculo são os créditos sobre aquisições, que reduzem o débito bruto de IBS/CBS antes da comparação final. A ponte detalhada permite uma atribuição mais precisa quando a composição atual estiver conciliada.');
       set('explainDriverFormula','Alívio por créditos: − '+money(credit)+' · IBS/CBS líquido: '+money(net));
     }
    }else if(impact?.known){
