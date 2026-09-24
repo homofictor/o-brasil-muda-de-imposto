@@ -451,14 +451,50 @@ function buildCrossCandidates(docs,candidates){
  }
  return candidates
 }
-function groupedImportCandidates(){return brmiImport.candidates.reduce((a,c,i)=>{c._index=i;(a[c.field]||(a[c.field]=[])).push(c);return a},{})}
-function conflictGroup(arr){if(arr.length<2)return false;if(arr[0]?.field==='cnpj')return new Set(arr.map(x=>x.value)).size>1;const vals=arr.map(x=>x.value).filter(Number.isFinite),max=Math.max(...vals),min=Math.min(...vals);return max>0&&(max-min)/max>.05}
-function renderImportFiles(){const el=$('importFileList');if(!el)return;el.innerHTML=brmiImport.files.map(f=>`<div class="importFile"><span class="importFileIcon">${f.ext.toUpperCase()}</span><div><strong>${f.name}</strong><small>${f.type||'Aguardando análise'}</small></div><span class="importFileStatus ${f.statusClass||''}">${f.status||'Pendente'}</span></div>`).join('')}
-function renderImportCandidates(){
- const summary=$('importSummary'),empty=$('importEmpty'),groups=groupedImportCandidates(),keys=Object.keys(groups);if(!keys.length){if(summary)summary.hidden=true;if(empty)empty.hidden=false;return}if(empty)empty.hidden=true;if(summary)summary.hidden=false;if($('importSummaryCount'))$('importSummaryCount').textContent=`${brmiImport.candidates.length} sugest${brmiImport.candidates.length===1?'ão':'ões'}`;
- const root=$('importCandidateGroups');root.innerHTML=keys.map(field=>{const arr=groups[field],conflict=conflictGroup(arr);return `<div class="importGroup"><div class="importGroupHead"><strong>${arr[0].label}</strong><span class="${conflict?'conflict':''}">${conflict?'VALORES DIVERGENTES':'FONTE LOCALIZADA'}</span></div><div class="importCandidates">${arr.map(c=>`<div class="importCandidate"><div class="importCandidateMain"><strong>${c.display}</strong><small>${c.reason}</small><div class="importMeta"><span>${c.source}</span><span class="${c.confidence}">confiança ${c.confidence==='high'?'alta':c.confidence==='medium'?'média':'baixa'}</span></div></div><button type="button" data-import-index="${c._index}" ${c.applied?'disabled':''} class="${c.applied?'importApplied':''}">${c.applied?'Aplicado ✓':'Usar este valor'}</button></div>`).join('')}</div></div>`}).join('');root.querySelectorAll('[data-import-index]').forEach(b=>b.addEventListener('click',()=>applyImportCandidate(Number(b.dataset.importIndex),b)))
+function groupedImportCandidates(){
+ const raw=brmiImport.candidates.reduce((a,c,i)=>{c._index=i;(a[c.field]||(a[c.field]=[])).push(c);return a},{}),rank={high:3,medium:2,low:1},out={};
+ Object.entries(raw).forEach(([field,arr])=>{
+  const unique=[];
+  arr.forEach(item=>{
+   let same=unique.find(x=>candidateValuesEqual(x,item));
+   if(!same){unique.push({...item,_index:item._index,_sources:[item.source].filter(Boolean),_reasons:[item.reason].filter(Boolean)});return}
+   const sources=[...new Set([...(same._sources||[]),item.source].filter(Boolean))],reasons=[...new Set([...(same._reasons||[]),item.reason].filter(Boolean))],accepted=!!(same.accepted||item.accepted),applied=!!(same.applied||item.applied);
+   if((rank[item.confidence]||0)>(rank[same.confidence]||0)||(Number(item.sourceQuality)||0)>(Number(same.sourceQuality)||0)){const keep={_sources:sources,_reasons:reasons,accepted,applied};Object.assign(same,item,keep)}
+   else{same._sources=sources;same._reasons=reasons;same.accepted=accepted;same.applied=applied}
+   same.source=sources.join(' + ');
+   if(sources.length>1)same.reason=(same.reason||reasons[0]||'')+' Mesmo valor localizado em '+sources.length+' fontes.';
+  });
+  out[field]=unique;
+ });
+ return out
 }
-function candidateValuesEqual(a,b){
+function conflictGroup(arr){if(arr.length<2)return false;if(arr[0]?.field==='cnpj')return new Set(arr.map(x=>importedCnpjDigits(x.value))).size>1;const vals=arr.map(x=>x.value).filter(Number.isFinite),max=Math.max(...vals),min=Math.min(...vals);return max>0&&(max-min)/max>.05}
+function renderImportFiles(){const el=$('importFileList');if(!el)return;el.innerHTML=brmiImport.files.map(f=>`<div class="importFile"><span class="importFileIcon">${f.ext.toUpperCase()}</span><div><strong>${f.name}</strong><small>${f.type||'Aguardando análise'}</small></div><span class="importFileStatus ${f.statusClass||''}">${f.status||'Pendente'}</span></div>`).join('')}
+function importCandidateButtonState(c){
+ if(c.accepted)return{label:'Aplicado ✓',disabled:true,cls:'importApplied'};
+ if(c.applied)return{label:'Confirmar este valor',disabled:false,cls:'importAutoFilled'};
+ return{label:'Usar este valor',disabled:false,cls:''}
+}
+function syncApplyHighButtonState(groups=groupedImportCandidates()){
+ const btn=$('importApplyHigh');if(!btn)return;
+ let eligible=0,accepted=0,conflicts=0;
+ Object.values(groups).forEach(arr=>{const high=arr.filter(c=>c.confidence==='high');if(!high.length)return;if(conflictGroup(high)){conflicts++;return}eligible++;if(high[0].accepted)accepted++});
+ btn.classList.remove('isPressing','importApplyDone','importApplyEmpty');btn.removeAttribute('aria-busy');
+ if(!eligible){btn.disabled=true;btn.classList.add('importApplyEmpty');btn.textContent='Nenhuma sugestão de alta confiança'}
+ else if(accepted===eligible){btn.disabled=true;btn.classList.add('importApplyDone');btn.textContent=accepted+' '+(accepted===1?'sugestão aplicada':'sugestões aplicadas')+' ✓'}
+ else{btn.disabled=false;btn.textContent='Aplicar '+(eligible-accepted)+' '+((eligible-accepted)===1?'sugestão':'sugestões')+' de alta confiança'}
+ btn.title=conflicts?conflicts+' grupo(s) com valores divergentes ficaram para revisão manual.':'';
+}
+function renderImportCandidates(){
+ const summary=$('importSummary'),empty=$('importEmpty'),groups=groupedImportCandidates(),keys=Object.keys(groups);
+ if(!keys.length){if(summary)summary.hidden=true;if(empty)empty.hidden=false;syncApplyHighButtonState(groups);return}
+ if(empty)empty.hidden=true;if(summary)summary.hidden=false;
+ const uniqueCount=Object.values(groups).reduce((n,arr)=>n+arr.length,0);if($('importSummaryCount'))$('importSummaryCount').textContent=uniqueCount+' '+(uniqueCount===1?'sugestão':'sugestões');
+ const root=$('importCandidateGroups');
+ root.innerHTML=keys.map(field=>{const arr=groups[field],conflict=conflictGroup(arr);return '<div class="importGroup"><div class="importGroupHead"><strong>'+arr[0].label+'</strong><span class="'+(conflict?'conflict':'')+'">'+(conflict?'VALORES DIVERGENTES':arr.length===1&&(arr[0]._sources||[]).length>1?'MESMO VALOR EM VÁRIAS FONTES':'FONTE LOCALIZADA')+'</span></div><div class="importCandidates">'+arr.map(c=>{const s=importCandidateButtonState(c);return '<div class="importCandidate"><div class="importCandidateMain"><strong>'+c.display+'</strong><small>'+c.reason+'</small><div class="importMeta"><span>'+c.source+'</span><span class="'+c.confidence+'">confiança '+(c.confidence==='high'?'alta':c.confidence==='medium'?'média':'baixa')+'</span>'+(c.applied&&!c.accepted?'<span class="auto">preenchido automaticamente · aguarda confirmação</span>':'')+'</div></div><button type="button" data-import-index="'+c._index+'" '+(s.disabled?'disabled':'')+' class="'+s.cls+'">'+s.label+'</button></div>'}).join('')+'</div></div>'}).join('');
+ root.querySelectorAll('[data-import-index]').forEach(b=>b.addEventListener('click',()=>applyImportCandidate(Number(b.dataset.importIndex),b)));
+ syncApplyHighButtonState(groups)
+}function candidateValuesEqual(a,b){
  if(!a||!b||a.field!==b.field)return false;
  if(a.field==='cnpj')return String(a.value)===String(b.value);
  if(!Number.isFinite(a.value)||!Number.isFinite(b.value))return false;
@@ -466,7 +502,9 @@ function candidateValuesEqual(a,b){
 }
 function syncImportCandidateButtons(field,activeIndex){
  const activeItem=brmiImport.candidates[activeIndex];
- document.querySelectorAll('[data-import-index]').forEach(btn=>{const idx=Number(btn.dataset.importIndex),item=brmiImport.candidates[idx];if(!item||item.field!==field)return;const active=candidateValuesEqual(item,activeItem);item.applied=active;btn.textContent=active?'Aplicado ✓':'Usar este valor';btn.classList.toggle('importApplied',active);btn.disabled=active})
+ brmiImport.candidates.forEach(item=>{if(!item||item.field!==field)return;const active=candidateValuesEqual(item,activeItem);item.applied=active;if(active&&activeItem?.accepted)item.accepted=true});
+ document.querySelectorAll('[data-import-index]').forEach(btn=>{const idx=Number(btn.dataset.importIndex),item=brmiImport.candidates[idx];if(!item||item.field!==field)return;const s=importCandidateButtonState(item);btn.textContent=s.label;btn.classList.toggle('importApplied',s.cls==='importApplied');btn.classList.toggle('importAutoFilled',s.cls==='importAutoFilled');btn.disabled=s.disabled});
+ syncApplyHighButtonState()
 }
 function applyImportCandidate(i,button){
  const c=brmiImport.candidates[i];if(!c)return false;
@@ -483,7 +521,7 @@ function applyImportCandidate(i,button){
  const explicit=!!button,currentText=String(el.value||'').trim(),currentValue=typeof parseMoneyValue==='function'?parseMoneyValue(currentText):Number(currentText||0),alreadyImported=el.dataset.importVerified==='1'||el.dataset.importSource;
  if(!explicit&&el.dataset.userEdited==='1')return false;
  if(!explicit&&currentText&&!alreadyImported&&Number.isFinite(currentValue)&&Math.abs(currentValue)>.000001&&c.field!=='cnpj')return false;
- if(explicit){delete el.dataset.userEdited;el.dataset.importAccepted='1'}
+ if(explicit){delete el.dataset.userEdited;el.dataset.importAccepted='1';c.accepted=true}
  if(c.field==='cnpj'){el.value=typeof normalizeCnpjInput==='function'?normalizeCnpjInput(c.value):formatImportedCnpj(c.value);el.dataset.importVerified='1';el.dataset.importSource=c.source||'';if(typeof markFieldAuto==='function')markFieldAuto('cnpj','IMPORTADO');syncImportCandidateButtons(c.field,i);if(typeof lookupCnpj==='function')lookupCnpj();return true}
  if(typeof setMoneyInputValue==='function'&&el.closest?.('.money'))setMoneyInputValue(el,c.value);else el.value=Math.round(c.value*100)/100;
  el.dataset.importVerified='1';el.dataset.importSource=c.source||'Documento importado';el.dataset.importConfidence=c.confidence||'';if(c.derivedKey)el.dataset.importDerivedKey=c.derivedKey;else delete el.dataset.importDerivedKey;
@@ -495,10 +533,14 @@ function applyImportCandidate(i,button){
  if(typeof financialMetrics==='function')financialMetrics();if(typeof refreshEligibilityUi==='function')refreshEligibilityUi();
  if(typeof markDiagnosisDirty==='function')markDiagnosisDirty('import');if(typeof refreshAllFieldStates==='function')refreshAllFieldStates();syncImportCandidateButtons(c.field,i);return true
 }
-function applyHighConfidenceCandidates(){
+async function applyHighConfidenceCandidates(){
+ const btn=$('importApplyHigh');
+ if(btn){btn.disabled=true;btn.classList.add('isPressing');btn.setAttribute('aria-busy','true');btn.textContent='Aplicando...'}
+ await new Promise(r=>setTimeout(r,140));
  const groups=groupedImportCandidates();let applied=0,skipped=0;
- Object.values(groups).forEach(arr=>{const high=arr.filter(c=>c.confidence==='high');if(!high.length)return;if(conflictGroup(high)){skipped++;return}if(applyImportCandidate(high[0]._index,true))applied++});
- const btn=$('importApplyHigh');if(btn){btn.textContent=applied?`${applied} sugest${applied===1?'ão aplicada':'ões aplicadas'}`:'Nenhuma sugestão segura para aplicar';if(skipped)btn.title=`${skipped} grupo(s) com valores divergentes não foram aplicados automaticamente.`}
+ Object.values(groups).forEach(arr=>{const high=arr.filter(c=>c.confidence==='high');if(!high.length)return;if(conflictGroup(high)){skipped++;return}if(high[0].accepted)return;if(applyImportCandidate(high[0]._index,true))applied++});
+ renderImportCandidates();
+ if(btn&&applied===0&&skipped){btn.disabled=false;btn.classList.remove('isPressing');btn.removeAttribute('aria-busy');btn.textContent='Revisar valores divergentes';btn.title=skipped+' grupo(s) com valores divergentes precisam de escolha manual.'}
 }
 
 function autoApplyDocumentCalculations(){
@@ -606,7 +648,7 @@ function writeVerifiedAccountingProfit(){
 function forceApplyVerifiedAccountingProfit(){return writeVerifiedAccountingProfit()}
 async function autoLookupImportedCompany(docs){const ids=[...new Set((docs||[]).map(d=>d.cnpj).filter(Boolean))];if(ids.length!==1)return;const raw=ids[0],el=$('cnpj'),status=$('lookupStatus');if(!el)return;const current=importedCnpjDigits(el.value);if(current&&current!==raw){if(status){status.className='status';status.textContent=`O documento contém o CNPJ ${formatImportedCnpj(raw)}, diferente do CNPJ já informado. Revise antes de aplicar.`}return}el.value=typeof normalizeCnpjInput==='function'?normalizeCnpjInput(raw):formatImportedCnpj(raw);if(typeof markFieldAuto==='function')markFieldAuto('cnpj','IMPORTADO');if(brmiImport.lastLookupCnpj===raw)return;brmiImport.lastLookupCnpj=raw;if(typeof lookupCnpj==='function')await lookupCnpj()}
 async function processImportFiles(files){
- const list=[...files];if(!list.length)return;brmiImport.files=list.map(f=>({name:f.name,ext:extOf(f.name),status:'Na fila'}));brmiImport.docs=[];brmiImport.candidates=[];renderImportFiles();const progress=$('importProgress');if(progress)progress.hidden=false;
+ const list=[...files];if(!list.length)return;brmiImport.files=list.map(f=>({name:f.name,ext:extOf(f.name),status:'Na fila'}));brmiImport.docs=[];brmiImport.candidates=[];renderImportFiles();const applyBtn=$('importApplyHigh');if(applyBtn){applyBtn.disabled=false;applyBtn.classList.remove('isPressing','importApplyDone','importApplyEmpty');applyBtn.textContent='Aplicar sugestões de alta confiança';applyBtn.removeAttribute('aria-busy')}const progress=$('importProgress');if(progress)progress.hidden=false;
  for(let i=0;i<list.length;i++){const f=list[i],row=brmiImport.files[i];row.status='Analisando';row.statusClass='';renderImportFiles();if($('importProgressTitle'))$('importProgressTitle').textContent=`Analisando ${f.name}`;if($('importProgressText'))$('importProgressText').textContent=`Arquivo ${i+1} de ${list.length}. Procurando faturamento, clientes, compras, caixa, BP, dívida, juros, folha e margem.`;try{const parsed=await readImportFile(f),doc=analyseImportDoc(f,parsed);row.type=doc.type;row.status=doc.candidates.length||doc.purchaseTotal?'Lido':'Sem indicador';row.statusClass=doc.candidates.length||doc.purchaseTotal?'ok':'warn';brmiImport.docs.push(doc);brmiImport.candidates.push(...doc.candidates)}catch(e){row.status='Não lido';row.statusClass='bad';row.type=e.message}renderImportFiles();await new Promise(r=>setTimeout(r,220))}
  buildCrossCandidates(brmiImport.docs,brmiImport.candidates);
  const dreOnly=brmiImport.docs.find(d=>(d.type==='DRE'||d.type==='Balanço + DRE')&&d.revenueNet>0&&!d.revenueGross);
