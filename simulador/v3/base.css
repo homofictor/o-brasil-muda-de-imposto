@@ -1,2 +1,15 @@
 @import url('/simulador/v3/base-a.css');
 @import url('/simulador/v3/base-b.css');
+
+/* Detalhamento opcional da carga atual */
+.currentTaxBreakdown{margin-top:14px;border:1px solid #d8e2ec;border-radius:12px;background:#f8fbfe;overflow:hidden}
+.currentTaxBreakdown summary{cursor:pointer;list-style:none;padding:13px 15px;font-size:12px;font-weight:900;color:#143759}
+.currentTaxBreakdown summary::-webkit-details-marker{display:none}
+.currentTaxBreakdown summary:before{content:"+";display:inline-grid;place-items:center;width:20px;height:20px;margin-right:8px;border-radius:6px;background:#e9f1f8;color:#245c88}
+.currentTaxBreakdown[open] summary:before{content:"−"}
+.currentTaxBreakdownIntro{padding:0 15px 11px;color:#5b6d80;font-size:10px;line-height:1.45}
+.currentTaxBreakdown>.grid4{padding:0 15px 13px}
+.currentTaxBreakdown .optionalField{background:#fff}
+.currentTaxBreakdownStatus{margin:0 15px 14px;padding:9px 11px;border-radius:8px;background:#eef4f8;color:#50667a;font-size:9.5px;line-height:1.4}
+.currentTaxBreakdownStatus.ok{background:#eef8f2;color:#286849}
+.currentTaxBreakdownStatus.warn{background:#fff7e7;color:#765c1e}
