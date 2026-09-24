@@ -44,10 +44,10 @@ jobs:
               await page.goto(process.env.BASE_URL + '/simulador/guiado/', { waitUntil: 'domcontentloaded', timeout: 45000 });
               const versionLink = page.locator('link[href*="guided.css"]').first();
               deployedVersion = await versionLink.count() ? (await versionLink.getAttribute('href') || '') : '';
-              if (/20260924-clean35/.test(deployedVersion)) break;
+              if (/20260924-clean36/.test(deployedVersion)) break;
               await page.waitForTimeout(15000);
             }
-            assert.match(deployedVersion || '', /20260924-clean35/);
+            assert.match(deployedVersion || '', /20260924-clean36/);
             await page.waitForSelector('#cnpj', { timeout: 30000 });
             await page.waitForSelector('#importPanel', { timeout: 30000 });
             assert.equal(await page.locator('#importPanel').isVisible(), true);
@@ -68,6 +68,30 @@ jobs:
             await page.waitForSelector('#cnpj');
             await page.waitForSelector('#importPanel', { timeout: 30000 });
             await page.waitForFunction(() => typeof window.lookupCnpj === 'function', { timeout: 30000 });
+
+            await page.evaluate(() => localStorage.setItem('brmi_v3', JSON.stringify({ cnpj: '39.345.897/0001-20' })));
+            await page.reload({ waitUntil: 'domcontentloaded' });
+            await page.waitForSelector('#cnpj');
+            await page.waitForTimeout(900);
+            assert.equal(await page.inputValue('#cnpj'), '');
+            assert.equal(await page.getAttribute('#cnpj','autocomplete'), 'off');
+
+            const logoCheck = await page.evaluate(() => {
+              const frame = document.querySelector('.erpBrandLogoFrame');
+              const img = document.querySelector('.erpBrandLogo');
+              return {
+                frameVisible: !!frame && getComputedStyle(frame).display !== 'none',
+                frameOverflow: frame ? getComputedStyle(frame).overflow : '',
+                imageWidth: img?.getBoundingClientRect().width || 0,
+                frameWidth: frame?.getBoundingClientRect().width || 0,
+                src: img?.getAttribute('src') || ''
+              };
+            });
+            assert.equal(logoCheck.frameVisible, true);
+            assert.equal(logoCheck.frameOverflow, 'hidden');
+            assert.ok(logoCheck.imageWidth > logoCheck.frameWidth);
+            assert.match(logoCheck.src, /homo-fictor-logo-header\.png/);
+
             const initialCompletion = (await page.textContent('#fieldCompletionText') || '').trim();
             assert.match(initialCompletion, /^0 de \d+ campos confirmados$/);
 
@@ -463,6 +487,8 @@ jobs:
                 timelineAvoidsSplit: !timeline || ['avoid','avoid-page'].includes(getComputedStyle(timeline).breakInside),
                 logoHeight: document.querySelector('.technicalPrintLogoMark img')?.getBoundingClientRect().height || 0,
                 publisherWordmark: document.querySelector('.technicalPrintPublisherWordmark')?.textContent || '',
+                reportLogoOverflow: getComputedStyle(document.querySelector('.technicalPrintLogoMark')).overflow,
+                reportLogoSrc: document.querySelector('.technicalPrintLogoMark img')?.getAttribute('src') || '',
                 evidenceCount: document.querySelectorAll('#ownerEvidenceGrid > div').length,
                 accountantQuestion: document.getElementById('ownerAccountantQuestion')?.textContent || '',
                 title: document.title,
@@ -480,6 +506,8 @@ jobs:
             assert.ok(printLayout.logoHeight > 35);
             assert.match(printLayout.publisherWordmark, /HOMO FICTOR/i);
             assert.match(printLayout.publisherWordmark, /EDIÇÕES INDEPENDENTES/i);
+            assert.equal(printLayout.reportLogoOverflow, 'hidden');
+            assert.match(printLayout.reportLogoSrc, /homo-fictor-logo-header\.png/);
             assert.equal(printLayout.evidenceCount, 6);
             assert.match(printLayout.accountantQuestion, /projeção de lucro/i);
             assert.equal(printLayout.literalSlashN, false);
