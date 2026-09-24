@@ -474,9 +474,9 @@ jobs:
             const bridgeCheck = await page.evaluate(() => {
               const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = String(v); };
               set('currentPisCofinsAnnual', 800000);
-              set('currentIcmsAnnual', 1900000);
+              set('currentIcmsAnnual', 1942049.06);
               set('currentIssAnnual', 100000);
-              set('currentOtherConsumptionAnnual', 42049.06);
+              set('currentOtherConsumptionAnnual', 0);
               if (typeof calculate === 'function') calculate();
               const b = window.lastTaxBridge;
               return {
