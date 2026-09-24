@@ -47,12 +47,15 @@
    const why=byId('ownerWhy');
    if(why&&best){
     const regularPair=second&&[best.key,second.key].every(k=>k==='real'||k==='presumed');
-    if(regularPair){
+    if(regularPair&&r.realDecisionSensitive&&r.breakEven){
+     why.innerHTML='A DRE histórica coloca <strong>'+best.name+'</strong> à frente, mas isso não é uma previsão de 2027. O ponto aproximado de indiferença é <strong>'+money(r.breakEven.profit)+'</strong> de lucro anual, cerca de <strong>'+pct(r.breakEven.margin)+'</strong> do faturamento. Abaixo desse nível, o Lucro Real tende a manter vantagem; acima dele, o Lucro Presumido pode passar à frente, mantidas as demais premissas.';
+    }else if(regularPair){
      const presumedTax=(r.irpj||0)+(r.csll||0),realTax=(r.realIrpj||0)+(r.realCsll||0),taxGap=Math.abs(realTax-presumedTax),lower=presumedTax<=realTax?'Lucro Presumido':'Lucro Real';
      why.innerHTML='Nas premissas atuais, a diferença entre os dois regimes vem essencialmente de <strong>IRPJ e CSLL</strong>. O '+lower+' apresenta IRPJ/CSLL estimados em <strong>'+money(Math.min(presumedTax,realTax))+'</strong>, contra <strong>'+money(Math.max(presumedTax,realTax))+'</strong> no outro regime, diferença de <strong>'+money(taxGap)+'</strong>. IBS/CBS, ICMS/ISS residual e, quando informada, a CPP são componentes comuns aos dois cenários e não explicam esse diferencial.';
     }else why.textContent=best.name+' apresentou a menor saída anual entre os cenários validados. O detalhamento técnico mostra os componentes que formam essa diferença.';
    }
    const pending=[],topRegular=best&&second&&[best.key,second.key].every(k=>k==='real'||k==='presumed');
+   if(topRegular&&r.realDecisionSensitive)pending.push('Projetar a lucratividade futura. O resultado histórico é apenas referência e não deve ser repetido automaticamente em 2027–2033.');
    if(topRegular&&!r.cppBaseKnown)pending.push('Informar folha/remunerações sujeitas à contribuição patronal e revisar a alíquota patronal efetiva, para completar o desembolso tributário total.');
    if(!impact?.known)pending.push('Informar a carga líquida atual de PIS/Cofins, ICMS, ISS e IPI, conforme aplicável, para calcular a variação real de preço, margem e resultado.');
    else if(impact.confidence==='low')pending.push('Confirmar a carga líquida atual de tributos sobre consumo: ela foi extraída com baixa confiança e afeta diretamente preço, margem e efeito no resultado.');
@@ -70,11 +73,14 @@
     ['Fornecedores no regime regular',Number(byId('regularSuppliersPct')?.value||0).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%',fieldOrigin('regularSuppliersPct')],
     ['Carga atual de consumo',impact?.known?money(impact.currentTax):'Não informada',impact?.confidence==='low'?'Baixa confiança · confirmar':fieldOrigin('currentConsumptionTaxAnnual')],
     ['Margem EBITDA',Number.isFinite(margin)?pct(margin):'Não informada',fieldOrigin('currentOperatingMarginPct')],
-    ['Tratamento IBS/CBS',String(byId('taxTreatmentAccepted')?.value||'')==='yes'?'Confirmado':'A confirmar',String(byId('taxTreatmentAccepted')?.value||'')==='yes'?'Revisado pelo usuário':'Pendente']
+    ['Tratamento IBS/CBS',String(byId('taxTreatmentAccepted')?.value||'')==='yes'?'Confirmado':'A confirmar',String(byId('taxTreatmentAccepted')?.value||'')==='yes'?'Revisado pelo usuário':'Pendente'],
+    ['Lucro histórico',r.historicalProfitKnown?money(r.historicalAccountingProfit):'Não informado',fieldOrigin('realAccountingProfitAnnual')],
+    ['Lucro projetado',r.projectedProfitKnown?money(r.projectedAccountingProfit):'Não informado',r.projectedProfitKnown?fieldOrigin('projectedRealProfitAnnual'):'Sensibilidade']
    ];
    const eg=byId('ownerEvidenceGrid');if(eg)eg.innerHTML=evidence.map(x=>'<div><span>'+x[0]+'</span><strong>'+x[1]+'</strong><small>'+x[2]+'</small></div>').join('');
    const q=byId('ownerAccountantQuestion');if(q){
-    if(!impact?.known)q.textContent='Qual é a carga líquida atual de tributos sobre consumo da empresa, na mesma base anual usada pelo simulador, e como ela muda em 2027?';
+    if(topRegular&&r.realDecisionSensitive)q.textContent='Qual lucro tributável e margem são razoáveis para 2027, considerando orçamento, carteira de pedidos, custos, adições/exclusões fiscais e eventual saldo efetivo de prejuízo fiscal?';
+    else if(!impact?.known)q.textContent='Qual é a carga líquida atual de tributos sobre consumo da empresa, na mesma base anual usada pelo simulador, e como ela muda em 2027?';
     else if(topRegular&&!r.cppBaseKnown)q.textContent='Qual é a base mensal efetivamente sujeita à contribuição patronal e qual alíquota efetiva devemos usar, considerando RAT, terceiros e eventuais regimes específicos?';
     else q.textContent='As premissas de receitas, créditos, fornecedores e benefícios refletem as operações reais da empresa ou ainda são estimativas que podem alterar a decisão?';
    }
