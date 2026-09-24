@@ -57,6 +57,7 @@
    }
    const pending=[],topRegular=best&&second&&[best.key,second.key].every(k=>k==='real'||k==='presumed');
    if(topRegular&&r.realDecisionSensitive)pending.push('Projetar a lucratividade futura. O resultado histórico é apenas referência e não deve ser repetido automaticamente em 2027–2033.');
+   if(topRegular&&r.projectedProfitKnown&&r.breakEven?.profit>0&&Math.abs(r.projectedAccountingProfit-r.breakEven.profit)/r.breakEven.profit<=.25)pending.push('Validar a projeção de lucro com orçamento e carteira de pedidos: o valor informado está próximo do ponto de indiferença e pequenas mudanças podem inverter o regime que aparece à frente.');
    if(byId('realAccountingProfitAnnual')?.dataset?.importFiscalMismatch==='1')pending.push('Conferir a apuração fiscal: a DRE combina resultado contábil negativo com provisão de IRPJ/CSLL, portanto não é seguro assumir base fiscal zero sem revisar adições, exclusões e compensações.');
    if(topRegular&&!r.cppBaseKnown)pending.push('Informar folha/remunerações sujeitas à contribuição patronal e revisar a alíquota patronal efetiva, para completar o desembolso tributário total.');
    if(!impact?.known)pending.push('Informar a carga líquida atual de PIS/Cofins, ICMS, ISS e IPI, conforme aplicável, para calcular a variação real de preço, margem e resultado.');
@@ -75,13 +76,12 @@
     ['Fornecedores no regime regular',Number(byId('regularSuppliersPct')?.value||0).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%',fieldOrigin('regularSuppliersPct')],
     ['Carga atual de consumo',impact?.known?money(impact.currentTax):'Não informada',impact?.confidence==='low'?'Baixa confiança · confirmar':fieldOrigin('currentConsumptionTaxAnnual')],
     ['Margem EBITDA',Number.isFinite(margin)?pct(margin):'Não informada',fieldOrigin('currentOperatingMarginPct')],
-    ['Tratamento IBS/CBS',String(byId('taxTreatmentAccepted')?.value||'')==='yes'?'Confirmado':'A confirmar',String(byId('taxTreatmentAccepted')?.value||'')==='yes'?'Revisado pelo usuário':'Pendente'],
-    ['Lucro histórico',r.historicalProfitKnown?money(r.historicalAccountingProfit):'Não informado',fieldOrigin('realAccountingProfitAnnual')],
-    ['Lucro projetado',r.projectedProfitKnown?money(r.projectedAccountingProfit):'Não informado',r.projectedProfitKnown?fieldOrigin('projectedRealProfitAnnual'):'Sensibilidade']
+    ['Tratamento IBS/CBS',String(byId('taxTreatmentAccepted')?.value||'')==='yes'?'Confirmado':'A confirmar',String(byId('taxTreatmentAccepted')?.value||'')==='yes'?'Revisado pelo usuário':'Pendente']
    ];
    const eg=byId('ownerEvidenceGrid');if(eg)eg.innerHTML=evidence.map(x=>'<div><span>'+x[0]+'</span><strong>'+x[1]+'</strong><small>'+x[2]+'</small></div>').join('');
    const q=byId('ownerAccountantQuestion');if(q){
-    if(topRegular&&r.realDecisionSensitive)q.textContent='Qual lucro tributável e margem são razoáveis para 2027, considerando orçamento, carteira de pedidos, custos, adições/exclusões fiscais e eventual saldo efetivo de prejuízo fiscal?';
+    const projectedNearBreakEven=topRegular&&r.projectedProfitKnown&&r.breakEven?.profit>0&&Math.abs(r.projectedAccountingProfit-r.breakEven.profit)/r.breakEven.profit<=.25;
+    if(topRegular&&(r.realDecisionSensitive||projectedNearBreakEven))q.textContent=r.projectedProfitKnown?'A projeção de lucro usada no cenário é robusta? Que lucro tributável e margem são razoáveis para 2027 considerando orçamento, carteira de pedidos, custos, adições/exclusões fiscais e eventual saldo efetivo de prejuízo fiscal?':'Qual lucro tributável e margem são razoáveis para 2027, considerando orçamento, carteira de pedidos, custos, adições/exclusões fiscais e eventual saldo efetivo de prejuízo fiscal?';
     else if(!impact?.known)q.textContent='Qual é a carga líquida atual de tributos sobre consumo da empresa, na mesma base anual usada pelo simulador, e como ela muda em 2027?';
     else if(topRegular&&!r.cppBaseKnown)q.textContent='Qual é a base mensal efetivamente sujeita à contribuição patronal e qual alíquota efetiva devemos usar, considerando RAT, terceiros e eventuais regimes específicos?';
     else q.textContent='As premissas de receitas, créditos, fornecedores e benefícios refletem as operações reais da empresa ou ainda são estimativas que podem alterar a decisão?';
