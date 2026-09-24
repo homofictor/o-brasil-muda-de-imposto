@@ -44,10 +44,10 @@ jobs:
               await page.goto(process.env.BASE_URL + '/simulador/guiado/', { waitUntil: 'domcontentloaded', timeout: 45000 });
               const versionLink = page.locator('link[href*="guided.css"]').first();
               deployedVersion = await versionLink.count() ? (await versionLink.getAttribute('href') || '') : '';
-              if (/20260924-clean36/.test(deployedVersion)) break;
+              if (/20260924-explain37/.test(deployedVersion)) break;
               await page.waitForTimeout(15000);
             }
-            assert.match(deployedVersion || '', /20260924-clean36/);
+            assert.match(deployedVersion || '', /20260924-explain37/);
             await page.waitForSelector('#cnpj', { timeout: 30000 });
             await page.waitForSelector('#importPanel', { timeout: 30000 });
             assert.equal(await page.locator('#importPanel').isVisible(), true);
@@ -454,6 +454,23 @@ jobs:
             assert.match(confidenceCheck.ownerTaxNote, /baixa confiança/i);
             assert.doesNotMatch(confidenceCheck.narrative, /melhor alternativa validada/i);
 
+            const explainCheck = await page.evaluate(() => ({
+              lead: document.getElementById('diagnosisExplainLead')?.textContent || '',
+              regime: document.getElementById('explainRegimeText')?.textContent || '',
+              consumption: document.getElementById('explainConsumptionFormula')?.textContent || '',
+              variation: document.getElementById('explainVariationText')?.textContent || '',
+              driver: document.getElementById('explainDriverText')?.textContent || '',
+              credit: document.getElementById('explainCreditFormula')?.textContent || '',
+              caveat: document.getElementById('diagnosisExplainCaveat')?.textContent || ''
+            }));
+            assert.match(explainCheck.lead, /regras fixas/i);
+            assert.match(explainCheck.regime, /Lucro Real|Lucro Presumido|resultado histórico/i);
+            assert.match(explainCheck.consumption, /IBS\/CBS bruto/i);
+            assert.match(explainCheck.variation, /carga/i);
+            assert.match(explainCheck.driver, /principal componente|principal fator|carga futura/i);
+            assert.match(explainCheck.credit, /créditos/i);
+            assert.match(explainCheck.caveat, /não inventa uma decomposição histórica/i);
+
             await page.evaluate(() => {
               const mode=document.getElementById('profitProjectionMode');
               const proj=document.getElementById('projectedRealProfitAnnual');
@@ -479,6 +496,7 @@ jobs:
               return {
                 coverVisible: !!cover && getComputedStyle(cover).display !== 'none',
                 ownerBriefVisible: !!document.querySelector('.shareholderBrief') && getComputedStyle(document.querySelector('.shareholderBrief')).display !== 'none',
+                explainVisible: !!document.querySelector('.diagnosisExplainSection') && getComputedStyle(document.querySelector('.diagnosisExplainSection')).display !== 'none',
                 sensitivityVisible: !!document.querySelector('.profitSensitivitySection') && getComputedStyle(document.querySelector('.profitSensitivitySection')).display !== 'none',
                 technicalVisible: !!technical && getComputedStyle(technical).display !== 'none',
                 executiveHidden: !executive || getComputedStyle(executive).display === 'none',
@@ -497,6 +515,7 @@ jobs:
             });
             assert.equal(printLayout.coverVisible, true);
             assert.equal(printLayout.ownerBriefVisible, true);
+            assert.equal(printLayout.explainVisible, true);
             assert.equal(printLayout.sensitivityVisible, true);
             assert.equal(printLayout.technicalVisible, true);
             assert.equal(printLayout.executiveHidden, true);
