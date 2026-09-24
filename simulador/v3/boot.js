@@ -83,11 +83,15 @@ function calculate(){
  const fr=factorRValue();$('factorResult').textContent=r.simpleEligible?pct1(fr):'N/A';$('factorResultText').textContent=r.simpleEligible?(cnaeSuggestion?.factorR?(fr>=.28?'Pelas premissas, tende ao Anexo III.':'Pelas premissas, tende ao Anexo V.'):'Exibido como indicador de referência.'):'Fator R não entra na análise prospectiva quando o Simples não é alternativa confirmada.';
  if(typeof renderReferenceComparison==='function')renderReferenceComparison(all);
  renderVatSummary(r);renderTimeline(all);renderModels(r,rec);renderCompetition(r);renderCash(r);if(typeof renderEconomicImpact==='function')renderEconomicImpact(r);renderActions(r,rec);renderNarrative(r,rec,structural,srec);if(typeof renderProfitSensitivity==='function')renderProfitSensitivity();if(typeof refreshMoneyInputs==='function')refreshMoneyInputs();
- try{localStorage.setItem('brmi_v3',JSON.stringify(Object.fromEntries([...document.querySelectorAll('input,select')].filter(el=>el.id&&el.id!=='yearRange'&&!['cashReserve','workingCapitalNet','debtAverage'].includes(el.id)).map(el=>[el.id,el.type==='checkbox'?el.checked:el.value]))))}catch(_){}
+ try{localStorage.setItem('brmi_v3',JSON.stringify(Object.fromEntries([...document.querySelectorAll('input,select')].filter(el=>el.id&&!['yearRange','cnpj','cashReserve','workingCapitalNet','debtAverage'].includes(el.id)).map(el=>[el.id,el.type==='checkbox'?el.checked:el.value]))))}catch(_){}
 }
 function restore(){
  try{
   const x=JSON.parse(localStorage.getItem('brmi_v3')||'{}');
+  if(Object.prototype.hasOwnProperty.call(x,'cnpj')){
+   delete x.cnpj;
+   localStorage.setItem('brmi_v3',JSON.stringify(x));
+  }
   const legacyDemo={monthlyRevenue:'35000',rbt12:'420000',monthlyPayroll:'11000',b2bPct:'70',purchasesPct:'20',eligibleCreditPct:'90',regularSuppliersPct:'80',cashAndEquivalents:'10000'};
   const isLegacyDemo=Object.entries(legacyDemo).every(([id,value])=>String(x[id]??'')===value);
   if(isLegacyDemo){
@@ -107,6 +111,7 @@ function restore(){
    }
   }catch(_){}
   Object.entries(x).forEach(([id,v])=>{const el=$(id);if(!el)return;if(el.type==='checkbox')el.checked=Boolean(v);else el.value=v});
+  if($('cnpj'))$('cnpj').value='';
  }catch(_){}
 }
 function clearAllSimulatorData(){const confirmed=window.confirm('Limpar todas as informações do simulador?\n\nEssa ação removerá os campos preenchidos, os dados da empresa, os documentos importados e o diagnóstico salvo neste navegador.');if(!confirmed)return;try{localStorage.removeItem('brmi_v3')}catch(_){}window.location.reload()}
