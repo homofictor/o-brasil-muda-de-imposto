@@ -44,10 +44,10 @@ jobs:
               await page.goto(process.env.BASE_URL + '/simulador/guiado/', { waitUntil: 'domcontentloaded', timeout: 45000 });
               const versionLink = page.locator('link[href*="guided.css"]').first();
               deployedVersion = await versionLink.count() ? (await versionLink.getAttribute('href') || '') : '';
-              if (/20260924-profitsens32/.test(deployedVersion)) break;
+              if (/20260924-print33/.test(deployedVersion)) break;
               await page.waitForTimeout(15000);
             }
-            assert.match(deployedVersion || '', /20260924-profitsens32/);
+            assert.match(deployedVersion || '', /20260924-print33/);
             await page.waitForSelector('#cnpj', { timeout: 30000 });
             await page.waitForSelector('#importPanel', { timeout: 30000 });
             assert.equal(await page.locator('#importPanel').isVisible(), true);
@@ -431,6 +431,14 @@ jobs:
             assert.doesNotMatch(confidenceCheck.narrative, /melhor alternativa validada/i);
 
             await page.evaluate(() => {
+              const mode=document.getElementById('profitProjectionMode');
+              const proj=document.getElementById('projectedRealProfitAnnual');
+              if(mode)mode.value='manual';
+              if(proj)proj.value='450000';
+              if(typeof calculate==='function')calculate();
+            });
+            await page.waitForFunction(() => /projeção de lucro/i.test(document.getElementById('ownerAccountantQuestion')?.textContent || ''));
+            await page.evaluate(() => {
               if (typeof setReportView === 'function') setReportView('technical');
               const modal = document.getElementById('reportModal');
               if (modal) modal.hidden = false;
@@ -453,6 +461,10 @@ jobs:
                 compareFits: !compare || compare.scrollWidth <= compare.clientWidth + 3,
                 timelineFits: !timeline || timeline.scrollWidth <= timeline.clientWidth + 3,
                 timelineAvoidsSplit: !timeline || ['avoid','avoid-page'].includes(getComputedStyle(timeline).breakInside),
+                pageMarginRule: [...document.styleSheets].flatMap(s => { try { return [...s.cssRules] } catch(_) { return [] } }).filter(r => r.type === CSSRule.PAGE_RULE).map(r => r.style.margin || '').join('|'),
+                logoHeight: document.querySelector('.technicalPrintBrand img')?.getBoundingClientRect().height || 0,
+                evidenceCount: document.querySelectorAll('#ownerEvidenceGrid > div').length,
+                accountantQuestion: document.getElementById('ownerAccountantQuestion')?.textContent || '',
                 title: document.title,
                 literalSlashN: [...document.body.childNodes].some(n => n.nodeType === Node.TEXT_NODE && /\\\\n/.test(n.textContent || ''))
               };
@@ -465,8 +477,13 @@ jobs:
             assert.equal(printLayout.compareFits, true);
             assert.equal(printLayout.timelineFits, true);
             assert.equal(printLayout.timelineAvoidsSplit, true);
+            assert.match(printLayout.pageMarginRule, /0/);
+            assert.ok(printLayout.logoHeight > 40);
+            assert.equal(printLayout.evidenceCount, 6);
+            assert.match(printLayout.accountantQuestion, /projeção de lucro/i);
             assert.equal(printLayout.literalSlashN, false);
             assert.match(printLayout.title, /Relatório técnico/i);
+            await page.pdf({ path: 'simulador-report-print-check.pdf', format: 'A4', printBackground: true, displayHeaderFooter: false, preferCSSPageSize: true });
             await page.emulateMedia({ media: 'screen' });
             await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
 
@@ -491,3 +508,11 @@ jobs:
             process.exit(1);
           });
           NODE
+
+      - name: Upload print-check PDF
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: simulador-report-print-check
+          path: simulador-report-print-check.pdf
+          if-no-files-found: ignore
