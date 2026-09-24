@@ -15,9 +15,9 @@
   const be=byId('profitBreakEvenSetup'),status=byId('profitProjectionStatus');
   if(be)be.textContent=r?.breakEven?money(r.breakEven.profit)+' por ano · '+pct(r.breakEven.margin)+' do faturamento':'Ainda não calculável com os dados atuais.';
   if(status){
-   if(mode==='manual')status.textContent=r?.projectedProfitKnown?'A comparação prospectiva usa o lucro projetado informado para 2027.':'Informe o lucro projetado para 2027. Até lá, o histórico permanece apenas como referência.';
+   if(mode==='manual')status.textContent=r?.projectedProfitKnown?'A comparação prospectiva usa o lucro anual projetado informado para o cenário.':'Informe o lucro anual projetado para o cenário. Até lá, o histórico permanece apenas como referência.';
    else if(mode==='historical')status.textContent='O resultado histórico está sendo usado como hipótese de cenário por escolha do usuário. Isso não o transforma em previsão.';
-   else status.textContent=r?.projectedProfitKnown?'A projeção informada passou a substituir o histórico na comparação de 2027.':'O histórico é apenas referência. O relatório destacará o ponto de indiferença e a sensibilidade à margem futura.';
+   else status.textContent=r?.projectedProfitKnown?'A projeção informada passou a substituir o histórico na comparação prospectiva.':'O histórico é apenas referência. O relatório destacará o ponto de indiferença e a sensibilidade à margem futura.';
   }
  }
  function renderReport(r){
@@ -36,7 +36,7 @@
   let decision='Resultado sensível à lucratividade',note='A posição muda quando o lucro tributável atravessa o ponto de indiferença.';
   if(r.projectedProfitKnown){
    decision=r.projectedAccountingProfit<be.profit?'Lucro Real à frente na projeção':r.projectedAccountingProfit>be.profit?'Lucro Presumido à frente na projeção':'Regimes próximos no ponto de indiferença';
-   note='Leitura baseada no lucro projetado informado para 2027.';
+   note='Leitura baseada no lucro anual projetado informado para o cenário.';
   }else if(mode==='historical'){
    decision=r.historicalAccountingProfit<be.profit?'Lucro Real à frente no cenário histórico':'Lucro Presumido à frente no cenário histórico';
    note='Este cenário usa o histórico por escolha do usuário e não deve ser tratado como previsão.';
