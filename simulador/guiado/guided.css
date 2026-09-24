@@ -40,7 +40,7 @@
 .erpTopbar{background:#102640;border-bottom:0;box-shadow:0 2px 10px rgba(16,38,64,.18);backdrop-filter:none}
 .erpTopbar .topinner{max-width:none;height:64px;padding:0 24px;gap:18px}
 .erpBrand{min-width:300px;gap:12px}
-.erpBrandLogo{display:block;width:78px;height:50px;object-fit:contain;object-position:center;background:#fff;border-radius:6px;padding:3px 5px;box-shadow:0 0 0 1px rgba(255,255,255,.15)}
+.erpBrandLogo{display:block;width:68px;height:46px;box-sizing:border-box;object-fit:contain;object-position:center;background:#fff;border-radius:6px;padding:5px 8px;box-shadow:0 0 0 1px rgba(255,255,255,.15)}
 .erpBrandCopy{color:#fff!important;line-height:1.15}
 .erpBrandCopy strong{font-size:14px;letter-spacing:.01em}
 .erpBrandCopy small{display:block;margin-top:4px;color:#aebed0;font-size:10px;font-weight:600}
@@ -211,7 +211,7 @@
 
 @media(max-width:760px){
  .erpBrand{min-width:auto}
- .erpBrandLogo{width:62px;height:42px}
+ .erpBrandLogo{width:56px;height:40px;padding:5px 7px}
 }
 
 
