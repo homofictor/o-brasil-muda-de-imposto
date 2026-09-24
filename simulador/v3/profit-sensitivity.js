@@ -44,13 +44,16 @@
   if(byId('sensDecision'))byId('sensDecision').textContent=decision;
   if(byId('sensDecisionNote'))byId('sensDecisionNote').textContent=note;
   if(alert){
-   alert.className='profitSensitivityAlert '+(r.realDecisionSensitive?'warning':'');
-   alert.innerHTML=r.realDecisionSensitive?'<strong>Resultado condicionado à lucratividade futura.</strong> A DRE histórica explica a posição atual, mas não basta para afirmar qual regime será mais vantajoso em 2027.':'<strong>Projeção prospectiva disponível.</strong> A comparação usa a projeção informada, mantendo o histórico apenas como referência.';
+   const profitField=byId('realAccountingProfitAnnual'),fiscalMismatch=profitField?.dataset?.importFiscalMismatch==='1',irpjProv=Number(profitField?.dataset?.importIrpjExpense||0),csllProv=Number(profitField?.dataset?.importCsllExpense||0);
+   alert.className='profitSensitivityAlert '+(r.realDecisionSensitive||fiscalMismatch?'warning':'');
+   const base=r.realDecisionSensitive?'<strong>Resultado condicionado à lucratividade futura.</strong> A DRE histórica explica a posição atual, mas não basta para afirmar qual regime será mais vantajoso em 2027.':'<strong>Projeção prospectiva disponível.</strong> A comparação usa a projeção informada, mantendo o histórico apenas como referência.';
+   const mismatch=fiscalMismatch?'<span><b>Atenção fiscal:</b> a DRE registra resultado contábil negativo e também provisão de IRPJ/CSLL'+((irpjProv+csllProv)>0?' de aproximadamente '+money(irpjProv+csllProv):'')+'. Não assuma base fiscal zero sem conferir adições, exclusões, compensações e o e-Lalur/e-Lacs.</span>':'';
+   alert.innerHTML=base+mismatch;
   }
   const tbody=byId('profitSensitivityBody');
   if(tbody)tbody.innerHTML=(r.profitSensitivity||[]).map(s=>'<tr><td><strong>'+s.label+'</strong><small>'+pct(s.margin)+' do faturamento</small></td><td>'+money(s.profit)+'</td><td>'+money(s.realTax)+'</td><td>'+money((r.irpj||0)+(r.csll||0))+'</td><td class="'+s.winner+'">'+(s.winner==='equal'?'Equilíbrio aproximado':s.winner==='real'?'Lucro Real tende a ficar à frente':'Lucro Presumido tende a ficar à frente')+'</td></tr>').join('');
   const foot=byId('profitSensitivityFoot');
-  if(foot)foot.textContent='Ponto de indiferença aproximado calculado com faturamento, percentuais de presunção, adições, exclusões e compensações informadas. O prejuízo contábil histórico não é tratado automaticamente como prejuízo fiscal futuro.';
+  if(foot)foot.textContent='Ponto de indiferença aproximado calculado com faturamento, percentuais de presunção, adições, exclusões e compensações informadas. Prejuízo contábil histórico não é tratado automaticamente como prejuízo fiscal nem como previsão de exercícios futuros.';
  }
  function renderOwner(r){
   const be=r?.breakEven,node=byId('ownerProfitBreakEven'),note=byId('ownerProfitBreakEvenNote');if(!node)return;
