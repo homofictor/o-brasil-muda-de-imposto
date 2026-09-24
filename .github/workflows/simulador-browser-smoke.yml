@@ -44,10 +44,10 @@ jobs:
               await page.goto(process.env.BASE_URL + '/simulador/guiado/', { waitUntil: 'domcontentloaded', timeout: 45000 });
               const versionLink = page.locator('link[href*="guided.css"]').first();
               deployedVersion = await versionLink.count() ? (await versionLink.getAttribute('href') || '') : '';
-              if (/20260924-explain37/.test(deployedVersion)) break;
+              if (/20260924-bridge39/.test(deployedVersion)) break;
               await page.waitForTimeout(15000);
             }
-            assert.match(deployedVersion || '', /20260924-explain37/);
+            assert.match(deployedVersion || '', /20260924-bridge39/);
             await page.waitForSelector('#cnpj', { timeout: 30000 });
             await page.waitForSelector('#importPanel', { timeout: 30000 });
             assert.equal(await page.locator('#importPanel').isVisible(), true);
@@ -471,6 +471,35 @@ jobs:
             assert.match(explainCheck.credit, /créditos/i);
             assert.match(explainCheck.caveat, /não inventa uma decomposição histórica/i);
 
+            const bridgeCheck = await page.evaluate(() => {
+              const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = String(v); };
+              set('currentPisCofinsAnnual', 800000);
+              set('currentIcmsAnnual', 1900000);
+              set('currentIssAnnual', 100000);
+              set('currentOtherConsumptionAnnual', 42049.06);
+              if (typeof calculate === 'function') calculate();
+              const b = window.lastTaxBridge;
+              return {
+                known: !!b?.known,
+                reconciled: !!b?.reconciled,
+                delta: b?.delta || 0,
+                primary: b?.primary?.label || '',
+                primaryValue: b?.primary?.value || 0,
+                rows: document.querySelectorAll('#taxBridgeContributionBody tr').length,
+                quality: document.getElementById('bridgeAttributionQuality')?.textContent || '',
+                status: document.getElementById('currentTaxBreakdownStatus')?.textContent || '',
+                driver: document.getElementById('explainDriverText')?.textContent || ''
+              };
+            });
+            assert.equal(bridgeCheck.known, true);
+            assert.equal(bridgeCheck.reconciled, true);
+            assert.equal(bridgeCheck.rows, 3);
+            assert.match(bridgeCheck.quality, /Atribuição conciliada/i);
+            assert.match(bridgeCheck.status, /Composição conciliada/i);
+            assert.ok(Math.abs(bridgeCheck.primaryValue) > 0);
+            assert.match(bridgeCheck.primary, /PIS|ICMS|IPI|CBS|IBS/i);
+            assert.match(bridgeCheck.driver, /ponte conciliada|principal fator/i);
+
             await page.evaluate(() => {
               const mode=document.getElementById('profitProjectionMode');
               const proj=document.getElementById('projectedRealProfitAnnual');
@@ -497,6 +526,7 @@ jobs:
                 coverVisible: !!cover && getComputedStyle(cover).display !== 'none',
                 ownerBriefVisible: !!document.querySelector('.shareholderBrief') && getComputedStyle(document.querySelector('.shareholderBrief')).display !== 'none',
                 explainVisible: !!document.querySelector('.diagnosisExplainSection') && getComputedStyle(document.querySelector('.diagnosisExplainSection')).display !== 'none',
+                bridgeVisible: !!document.querySelector('.taxBridgeSection') && getComputedStyle(document.querySelector('.taxBridgeSection')).display !== 'none',
                 sensitivityVisible: !!document.querySelector('.profitSensitivitySection') && getComputedStyle(document.querySelector('.profitSensitivitySection')).display !== 'none',
                 technicalVisible: !!technical && getComputedStyle(technical).display !== 'none',
                 executiveHidden: !executive || getComputedStyle(executive).display === 'none',
@@ -516,6 +546,7 @@ jobs:
             assert.equal(printLayout.coverVisible, true);
             assert.equal(printLayout.ownerBriefVisible, true);
             assert.equal(printLayout.explainVisible, true);
+            assert.equal(printLayout.bridgeVisible, true);
             assert.equal(printLayout.sensitivityVisible, true);
             assert.equal(printLayout.technicalVisible, true);
             assert.equal(printLayout.executiveHidden, true);
