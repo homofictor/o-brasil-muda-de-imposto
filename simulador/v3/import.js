@@ -89,7 +89,7 @@ function lastLineValue(text,labels,exclude=[]){const lines=String(text||'').spli
 function lastFirstLineValue(text,labelGroups){for(const labels of labelGroups){const v=lastLineValue(text,labels);if(v!=null)return v}return null}
 
 function importNumberTokens(line){
- const matches=String(line||'').match(/\(?\s*(?:R\$\s*)?-?\d{1,3}(?:\.\d{3})*(?:,\d{1,2})?\s*\)?|\(?\s*-?\d+(?:[.,]\d{1,2})?\s*\)?/g)||[];
+ const matches=String(line||'').match(/\(?\s*(?:R\$\s*)?-?(?:\d{1,3}(?:\.\d{3})+(?:,\d{1,2})?|\d+(?:[.,]\d{1,2})?)\s*\)?/g)||[];
  return matches.map(brNum).filter(Number.isFinite)
 }
 function statementRows(text){
@@ -127,7 +127,7 @@ function orderedLineValues(line,order){
 function latestLineValues(text,labels,exclude=[]){
  const order=comparativeOrder(text),lines=statementRows(text);
  for(const line of lines){
-  const n=normImport(line);if(!labels.some(x=>n.includes(x))||exclude.some(x=>n.includes(x)))continue;
+  const n=normImport(line);if(/^(demonstracao|periodo|ano\b|exercicio\b)/.test(n))continue;if(!labels.some(x=>n.includes(x))||exclude.some(x=>n.includes(x)))continue;
   return orderedLineValues(line,order)
  }
  return{latest:null,prior:null,ordered:false}
