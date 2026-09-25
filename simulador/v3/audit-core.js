@@ -84,28 +84,10 @@
  const originalValidate=window.validateDiagnosisInputs;
  if(typeof originalValidate==='function')window.validateDiagnosisInputs=function(){const errors=originalValidate();const candidate=!!sectorSuggestion?.professionalReduction30Candidate||benefitCandidate(companyData?.cnae_fiscal,companyData?.cnae_fiscal_descricao);if(candidate&&$('professionalReduction30')?.value==='review')errors.push('Confirme se a redução de 30% do IBS/CBS para profissão regulamentada é aplicável. O CNAE sozinho não comprova os requisitos do art. 127 da LC 214/2025.');return errors};
 
- window.financialMetrics=function(){
-  const filled=id=>String($(id)?.value??'').trim()!=='',cashKnown=filled('cashAndEquivalents')||filled('liquidInvestments'),cclKnown=filled('currentAssets')&&filled('currentLiabilities'),debtKnown=filled('debtStart')||filled('debtEnd'),interestKnown=filled('interestExpense');
-  const cash=Math.max(0,num('cashAndEquivalents')),liquid=Math.max(0,num('liquidInvestments')),reserve=cash+liquid,ac=Math.max(0,num('currentAssets')),pc=Math.max(0,num('currentLiabilities')),ccl=ac-pc,start=Math.max(0,num('debtStart')),end=Math.max(0,num('debtEnd')),avg=start>0&&end>0?(start+end)/2:(end>0?end:start),interest=Math.max(0,num('interestExpense')),months=clamp(num('dreMonths')||12,1,12);
-  const rawAnnualRate=debtKnown&&interestKnown&&avg>0&&interest>0?(interest/avg)*(12/months):null,automaticRatePlausible=rawAnnualRate!=null&&Number.isFinite(rawAnnualRate)&&rawAnnualRate<=1;
-  if($('cashReserve'))$('cashReserve').value=cashKnown?Math.round(reserve*100)/100:'';
-  if($('workingCapitalNet'))$('workingCapitalNet').value=cclKnown?Math.round(ccl*100)/100:'';
-  if($('debtAverage'))$('debtAverage').value=debtKnown?Math.round(avg*100)/100:'';
-  const mode=$('financeRateMode')?.value||'auto';
-  if(mode==='auto'&&automaticRatePlausible){
-   $('financeRate').value=Math.round(rawAnnualRate*10000)/100;
-   if(typeof markFieldDerived==='function')markFieldDerived('financeRate','CALCULADO');
-   if($('financeRateSource'))$('financeRateSource').textContent=`Despesas financeiras/juros do período ÷ dívida financeira média, anualizado para ${months} mês${months===1?'':'es'} de DRE.`;
-  }else if(mode==='auto'&&rawAnnualRate!=null&&Number.isFinite(rawAnnualRate)&&rawAnnualRate>1){
-   $('financeRate').value='';if(typeof markFieldPending==='function'){markFieldPending('financeRate','REVISAR BASE');markFieldPending('interestExpense','REVISAR')}
-   if($('financeRateSource'))$('financeRateSource').textContent=`A relação encontrada seria de ${(rawAnnualRate*100).toLocaleString('pt-BR',{maximumFractionDigits:2})}% a.a. Revise a composição das despesas financeiras e da dívida antes de usar o valor.`;
-  }else if(mode==='auto'){
-   if($('financeRate'))$('financeRate').value='';
-   if($('financeRateSource'))$('financeRateSource').textContent=avg<=0?'Não calculado: não há dívida financeira informada.':'Não calculado: informe despesas financeiras/juros da dívida ou selecione premissa manual.';
-  }else if($('financeRateSource'))$('financeRateSource').textContent='Premissa manual para custo de financiamento atual ou futuro.';
-  if(typeof markFieldDerived==='function'){markFieldDerived('cashReserve','CALCULADO');markFieldDerived('workingCapitalNet','CALCULADO');markFieldDerived('debtAverage','CALCULADO')}
-  return{cash,liquid,reserve,ac,pc,ccl,start,end,avg,interest,months,annualRate:automaticRatePlausible?rawAnnualRate:null,rawAnnualRate};
- };
+
+ // financialMetrics é definido em data.js. Não sobrescrever aqui: a rotina central aplica
+ // a validação de plausibilidade e a referência gerencial de 25% quando a base documental não concilia.
+
 
  window.patchAuditImportAnalyzer=function(){
   const original=window.analyseImportDoc;if(typeof original!=='function'||original.__auditPatched)return;
