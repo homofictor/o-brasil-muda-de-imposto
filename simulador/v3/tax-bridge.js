@@ -75,7 +75,8 @@
     set('bridgeAttributionQuality','Pendente');set('bridgeAttributionText','Sem base atual suficiente para atribuir a variação.');
     const wrap=$('taxBridgeContributionWrap');if(wrap)wrap.hidden=true;return b
    }
-   const direction=b.delta>1?'aumento':b.delta<-1?'redução':'estabilidade',headline='A carga de consumo apresenta '+direction+' de '+money(Math.abs(b.delta))+(b.rate!=null?' ('+pct(Math.abs(b.rate))+')':'')+' entre a referência atual e '+b.year+'.';
+   const direction=b.delta>1?'aumento':b.delta<-1?'redução':'estabilidade',automotive=r.creditMethod==='automotive-dre-proxy';
+   const headline=(automotive?'A estimativa preliminar da carga de consumo indica ':'A carga de consumo apresenta ')+direction+' de '+money(Math.abs(b.delta))+(b.rate!=null?' ('+pct(Math.abs(b.rate))+')':'')+' entre a referência atual e '+b.year+'.';
    set('taxBridgeHeadline',headline);set('bridgeCurrentTax',money(b.current));set('bridgeCbsNet',money(b.parts.cbsNet));set('bridgeIbsNet',money(b.parts.ibsNet));set('bridgeLegacy',money(b.parts.legacy));set('bridgeFutureTax',money(b.future));set('bridgeDelta',signedMoney(b.delta));
    if(b.reconciled&&b.primary){
     set('bridgePrimaryDriver',b.primary.label);
@@ -99,7 +100,8 @@
    set('taxBridgeContributionTotal',signedMoney(b.delta));
    const note=$('taxBridgeNote');
    if(note){
-    if(b.reconciled)note.textContent='A soma das contribuições reproduz a variação total dentro da tolerância de conciliação e permite identificar o principal bloco responsável pelo aumento ou redução.';
+    if(automotive)note.textContent='Perfil automotivo identificado. A projeção usa custos históricos da DRE como proxy das aquisições de veículos e considera o crédito potencial dos seminovos, mas a origem dos veículos, a documentação fiscal, a variação de estoques e a carga atual concentrada na cadeia devem ser confirmadas antes de tratar a diferença como aumento definitivo.';
+    else if(b.reconciled)note.textContent='A soma das contribuições reproduz a variação total dentro da tolerância de conciliação e permite identificar o principal bloco responsável pelo aumento ou redução.';
     else if(b.otherTreatmentPending&&b.baseReconciled)note.textContent='A composição atual está conciliada, mas existe IPI/outro tributo relevante sem linha futura específica no motor. O relatório preserva a variação total, porém não atribui causalidade definitiva até esse tratamento ser confirmado.';
     else note.textContent='Sem composição atual conciliada, a ponte mostra com precisão a carga futura e seus componentes, mas não inventa uma decomposição histórica. Preencha PIS/Cofins, ICMS e ISS para identificar o principal responsável pela variação; informe IPI/outros apenas quando aplicável.'
    }
