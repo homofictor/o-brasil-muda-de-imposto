@@ -412,6 +412,37 @@ function analyseImportDoc(file,parsed){
   ??firstLatestLineValue(dreText,[['iss sobre vendas','iss s/ vendas','iss incidente sobre vendas']],taxExclude);
  const currentIpiRaw=sumAccountingLeafValues(dreText,n=>/^ipi(?:\b|\/)/.test(n),taxExclude)
   ??firstLatestLineValue(dreText,[['ipi sobre vendas','ipi s/ vendas','ipi incidente sobre vendas']],taxExclude);
+ /* Perfil automotivo: separa veiculos novos, usados, pecas, servicos e comissoes.
+    Os custos da DRE sao uma proxy historica da base de aquisicoes do cenario,
+    nao uma compra fiscal confirmada. */
+ const autoValue=(labels,exclude=[])=>Math.abs(firstLatestLineValue(dreText,[labels],exclude)||0)*annualFactor;
+ const automotiveRevenue={
+  newVehicles:autoValue(['veiculos novos'],['custos','custo','estoque','impostos']),
+  usedVehicles:autoValue(['veiculos seminovos','veiculo seminovo','veiculos usados','veiculo usado'],['custos','custo','estoque','impostos','pis','cofins','icms']),
+  parts:autoValue(['vendas pecas','venda pecas','pecas/acessorios/produtos diversos'],['custos','custo','estoque','impostos','icms','pis','cofins']),
+  services:autoValue(['venda servicos','receita de servicos'],['custos','custo','impostos','iss','pis','cofins']),
+  commissions:autoValue(['comissoes recebidas','receita de comissoes'],['impostos','iss','pis','cofins'])
+ };
+ const automotiveCosts={
+  newVehicles:autoValue(['custos veiculos novos']),
+  usedVehicles:autoValue(['custos veiculos seminovos','custo veiculos seminovos','custos veiculos usados','custo veiculos usados']),
+  parts:autoValue(['custos pecas','custo pecas']),
+  services:autoValue(['custos servicos','custo servicos'])
+ };
+ const automotiveRevenueTotal=Object.values(automotiveRevenue).reduce((s,v)=>s+v,0);
+ const automotiveCostTotal=Object.values(automotiveCosts).reduce((s,v)=>s+v,0);
+ const annualGrossRevenue=revenueGross>0?Math.abs(revenueGross)*annualFactor:0;
+ const automotiveDetail=(dreDoc&&automotiveRevenueTotal>0&&automotiveCostTotal>0)?{
+  source:file.name,
+  revenue:automotiveRevenue,
+  costs:automotiveCosts,
+  revenueTotal:automotiveRevenueTotal,
+  costTotal:automotiveCostTotal,
+  revenueCoverage:annualGrossRevenue>0?automotiveRevenueTotal/annualGrossRevenue:null,
+  usedVehiclesMention:automotiveRevenue.usedVehicles>0||automotiveCosts.usedVehicles>0,
+  basis:'DRE historica',
+  confidence:'medium'
+ }:null;
  const taxTotalRaw=firstLatestLineValue(dreText,[['tributos incidentes sobre vendas'],['impostos incidentes sobre vendas'],['tributos sobre vendas'],['impostos sobre vendas'],['impostos s/ vendas','tributos s/ vendas'],['deducoes tributarias']]);
  let consumptionTaxes=taxTotalRaw==null?0:Math.abs(taxTotalRaw),taxConfidence=taxTotalRaw!=null?'high':null,taxReason=taxTotalRaw!=null?'Total de tributos/impostos incidentes sobre vendas identificado na DRE.':'';
  if(!consumptionTaxes){
@@ -522,7 +553,7 @@ function analyseImportDoc(file,parsed){
  if(tab.b2bPct!=null)c.push(candidate('b2bPct','Vendas para clientes PJ (B2B)',tab.b2bPct,file.name,conf('high'),'Calculado pelos documentos CPF/CNPJ ou identificação de clientes nas linhas do relatório.',fmtPct(tab.b2bPct)));
  if(tab.regularSuppliersPct!=null)c.push(candidate('regularSuppliersPct','Fornecedores no regime regular',tab.regularSuppliersPct,file.name,conf('medium'),'Calculado pelas linhas que identificam o regime dos fornecedores.',fmtPct(tab.regularSuppliersPct)));
  const usedVehiclesMention=/veiculos seminovos|veiculo seminovo|veiculos usados|veiculo usado/.test(normImport(dreText));
- return{file:file.name,type,text,candidates:c,cnpj:importedCnpj,extraction:parsed.extraction||'text',integrity,canonicalAudit,canonical,revenueGross:revenueGross==null?null:Math.abs(revenueGross),revenueNet:revenueNet==null?null:Math.abs(revenueNet),purchaseTotal:tab.purchaseTotal||((type==='Relatório de compras'&&costs)?Math.abs(costs):null),usedVehiclesMention}
+ return{file:file.name,type,text,candidates:c,cnpj:importedCnpj,extraction:parsed.extraction||'text',integrity,canonicalAudit,canonical,revenueGross:revenueGross==null?null:Math.abs(revenueGross),revenueNet:revenueNet==null?null:Math.abs(revenueNet),purchaseTotal:tab.purchaseTotal||((type==='Relatório de compras'&&costs)?Math.abs(costs):null),usedVehiclesMention,automotiveDetail}
 }
 function buildCrossCandidates(docs,candidates){
  const confScore={high:3,medium:2,low:1},typeScore={'Balanço + DRE':4,'DRE':3,'Balanço':3,'Balancete':3,'Relatório de vendas':2,'Relatório de compras':2,'Relatório':1},docByFile=Object.fromEntries(docs.map(d=>[d.file,d]));

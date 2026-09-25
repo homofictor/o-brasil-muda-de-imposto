@@ -89,7 +89,10 @@
   const node=document.getElementById(id);if(!node)return;
   if(confidence==='low'){
    node.hidden=false;node.className='economicConfidenceNote low';
-   node.innerHTML='<strong>Estimativa preliminar</strong><span>Uma ou mais premissas críticas foram extraídas com baixa confiança. Os valores de preço, margem e resultado abaixo são indicativos e devem ser confirmados antes de qualquer decisão.</span>';
+   const usedVehicles=root.brmiImport?.docs?.some(d=>d?.usedVehiclesMention===true);
+   node.innerHTML=usedVehicles
+    ?'<strong>Estimativa preliminar para revenda de veículos</strong><span>Foram identificados veículos seminovos. O simulador considera o potencial de crédito vinculado ao custo de aquisição para evitar tributar economicamente toda a revenda como valor agregado, mas a origem dos veículos, a documentação e a composição real das compras precisam ser confirmadas.</span>'
+    :'<strong>Estimativa preliminar</strong><span>Uma ou mais premissas críticas foram extraídas com baixa confiança. Os valores de preço, margem e resultado abaixo são indicativos e devem ser confirmados antes de qualquer decisão.</span>';
   }else if(confidence==='medium'){
    node.hidden=false;node.className='economicConfidenceNote medium';
    node.innerHTML='<strong>Estimativa de cenário</strong><span>Os valores dependem de premissas automáticas ou parâmetros de referência ainda sujeitos a validação.</span>';
@@ -152,7 +155,10 @@
   setText('economicImpactText',confidencePrefix+(impact.financeCostKnown?`O cenário transfere ${transfer} da variação tributária ao preço. O ${direction} anual de preço estimado é ${money(Math.abs(impact.priceChange))}. Após o efeito tributário não transferido e o custo financeiro estimado, o impacto no resultado é ${resultLabel(impact.resultEffect).toLowerCase()}.${fullTransferNote}`:`O cenário transfere ${transfer} da variação tributária ao preço. O ${direction} anual de preço estimado é ${money(Math.abs(impact.priceChange))}. O efeito no resultado antes do custo financeiro é ${resultLabel(impact.resultEffect).toLowerCase()}; informe reserva e taxa financeira para completar a análise.${fullTransferNote}`));
   setText('techCurrentConsumptionTax',money(impact.currentTax));setText('techFutureConsumptionTax',money(impact.futureTax));setText('techTaxDelta',deltaLabel(impact.taxDelta));setText('techPriceTransfer',money(impact.priceChange));setText('techUnabsorbedDelta',money(impact.unabsorbedDelta));setText('techFinanceEffect',impact.financeCostKnown?money(impact.financeCost):'Não calculado');setText('techResultEffect',impact.financeCostKnown?resultLabel(impact.resultEffect):'Parcial · antes do custo financeiro');
   const modelPhrase=((model.key==='real'||model.key==='presumed')&&!model.totalComplete)?'como menor base comparável':'como modelo de menor desembolso validado';
-  setText('technicalEconomicText',confidencePrefix+`A comparação usa ${model.name} ${modelPhrase} em ${r.year}. A carga de consumo futura considera IBS/CBS e ICMS/ISS residual aplicável. A margem EBITDA usa a receita líquida da DRE quando disponível, enquanto a base tributária usa o faturamento bruto confirmado.`+fullTransferNote);
+  const automotiveNote=r.creditMethod==='automotive-dre-proxy'
+   ?' Para o perfil automotivo identificado na DRE, o crédito futuro usa os custos históricos de veículos novos e seminovos como proxy da base de aquisição, considera peças e serviços separadamente e mantém o resultado como preliminar. A origem dos seminovos e os documentos fiscais devem ser confirmados. A carga atual extraída da DRE também pode não refletir integralmente tributos concentrados anteriormente na cadeia.'
+   :'';
+  setText('technicalEconomicText',confidencePrefix+`A comparação usa ${model.name} ${modelPhrase} em ${r.year}. A carga de consumo futura considera IBS/CBS e ICMS/ISS residual aplicável. A margem EBITDA usa a receita líquida da DRE quando disponível, enquanto a base tributária usa o faturamento bruto confirmado.`+automotiveNote+fullTransferNote);
   const card=document.getElementById('economicImpactCard');if(card)card.dataset.tone=impactTone(impact);
   return impact;
  }
