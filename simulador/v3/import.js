@@ -158,6 +158,18 @@ function sectionLineValue(text,sectionLabels,childLabels,exclude=[]){
 }
 
 function firstLatestLineValue(text,labelGroups,exclude=[]){for(const labels of labelGroups){const v=latestLineValue(text,labels,exclude);if(v!=null)return v}return null}
+function signedLatestLineValue(text,labels,exclude=[]){
+ const order=comparativeOrder(text),lines=statementRows(text);
+ for(const line of lines){
+  const n=accountingSemanticText(line);if(!labels.some(x=>n.includes(x))||exclude.some(x=>n.includes(x)))continue;
+  const vals=orderedLineValues(line,order);if(vals.latest==null)continue;
+  const dc=String(line).match(/\s([DC])\s*$/i),base=vals.latest;
+  if(dc)return dc[1].toUpperCase()==='D'?-Math.abs(base):Math.abs(base);
+  return base
+ }
+ return null
+}
+function firstSignedLatestLineValue(text,labelGroups,exclude=[]){for(const labels of labelGroups){const v=signedLatestLineValue(text,labels,exclude);if(v!=null)return v}return null}
 function sumAccountingLeafValues(text,matcher,exclude=[]){
  const order=comparativeOrder(text),rows=statementRows(text),hits=[];
  for(const row of rows){
@@ -363,13 +375,18 @@ function analyseImportDoc(file,parsed){
  const indirectCosts=firstLatestLineValue(dreText,[['custos indiretos da producao','custos indiretos']]);
  const adminExpenses=firstLatestLineValue(dreText,[['despesas gerais da administracao','despesas administrativas']]);
  const taxExpenses=firstLatestLineValue(dreText,[['despesas tributarias']]);
- const pretaxProfit=firstLatestLineValue(dreText,[['lucro liquido antes provisao irpj e csll','lucro liquido antes da provisao irpj e csll','lucro antes do irpj e csll','lucro antes do irpj','lucro antes do imposto de renda','resultado antes do irpj','resultado antes dos tributos sobre o lucro','resultado antes dos impostos sobre o lucro'],['lucro antes dos tributos','resultado antes dos tributos']]);
- const netProfit=firstLatestLineValue(dreText,[['lucro liquido do exercicio','resultado liquido do exercicio','resultado do exercicio','resultado exercicio'],['lucro liquido','resultado liquido']],['antes']);
- const irpjExpense=Math.abs(firstLatestLineValue(dreText,[['provisao p imposto de renda','provisao para imposto de renda','provisao para irpj','provisao irpj','imposto de renda corrente','irpj corrente','despesa de irpj'],['imposto de renda']],['antes'])||0);
- const csllExpense=Math.abs(firstLatestLineValue(dreText,[['provisao p contribuicao social','provisao para contribuicao social','provisao para csll','provisao csll','contribuicao social corrente','csll corrente','despesa de csll'],['contribuicao social sobre o lucro','csll']],['antes'])||0);
- const accountingProfit=pretaxProfit!=null?pretaxProfit:(netProfit!=null&&(irpjExpense>0||csllExpense>0)?netProfit+irpjExpense+csllExpense:null);
+ const pretaxProfit=firstSignedLatestLineValue(dreText,[['lucro liquido antes provisao irpj e csll','lucro liquido antes da provisao irpj e csll','lucro antes do irpj e csll','lucro antes do irpj','lucro antes do imposto de renda','resultado antes do irpj','resultado antes dos tributos sobre o lucro','resultado antes dos impostos sobre o lucro'],['lucro antes dos tributos','resultado antes dos tributos']]);
+ const netProfitDirect=firstSignedLatestLineValue(dreText,[['lucro liquido do exercicio','resultado liquido do exercicio','resultado do exercicio','resultado exercicio'],['lucro liquido','resultado liquido']],['antes']);
+ const netProfit=netProfitDirect!=null?netProfitDirect:firstSignedLatestLineValue(dreText,[['contas de resultados']]);
+ const irpjExpense=Math.abs(firstLatestLineValue(dreText,[['provisao p imposto de renda','provisao para imposto de renda','provisao para irpj','provisao irpj','imposto de renda corrente','irpj corrente','despesa de irpj'],['imposto de renda']],['antes','contribuicao social'])||0);
+ const csllExpense=Math.abs(firstLatestLineValue(dreText,[['provisao p contribuicao social','provisao para contribuicao social','provisao para csll','provisao csll','contribuicao social corrente','csll corrente','despesa de csll'],['contribuicao social sobre o lucro','csll']],['antes','imposto de renda'])||0);
+ const combinedProfitTaxExpense=Math.abs(firstLatestLineValue(dreText,[['provisao p irpj e contribuicao social','provisao para irpj e contribuicao social','provisao p irpj e csll','provisao para irpj e csll','irpj e contribuicao social']],['antes'])||0);
+ const profitTaxExpense=(irpjExpense+csllExpense)>0?(irpjExpense+csllExpense):combinedProfitTaxExpense;
+ const accountingProfit=pretaxProfit!=null?pretaxProfit:(netProfit!=null?netProfit+profitTaxExpense:null);
  const payrollCosts=latestLineValue(dreText,['custos com pessoal','mao de obra e encargos','custos de pessoal']),payrollExpenses=latestLineValue(dreText,['despesas com pessoal','despesas de pessoal']),directLabor=latestLineValue(dreText,['mao de obra direta']),indirectLabor=latestLineValue(dreText,['mao de obra indireta']),payroll=(payrollCosts||0)+(payrollExpenses||0)||((directLabor||0)+(indirectLabor||0))||latestLineValue(dreText,['folha de pagamento','salarios e encargos','salarios ordenados e encargos','pessoal e encargos','remuneracoes e encargos']);
  const debtBalances=financialDebtBalances(bpText),debtEnd=debtBalances.end,debtStart=debtBalances.start,debtOrdered=debtBalances.ordered;
+ const unclassifiedLongTermCtx=sectionLineValue(bpText,['passivo nao circulante'],['obrigacoes a pagar'],['emprestimo','financiamento','mutuo','parcelamento']),unclassifiedLongTerm=unclassifiedLongTermCtx?.latest==null?0:Math.abs(unclassifiedLongTermCtx.latest);
+ const financingSales=Math.abs(firstLatestLineValue(bpText,[['financiamento das vendas']])||0),factoryLinkedReceivables=Math.abs(firstLatestLineValue(bpText,[['contas vinculadas com a fabrica']])||0);
  const receivables=hierarchicalCategoryTotal(bpText,n=>/clientes|duplicatas a receber|contas a receber|valor(?:es)? a receber|financiamento das vendas|contas vinculadas com a fabrica/.test(n),['provisao','perdas estimadas','longo prazo']);
  const inventory=hierarchicalCategoryTotal(bpText,n=>/estoques?|mercadorias para revenda|produtos acabados|materias primas/.test(n),['provisao']);
  const suppliers=hierarchicalCategoryTotal(bpText,n=>/fornecedores|contas a pagar a fornecedores/.test(n),['adiantamento']);
@@ -392,13 +409,20 @@ function analyseImportDoc(file,parsed){
   if(vals.length){consumptionTaxes=vals.reduce((s,v)=>s+v,0);taxConfidence='medium';taxReason='Tributos sobre vendas somados a partir das contas identificadas na DRE.'}
  }
  if(!consumptionTaxes&&deductions>0){consumptionTaxes=deductions;taxConfidence='low';taxReason='Aproximação pela linha total de deduções da receita bruta. Pode incluir devoluções, abatimentos e descontos, portanto exige revisão.'}
- const explicitEbitda=firstLatestLineValue(dreText,[['ebitda'],['lajida']]);
- const operatingBeforeFinance=firstLatestLineValue(dreText,[['resultado antes do resultado financeiro e dos tributos','resultado antes do resultado financeiro','lucro operacional antes do resultado financeiro']]);
- const operatingProfit=operatingBeforeFinance!=null?operatingBeforeFinance:firstLatestLineValue(dreText,[['resultado operacional','lucro operacional']]);
+ const explicitEbitda=firstSignedLatestLineValue(dreText,[['ebitda'],['lajida']]);
+ const operatingBeforeFinance=firstSignedLatestLineValue(dreText,[['resultado antes do resultado financeiro e dos tributos','resultado antes do resultado financeiro','lucro operacional antes do resultado financeiro']]);
+ const operatingProfit=operatingBeforeFinance!=null?operatingBeforeFinance:firstSignedLatestLineValue(dreText,[['resultado operacional','lucro operacional']]);
  const depreciation=Math.abs(firstLatestLineValue(dreText,[['depreciacao e amortizacao','depreciacoes e amortizacoes'],['depreciacao','depreciacoes']])||0);
  const amortization=Math.abs(firstLatestLineValue(dreText,[['amortizacao','amortizacoes']],['depreciacao e amortizacao','depreciacoes e amortizacoes'])||0);
- const ebitda=explicitEbitda!=null?explicitEbitda:(operatingProfit!=null?operatingProfit+depreciation+amortization:null);
- const revenueNetForMargin=revenueNet>0?Math.abs(revenueNet):(revenueGross>0?Math.max(0,Math.abs(revenueGross)-deductions):0);const ebitdaMargin=ebitda!=null&&revenueNetForMargin>0?100*ebitda/revenueNetForMargin:null;
+ const operatingCostsForEbitda=Math.abs(firstLatestLineValue(dreText,[['custos operacionais'],['custos das mercadorias e servicos']])||0);
+ const operatingExpensesForEbitda=Math.abs(firstLatestLineValue(dreText,[['despesas operacionais']])||0);
+ const otherOperatingResult=firstSignedLatestLineValue(dreText,[['outros resultados operacionais']]);
+ const reconstructedOperatingProfit=operatingProfit==null&&revenueGross>0&&consumptionTaxes>=0&&operatingCostsForEbitda>0&&operatingExpensesForEbitda>0
+  ?Math.abs(revenueGross)-Math.abs(consumptionTaxes)-operatingCostsForEbitda-operatingExpensesForEbitda+(otherOperatingResult||0)
+  :null;
+ const ebitdaBase=operatingProfit!=null?operatingProfit:reconstructedOperatingProfit;
+ const ebitda=explicitEbitda!=null?explicitEbitda:(ebitdaBase!=null?ebitdaBase+depreciation+amortization:null);
+ const revenueNetForMargin=revenueNet>0?Math.abs(revenueNet):(revenueGross>0?Math.max(0,Math.abs(revenueGross)-Math.abs(consumptionTaxes||deductions||0)):0);const ebitdaMargin=ebitda!=null&&revenueNetForMargin>0?100*ebitda/revenueNetForMargin:null;
   if(trial){
   const annual=12/dreMonths,src=file.name,quality=x=>conf(x?.method==='account-code'?'high':'medium');
   if(trial.revenue?.value>0)c.push(candidate('rbt12','Faturamento em 12 meses (RBT12)',trial.revenue.value*annual,src,quality(trial.revenue),`Receitas reconstruídas pelos créditos do balancete e anualizadas a partir de ${dreMonths} meses. Revise se houver lançamentos de encerramento ou transferências internas.`,fmtMoney(trial.revenue.value*annual)));
@@ -411,9 +435,9 @@ function analyseImportDoc(file,parsed){
   const tc=trial.cash,ti=trial.investments,tr=trial.receivables,ts=trial.inventory,tf=trial.suppliers,td=trial.debt,reason=trial.cols.code>=0?'Balancete estruturado por código de conta, preservando contas sintéticas e evitando dupla contagem.':'Balancete reconhecido por descrição e colunas de saldo.';
   if(tc?.closing>0)c.push(candidate('cashAndEquivalents','Caixa e bancos',tc.closing,file.name,conf(tc.method==='account-code'?'high':'medium'),reason,fmtMoney(tc.closing)));
   if(ti?.closing>0)c.push(candidate('liquidInvestments','Aplicações de liquidez imediata',ti.closing,file.name,conf(ti.method==='account-code'?'high':'medium'),reason,fmtMoney(ti.closing)));
-  if(td?.closing>0)c.push(candidate('debtEnd','Dívida financeira final',td.closing,file.name,conf(td.method==='account-code'?'high':'medium'),reason,fmtMoney(td.closing)));
-  if(td?.opening!=null)c.push(candidate('debtStart','Dívida financeira inicial',td.opening,file.name,conf(td.method==='account-code'?'high':'medium'),reason,fmtMoney(td.opening)));
-  if(tr?.closing>0)c.push(candidate('accountsReceivable','Clientes / contas a receber',tr.closing,file.name,conf(tr.method==='account-code'?'high':'medium'),reason,fmtMoney(tr.closing)));
+  if(td?.closing>0)c.push(candidate('debtEnd','Dívida financeira identificada',td.closing,file.name,conf(td.method==='account-code'?'high':'medium'),reason,fmtMoney(td.closing)));
+  if(td?.opening!=null)c.push(candidate('debtStart','Dívida financeira identificada no início',td.opening,file.name,conf(td.method==='account-code'?'high':'medium'),reason,fmtMoney(td.opening)));
+  if(tr?.closing>0)c.push(candidate('accountsReceivable','Valores a receber no curto prazo',tr.closing,file.name,conf(tr.method==='account-code'?'high':'medium'),reason,fmtMoney(tr.closing)));
   if(ts?.closing>0)c.push(candidate('inventory','Estoques',ts.closing,file.name,conf(ts.method==='account-code'?'high':'medium'),reason,fmtMoney(ts.closing)));
   if(tf?.closing>0)c.push(candidate('suppliersPayable','Fornecedores',tf.closing,file.name,conf(tf.method==='account-code'?'high':'medium'),reason,fmtMoney(tf.closing)));
  }
@@ -429,26 +453,38 @@ function analyseImportDoc(file,parsed){
  if(netProfit!=null&&dreDoc)c.push(candidate('netProfit','Resultado do exercício',netProfit,file.name,conf('high'),'Resultado do exercício localizado na DRE.',fmtMoney(netProfit)));
  const canonicalAdds=[
   ['cashAndEquivalents','Caixa e bancos',canonicalCash],['liquidInvestments','Aplicações financeiras',canonicalInvestments],
-  ['accountsReceivable','Clientes / contas a receber',canonicalReceivables],['inventory','Estoques',canonicalInventory],
-  ['suppliersPayable','Fornecedores',canonicalSuppliers],['debtEnd','Dívida financeira final',canonicalDebt]
+  ['accountsReceivable','Valores a receber no curto prazo',canonicalReceivables],['inventory','Estoques',canonicalInventory],
+  ['suppliersPayable','Fornecedores',canonicalSuppliers],['debtEnd','Dívida financeira identificada',canonicalDebt]
  ];
- for(const [field,label,data] of canonicalAdds){if(data?.latest>0&&!c.some(x=>x&&x.field===field))c.push(candidate(field,label,data.latest,file.name,conf(data.method==='canonical-hierarchy'?'high':'medium',balanceDoc),'Classificação pelo mapa contábil canônico, com hierarquia e prevenção de dupla contagem.',fmtMoney(data.latest)))}
+ for(const [field,label,data] of canonicalAdds){
+  if(!(data?.latest>0)||c.some(x=>x&&x.field===field))continue;
+  let reason='Classificação pelo mapa contábil canônico, com hierarquia e prevenção de dupla contagem.';
+  if(field==='accountsReceivable'&&financingSales>0)reason+=` O grupo inclui ${fmtMoney(financingSales)} em financiamento das vendas${factoryLinkedReceivables>0?` e ${fmtMoney(factoryLinkedReceivables)} em contas vinculadas com a fábrica`:''}; por isso o rótulo não é limitado a clientes.`;
+  if(field==='debtEnd'&&unclassifiedLongTerm>0)reason+=` Há ainda ${fmtMoney(unclassifiedLongTerm)} em obrigações a pagar no passivo não circulante cuja natureza financeira não foi identificada; esse valor não foi incluído na dívida.`;
+  const item=candidate(field,label,data.latest,file.name,conf(data.method==='canonical-hierarchy'?'high':'medium',balanceDoc),reason,fmtMoney(data.latest));if(item){if(field==='debtEnd')item.unclassifiedLongTerm=unclassifiedLongTerm;c.push(item)}
+ }
  if(importedCnpj)c.push(candidate('cnpj','CNPJ da empresa',importedCnpj,file.name,conf('high'),'CNPJ validado e identificado no cabeçalho da demonstração contábil.',formatImportedCnpj(importedCnpj)));
  if(revenueForRbt12>0)c.push(candidate('rbt12','Faturamento em 12 meses (RBT12)',Math.abs(revenueForRbt12),file.name,conf(revenueGross!=null?'high':'medium'),revenueGross!=null?'Receita bruta/faturamento localizado no documento.':'Total de vendas localizado no relatório comercial.',fmtMoney(Math.abs(revenueForRbt12))));
  if(cash!=null&&balanceDoc)c.push(candidate('cashAndEquivalents','Caixa e bancos',Math.abs(cash),file.name,conf('high',true),cashComponents!=null?'Caixa e bancos conta movimento somados sem duplicar aplicações financeiras.':'Total de caixa e equivalentes usado porque o balanço não detalhou caixa e bancos separadamente.',fmtMoney(Math.abs(cash))));
  if(investments!=null&&Math.abs(investments)>0&&balanceDoc&&(cashComponents!=null||explicitCash==null))c.push(candidate('liquidInvestments','Aplicações de liquidez imediata',Math.abs(investments),file.name,conf('medium',true),'Aplicações financeiras localizadas separadamente do caixa e bancos. Confirme se possuem liquidez imediata.',fmtMoney(Math.abs(investments))));
  if(currentAssets!=null&&Math.abs(currentAssets)>0&&balanceDoc)c.push(candidate('currentAssets','Ativo circulante',Math.abs(currentAssets),file.name,conf('high',true),'Total do ativo circulante localizado no balanço.',fmtMoney(Math.abs(currentAssets))));
- if(receivables.end>0&&balanceDoc&&!c.some(x=>x?.field==='accountsReceivable'))c.push(candidate('accountsReceivable','Clientes / contas a receber',receivables.end,file.name,conf(receivables.method==='hierarchy'?'high':'medium',true),'Saldo de clientes/contas a receber consolidado respeitando a hierarquia das contas para evitar dupla contagem.',fmtMoney(receivables.end)));
+ if(receivables.end>0&&balanceDoc&&!c.some(x=>x?.field==='accountsReceivable')){const reason='Subtotal de valores a receber no curto prazo consolidado respeitando a hierarquia das contas para evitar dupla contagem.'+(financingSales>0?` Inclui ${fmtMoney(financingSales)} em financiamento das vendas`:'')+(factoryLinkedReceivables>0?` e ${fmtMoney(factoryLinkedReceivables)} em contas vinculadas com a fábrica`:'')+'.';c.push(candidate('accountsReceivable','Valores a receber no curto prazo',receivables.end,file.name,conf(receivables.method==='hierarchy'?'high':'medium',true),reason,fmtMoney(receivables.end)))}
  if(inventory.end>0&&balanceDoc&&!c.some(x=>x?.field==='inventory'))c.push(candidate('inventory','Estoques',inventory.end,file.name,conf(inventory.method==='hierarchy'?'high':'medium',true),'Saldo de estoques consolidado sem somar simultaneamente subtotal e contas analíticas.',fmtMoney(inventory.end)));
  if(suppliers.end>0&&balanceDoc&&!c.some(x=>x?.field==='suppliersPayable'))c.push(candidate('suppliersPayable','Fornecedores',suppliers.end,file.name,conf(suppliers.method==='hierarchy'?'high':'medium',true),'Saldo de fornecedores consolidado respeitando subtotais e contas analíticas.',fmtMoney(suppliers.end)));
  if(currentLiabilities!=null&&Math.abs(currentLiabilities)>0&&balanceDoc)c.push(candidate('currentLiabilities','Passivo circulante',Math.abs(currentLiabilities),file.name,conf('high',true),'Total do passivo circulante localizado no balanço.',fmtMoney(Math.abs(currentLiabilities))));
- if(debtEnd>0&&balanceDoc&&!c.some(x=>x?.field==='debtEnd'))c.push(candidate('debtEnd','Dívida financeira final',debtEnd,file.name,conf(debtOrdered?'high':'medium',true),'Soma das obrigações financeiras identificadas no passivo circulante e não circulante, incluindo empréstimos/financiamentos, terceiros, parcelamentos fiscais e mútuos quando existentes.',fmtMoney(debtEnd)));
- if(debtStart!=null&&debtStart>=0&&balanceDoc)c.push(candidate('debtStart','Dívida financeira inicial',debtStart,file.name,conf(debtOrdered?'high':'medium',true),'Saldo inicial das mesmas obrigações financeiras utilizadas na dívida final.',fmtMoney(debtStart)));
- if(interest!=null&&interest>0&&dreDoc)c.push(candidate('interestExpense','Despesas financeiras da dívida',interest,file.name,conf('high'),'Conta específica de juros/encargos da dívida localizada na DRE.',fmtMoney(interest)));
- else if(genericFinance!=null&&genericFinance>0&&dreDoc)c.push(candidate('interestExpense','Despesas financeiras da DRE',genericFinance,file.name,conf('high'),'Conta de despesas financeiras do período usada como aproximação gerencial do custo da dívida. Revise se houver valores relevantes não vinculados a empréstimos, financiamentos, parcelamentos ou mútuos.',fmtMoney(genericFinance)));
+ if(debtEnd>0&&balanceDoc&&!c.some(x=>x?.field==='debtEnd')){const reason='Soma apenas das obrigações cuja natureza financeira foi identificada no balanço, como empréstimos, financiamentos, parcelamentos ou mútuos.'+(unclassifiedLongTerm>0?` Há ${fmtMoney(unclassifiedLongTerm)} em obrigações a pagar no passivo não circulante sem natureza financeira identificada; o valor ficou fora da dívida até confirmação.`:'');const item=candidate('debtEnd','Dívida financeira identificada',debtEnd,file.name,conf(debtOrdered?'high':'medium',true),reason,fmtMoney(debtEnd));if(item){item.unclassifiedLongTerm=unclassifiedLongTerm;c.push(item)}}
+ if(debtStart!=null&&debtStart>=0&&balanceDoc)c.push(candidate('debtStart','Dívida financeira identificada no início',debtStart,file.name,conf(debtOrdered?'high':'medium',true),'Saldo inicial das mesmas obrigações financeiras utilizadas na dívida final.',fmtMoney(debtStart)));
+ if(interest!=null&&interest>0&&dreDoc){
+  const item=candidate('interestExpense','Juros e encargos da dívida',interest,file.name,conf('high'),'Conta específica de juros/encargos de empréstimos ou financiamentos localizada na DRE.',fmtMoney(interest));if(item){item.usageConfidence='high';c.push(item)}
+ }else if(genericFinance!=null&&genericFinance>0&&dreDoc){
+  const item=candidate('interestExpense','Despesas financeiras da DRE',genericFinance,file.name,conf('high'),'O valor da conta de despesas financeiras foi identificado com alta confiança. Seu uso como aproximação do custo da dívida exige revisão, porque a conta pode conter itens não vinculados a empréstimos, financiamentos, parcelamentos ou mútuos.',fmtMoney(genericFinance));if(item){item.usageConfidence='medium';item.requiresUsageReview=true;c.push(item)}
+ }
  if(accountingProfit!=null&&dreDoc){
-  const annualProfit=accountingProfit*annualFactor,fiscalMismatch=accountingProfit<0&&(irpjExpense>0||csllExpense>0),reason=(pretaxProfit!=null?'Resultado antes de IRPJ/CSLL identificado diretamente na DRE.':'Valor aproximado a partir do lucro líquido acrescido de IRPJ e CSLL identificados.')+(fiscalMismatch?' A DRE também registra IRPJ/CSLL apesar do resultado contábil negativo; isso sugere ajustes fiscais, provisões ou particularidades que precisam ser confirmados antes de assumir base fiscal zero.':'')+(dreMonths<12?` Anualizado a partir de ${dreMonths} meses.`:'');
-  const item=candidate('realAccountingProfitAnnual','Resultado contábil histórico antes de IRPJ e CSLL',annualProfit,file.name,conf(pretaxProfit!=null?'high':'medium'),reason,fmtMoney(annualProfit));if(item){item.fiscalMismatch=fiscalMismatch;item.irpjExpense=irpjExpense*annualFactor;item.csllExpense=csllExpense*annualFactor;c.push(item)}
+  const annualProfit=accountingProfit*annualFactor,fiscalMismatch=accountingProfit<0&&profitTaxExpense>0;
+  const reconstructed=pretaxProfit==null&&netProfit!=null;
+  const reason=pretaxProfit!=null?'Resultado antes de IRPJ/CSLL identificado diretamente na DRE.':reconstructed&&profitTaxExpense>0?`Resultado antes de IRPJ/CSLL reconstruído a partir do resultado final (${fmtMoney(netProfit)}) acrescido da provisão de IRPJ/CSLL (${fmtMoney(profitTaxExpense)}).`:'Resultado final da DRE usado como referência porque não foi localizada provisão relevante de IRPJ/CSLL.';
+  const fullReason=reason+(fiscalMismatch?' A DRE registra resultado contábil negativo e provisão de IRPJ/CSLL; confirme a apuração fiscal antes de assumir base fiscal zero.':'')+(dreMonths<12?` Anualizado a partir de ${dreMonths} meses.`:'');
+  const item=candidate('realAccountingProfitAnnual','Resultado contábil histórico antes de IRPJ e CSLL',annualProfit,file.name,conf(pretaxProfit!=null?'high':'medium'),fullReason,fmtMoney(annualProfit));if(item){item.fiscalMismatch=fiscalMismatch;item.irpjExpense=irpjExpense*annualFactor;item.csllExpense=csllExpense*annualFactor;item.combinedProfitTaxExpense=combinedProfitTaxExpense*annualFactor;c.push(item)}
  }
  if(consumptionTaxes>0&&dreDoc){const annualTaxes=consumptionTaxes*annualFactor,taxRate=revenueGross?100*consumptionTaxes/Math.abs(revenueGross):null;const rateText=taxRate!=null&&Number.isFinite(taxRate)?` Equivale a aproximadamente ${fmtPct(taxRate)} da receita bruta.`:'';c.push(candidate('currentConsumptionTaxAnnual','Carga atual de tributos sobre consumo',annualTaxes,file.name,conf(taxConfidence),taxReason+rateText+(dreMonths<12?` Valor anualizado a partir de ${dreMonths} meses.`:''),fmtMoney(annualTaxes)))}
  if(dreDoc){
@@ -458,7 +494,11 @@ function analyseImportDoc(file,parsed){
   pushTaxDetail('currentIssAnnual','ISS atual',currentIssRaw);
   pushTaxDetail('currentOtherConsumptionAnnual','IPI / outros tributos de consumo',currentIpiRaw);
  }
- if(ebitdaMargin!=null&&Number.isFinite(ebitdaMargin)&&dreDoc)c.push(candidate('currentOperatingMarginPct','Margem EBITDA atual',ebitdaMargin,file.name,conf((explicitEbitda!=null||operatingBeforeFinance!=null)?'high':'medium'),explicitEbitda!=null?'EBITDA identificado diretamente e dividido pela receita líquida.':operatingBeforeFinance!=null?'Resultado antes do resultado financeiro acrescido de depreciação e amortização, dividido pela receita líquida.':'EBITDA aproximado pelo resultado operacional acrescido de depreciação e amortização, dividido pela receita líquida.',fmtPct(ebitdaMargin)));
+ if(ebitdaMargin!=null&&Number.isFinite(ebitdaMargin)&&dreDoc){
+  const marginConfidence=(explicitEbitda!=null||operatingBeforeFinance!=null)?'high':'medium';
+  const marginReason=explicitEbitda!=null?'EBITDA identificado diretamente e dividido pela receita líquida.':operatingBeforeFinance!=null?'Resultado antes do resultado financeiro acrescido de depreciação e amortização, dividido pela receita líquida.':reconstructedOperatingProfit!=null?`EBITDA reconstruído pela DRE: receita bruta menos tributos sobre vendas, custos operacionais, despesas operacionais e outros resultados operacionais, com adição de depreciação/amortização. EBITDA estimado: ${fmtMoney(ebitda)}; receita líquida estimada: ${fmtMoney(revenueNetForMargin)}.`:'EBITDA aproximado pelo resultado operacional acrescido de depreciação e amortização, dividido pela receita líquida.';
+  const item=candidate('currentOperatingMarginPct','Margem EBITDA atual',ebitdaMargin,file.name,conf(marginConfidence),marginReason,fmtPct(ebitdaMargin));if(item){item.ebitdaAnnual=ebitda*annualFactor;item.ebitdaReconstructed=reconstructedOperatingProfit!=null;c.push(item)}
+ }
  if(payroll)c.push(candidate('monthlyPayroll','Folha mensal estimada',dreDoc?Math.abs(payroll)/dreMonths:Math.abs(payroll),file.name,conf('medium'),dreDoc?`Valor de pessoal dividido pelos ${dreMonths} meses cobertos pela DRE. Confirme a composição válida para o Fator R.`:'Valor de folha localizado no relatório. Confirme a periodicidade.',fmtMoney(dreDoc?Math.abs(payroll)/dreMonths:Math.abs(payroll))));
  if(tab.b2bPct!=null)c.push(candidate('b2bPct','Vendas para clientes PJ (B2B)',tab.b2bPct,file.name,conf('high'),'Calculado pelos documentos CPF/CNPJ ou identificação de clientes nas linhas do relatório.',fmtPct(tab.b2bPct)));
  if(tab.regularSuppliersPct!=null)c.push(candidate('regularSuppliersPct','Fornecedores no regime regular',tab.regularSuppliersPct,file.name,conf('medium'),'Calculado pelas linhas que identificam o regime dos fornecedores.',fmtPct(tab.regularSuppliersPct)));
@@ -546,11 +586,11 @@ function importCandidateButtonState(c){
 function syncApplyHighButtonState(groups=groupedImportCandidates()){
  const btn=$('importApplyHigh');if(!btn)return;
  let eligible=0,accepted=0,conflicts=0;
- Object.values(groups).forEach(arr=>{const high=arr.filter(c=>c.confidence==='high');if(!high.length)return;if(conflictGroup(high)){conflicts++;return}eligible++;if(high[0].accepted)accepted++});
+ Object.values(groups).forEach(arr=>{const high=arr.filter(c=>c.confidence==='high'&&c.usageConfidence!=='medium'&&!c.requiresUsageReview);if(!high.length)return;if(conflictGroup(high)){conflicts++;return}eligible++;if(high[0].accepted)accepted++});
  btn.classList.remove('isPressing','importApplyDone','importApplyEmpty');btn.removeAttribute('aria-busy');
  if(!eligible){btn.disabled=true;btn.classList.add('importApplyEmpty');btn.textContent='Nenhuma sugestão de alta confiança'}
  else if(accepted===eligible){btn.disabled=true;btn.classList.add('importApplyDone');btn.textContent=accepted+' '+(accepted===1?'sugestão aplicada':'sugestões aplicadas')+' ✓'}
- else{btn.disabled=false;btn.textContent='Aplicar '+(eligible-accepted)+' '+((eligible-accepted)===1?'sugestão':'sugestões')+' de alta confiança'}
+ else{btn.disabled=false;btn.textContent='Aplicar e confirmar '+(eligible-accepted)+' '+((eligible-accepted)===1?'sugestão segura':'sugestões seguras')}
  btn.title=conflicts?conflicts+' grupo(s) com valores divergentes ficaram para revisão manual.':'';
 }
 function renderImportCandidates(){
@@ -592,11 +632,12 @@ function applyImportCandidate(i,button){
  if(explicit){delete el.dataset.userEdited;el.dataset.importAccepted='1';c.accepted=true}
  if(c.field==='cnpj'){el.value=typeof normalizeCnpjInput==='function'?normalizeCnpjInput(c.value):formatImportedCnpj(c.value);el.dataset.importVerified='1';el.dataset.importSource=c.source||'';if(typeof markFieldAuto==='function')markFieldAuto('cnpj','IMPORTADO');syncImportCandidateButtons(c.field,i);if(typeof lookupCnpj==='function')lookupCnpj();return true}
  if(typeof setMoneyInputValue==='function'&&el.closest?.('.money'))setMoneyInputValue(el,c.value);else el.value=Math.round(c.value*100)/100;
- el.dataset.importVerified='1';el.dataset.importSource=c.source||'Documento importado';el.dataset.importConfidence=c.confidence||'';if(c.fiscalMismatch)el.dataset.importFiscalMismatch='1';else delete el.dataset.importFiscalMismatch;if(c.irpjExpense!=null)el.dataset.importIrpjExpense=String(c.irpjExpense);else delete el.dataset.importIrpjExpense;if(c.csllExpense!=null)el.dataset.importCsllExpense=String(c.csllExpense);else delete el.dataset.importCsllExpense;if(c.derivedKey)el.dataset.importDerivedKey=c.derivedKey;else delete el.dataset.importDerivedKey;
+ el.dataset.importVerified='1';el.dataset.importSource=c.source||'Documento importado';el.dataset.importConfidence=c.confidence||'';if(c.usageConfidence)el.dataset.importUsageConfidence=c.usageConfidence;else delete el.dataset.importUsageConfidence;if(c.ebitdaAnnual!=null)el.dataset.importEbitdaAnnual=String(c.ebitdaAnnual);else delete el.dataset.importEbitdaAnnual;if(c.fiscalMismatch)el.dataset.importFiscalMismatch='1';else delete el.dataset.importFiscalMismatch;if(c.irpjExpense!=null)el.dataset.importIrpjExpense=String(c.irpjExpense);else delete el.dataset.importIrpjExpense;if(c.csllExpense!=null)el.dataset.importCsllExpense=String(c.csllExpense);else delete el.dataset.importCsllExpense;if(c.derivedKey)el.dataset.importDerivedKey=c.derivedKey;else delete el.dataset.importDerivedKey;
  if(c.field==='currentConsumptionTaxAnnual'&&$('currentConsumptionMode')){$('currentConsumptionMode').value='manual';el.readOnly=false;el.dataset.sourceNote=c.reason||'';if($('currentConsumptionTaxSource'))$('currentConsumptionTaxSource').textContent='Calculado a partir da DRE importada. '+(c.reason||'Revise a origem antes de concluir.')}
  if(c.field==='rbt12'&&$('revenueSync')?.checked&&typeof syncRevenue==='function'){syncRevenue('annual');if(typeof markFieldDerived==='function')markFieldDerived('monthlyRevenue','CALCULADO')}
  if(c.field==='monthlyRevenue'&&$('revenueSync')?.checked&&typeof syncRevenue==='function'){syncRevenue('monthly');if(typeof markFieldDerived==='function')markFieldDerived('rbt12','CALCULADO')}
- if(typeof markFieldAuto==='function')markFieldAuto(c.field,c.confidence==='high'?'IMPORTADO':c.confidence==='medium'?'CALCULADO':'REVISAR');
+ if(c.usageConfidence==='medium'&&typeof markFieldPending==='function')markFieldPending(c.field,'REVISAR USO');else if(typeof markFieldAuto==='function')markFieldAuto(c.field,c.confidence==='high'?'IMPORTADO':c.confidence==='medium'?'CALCULADO':'REVISAR');
+ if(c.field==='interestExpense'&&c.usageConfidence==='medium'&&$('financeRateSource'))$('financeRateSource').textContent='Despesa financeira contábil identificada com alta confiança. O uso como aproximação do custo da dívida exige revisão dos componentes da conta.';
  try{el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}))}catch(_){}
  if(typeof financialMetrics==='function')financialMetrics();if(typeof refreshEligibilityUi==='function')refreshEligibilityUi();
  if(typeof markDiagnosisDirty==='function')markDiagnosisDirty('import');if(typeof refreshAllFieldStates==='function')refreshAllFieldStates();syncImportCandidateButtons(c.field,i);return true
@@ -606,7 +647,7 @@ async function applyHighConfidenceCandidates(){
  if(btn){btn.disabled=true;btn.classList.add('isPressing');btn.setAttribute('aria-busy','true');btn.textContent='Aplicando...'}
  await new Promise(r=>setTimeout(r,140));
  const groups=groupedImportCandidates();let applied=0,skipped=0;
- Object.values(groups).forEach(arr=>{const high=arr.filter(c=>c.confidence==='high');if(!high.length)return;if(conflictGroup(high)){skipped++;return}if(high[0].accepted)return;if(applyImportCandidate(high[0]._index,true))applied++});
+ Object.values(groups).forEach(arr=>{const high=arr.filter(c=>c.confidence==='high'&&c.usageConfidence!=='medium'&&!c.requiresUsageReview);if(!high.length)return;if(conflictGroup(high)){skipped++;return}if(high[0].accepted)return;if(applyImportCandidate(high[0]._index,true))applied++});
  renderImportCandidates();
  if(btn&&applied===0&&skipped){btn.disabled=false;btn.classList.remove('isPressing');btn.removeAttribute('aria-busy');btn.textContent='Revisar valores divergentes';btn.title=skipped+' grupo(s) com valores divergentes precisam de escolha manual.'}
 }
@@ -619,6 +660,7 @@ function autoApplyDocumentCalculations(){
   const arr=groups[field]||[];if(!arr.length||conflictGroup(arr))return;
   const ranked=[...arr].sort((a,b)=>(b.sourceQuality||score[b.confidence]||0)-(a.sourceQuality||score[a.confidence]||0));
   const best=ranked[0];if(!best)return;
+  if(best.usageConfidence==='medium'||best.requiresUsageReview)return;
   if(mode==='rigorous'&&best.confidence!=='high')return;
   if(mode==='recommended'){
    if(['rbt12','cashAndEquivalents','currentAssets','currentLiabilities','interestExpense'].includes(field)&&best.confidence!=='high')return;
