@@ -400,9 +400,8 @@ jobs:
             assert.ok(Math.abs(rrCorrectedTaxCheck.legacy - 339711.26) < .10);
             assert.ok(Math.abs(rrCorrectedTaxCheck.total - 749841.13) < .10);
 
-            const rrAutomotiveTaxCheck = await page.evaluate(() => {
+            const rrAutomotiveTaxCheck = await page.evaluate((detail) => {
               const set=(id,v)=>{const el=document.getElementById(id);if(el)el.value=String(v)};
-              const detail=rrVehiclesImport.dre.automotiveDetail;
               window.brmiImport.docs=[{automotiveDetail:detail,usedVehiclesMention:true}];
               set('monthlyRevenue',7716170.05/12);set('rbt12',7716170.05);set('simpleStatus','no');
               set('mix30',0);set('mix40',0);set('mix60',0);set('mixZero',0);
@@ -414,7 +413,7 @@ jobs:
                 y2027:{grossVat:y2027.grossVat,inputCredit:y2027.inputCredit,netVat:y2027.netVat,legacy:y2027.legacy,total:y2027.netVat+y2027.legacy,method:y2027.creditMethod,profile:y2027.automotiveCreditProfile},
                 y2033:{grossVat:y2033.grossVat,inputCredit:y2033.inputCredit,netVat:y2033.netVat,method:y2033.creditMethod}
               };
-            });
+            }, rrVehiclesImport.dre.automotiveDetail);
             assert.equal(rrAutomotiveTaxCheck.y2027.method, 'automotive-dre-proxy');
             assert.ok(Math.abs(rrAutomotiveTaxCheck.y2027.grossVat - 679022.96) < .10);
             assert.ok(Math.abs(rrAutomotiveTaxCheck.y2027.inputCredit - 415214.66) < .10);
