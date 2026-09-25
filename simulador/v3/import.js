@@ -178,43 +178,68 @@ function accountDepth(line){
 }
 function hierarchicalCategoryTotal(text,matcher,exclude=[]){
  const order=comparativeOrder(text),rows=statementRows(text),hits=[];
- rows.forEach((row,index)=>{const n=normImport(row);if(!matcher(n)||exclude.some(x=>n.includes(x)))return;const vals=orderedLineValues(row,order);if(vals.latest==null)return;hits.push({row,index,n,depth:accountDepth(row),vals})});
+ rows.forEach((row,index)=>{
+  const n=accountingSemanticText(row);if(!matcher(n)||exclude.some(x=>n.includes(x)))return;
+  const vals=orderedLineValues(row,order);if(vals.latest==null)return;
+  hits.push({row,index,n,code:accountingRowCode(row),isTotal:accountingRowIsTotal(row),depth:accountDepth(row),vals})
+ });
  if(!hits.length)return{end:0,start:null,count:0,method:'none'};
- const parents=hits.filter(h=>hits.some(k=>k.index>h.index&&k.index<=h.index+12&&k.depth>h.depth));
- const chosen=parents.length?parents.filter(p=>!parents.some(q=>q.index<p.index&&p.index<=q.index+12&&p.depth>q.depth)):hits.filter(h=>!hits.some(p=>p.index<h.index&&h.index<=p.index+12&&h.depth>p.depth));
- const use=chosen.length?chosen:hits,end=use.reduce((s,h)=>s+Math.abs(h.vals.latest),0),priorKnown=use.every(h=>h.vals.prior!=null),start=priorKnown?use.reduce((s,h)=>s+Math.abs(h.vals.prior),0):null;
- return{end,start,count:use.length,method:parents.length?'hierarchy':'lines'}
+ const coded=hits.filter(h=>h.code&&!h.isTotal);
+ if(coded.length){
+  const parents=coded.filter(a=>coded.some(b=>b!==a&&b.code.startsWith(a.code)&&b.code.length>a.code.length));
+  const use=parents.length?parents.filter(a=>!parents.some(p=>p!==a&&a.code.startsWith(p.code)&&a.code.length>p.code.length)):coded;
+  const end=use.reduce((s,h)=>s+Math.abs(h.vals.latest),0),priorKnown=use.every(h=>h.vals.prior!=null),start=priorKnown?use.reduce((s,h)=>s+Math.abs(h.vals.prior),0):null;
+  return{end,start,count:use.length,method:parents.length?'account-code-hierarchy':'account-code-lines'}
+ }
+ const totals=hits.filter(h=>h.isTotal);
+ const pool=totals.length?totals:hits;
+ const end=pool.reduce((s,h)=>s+Math.abs(h.vals.latest),0),priorKnown=pool.every(h=>h.vals.prior!=null),start=priorKnown?pool.reduce((s,h)=>s+Math.abs(h.vals.prior),0):null;
+ return{end,start,count:pool.length,method:totals.length?'explicit-total':'lines'}
 }
 function accountingCanonicalMap(text,docType){
  const order=comparativeOrder(text),rows=statementRows(text),out=[];let section='',parent='';
  const rules=[
-  ['asset.current.cash',/^(caixa|bancos conta|depositos bancarios)/],['asset.current.investments',/aplicacoes financeiras|titulos e valores mobiliarios/],
-  ['asset.current.receivables',/clientes|duplicatas a receber|contas a receber/],['asset.current.inventory',/estoques?|mercadorias para revenda|produtos acabados|materias primas/],
-  ['asset.current.taxCredits',/impostos.*compensar|tributos a recuperar|impostos a recuperar/],['asset.noncurrent.fixedAssets',/imobilizado/],
-  ['liability.current.suppliers',/fornecedores|contas a pagar.*fornecedores/],['liability.tax',/impostos a pagar|tributos a recolher|impostos a recolher/],
-  ['liability.financialDebt',/emprestimos?|financiamentos?|mutuos?|arrendamento mercantil|leasing|parcelamentos? (?:fiscais|tributarios|de impostos|de tributos)/],
-  ['equity',/patrimonio liquido/],['income.grossRevenue',/receita bruta|faturamento bruto|vendas brutas/],['income.netRevenue',/receita liquida|vendas liquidas/],
-  ['expense.directCosts',/custos? diretos?/],['expense.indirectCosts',/custos? indiretos?/],['expense.payroll',/mao de obra|salarios|ordenados|pessoal e encargos|pro labore/],
-  ['expense.admin',/despesas? (?:gerais da )?administrativas?/],['expense.financial',/despesas? financeiras|juros passivos|encargos financeiros/],
-  ['expense.tax',/despesas? tributarias/],['expense.depreciation',/depreciacao|amortizacao/],['result.net',/resultado (?:do )?exercicio|lucro liquido/]
+  ['asset.current.cash',/^(caixa|bancos conta|depositos bancarios)/],['asset.current.investments',/^(aplicacoes financeiras|titulos e valores mobiliarios)/],
+  ['asset.current.receivables',/^(clientes|duplicatas a receber|contas a receber|valor(?:es)? a receber|financiamento das vendas|contas vinculadas com a fabrica)/],
+  ['asset.current.inventory',/^(estoques?|mercadorias para revenda|produtos acabados|materias primas)/],
+  ['asset.current.taxCredits',/^(impostos.*compensar|tributos a recuperar|impostos a recuperar)/],['asset.noncurrent.fixedAssets',/^imobilizado/],
+  ['liability.current.suppliers',/^(fornecedor|fornecedores|contas a pagar.*fornecedores)/],['liability.tax',/^(impostos a pagar|tributos a recolher|impostos a recolher)/],
+  ['liability.financialDebt',/^(emprestimos?|financiamentos?|mutuos?|arrendamento mercantil|leasing|parcelamentos? (?:fiscais|tributarios|de impostos|de tributos))/],
+  ['equity',/^patrimonio liquido/],['income.grossRevenue',/^(receita bruta|faturamento bruto|vendas brutas)/],['income.netRevenue',/^(receita liquida|vendas liquidas)/],
+  ['expense.directCosts',/^custos? diretos?/],['expense.indirectCosts',/^custos? indiretos?/],['expense.payroll',/^(mao de obra|salarios|ordenados|pessoal e encargos|despesas com pessoal)/],
+  ['expense.admin',/^despesas? (?:gerais da )?administrativas?/],['expense.financial',/^(despesas? financeiras|juros passivos|encargos financeiros)/],
+  ['expense.tax',/^despesas? tributarias/],['expense.depreciation',/^(depreciacao|amortizacao)/],['result.net',/^(resultado (?:do )?exercicio|lucro liquido)/]
  ];
- for(const row of rows){const n=normImport(row),vals=orderedLineValues(row,order);
-  if(/^ativo( total)?(?: |$)/.test(n)){section='asset';parent='asset';}
-  if(/^passivo(?: |$)/.test(n)){section='liability';parent='liability';}
+ const allowed=(key,sec)=>{
+  if(key.startsWith('asset.'))return sec==='asset';
+  if(key.startsWith('liability.'))return sec==='liability';
+  if(key==='equity')return sec==='equity';
+  if(key.startsWith('income.')||key.startsWith('expense.')||key.startsWith('result.'))return sec==='income';
+  return true
+ };
+ for(const row of rows){
+  const n=accountingSemanticText(row),vals=orderedLineValues(row,order),code=accountingRowCode(row),isTotal=accountingRowIsTotal(row);
+  if(/^ativo(?: |$)/.test(n)){section='asset';parent=/nao circulante/.test(n)?'asset.noncurrent':/circulante/.test(n)?'asset.current':'asset'}
+  if(/^passivo(?: |$)/.test(n)){section='liability';parent=/nao circulante/.test(n)?'liability.noncurrent':/circulante/.test(n)?'liability.current':'liability'}
   if(/^(nao circulante|exigivel a longo prazo)(?: |$)/.test(n))parent=section+'.noncurrent';
   else if(/^circulante(?: |$)/.test(n))parent=section+'.current';
-  if(/patrimonio liquido/.test(n)){section='equity';parent='equity'}
-  if(/receita|custos?|despesas?|resultado|lucro/.test(n)&&docType!=='Balanço')section='income';
-  let canonical=null;for(const [key,re] of rules){if(re.test(n)){canonical=key;break}}
-  if(canonical&&vals.latest!=null)out.push({canonical,row,n,latest:vals.latest,prior:vals.prior,ordered:vals.ordered,depth:accountDepth(row),section,parent});
+  if(/^patrimonio liquido(?: |$)/.test(n)){section='equity';parent='equity'}
+  if(docType!=='Balanço'&&/^(receita|vendas|custos?|despesas?|resultado|lucro|impostos s vendas|impostos sobre vendas|provisoes)/.test(n)){section='income';parent='income'}
+  let canonical=null;for(const [key,re] of rules){if(re.test(n)&&allowed(key,section)){canonical=key;break}}
+  if(canonical&&vals.latest!=null)out.push({canonical,row,n,code,isTotal,latest:vals.latest,prior:vals.prior,ordered:vals.ordered,depth:accountDepth(row),section,parent});
  }
  return out
 }
 function canonicalTotal(map,key){
  const hits=map.filter(x=>x.canonical===key);if(!hits.length)return null;
- const parents=hits.filter(a=>hits.some(b=>b!==a&&b.depth>a.depth));
- const use=parents.length?parents.filter(a=>!parents.some(p=>p!==a&&p.depth<a.depth)):hits;
- return{latest:use.reduce((s,x)=>s+Math.abs(x.latest),0),prior:use.every(x=>x.prior!=null)?use.reduce((s,x)=>s+Math.abs(x.prior),0):null,count:use.length,method:parents.length?'canonical-hierarchy':'canonical-lines'}
+ const coded=hits.filter(x=>x.code&&!x.isTotal);
+ if(coded.length){
+  const parents=coded.filter(a=>coded.some(b=>b!==a&&b.code.startsWith(a.code)&&b.code.length>a.code.length));
+  const use=parents.length?parents.filter(a=>!parents.some(p=>p!==a&&a.code.startsWith(p.code)&&a.code.length>p.code.length)):coded;
+  return{latest:use.reduce((s,x)=>s+Math.abs(x.latest),0),prior:use.every(x=>x.prior!=null)?use.reduce((s,x)=>s+Math.abs(x.prior),0):null,count:use.length,method:parents.length?'canonical-hierarchy':'canonical-lines'}
+ }
+ const totals=hits.filter(x=>x.isTotal),use=totals.length?totals:hits;
+ return{latest:use.reduce((s,x)=>s+Math.abs(x.latest),0),prior:use.every(x=>x.prior!=null)?use.reduce((s,x)=>s+Math.abs(x.prior),0):null,count:use.length,method:totals.length?'canonical-total':'canonical-lines'}
 }
 function accountingAudit(map){
  const counts={};map.forEach(x=>counts[x.canonical]=(counts[x.canonical]||0)+1);
