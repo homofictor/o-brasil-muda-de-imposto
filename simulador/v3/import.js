@@ -421,7 +421,7 @@ function analyseImportDoc(file,parsed){
   usedVehicles:autoValue(['veiculos seminovos','veiculo seminovo','veiculos usados','veiculo usado'],['custos','custo','estoque','impostos','pis','cofins','icms']),
   parts:autoValue(['vendas pecas','venda pecas','pecas/acessorios/produtos diversos'],['custos','custo','estoque','impostos','icms','pis','cofins']),
   services:autoValue(['venda servicos','receita de servicos'],['custos','custo','impostos','iss','pis','cofins']),
-  commissions:autoValue(['comissoes recebidas','receita de comissoes'],['impostos','iss','pis','cofins'])
+  commissions:autoValue(['comissoes recebidas','receita de comissoes'],['impostos'])
  };
  const automotiveCosts={
   newVehicles:autoValue(['custos veiculos novos']),
