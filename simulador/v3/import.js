@@ -475,6 +475,10 @@ function analyseImportDoc(file,parsed){
  }
  if(importedCnpj)c.push(candidate('cnpj','CNPJ da empresa',importedCnpj,file.name,conf('high'),'CNPJ validado e identificado no cabeçalho da demonstração contábil.',formatImportedCnpj(importedCnpj)));
  if(revenueForRbt12>0)c.push(candidate('rbt12','Faturamento em 12 meses (RBT12)',Math.abs(revenueForRbt12),file.name,conf(revenueGross!=null?'high':'medium'),revenueGross!=null?'Receita bruta/faturamento localizado no documento.':'Total de vendas localizado no relatório comercial.',fmtMoney(Math.abs(revenueForRbt12))));
+ if(dreDoc&&revenueGross>0&&costs!=null&&Math.abs(costs)>0){
+  const costPct=100*Math.abs(costs)/Math.abs(revenueGross);
+  if(costPct>0&&costPct<=120)c.push(candidate('purchasesPct','Aquisições e despesas sobre faturamento · proxy pela DRE',costPct,file.name,'medium','Proxy calculada por custos operacionais/CMV/CPV/CSP ÷ receita bruta. Ajuda a revisar a estimativa setorial, mas não equivale necessariamente às compras creditáveis do período porque pode haver variação de estoques e itens sem direito a crédito.',fmtPct(costPct)));
+ }
  if(cash!=null&&balanceDoc)c.push(candidate('cashAndEquivalents','Caixa e bancos',Math.abs(cash),file.name,conf('high',true),cashComponents!=null?'Caixa e bancos conta movimento somados sem duplicar aplicações financeiras.':'Total de caixa e equivalentes usado porque o balanço não detalhou caixa e bancos separadamente.',fmtMoney(Math.abs(cash))));
  if(investments!=null&&Math.abs(investments)>0&&balanceDoc&&(cashComponents!=null||explicitCash==null))c.push(candidate('liquidInvestments','Aplicações de liquidez imediata',Math.abs(investments),file.name,conf('medium',true),'Aplicações financeiras localizadas separadamente do caixa e bancos. Confirme se possuem liquidez imediata.',fmtMoney(Math.abs(investments))));
  if(currentAssets!=null&&Math.abs(currentAssets)>0&&balanceDoc)c.push(candidate('currentAssets','Ativo circulante',Math.abs(currentAssets),file.name,conf('high',true),'Total do ativo circulante localizado no balanço.',fmtMoney(Math.abs(currentAssets))));
@@ -503,6 +507,11 @@ function analyseImportDoc(file,parsed){
   pushTaxDetail('currentIcmsAnnual','ICMS atual',currentIcmsRaw);
   pushTaxDetail('currentIssAnnual','ISS atual',currentIssRaw);
   pushTaxDetail('currentOtherConsumptionAnnual','IPI / outros tributos de consumo',currentIpiRaw);
+  const legacyTaxParts=[currentIcmsRaw,currentIssRaw].filter(v=>v!=null&&Number.isFinite(v));
+  if(revenueGross>0&&legacyTaxParts.length){
+   const legacyTaxAnnual=legacyTaxParts.reduce((s,v)=>s+Math.abs(v),0)*annualFactor,annualGross=Math.abs(revenueGross)*annualFactor,legacyPct=annualGross>0?100*legacyTaxAnnual/annualGross:null;
+   if(legacyPct!=null&&legacyPct>=0&&legacyPct<=30)c.push(candidate('legacyRate','Carga efetiva atual de ICMS/ISS',legacyPct,file.name,conf('high'),'Calculada diretamente pela DRE como ICMS + ISS identificados nas vendas ÷ receita bruta. Quando disponível, esta evidência contábil deve substituir a sugestão setorial genérica usada na transição de 2027 a 2032.',fmtPct(legacyPct)));
+  }
  }
  if(ebitdaMargin!=null&&Number.isFinite(ebitdaMargin)&&dreDoc){
   const marginConfidence=(explicitEbitda!=null||operatingBeforeFinance!=null)?'high':'medium';
@@ -512,7 +521,8 @@ function analyseImportDoc(file,parsed){
  if(payroll)c.push(candidate('monthlyPayroll','Folha mensal estimada',dreDoc?Math.abs(payroll)/dreMonths:Math.abs(payroll),file.name,conf('medium'),dreDoc?`Valor de pessoal dividido pelos ${dreMonths} meses cobertos pela DRE. Confirme a composição válida para o Fator R.`:'Valor de folha localizado no relatório. Confirme a periodicidade.',fmtMoney(dreDoc?Math.abs(payroll)/dreMonths:Math.abs(payroll))));
  if(tab.b2bPct!=null)c.push(candidate('b2bPct','Vendas para clientes PJ (B2B)',tab.b2bPct,file.name,conf('high'),'Calculado pelos documentos CPF/CNPJ ou identificação de clientes nas linhas do relatório.',fmtPct(tab.b2bPct)));
  if(tab.regularSuppliersPct!=null)c.push(candidate('regularSuppliersPct','Fornecedores no regime regular',tab.regularSuppliersPct,file.name,conf('medium'),'Calculado pelas linhas que identificam o regime dos fornecedores.',fmtPct(tab.regularSuppliersPct)));
- return{file:file.name,type,text,candidates:c,cnpj:importedCnpj,extraction:parsed.extraction||'text',integrity,canonicalAudit,canonical,revenueGross:revenueGross==null?null:Math.abs(revenueGross),revenueNet:revenueNet==null?null:Math.abs(revenueNet),purchaseTotal:tab.purchaseTotal||((type==='Relatório de compras'&&costs)?Math.abs(costs):null)}
+ const usedVehiclesMention=/veiculos seminovos|veiculo seminovo|veiculos usados|veiculo usado/.test(normImport(dreText));
+ return{file:file.name,type,text,candidates:c,cnpj:importedCnpj,extraction:parsed.extraction||'text',integrity,canonicalAudit,canonical,revenueGross:revenueGross==null?null:Math.abs(revenueGross),revenueNet:revenueNet==null?null:Math.abs(revenueNet),purchaseTotal:tab.purchaseTotal||((type==='Relatório de compras'&&costs)?Math.abs(costs):null),usedVehiclesMention}
 }
 function buildCrossCandidates(docs,candidates){
  const confScore={high:3,medium:2,low:1},typeScore={'Balanço + DRE':4,'DRE':3,'Balanço':3,'Balancete':3,'Relatório de vendas':2,'Relatório de compras':2,'Relatório':1},docByFile=Object.fromEntries(docs.map(d=>[d.file,d]));
@@ -638,11 +648,13 @@ function applyImportCandidate(i,button){
  }
  const currentText=String(el.value||'').trim(),currentValue=typeof parseMoneyValue==='function'?parseMoneyValue(currentText):Number(currentText||0),alreadyImported=el.dataset.importVerified==='1'||el.dataset.importSource;
  if(!explicit&&(el.dataset.userEdited==='1'||el.dataset.importAccepted==='1'))return false;
- if(!explicit&&currentText&&!alreadyImported&&Number.isFinite(currentValue)&&Math.abs(currentValue)>.000001&&c.field!=='cnpj')return false;
+ const replaceableSectorSuggestion=c.field==='legacyRate'&&el.dataset.autoSuggested==='1'&&el.dataset.userEdited!=='1';
+ if(!explicit&&currentText&&!alreadyImported&&Number.isFinite(currentValue)&&Math.abs(currentValue)>.000001&&c.field!=='cnpj'&&!replaceableSectorSuggestion)return false;
  if(explicit){delete el.dataset.userEdited;el.dataset.importAccepted='1';c.accepted=true}
  if(c.field==='cnpj'){el.value=typeof normalizeCnpjInput==='function'?normalizeCnpjInput(c.value):formatImportedCnpj(c.value);el.dataset.importVerified='1';el.dataset.importSource=c.source||'';if(typeof markFieldAuto==='function')markFieldAuto('cnpj','IMPORTADO');syncImportCandidateButtons(c.field,i);if(typeof lookupCnpj==='function')lookupCnpj();return true}
  if(typeof setMoneyInputValue==='function'&&el.closest?.('.money'))setMoneyInputValue(el,c.value);else el.value=Math.round(c.value*100)/100;
  el.dataset.importVerified='1';el.dataset.importSource=c.source||'Documento importado';el.dataset.importConfidence=c.confidence||'';if(c.usageConfidence)el.dataset.importUsageConfidence=c.usageConfidence;else delete el.dataset.importUsageConfidence;if(c.ebitdaAnnual!=null)el.dataset.importEbitdaAnnual=String(c.ebitdaAnnual);else delete el.dataset.importEbitdaAnnual;if(c.fiscalMismatch)el.dataset.importFiscalMismatch='1';else delete el.dataset.importFiscalMismatch;if(c.irpjExpense!=null)el.dataset.importIrpjExpense=String(c.irpjExpense);else delete el.dataset.importIrpjExpense;if(c.csllExpense!=null)el.dataset.importCsllExpense=String(c.csllExpense);else delete el.dataset.importCsllExpense;if(c.derivedKey)el.dataset.importDerivedKey=c.derivedKey;else delete el.dataset.importDerivedKey;
+ if(c.field==='legacyRate'){el.dataset.autoSuggested='0';delete el.dataset.userEdited;const note=el.closest?.('.field')?.querySelector('small');if(note)note.textContent='Calculado diretamente da DRE pela relação ICMS + ISS sobre a receita bruta. Revise apenas se a demonstração não refletir a carga efetiva da operação.'}
  if(c.field==='currentConsumptionTaxAnnual'&&$('currentConsumptionMode')){$('currentConsumptionMode').value='manual';el.readOnly=false;el.dataset.sourceNote=c.reason||'';if($('currentConsumptionTaxSource'))$('currentConsumptionTaxSource').textContent='Calculado a partir da DRE importada. '+(c.reason||'Revise a origem antes de concluir.')}
  if(c.field==='rbt12'&&$('revenueSync')?.checked&&typeof syncRevenue==='function'){syncRevenue('annual');if(typeof markFieldDerived==='function')markFieldDerived('monthlyRevenue','CALCULADO')}
  if(c.field==='monthlyRevenue'&&$('revenueSync')?.checked&&typeof syncRevenue==='function'){syncRevenue('monthly');if(typeof markFieldDerived==='function')markFieldDerived('rbt12','CALCULADO')}
@@ -664,7 +676,7 @@ async function applyHighConfidenceCandidates(){
 
 function autoApplyDocumentCalculations(){
  const groups=groupedImportCandidates(),mode=importAutomationMode(),score={high:3,medium:2,low:1};
- const recommendedFields=new Set(['rbt12','cashAndEquivalents','currentAssets','currentLiabilities','currentConsumptionTaxAnnual','currentOperatingMarginPct','realAccountingProfitAnnual','debtStart','debtEnd','interestExpense']);
+ const recommendedFields=new Set(['rbt12','cashAndEquivalents','currentAssets','currentLiabilities','currentConsumptionTaxAnnual','currentOperatingMarginPct','realAccountingProfitAnnual','debtStart','debtEnd','interestExpense','legacyRate']);
  const fields=mode==='maximum'?Object.keys(groups).filter(f=>f!=='cnpj'):[...recommendedFields];
  fields.forEach(field=>{
   const arr=groups[field]||[];if(!arr.length||conflictGroup(arr))return;
