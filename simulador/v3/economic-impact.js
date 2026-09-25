@@ -158,7 +158,10 @@
   const automotiveNote=r.creditMethod==='automotive-dre-proxy'
    ?' Para o perfil automotivo identificado na DRE, o crédito futuro usa os custos históricos de veículos novos e seminovos como proxy da base de aquisição, considera peças e serviços separadamente e mantém o resultado como preliminar. A origem dos seminovos e os documentos fiscais devem ser confirmados. A carga atual extraída da DRE também pode não refletir integralmente tributos concentrados anteriormente na cadeia.'
    :'';
-  setText('technicalEconomicText',confidencePrefix+`A comparação usa ${model.name} ${modelPhrase} em ${r.year}. A carga de consumo futura considera IBS/CBS e ICMS/ISS residual aplicável. A margem EBITDA usa a receita líquida da DRE quando disponível, enquanto a base tributária usa o faturamento bruto confirmado.`+automotiveNote+fullTransferNote);
+  const operatingCreditNote=r.operatingCreditProfile?.annualAmount>0
+   ?` A base de aquisições incorpora aproximadamente ${money(r.operatingCreditProfile.annualAmount)} de despesas operacionais de terceiros explicitamente identificadas na DRE com potencial de crédito. O cálculo é conservador: folha, benefícios, depreciação/amortização, despesas financeiras, tributos, seguros e rubricas genéricas permanecem fora até confirmação documental.`
+   :'';
+  setText('technicalEconomicText',confidencePrefix+`A comparação usa ${model.name} ${modelPhrase} em ${r.year}. A carga de consumo futura considera IBS/CBS e ICMS/ISS residual aplicável. A margem EBITDA usa a receita líquida da DRE quando disponível, enquanto a base tributária usa o faturamento bruto confirmado.`+automotiveNote+operatingCreditNote+fullTransferNote);
   const card=document.getElementById('economicImpactCard');if(card)card.dataset.tone=impactTone(impact);
   return impact;
  }

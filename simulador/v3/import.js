@@ -385,6 +385,22 @@ function analyseImportDoc(file,parsed){
  const indirectCosts=firstLatestLineValue(dreText,[['custos indiretos da producao','custos indiretos']]);
  const adminExpenses=firstLatestLineValue(dreText,[['despesas gerais da administracao','despesas administrativas']]);
  const taxExpenses=firstLatestLineValue(dreText,[['despesas tributarias']]);
+ /* Proxy conservadora de despesas operacionais potencialmente creditáveis em IBS/CBS.
+    Só entram rubricas cuja natureza normalmente representa aquisição de bem/serviço de terceiro.
+    Folha, benefícios, provisões, depreciação/amortização, despesas financeiras, tributos,
+    seguros e rubricas genéricas ficam fora até confirmação documental. */
+ const operatingCreditMatchers=[
+  /publicidade/,/marketing/,/alugu(?:el|eis)/,/locacao/,/leasing/,
+  /despesas com comunicacao/,/telefonia/,/internet/,
+  /despesas com manutencao/,/manutencao/,
+  /despesas com servicos prestados/,/servicos de terceiros/,
+  /materiais? de consumo/,/bens de natureza permanente/,
+  /energia eletrica/,/agua e esgoto/,/software/,/licencas? de software/,
+  /honorarios contabeis/,/honorarios juridicos/,/consultoria/,/assessoria/,
+  /limpeza/,/vigilancia/,/seguranca patrimonial/,/fretes?/,/transportes?/
+ ];
+ const operatingCreditExclude=['salario','ordenado','pessoal','encargo','beneficio','provisao','depreciacao','amortizacao','financeir','tribut','imposto','multa','doacao','perda de capital','seguro'];
+ const creditableOperatingExpensesRaw=dreDoc?(sumAccountingLeafValues(dreText,n=>operatingCreditMatchers.some(rx=>rx.test(n)),operatingCreditExclude)||0):0;
  const pretaxProfit=firstSignedLatestLineValue(dreText,[['lucro liquido antes provisao irpj e csll','lucro liquido antes da provisao irpj e csll','lucro antes do irpj e csll','lucro antes do irpj','lucro antes do imposto de renda','resultado antes do irpj','resultado antes dos tributos sobre o lucro','resultado antes dos impostos sobre o lucro'],['lucro antes dos tributos','resultado antes dos tributos']]);
  const netProfitDirect=firstSignedLatestLineValue(dreText,[['lucro liquido do exercicio','resultado liquido do exercicio','resultado do exercicio','resultado exercicio'],['lucro liquido','resultado liquido']],['antes']);
  const netProfit=netProfitDirect!=null?netProfitDirect:firstSignedLatestLineValue(dreText,[['contas de resultados']]);
@@ -432,6 +448,15 @@ function analyseImportDoc(file,parsed){
  const automotiveRevenueTotal=Object.values(automotiveRevenue).reduce((s,v)=>s+v,0);
  const automotiveCostTotal=Object.values(automotiveCosts).reduce((s,v)=>s+v,0);
  const annualGrossRevenue=revenueGross>0?Math.abs(revenueGross)*annualFactor:0;
+ const operatingCreditDetail=(dreDoc&&creditableOperatingExpensesRaw>0)?{
+  source:file.name,
+  periodAmount:creditableOperatingExpensesRaw,
+  annualAmount:creditableOperatingExpensesRaw*annualFactor,
+  ratioToRevenue:revenueGross>0?creditableOperatingExpensesRaw/Math.abs(revenueGross):null,
+  confidence:'medium',
+  method:'rubricas operacionais explicitas',
+  note:'Proxy conservadora: inclui apenas despesas de terceiros com natureza potencialmente creditável identificada na DRE; exclui folha, depreciação/amortização, despesas financeiras, tributos, seguros e rubricas genéricas.'
+ }:null;
  const automotiveDetail=(dreDoc&&automotiveRevenueTotal>0&&automotiveCostTotal>0)?{
   source:file.name,
   revenue:automotiveRevenue,
@@ -507,8 +532,10 @@ function analyseImportDoc(file,parsed){
  if(importedCnpj)c.push(candidate('cnpj','CNPJ da empresa',importedCnpj,file.name,conf('high'),'CNPJ validado e identificado no cabeçalho da demonstração contábil.',formatImportedCnpj(importedCnpj)));
  if(revenueForRbt12>0)c.push(candidate('rbt12','Faturamento em 12 meses (RBT12)',Math.abs(revenueForRbt12),file.name,conf(revenueGross!=null?'high':'medium'),revenueGross!=null?'Receita bruta/faturamento localizado no documento.':'Total de vendas localizado no relatório comercial.',fmtMoney(Math.abs(revenueForRbt12))));
  if(dreDoc&&revenueGross>0&&costs!=null&&Math.abs(costs)>0){
-  const costPct=100*Math.abs(costs)/Math.abs(revenueGross);
-  if(costPct>0&&costPct<=120)c.push(candidate('purchasesPct','Aquisições e despesas sobre faturamento · proxy pela DRE',costPct,file.name,'medium','Proxy calculada por custos operacionais/CMV/CPV/CSP ÷ receita bruta. Ajuda a revisar a estimativa setorial, mas não equivale necessariamente às compras creditáveis do período porque pode haver variação de estoques e itens sem direito a crédito.',fmtPct(costPct)));
+  const acquisitionExpenseBase=Math.abs(costs)+creditableOperatingExpensesRaw;
+  const costPct=100*acquisitionExpenseBase/Math.abs(revenueGross);
+  const opexText=creditableOperatingExpensesRaw>0?` A DRE acrescentou ${fmtMoney(creditableOperatingExpensesRaw)} de despesas operacionais explicitamente mapeadas com potencial de crédito.`:'';
+  if(costPct>0&&costPct<=120)c.push(candidate('purchasesPct','Aquisições e despesas tributadas sobre faturamento · proxy pela DRE',costPct,file.name,'medium','Proxy calculada por custos operacionais/CMV/CPV/CSP mais despesas de terceiros explicitamente identificadas, divididos pela receita bruta.'+opexText+' Folha, benefícios, depreciação/amortização, despesas financeiras, tributos, seguros e rubricas genéricas não são incluídos automaticamente. Ainda pode haver variação de estoques e itens sem direito a crédito.',fmtPct(costPct)));
  }
  if(cash!=null&&balanceDoc)c.push(candidate('cashAndEquivalents','Caixa e bancos',Math.abs(cash),file.name,conf('high',true),cashComponents!=null?'Caixa e bancos conta movimento somados sem duplicar aplicações financeiras.':'Total de caixa e equivalentes usado porque o balanço não detalhou caixa e bancos separadamente.',fmtMoney(Math.abs(cash))));
  if(investments!=null&&Math.abs(investments)>0&&balanceDoc&&(cashComponents!=null||explicitCash==null))c.push(candidate('liquidInvestments','Aplicações de liquidez imediata',Math.abs(investments),file.name,conf('medium',true),'Aplicações financeiras localizadas separadamente do caixa e bancos. Confirme se possuem liquidez imediata.',fmtMoney(Math.abs(investments))));
@@ -553,7 +580,7 @@ function analyseImportDoc(file,parsed){
  if(tab.b2bPct!=null)c.push(candidate('b2bPct','Vendas para clientes PJ (B2B)',tab.b2bPct,file.name,conf('high'),'Calculado pelos documentos CPF/CNPJ ou identificação de clientes nas linhas do relatório.',fmtPct(tab.b2bPct)));
  if(tab.regularSuppliersPct!=null)c.push(candidate('regularSuppliersPct','Fornecedores no regime regular',tab.regularSuppliersPct,file.name,conf('medium'),'Calculado pelas linhas que identificam o regime dos fornecedores.',fmtPct(tab.regularSuppliersPct)));
  const usedVehiclesMention=/veiculos seminovos|veiculo seminovo|veiculos usados|veiculo usado/.test(normImport(dreText));
- return{file:file.name,type,text,candidates:c,cnpj:importedCnpj,extraction:parsed.extraction||'text',integrity,canonicalAudit,canonical,revenueGross:revenueGross==null?null:Math.abs(revenueGross),revenueNet:revenueNet==null?null:Math.abs(revenueNet),purchaseTotal:tab.purchaseTotal||((type==='Relatório de compras'&&costs)?Math.abs(costs):null),usedVehiclesMention,automotiveDetail}
+ return{file:file.name,type,text,candidates:c,cnpj:importedCnpj,extraction:parsed.extraction||'text',integrity,canonicalAudit,canonical,revenueGross:revenueGross==null?null:Math.abs(revenueGross),revenueNet:revenueNet==null?null:Math.abs(revenueNet),purchaseTotal:tab.purchaseTotal||((type==='Relatório de compras'&&costs)?Math.abs(costs):null),usedVehiclesMention,automotiveDetail,operatingCreditDetail}
 }
 function buildCrossCandidates(docs,candidates){
  const confScore={high:3,medium:2,low:1},typeScore={'Balanço + DRE':4,'DRE':3,'Balanço':3,'Balancete':3,'Relatório de vendas':2,'Relatório de compras':2,'Relatório':1},docByFile=Object.fromEntries(docs.map(d=>[d.file,d]));
