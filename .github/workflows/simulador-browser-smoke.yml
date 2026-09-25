@@ -256,7 +256,11 @@ jobs:
                 'Conta Reduzida Descrição Saldo Anterior Débito Crédito Saldo Atual',
                 '3 2157 CONTAS DE RESULTADOS 0,00 9.004.151,01 8.942.376,60 61.774,41 D',
                 '3.1 2158 RECEITA OPERACIONAL BRUTA 0,00 237.533,35 7.953.703,40 7.716.170,05 C',
+                '3.1.1.001 2160 VEICULOS NOVOS 0,00 221.875,15 1.593.060,00 1.371.184,85 C',
                 '3.1.1.002 2171 VEICULOS SEMINOVOS 0,00 0,00 2.242.672,13 2.242.672,13 C',
+                '3.1.1.003 2174 VENDAS PECAS/ACESSORIOS/PRODUTOS DIVERSOS 0,00 15.658,20 1.888.074,04 1.872.415,84 C',
+                '3.1.1.004 2192 VENDA SERVICOS 0,00 0,00 614.591,47 614.591,47 C',
+                '3.1.1.005 2202 COMISSOES RECEBIDAS 0,00 0,00 1.615.305,76 1.615.305,76 C',
                 '3.2 2209 IMPOSTOS S/ VENDAS 0,00 460.560,53 7.065,16 453.495,37 D',
                 '3.2.2.002 2233 PIS SEMINOVOS 0,00 471,25 0,00 471,25 D',
                 '3.2.2.003 2235 COFINS SEMINOVOS 0,00 2.175,00 0,00 2.175,00 D',
@@ -270,6 +274,10 @@ jobs:
                 '3.2.5.002 2266 PIS COMISSOES 0,00 2.483,20 0,00 2.483,20 D',
                 '3.2.5.003 2268 COFINS COMISSOES 0,00 11.437,88 0,00 11.437,88 D',
                 '3.3 2270 CUSTOS OPERACIONAIS 0,00 5.201.454,76 311.164,25 4.890.290,51 D',
+                '3.3.1.001 2272 CUSTOS VEICULOS NOVOS 0,00 1.584.151,96 221.875,15 1.362.276,81 D',
+                '3.3.1.002 2279 CUSTOS VEICULOS SEMINOVOS 0,00 2.172.172,13 0,00 2.172.172,13 D',
+                '3.3.1.003 2282 CUSTOS PECAS/ACESSORIOS/PRODUTOS DIVERSOS 0,00 1.339.795,50 88.967,09 1.250.828,41 D',
+                '3.3.1.004 2294 CUSTOS SERVICOS 0,00 105.335,17 322,01 105.013,16 D',
                 '3.4 2318 DESPESAS OPERACIONAIS 0,00 2.022.146,72 125.916,60 1.896.230,12 D',
                 '3.4.2 2342 DESPESAS COM PESSOAL E ENCARGOS 0,00 453.095,12 29.388,22 423.706,90 D',
                 '3.4.2.102 2343 SALARIOS E ORDENADOS 0,00 209.487,34 659,71 208.827,63 D',
@@ -298,7 +306,8 @@ jobs:
                   payroll: pick(dreDoc,'monthlyPayroll'), cpp: pick(dreDoc,'monthlyCppBase'),
                   profit: pick(dreDoc,'realAccountingProfitAnnual'), margin: pick(dreDoc,'currentOperatingMarginPct'),
                   legacyRate: pick(dreDoc,'legacyRate'), purchasesProxy: pick(dreDoc,'purchasesPct'),
-                  usedVehiclesMention: dreDoc.usedVehiclesMention === true
+                  usedVehiclesMention: dreDoc.usedVehiclesMention === true,
+                  automotiveDetail: dreDoc.automotiveDetail
                 }
               };
             });
@@ -340,6 +349,17 @@ jobs:
             assert.ok(Math.abs(one(rrVehiclesImport.dre.purchasesProxy) - 63.3771738869) < .001);
             assert.equal(rrVehiclesImport.dre.purchasesProxy[0].confidence, 'medium');
             assert.equal(rrVehiclesImport.dre.usedVehiclesMention, true);
+            assert.ok(rrVehiclesImport.dre.automotiveDetail);
+            assert.ok(Math.abs(rrVehiclesImport.dre.automotiveDetail.revenue.newVehicles - 1371184.85) < .02);
+            assert.ok(Math.abs(rrVehiclesImport.dre.automotiveDetail.revenue.usedVehicles - 2242672.13) < .02);
+            assert.ok(Math.abs(rrVehiclesImport.dre.automotiveDetail.revenue.parts - 1872415.84) < .02);
+            assert.ok(Math.abs(rrVehiclesImport.dre.automotiveDetail.revenue.services - 614591.47) < .02);
+            assert.ok(Math.abs(rrVehiclesImport.dre.automotiveDetail.revenue.commissions - 1615305.76) < .02);
+            assert.ok(Math.abs(rrVehiclesImport.dre.automotiveDetail.costs.newVehicles - 1362276.81) < .02);
+            assert.ok(Math.abs(rrVehiclesImport.dre.automotiveDetail.costs.usedVehicles - 2172172.13) < .02);
+            assert.ok(Math.abs(rrVehiclesImport.dre.automotiveDetail.costs.parts - 1250828.41) < .02);
+            assert.ok(Math.abs(rrVehiclesImport.dre.automotiveDetail.costs.services - 105013.16) < .02);
+            assert.ok(rrVehiclesImport.dre.automotiveDetail.revenueCoverage > .99);
             assert.ok(Math.abs(one(rrVehiclesImport.dre.payroll) - 35308.90833333333) < .02);
             if (rrVehiclesImport.dre.cpp.length) assert.ok(Math.abs(one(rrVehiclesImport.dre.cpp) - 17402.3025) < .02);
 
@@ -379,6 +399,32 @@ jobs:
             assert.ok(Math.abs(rrCorrectedTaxCheck.netVat - 410129.87) < .10);
             assert.ok(Math.abs(rrCorrectedTaxCheck.legacy - 339711.26) < .10);
             assert.ok(Math.abs(rrCorrectedTaxCheck.total - 749841.13) < .10);
+
+            const rrAutomotiveTaxCheck = await page.evaluate(() => {
+              const set=(id,v)=>{const el=document.getElementById(id);if(el)el.value=String(v)};
+              const detail=rrVehiclesImport.dre.automotiveDetail;
+              window.brmiImport.docs=[{automotiveDetail:detail,usedVehiclesMention:true}];
+              set('monthlyRevenue',7716170.05/12);set('rbt12',7716170.05);set('simpleStatus','no');
+              set('mix30',0);set('mix40',0);set('mix60',0);set('mixZero',0);
+              set('fullCbs',8.8);set('fullIbs',17.7);set('purchasesPct',50);set('eligibleCreditPct',90);set('regularSuppliersPct',88);
+              set('legacyRate',4.4025890798);set('realAccountingProfitAnnual',-61486.71);set('profitProjectionMode','historical');
+              const y2027=modelForYear(2027),y2033=modelForYear(2033);
+              window.brmiImport.docs=[];
+              return {
+                y2027:{grossVat:y2027.grossVat,inputCredit:y2027.inputCredit,netVat:y2027.netVat,legacy:y2027.legacy,total:y2027.netVat+y2027.legacy,method:y2027.creditMethod,profile:y2027.automotiveCreditProfile},
+                y2033:{grossVat:y2033.grossVat,inputCredit:y2033.inputCredit,netVat:y2033.netVat,method:y2033.creditMethod}
+              };
+            });
+            assert.equal(rrAutomotiveTaxCheck.y2027.method, 'automotive-dre-proxy');
+            assert.ok(Math.abs(rrAutomotiveTaxCheck.y2027.grossVat - 679022.96) < .10);
+            assert.ok(Math.abs(rrAutomotiveTaxCheck.y2027.inputCredit - 415214.66) < .10);
+            assert.ok(Math.abs(rrAutomotiveTaxCheck.y2027.netVat - 263808.31) < .10);
+            assert.ok(Math.abs(rrAutomotiveTaxCheck.y2027.total - 603519.57) < .10);
+            assert.equal(rrAutomotiveTaxCheck.y2027.profile.usedVehiclesMention, true);
+            assert.equal(rrAutomotiveTaxCheck.y2033.method, 'automotive-dre-proxy');
+            assert.ok(Math.abs(rrAutomotiveTaxCheck.y2033.grossVat - 2044785.06) < .10);
+            assert.ok(Math.abs(rrAutomotiveTaxCheck.y2033.inputCredit - 1250362.32) < .10);
+            assert.ok(Math.abs(rrAutomotiveTaxCheck.y2033.netVat - 794422.75) < .10);
 
             const fiscalMismatchCheck = await page.evaluate(() => {
               const syntheticLossDre = [
