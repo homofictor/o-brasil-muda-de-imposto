@@ -122,8 +122,23 @@ function comparativeOrder(text){
 function orderedLineValues(line,order){
  const nums=importNumberTokens(line);if(!nums.length)return{latest:null,prior:null,ordered:false};
  if(nums.length===1)return{latest:nums[0],prior:null,ordered:false};
- const pair=nums.slice(-2);return order==='latest-last'?{latest:pair[1],prior:pair[0],ordered:true}:{latest:pair[0],prior:pair[1],ordered:order==='latest-first'}
+ const pair=nums.slice(-2);
+ if(order==='latest-last')return{latest:pair[1],prior:pair[0],ordered:true};
+ if(order==='latest-first')return{latest:pair[0],prior:pair[1],ordered:true};
+ /* Sem cabeçalho comparativo reconhecido, a última coluna numérica é o saldo.
+    Isso evita confundir códigos de conta (11, 24, 123, 112025...) com valores. */
+ return{latest:nums[nums.length-1],prior:null,ordered:false}
 }
+function accountingRowCode(line){
+ const s=String(line||'').trim();if(!s||/^total\s*-/i.test(s))return'';
+ const m=s.match(/^(\d+(?:\.\d+)*|\d{2,})(?:\s+\d+)?\s+/);return m?m[1].replace(/\D/g,''):''
+}
+function accountingSemanticText(line){
+ let s=String(line||'').trim();
+ s=s.replace(/^\d+(?:\.\d+)*(?:\s+\d+)?\s+/,'').replace(/^total\s*-\s*/i,'');
+ return normImport(s)
+}
+function accountingRowIsTotal(line){return /^total\s*-/i.test(String(line||'').trim())}
 function latestLineValues(text,labels,exclude=[]){
  const order=comparativeOrder(text),lines=statementRows(text);
  for(const line of lines){
