@@ -162,6 +162,6 @@
     if(status)status.textContent='A integração automática ainda está sendo concluída. Confirme o envio no seu aplicativo de e-mail.';
     if(submit){submit.disabled=false;submit.textContent='Enviar meu contato'}
     const subject='Lead Simulador: '+profile;
-    location.href='mailto:wrubim@hotmail.com?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(lines.join('\n'));
+    location.href='mailto:homofictor@hotmail.com?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(lines.join('\n'));
   },true);
 })();

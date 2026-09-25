@@ -30,7 +30,7 @@
 </div>
 <div class="actions"><button class="btn primary" type="submit">Preparar e enviar por e-mail</button><button class="btn secondary" type="button" id="copyBtn">Copiar mensagem</button></div>
 <div class="status" id="status" role="status"></div>
-<div class="help">Depois de enviar, aguarde nossa resposta com o PDF. Se o aplicativo de e-mail não abrir, copie a mensagem e envie para <a href="mailto:wrubim@hotmail.com">wrubim@hotmail.com</a>.</div>
+<div class="help">Depois de enviar, aguarde nossa resposta com o PDF. Se o aplicativo de e-mail não abrir, copie a mensagem e envie para <a href="mailto:homofictor@hotmail.com">homofictor@hotmail.com</a>.</div>
 </form>
 </main>
 <footer><div class="wrap"><strong>O Brasil muda de imposto</strong><br>Wagner Rubim Rangel · Homo Fictor Edições Independentes</div></footer>
@@ -72,12 +72,12 @@ form.addEventListener('submit',e=>{
  const subject='Feedback: '+data.tipo+' sobre '+data.origem;
  statusBox.textContent='A mensagem foi preparada. Confirme o envio no seu aplicativo de e-mail.';
  statusBox.classList.add('show');
- location.href='mailto:wrubim@hotmail.com?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(data.texto);
+ location.href='mailto:homofictor@hotmail.com?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(data.texto);
 });
 document.getElementById('copyBtn').addEventListener('click',async()=>{
  const data=validate();if(!data)return;
- try{await navigator.clipboard.writeText(data.texto);statusBox.textContent='Mensagem copiada. Envie para wrubim@hotmail.com.'}
- catch{statusBox.textContent='Não foi possível copiar automaticamente. Selecione o texto da mensagem e envie para wrubim@hotmail.com.'}
+ try{await navigator.clipboard.writeText(data.texto);statusBox.textContent='Mensagem copiada. Envie para homofictor@hotmail.com.'}
+ catch{statusBox.textContent='Não foi possível copiar automaticamente. Selecione o texto da mensagem e envie para homofictor@hotmail.com.'}
  statusBox.classList.add('show');
 });
 </script>
