@@ -158,6 +158,17 @@ function sectionLineValue(text,sectionLabels,childLabels,exclude=[]){
 }
 
 function firstLatestLineValue(text,labelGroups,exclude=[]){for(const labels of labelGroups){const v=latestLineValue(text,labels,exclude);if(v!=null)return v}return null}
+function sumAccountingLeafValues(text,matcher,exclude=[]){
+ const order=comparativeOrder(text),rows=statementRows(text),hits=[];
+ for(const row of rows){
+  const n=accountingSemanticText(row);if(!matcher(n)||exclude.some(x=>n.includes(x))||accountingRowIsTotal(row))continue;
+  const vals=orderedLineValues(row,order),code=accountingRowCode(row);if(vals.latest==null)continue;
+  hits.push({code,value:Math.abs(vals.latest)})
+ }
+ if(!hits.length)return null;
+ const coded=hits.filter(x=>x.code),use=coded.length?coded.filter(a=>!coded.some(b=>b!==a&&b.code.startsWith(a.code)&&b.code.length>a.code.length)):hits;
+ return use.reduce((s,x)=>s+x.value,0)
+}
 function comparativeCategoryTotal(text,labelGroups,exclude=[]){
  const order=comparativeOrder(text),lines=statementRows(text);
  for(const labels of labelGroups){
@@ -359,21 +370,22 @@ function analyseImportDoc(file,parsed){
  const accountingProfit=pretaxProfit!=null?pretaxProfit:(netProfit!=null&&(irpjExpense>0||csllExpense>0)?netProfit+irpjExpense+csllExpense:null);
  const payrollCosts=latestLineValue(dreText,['custos com pessoal','mao de obra e encargos','custos de pessoal']),payrollExpenses=latestLineValue(dreText,['despesas com pessoal','despesas de pessoal']),directLabor=latestLineValue(dreText,['mao de obra direta']),indirectLabor=latestLineValue(dreText,['mao de obra indireta']),payroll=(payrollCosts||0)+(payrollExpenses||0)||((directLabor||0)+(indirectLabor||0))||latestLineValue(dreText,['folha de pagamento','salarios e encargos','salarios ordenados e encargos','pessoal e encargos','remuneracoes e encargos']);
  const debtBalances=financialDebtBalances(bpText),debtEnd=debtBalances.end,debtStart=debtBalances.start,debtOrdered=debtBalances.ordered;
- const receivables=hierarchicalCategoryTotal(bpText,n=>/clientes|duplicatas a receber|contas a receber/.test(n),['provisao','perdas estimadas','longo prazo']);
+ const receivables=hierarchicalCategoryTotal(bpText,n=>/clientes|duplicatas a receber|contas a receber|valor(?:es)? a receber|financiamento das vendas|contas vinculadas com a fabrica/.test(n),['provisao','perdas estimadas','longo prazo']);
  const inventory=hierarchicalCategoryTotal(bpText,n=>/estoques?|mercadorias para revenda|produtos acabados|materias primas/.test(n),['provisao']);
  const suppliers=hierarchicalCategoryTotal(bpText,n=>/fornecedores|contas a pagar a fornecedores/.test(n),['adiantamento']);
  const interestRaw=firstLatestLineValue(dreText,[['juros e encargos da divida','juros e encargos financeiros'],['juros sobre emprestimos','juros de emprestimos','juros de empréstimos'],['juros sobre financiamentos','juros de financiamentos'],['encargos de emprestimos','encargos de financiamentos'],['encargos financeiros de emprestimos','encargos financeiros de financiamentos'],['juros passivos','juros bancarios','juros bancários']]);
  const genericFinanceRaw=latestLineValue(dreText,['despesas financeiras'],['receitas financeiras','resultado financeiro']);
  const interest=interestRaw==null?null:Math.abs(interestRaw),genericFinance=genericFinanceRaw==null?null:Math.abs(genericFinanceRaw);
  const taxExclude=['a recuperar','credito','diferido'];
- const pisCofinsCombinedRaw=firstLatestLineValue(dreText,[['pis e cofins sobre vendas','pis/cofins sobre vendas','pis e cofins s/ vendas'],['pis e cofins']],taxExclude);
- const pisRaw=pisCofinsCombinedRaw==null?firstLatestLineValue(dreText,[['pis sobre vendas','pis s/ vendas','pis sobre faturamento']],taxExclude):null;
- const cofinsRaw=pisCofinsCombinedRaw==null?firstLatestLineValue(dreText,[['cofins sobre vendas','cofins s/ vendas','cofins sobre faturamento']],taxExclude):null;
- const currentPisCofinsRaw=pisCofinsCombinedRaw!=null?Math.abs(pisCofinsCombinedRaw):((pisRaw!=null||cofinsRaw!=null)?Math.abs(pisRaw||0)+Math.abs(cofinsRaw||0):null);
- const currentIcmsRaw=firstLatestLineValue(dreText,[['icms sobre vendas','icms s/ vendas','icms incidente sobre vendas']],taxExclude);
- const currentIssRaw=firstLatestLineValue(dreText,[['iss sobre vendas','iss s/ vendas','iss incidente sobre vendas']],taxExclude);
- const currentIpiRaw=firstLatestLineValue(dreText,[['ipi sobre vendas','ipi s/ vendas','ipi incidente sobre vendas']],taxExclude);
- const taxTotalRaw=firstLatestLineValue(dreText,[['tributos incidentes sobre vendas'],['impostos incidentes sobre vendas'],['tributos sobre vendas'],['impostos sobre vendas'],['deducoes tributarias']]);
+ const currentPisCofinsRaw=sumAccountingLeafValues(dreText,n=>/^(pis|cofins)(?:\b|\/)/.test(n),taxExclude)
+  ??firstLatestLineValue(dreText,[['pis e cofins sobre vendas','pis/cofins sobre vendas','pis e cofins s/ vendas'],['pis e cofins']],taxExclude);
+ const currentIcmsRaw=sumAccountingLeafValues(dreText,n=>/^icms(?:\b|\/)/.test(n),taxExclude)
+  ??firstLatestLineValue(dreText,[['icms sobre vendas','icms s/ vendas','icms incidente sobre vendas']],taxExclude);
+ const currentIssRaw=sumAccountingLeafValues(dreText,n=>/^iss(?:\b|\/)/.test(n),taxExclude)
+  ??firstLatestLineValue(dreText,[['iss sobre vendas','iss s/ vendas','iss incidente sobre vendas']],taxExclude);
+ const currentIpiRaw=sumAccountingLeafValues(dreText,n=>/^ipi(?:\b|\/)/.test(n),taxExclude)
+  ??firstLatestLineValue(dreText,[['ipi sobre vendas','ipi s/ vendas','ipi incidente sobre vendas']],taxExclude);
+ const taxTotalRaw=firstLatestLineValue(dreText,[['tributos incidentes sobre vendas'],['impostos incidentes sobre vendas'],['tributos sobre vendas'],['impostos sobre vendas'],['impostos s/ vendas','tributos s/ vendas'],['deducoes tributarias']]);
  let consumptionTaxes=taxTotalRaw==null?0:Math.abs(taxTotalRaw),taxConfidence=taxTotalRaw!=null?'high':null,taxReason=taxTotalRaw!=null?'Total de tributos/impostos incidentes sobre vendas identificado na DRE.':'';
  if(!consumptionTaxes){
   const vals=[currentPisCofinsRaw,currentIcmsRaw,currentIssRaw,currentIpiRaw].filter(v=>v!=null).map(v=>Math.abs(v));
@@ -426,11 +438,11 @@ function analyseImportDoc(file,parsed){
  if(cash!=null&&balanceDoc)c.push(candidate('cashAndEquivalents','Caixa e bancos',Math.abs(cash),file.name,conf('high',true),cashComponents!=null?'Caixa e bancos conta movimento somados sem duplicar aplicações financeiras.':'Total de caixa e equivalentes usado porque o balanço não detalhou caixa e bancos separadamente.',fmtMoney(Math.abs(cash))));
  if(investments!=null&&Math.abs(investments)>0&&balanceDoc&&(cashComponents!=null||explicitCash==null))c.push(candidate('liquidInvestments','Aplicações de liquidez imediata',Math.abs(investments),file.name,conf('medium',true),'Aplicações financeiras localizadas separadamente do caixa e bancos. Confirme se possuem liquidez imediata.',fmtMoney(Math.abs(investments))));
  if(currentAssets!=null&&Math.abs(currentAssets)>0&&balanceDoc)c.push(candidate('currentAssets','Ativo circulante',Math.abs(currentAssets),file.name,conf('high',true),'Total do ativo circulante localizado no balanço.',fmtMoney(Math.abs(currentAssets))));
- if(receivables.end>0&&balanceDoc)c.push(candidate('accountsReceivable','Clientes / contas a receber',receivables.end,file.name,conf(receivables.method==='hierarchy'?'high':'medium',true),'Saldo de clientes/contas a receber consolidado respeitando a hierarquia das contas para evitar dupla contagem.',fmtMoney(receivables.end)));
- if(inventory.end>0&&balanceDoc)c.push(candidate('inventory','Estoques',inventory.end,file.name,conf(inventory.method==='hierarchy'?'high':'medium',true),'Saldo de estoques consolidado sem somar simultaneamente subtotal e contas analíticas.',fmtMoney(inventory.end)));
- if(suppliers.end>0&&balanceDoc)c.push(candidate('suppliersPayable','Fornecedores',suppliers.end,file.name,conf(suppliers.method==='hierarchy'?'high':'medium',true),'Saldo de fornecedores consolidado respeitando subtotais e contas analíticas.',fmtMoney(suppliers.end)));
+ if(receivables.end>0&&balanceDoc&&!c.some(x=>x?.field==='accountsReceivable'))c.push(candidate('accountsReceivable','Clientes / contas a receber',receivables.end,file.name,conf(receivables.method==='hierarchy'?'high':'medium',true),'Saldo de clientes/contas a receber consolidado respeitando a hierarquia das contas para evitar dupla contagem.',fmtMoney(receivables.end)));
+ if(inventory.end>0&&balanceDoc&&!c.some(x=>x?.field==='inventory'))c.push(candidate('inventory','Estoques',inventory.end,file.name,conf(inventory.method==='hierarchy'?'high':'medium',true),'Saldo de estoques consolidado sem somar simultaneamente subtotal e contas analíticas.',fmtMoney(inventory.end)));
+ if(suppliers.end>0&&balanceDoc&&!c.some(x=>x?.field==='suppliersPayable'))c.push(candidate('suppliersPayable','Fornecedores',suppliers.end,file.name,conf(suppliers.method==='hierarchy'?'high':'medium',true),'Saldo de fornecedores consolidado respeitando subtotais e contas analíticas.',fmtMoney(suppliers.end)));
  if(currentLiabilities!=null&&Math.abs(currentLiabilities)>0&&balanceDoc)c.push(candidate('currentLiabilities','Passivo circulante',Math.abs(currentLiabilities),file.name,conf('high',true),'Total do passivo circulante localizado no balanço.',fmtMoney(Math.abs(currentLiabilities))));
- if(debtEnd>0&&balanceDoc)c.push(candidate('debtEnd','Dívida financeira final',debtEnd,file.name,conf(debtOrdered?'high':'medium',true),'Soma das obrigações financeiras identificadas no passivo circulante e não circulante, incluindo empréstimos/financiamentos, terceiros, parcelamentos fiscais e mútuos quando existentes.',fmtMoney(debtEnd)));
+ if(debtEnd>0&&balanceDoc&&!c.some(x=>x?.field==='debtEnd'))c.push(candidate('debtEnd','Dívida financeira final',debtEnd,file.name,conf(debtOrdered?'high':'medium',true),'Soma das obrigações financeiras identificadas no passivo circulante e não circulante, incluindo empréstimos/financiamentos, terceiros, parcelamentos fiscais e mútuos quando existentes.',fmtMoney(debtEnd)));
  if(debtStart!=null&&debtStart>=0&&balanceDoc)c.push(candidate('debtStart','Dívida financeira inicial',debtStart,file.name,conf(debtOrdered?'high':'medium',true),'Saldo inicial das mesmas obrigações financeiras utilizadas na dívida final.',fmtMoney(debtStart)));
  if(interest!=null&&interest>0&&dreDoc)c.push(candidate('interestExpense','Despesas financeiras da dívida',interest,file.name,conf('high'),'Conta específica de juros/encargos da dívida localizada na DRE.',fmtMoney(interest)));
  else if(genericFinance!=null&&genericFinance>0&&dreDoc)c.push(candidate('interestExpense','Despesas financeiras da DRE',genericFinance,file.name,conf('high'),'Conta de despesas financeiras do período usada como aproximação gerencial do custo da dívida. Revise se houver valores relevantes não vinculados a empréstimos, financiamentos, parcelamentos ou mútuos.',fmtMoney(genericFinance)));
