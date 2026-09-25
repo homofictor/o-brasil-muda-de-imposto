@@ -216,28 +216,30 @@ function financialMetrics(){
  const start=Math.max(0,num('debtStart')),end=Math.max(0,num('debtEnd'));
  const avg=start>0&&end>0?(start+end)/2:(end>0?end:start);
  const interest=Math.max(0,num('interestExpense')),months=clamp(num('dreMonths')||12,1,12);
- let annualRate=debtKnown&&interestKnown&&avg>0&&interest>0?(interest/avg)*(12/months):null;
- const automaticRatePlausible=annualRate!=null&&Number.isFinite(annualRate)&&annualRate<=1;
+ const rawAnnualRate=debtKnown&&interestKnown&&avg>0&&interest>0?(interest/avg)*(12/months):null;
+ const referenceMin=.20,referenceMax=.30,referenceRate=.25;
+ const observedRateUsable=rawAnnualRate!=null&&Number.isFinite(rawAnnualRate)&&rawAnnualRate>=referenceMin&&rawAnnualRate<=referenceMax;
  if($('cashReserve'))$('cashReserve').value=cashKnown?Math.round(reserve*100)/100:'';
  if($('workingCapitalNet'))$('workingCapitalNet').value=cclKnown?Math.round(ccl*100)/100:'';
  if($('debtAverage'))$('debtAverage').value=debtKnown?Math.round(avg*100)/100:'';
  const mode=$('financeRateMode')?.value||'auto';
- if(mode==='auto'&&automaticRatePlausible){
+ let annualRate=null,rateSource=mode==='manual'?'manual':'reference',needsReview=false;
+ if(mode==='auto'&&observedRateUsable){
+  annualRate=rawAnnualRate;rateSource='observed';
   $('financeRate').value=Math.round(annualRate*10000)/100;
   if(typeof markFieldDerived==='function')markFieldDerived('financeRate','CALCULADO');
-  if($('financeRateSource'))$('financeRateSource').textContent=`Juros e encargos específicos da dívida ÷ dívida financeira média, anualizado para ${months} mês${months===1?'':'es'} de DRE.`;
- }else if(mode==='auto'&&annualRate!=null&&Number.isFinite(annualRate)&&annualRate>1){
-  $('financeRate').value='';
-  if(typeof markFieldPending==='function'){markFieldPending('financeRate','REVISAR BASE');markFieldPending('interestExpense','REVISAR')}
-  if($('financeRateSource'))$('financeRateSource').textContent=`A relação encontrada seria de ${(annualRate*100).toLocaleString('pt-BR',{maximumFractionDigits:2})}% a.a., acima do limite de validação automática. Revise se o numerador contém apenas juros e encargos vinculados às dívidas consideradas.`;
+  if($('financeRateSource'))$('financeRateSource').textContent=`Calculado por juros/encargos ÷ dívida financeira média. A taxa de ${(annualRate*100).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:2})}% a.a. ficou dentro da faixa gerencial de validação de 20% a 30% a.a.`;
  }else if(mode==='auto'){
-  $('financeRate').value='';
-  if($('financeRateSource'))$('financeRateSource').textContent='Sem dados suficientes de juros específicos e dívida média. Revise BP/DRE ou altere para premissa manual.';
+  annualRate=referenceRate;rateSource='reference';needsReview=true;
+  $('financeRate').value='25';
+  if(typeof markFieldPremise==='function')markFieldPremise('financeRate','REFERÊNCIA');else if(typeof markFieldPending==='function')markFieldPending('financeRate','REFERÊNCIA');
+  const rawText=rawAnnualRate!=null&&Number.isFinite(rawAnnualRate)?` A relação contábil encontrada seria de ${(rawAnnualRate*100).toLocaleString('pt-BR',{maximumFractionDigits:2})}% a.a. e não foi usada como custo financeiro.`:' Não foi possível calcular uma taxa contábil confiável com os dados disponíveis.';
+  if($('financeRateSource'))$('financeRateSource').textContent=`Premissa gerencial de 25% a.a. usada quando o cálculo documental não fica na faixa de referência de 20% a 30% a.a.${rawText} Confirme contratos, saldo médio real e composição das despesas financeiras.`;
  }
  if(typeof markFieldDerived==='function'){
   if(cashKnown)markFieldDerived('cashReserve','CALCULADO');
   if(cclKnown)markFieldDerived('workingCapitalNet','CALCULADO');
   if(debtKnown)markFieldDerived('debtAverage','CALCULADO');
  }
- return{cash,liquid,reserve,ac,pc,ccl,start,end,avg,interest,months,annualRate:automaticRatePlausible?annualRate:null,rawAnnualRate:annualRate};
+ return{cash,liquid,reserve,ac,pc,ccl,start,end,avg,interest,months,annualRate:mode==='auto'?annualRate:(filled('financeRate')?num('financeRate')/100:null),rawAnnualRate,rateSource,needsReview,referenceRate,referenceMin,referenceMax};
 }
