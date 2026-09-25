@@ -256,6 +256,7 @@ jobs:
                 'Conta Reduzida Descrição Saldo Anterior Débito Crédito Saldo Atual',
                 '3 2157 CONTAS DE RESULTADOS 0,00 9.004.151,01 8.942.376,60 61.774,41 D',
                 '3.1 2158 RECEITA OPERACIONAL BRUTA 0,00 237.533,35 7.953.703,40 7.716.170,05 C',
+                '3.1.1.002 2171 VEICULOS SEMINOVOS 0,00 0,00 2.242.672,13 2.242.672,13 C',
                 '3.2 2209 IMPOSTOS S/ VENDAS 0,00 460.560,53 7.065,16 453.495,37 D',
                 '3.2.2.002 2233 PIS SEMINOVOS 0,00 471,25 0,00 471,25 D',
                 '3.2.2.003 2235 COFINS SEMINOVOS 0,00 2.175,00 0,00 2.175,00 D',
