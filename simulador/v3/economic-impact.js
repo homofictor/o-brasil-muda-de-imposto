@@ -81,6 +81,8 @@
  function futureConsumptionConfidence(){
   const values=['purchasesPct','eligibleCreditPct','regularSuppliersPct','fullCbs','fullIbs'].map(fieldConfidence);
   if(String(document.getElementById('taxTreatmentAccepted')?.value||'')!=='yes')values.push('low');
+  const usedVehicles=root.brmiImport?.docs?.some(d=>d?.usedVehiclesMention===true);
+  if(usedVehicles)values.push('low');
   return minConfidence(values);
  }
  function setConfidenceNote(id,confidence){
