@@ -343,6 +343,7 @@ jobs:
             assert.ok(Math.abs(one(rrVehiclesImport.dre.payroll) - 35308.90833333333) < .02);
             if (rrVehiclesImport.dre.cpp.length) assert.ok(Math.abs(one(rrVehiclesImport.dre.cpp) - 17402.3025) < .02);
 
+            await page.waitForFunction(() => typeof financialMetrics === 'function' && /referenceRate/.test(financialMetrics.toString()), { timeout: 30000 });
             const financeFallbackCheck = await page.evaluate(() => {
               const set=(id,v)=>{const el=document.getElementById(id);if(el)el.value=String(v)};
               set('financeRateMode','auto');set('dreMonths',12);set('debtStart','');set('debtEnd',487136.34);set('interestExpense',515765.94);
