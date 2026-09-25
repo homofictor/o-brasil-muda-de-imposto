@@ -19,6 +19,14 @@ function realPresumedBreakEven(annualRevenue,targetTax,additions,exclusions,irpj
  for(let i=0;i<70;i++){const mid=(lo+hi)/2,t=realTaxSnapshot(mid,additions,exclusions,irpjLossAvailable,csllLossAvailable).total;if(t<targetTax)lo=mid;else hi=mid}
  const profit=(lo+hi)/2;return{profit,margin:profit/annualRevenue,tax:realTaxSnapshot(profit,additions,exclusions,irpjLossAvailable,csllLossAvailable).total}
 }
+function importedOperatingCreditProfile(annualRevenue){
+ const docs=window.brmiImport?.docs||[];
+ const profiles=docs.map(d=>d?.operatingCreditDetail).filter(Boolean).sort((a,b)=>(Number(b.ratioToRevenue)||0)-(Number(a.ratioToRevenue)||0));
+ const p=profiles[0];if(!p||!(Number(p.ratioToRevenue)>0))return null;
+ const annualAmount=Math.max(0,annualRevenue*Number(p.ratioToRevenue));
+ return{source:p.source||'DRE importada',annualAmount,ratioToRevenue:Number(p.ratioToRevenue),confidence:p.confidence||'medium',method:p.method||'proxy de despesas operacionais',note:p.note||''};
+}
+
 function automotiveImportedCreditProfile(annualRevenue){
  const docs=window.brmiImport?.docs||[];
  const profiles=docs.map(d=>d?.automotiveDetail).filter(Boolean).sort((a,b)=>(Number(b.revenueCoverage)||0)-(Number(a.revenueCoverage)||0));
@@ -49,8 +57,8 @@ function modelForYear(year){
  const dasCbs=simpleComputable?das*share.cbs:0,dasIbs=simpleComputable?das*share.ibs:0,embedded=dasCbs+dasIbs,dasWithout=Math.max(0,das-embedded);
  const rr=regularRates(year),factor=revenueRateFactor(),fullRegularRate=rr.cbs+rr.ibs,grossRegularRate=fullRegularRate*factor,grossVat=annualRevenue*grossRegularRate;
  const reportedAcquisitions=annualRevenue*clamp(num('purchasesPct')/100,0,1),eligible=clamp(num('eligibleCreditPct')/100,0,1),regSup=clamp(num('regularSuppliersPct')/100,0,1);
- const automotiveCreditProfile=automotiveImportedCreditProfile(annualRevenue);
- let acquisitions=reportedAcquisitions,inputCredit=reportedAcquisitions*eligible*regSup*fullRegularRate,creditMethod='generic';
+ const automotiveCreditProfile=automotiveImportedCreditProfile(annualRevenue),operatingCreditProfile=importedOperatingCreditProfile(annualRevenue);
+ let acquisitions=reportedAcquisitions,inputCredit=reportedAcquisitions*eligible*regSup*fullRegularRate,creditMethod=operatingCreditProfile?'generic-dre-proxy':'generic';
  if(automotiveCreditProfile){
   const vehicleBase=automotiveCreditProfile.newVehicles+automotiveCreditProfile.usedVehicles;
   const partsBase=automotiveCreditProfile.parts,serviceBase=automotiveCreditProfile.services;
@@ -92,5 +100,5 @@ function modelForYear(year){
  ];
  const models=allModels.filter(m=>simpleEligible||!['pure','hybrid'].includes(m.key)),validModels=models.filter(m=>m.valid!==false),taxBest=validModels.length?[...validModels].sort((a,b)=>a.total-b.total)[0]:{key:'pending',name:'Dados insuficientes',total:Infinity,valid:false};
  const b2bSales=annualRevenue*b2b,extraHybridCost=hybridTotal-pureTotal,breakEvenCapture=b2bSales>0?Math.max(0,extraHybridCost)/b2bSales:Infinity,creditCaptureNeeded=extraClientCredit>0?Math.max(0,extraHybridCost)/extraClientCredit:Infinity,capture=clamp(num('capturePct')/100,0,1),adjustedHybrid=hybridTotal-extraClientCredit*capture,commercialBest=simpleEligible&&adjustedHybrid<pureTotal?'hybrid':taxBest.key;
- return{year,annualRevenue,monthlyRevenue,rbt12,annex,sr,share,das,dasCbs,dasIbs,embedded,dasWithout,rr,factor,fullRegularRate,grossRegularRate,grossVat,purchases:acquisitions,acquisitions,reportedAcquisitions,inputCredit,netVat,creditMethod,automotiveCreditProfile,hybridCompliance,fullCompliance,pureTotal,hybridTotal,presumedTotal,realTotal,presumedBaseIR,presumedBaseCSLL,irpj,csll,cpp,cppBaseKnown,cppBaseMonthly,employerRate,cppRequiredForCrossRegime,cppComparisonReady,regularProjectionComplete,annexCpp,legacy,legacyKnown,realIrpj,realCsll,realProfitKnown,historicalProfitKnown,historicalAccountingProfit,projectedProfitKnown,projectedAccountingProfit,projectionMode,realDecisionSensitive,breakEven,profitSensitivity,accountingProfit,additions,exclusions,adjustedBeforeLoss,realIrpjBase,realCsllBase,irpjLossUsed,csllLossUsed,presumedValid,realValid,pureClientCredit,hybridClientCredit,regularClientCredit,extraClientCredit,b2bSales,extraHybridCost,breakEvenCapture,creditCaptureNeeded,capture,adjustedHybrid,taxBest,commercialBest,simpleEligible,simpleComputable,eligibility,isMei,models,allModels};
+ return{year,annualRevenue,monthlyRevenue,rbt12,annex,sr,share,das,dasCbs,dasIbs,embedded,dasWithout,rr,factor,fullRegularRate,grossRegularRate,grossVat,purchases:acquisitions,acquisitions,reportedAcquisitions,inputCredit,netVat,creditMethod,automotiveCreditProfile,operatingCreditProfile,hybridCompliance,fullCompliance,pureTotal,hybridTotal,presumedTotal,realTotal,presumedBaseIR,presumedBaseCSLL,irpj,csll,cpp,cppBaseKnown,cppBaseMonthly,employerRate,cppRequiredForCrossRegime,cppComparisonReady,regularProjectionComplete,annexCpp,legacy,legacyKnown,realIrpj,realCsll,realProfitKnown,historicalProfitKnown,historicalAccountingProfit,projectedProfitKnown,projectedAccountingProfit,projectionMode,realDecisionSensitive,breakEven,profitSensitivity,accountingProfit,additions,exclusions,adjustedBeforeLoss,realIrpjBase,realCsllBase,irpjLossUsed,csllLossUsed,presumedValid,realValid,pureClientCredit,hybridClientCredit,regularClientCredit,extraClientCredit,b2bSales,extraHybridCost,breakEvenCapture,creditCaptureNeeded,capture,adjustedHybrid,taxBest,commercialBest,simpleEligible,simpleComputable,eligibility,isMei,models,allModels};
 }
