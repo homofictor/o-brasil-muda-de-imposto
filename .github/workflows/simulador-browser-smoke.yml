@@ -254,6 +254,7 @@ jobs:
                 'RR VEICULOS LTDA - CNPJ: 42.255.172/0001-56',
                 'Período: 01/2025 a 12/2025',
                 'Conta Reduzida Descrição Saldo Anterior Débito Crédito Saldo Atual',
+                '3 2157 CONTAS DE RESULTADOS 0,00 9.004.151,01 8.942.376,60 61.774,41 D',
                 '3.1 2158 RECEITA OPERACIONAL BRUTA 0,00 237.533,35 7.953.703,40 7.716.170,05 C',
                 '3.2 2209 IMPOSTOS S/ VENDAS 0,00 460.560,53 7.065,16 453.495,37 D',
                 '3.2.2.002 2233 PIS SEMINOVOS 0,00 471,25 0,00 471,25 D',
@@ -267,18 +268,22 @@ jobs:
                 '3.2.5.001 2264 ISS COMISSOES 0,00 32.306,01 0,00 32.306,01 D',
                 '3.2.5.002 2266 PIS COMISSOES 0,00 2.483,20 0,00 2.483,20 D',
                 '3.2.5.003 2268 COFINS COMISSOES 0,00 11.437,88 0,00 11.437,88 D',
+                '3.3 2270 CUSTOS OPERACIONAIS 0,00 5.201.454,76 311.164,25 4.890.290,51 D',
+                '3.4 2318 DESPESAS OPERACIONAIS 0,00 2.022.146,72 125.916,60 1.896.230,12 D',
                 '3.4.2 2342 DESPESAS COM PESSOAL E ENCARGOS 0,00 453.095,12 29.388,22 423.706,90 D',
                 '3.4.2.102 2343 SALARIOS E ORDENADOS 0,00 209.487,34 659,71 208.827,63 D',
                 '3.4.3 2378 DESPESAS ADMINISTRATIVAS E GERAIS 0,00 706.648,61 15.709,40 690.939,21 D',
                 '3.4.3.222 2384 DEPRECIACAO E AMORTIZACAO 0,00 200.353,64 0,00 200.353,64 D',
                 '3.4.3.223 2386 ALUGUEIS LOCACAO E LEASING 0,00 139.315,00 0,00 139.315,00 D',
+                '3.5 2442 OUTROS RESULTADOS OPERACIONAIS 0,00 544.580,75 516.516,05 28.064,70 D',
                 '3.6.2 2494 DESPESAS FINANCEIRAS 0,00 537.587,20 21.821,26 515.765,94 D',
-                '3.6.2.001 2495 ENCARGOS S/ APLICACOES FINANCEIRAS 0,00 58.284,60 21.417,43 36.867,17 D'
+                '3.6.2.001 2495 ENCARGOS S/ APLICACOES FINANCEIRAS 0,00 58.284,60 21.417,43 36.867,17 D',
+                '3.7.1.001 2517 PROVISAO P/ IRPJ E CONTRIBUICAO SOCIAL 0,00 287,70 0,00 287,70 D'
               ].join('\n');
 
               const bpDoc = analyseImportDoc({ name: 'Balanço 2025 RR VEICULOS.pdf' }, { text: bp, rows: null, extraction: 'text' });
               const dreDoc = analyseImportDoc({ name: 'DRE 2025 RR VEICULOS.pdf' }, { text: dre, rows: null, extraction: 'text' });
-              const pick = (doc, field) => doc.candidates.filter(x => x.field === field).map(x => ({ value: x.value, confidence: x.confidence, reason: x.reason }));
+              const pick = (doc, field) => doc.candidates.filter(x => x.field === field).map(x => ({ value: x.value, label: x.label, confidence: x.confidence, usageConfidence: x.usageConfidence, reason: x.reason, ebitdaAnnual: x.ebitdaAnnual, unclassifiedLongTerm: x.unclassifiedLongTerm }));
               return {
                 bp: {
                   equity: pick(bpDoc,'equity'), fixedAssets: pick(bpDoc,'fixedAssets'), taxesRecoverable: pick(bpDoc,'taxesRecoverable'),
@@ -289,7 +294,8 @@ jobs:
                   revenue: pick(dreDoc,'rbt12'), admin: pick(dreDoc,'adminExpenses'), finance: pick(dreDoc,'interestExpense'),
                   investments: pick(dreDoc,'liquidInvestments'), debt: pick(dreDoc,'debtEnd'), taxTotal: pick(dreDoc,'currentConsumptionTaxAnnual'),
                   pisCofins: pick(dreDoc,'currentPisCofinsAnnual'), icms: pick(dreDoc,'currentIcmsAnnual'), iss: pick(dreDoc,'currentIssAnnual'),
-                  payroll: pick(dreDoc,'monthlyPayroll'), cpp: pick(dreDoc,'monthlyCppBase')
+                  payroll: pick(dreDoc,'monthlyPayroll'), cpp: pick(dreDoc,'monthlyCppBase'),
+                  profit: pick(dreDoc,'realAccountingProfitAnnual'), margin: pick(dreDoc,'currentOperatingMarginPct')
                 }
               };
             });
@@ -304,9 +310,22 @@ jobs:
             assert.ok(Math.abs(one(rrVehiclesImport.bp.inventory) - 3425840.35) < .02);
             assert.ok(Math.abs(one(rrVehiclesImport.bp.suppliers) - 3571239.77) < .02);
             assert.ok(Math.abs(one(rrVehiclesImport.bp.debt) - 487136.34) < .02);
+            assert.match(rrVehiclesImport.bp.receivables[0].label, /Valores a receber no curto prazo/i);
+            assert.match(rrVehiclesImport.bp.receivables[0].reason, /financiamento das vendas/i);
+            assert.match(rrVehiclesImport.bp.debt[0].label, /Dívida financeira identificada/i);
+            assert.ok(Math.abs((rrVehiclesImport.bp.debt[0].unclassifiedLongTerm || 0) - 1538500) < .02);
+            assert.match(rrVehiclesImport.bp.debt[0].reason, /não foi incluído na dívida|ficou fora da dívida/i);
             assert.ok(Math.abs(one(rrVehiclesImport.dre.revenue) - 7716170.05) < .02);
             assert.ok(Math.abs(one(rrVehiclesImport.dre.admin) - 690939.21) < .02);
             assert.ok(Math.abs(one(rrVehiclesImport.dre.finance) - 515765.94) < .02);
+            assert.equal(rrVehiclesImport.dre.finance[0].confidence, 'high');
+            assert.equal(rrVehiclesImport.dre.finance[0].usageConfidence, 'medium');
+            assert.match(rrVehiclesImport.dre.finance[0].reason, /uso como aproximação do custo da dívida exige revisão/i);
+            assert.ok(Math.abs(one(rrVehiclesImport.dre.profit) - (-61486.71)) < .02);
+            assert.match(rrVehiclesImport.dre.profit[0].reason, /reconstruído.*resultado final/i);
+            assert.ok(Math.abs(one(rrVehiclesImport.dre.margin) - 8.928416) < .01);
+            assert.ok(Math.abs((rrVehiclesImport.dre.margin[0].ebitdaAnnual || 0) - 648442.99) < .02);
+            assert.match(rrVehiclesImport.dre.margin[0].reason, /EBITDA reconstruído/i);
             assert.equal(rrVehiclesImport.dre.investments.length, 0);
             assert.equal(rrVehiclesImport.dre.debt.length, 0);
             assert.ok(Math.abs(one(rrVehiclesImport.dre.taxTotal) - 453495.37) < .02);
