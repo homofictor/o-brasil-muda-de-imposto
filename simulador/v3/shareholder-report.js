@@ -65,6 +65,10 @@
    if(!Number.isFinite(margin))pending.push('Informar a margem EBITDA atual para medir quanto da variação tributária pode ser absorvida pela operação.');
    if(cash?.reserveKnown)pending.push('Confirmar quanto do caixa e das aplicações considerados como reserva bruta está efetivamente livre para suportar a necessidade de liquidez do split payment.');
    if(fieldOrigin('b2bPct')==='Sugestão automática')pending.push('Confirmar o percentual real de vendas B2B com faturamento por cliente.');
+   const usedVehicles=window.brmiImport?.docs?.some(d=>d?.usedVehiclesMention===true);
+   const purchaseProxy=(window.brmiImport?.candidates||[]).find(x=>x?.field==='purchasesPct'&&/proxy pela DRE/i.test(String(x?.label||'')));
+   if(usedVehicles)pending.push('Revisar separadamente as aquisições de veículos seminovos. Compras de bens móveis usados de pessoa física não contribuinte ou MEI para revenda podem gerar crédito presumido de IBS/CBS; a simples classificação do fornecedor como fora do regime regular não deve eliminar esse crédito.');
+   if(purchaseProxy)pending.push(`Revisar a base de aquisições creditáveis. A DRE indica custos equivalentes a aproximadamente ${Number(purchaseProxy.value).toLocaleString('pt-BR',{maximumFractionDigits:1})}% da receita bruta, como proxy gerencial, mas custos não equivalem necessariamente às compras creditáveis do período.`);
    if(fieldOrigin('eligibleCreditPct')==='Sugestão automática'||fieldOrigin('regularSuppliersPct')==='Sugestão automática')pending.push('Substituir estimativas setoriais pelas compras efetivamente creditáveis e pelo regime dos principais fornecedores.');
    if(String(byId('taxTreatmentAccepted')?.value||'')!=='yes')pending.push('Confirmar a composição das receitas por tratamento/cClassTrib e eventuais reduções, benefícios ou regimes específicos.');
    pending.push('Tratar as alíquotas de referência de CBS/IBS como premissas de cenário e confirmar os valores oficiais aplicáveis ao ano analisado.');
