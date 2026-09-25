@@ -365,6 +365,21 @@ jobs:
             assert.equal(financeFallbackCheck.reconciled.needsReview, false);
             assert.ok(Math.abs(financeFallbackCheck.reconciledValue - 25.46) < .02);
 
+            const rrCorrectedTaxCheck = await page.evaluate(() => {
+              const set=(id,v)=>{const el=document.getElementById(id);if(el)el.value=String(v)};
+              set('monthlyRevenue',7716170.05/12);set('rbt12',7716170.05);set('simpleStatus','no');
+              set('mix30',0);set('mix40',0);set('mix60',0);set('mixZero',0);
+              set('fullCbs',8.8);set('fullIbs',17.7);set('purchasesPct',50);set('eligibleCreditPct',90);set('regularSuppliersPct',88);
+              set('legacyRate',4.4025890798);set('realAccountingProfitAnnual',-61486.71);set('profitProjectionMode','historical');
+              const r=modelForYear(2027);
+              return {grossVat:r.grossVat,inputCredit:r.inputCredit,netVat:r.netVat,legacy:r.legacy,total:r.netVat+r.legacy};
+            });
+            assert.ok(Math.abs(rrCorrectedTaxCheck.grossVat - 679022.96) < .10);
+            assert.ok(Math.abs(rrCorrectedTaxCheck.inputCredit - 268893.09) < .10);
+            assert.ok(Math.abs(rrCorrectedTaxCheck.netVat - 410129.87) < .10);
+            assert.ok(Math.abs(rrCorrectedTaxCheck.legacy - 339711.26) < .10);
+            assert.ok(Math.abs(rrCorrectedTaxCheck.total - 749841.13) < .10);
+
             const fiscalMismatchCheck = await page.evaluate(() => {
               const syntheticLossDre = [
                 'DEMONSTRAÇÃO DO RESULTADO DO EXERCÍCIO',
