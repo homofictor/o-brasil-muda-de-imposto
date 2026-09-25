@@ -295,7 +295,9 @@ jobs:
                   investments: pick(dreDoc,'liquidInvestments'), debt: pick(dreDoc,'debtEnd'), taxTotal: pick(dreDoc,'currentConsumptionTaxAnnual'),
                   pisCofins: pick(dreDoc,'currentPisCofinsAnnual'), icms: pick(dreDoc,'currentIcmsAnnual'), iss: pick(dreDoc,'currentIssAnnual'),
                   payroll: pick(dreDoc,'monthlyPayroll'), cpp: pick(dreDoc,'monthlyCppBase'),
-                  profit: pick(dreDoc,'realAccountingProfitAnnual'), margin: pick(dreDoc,'currentOperatingMarginPct')
+                  profit: pick(dreDoc,'realAccountingProfitAnnual'), margin: pick(dreDoc,'currentOperatingMarginPct'),
+                  legacyRate: pick(dreDoc,'legacyRate'), purchasesProxy: pick(dreDoc,'purchasesPct'),
+                  usedVehiclesMention: dreDoc.usedVehiclesMention === true
                 }
               };
             });
@@ -332,8 +334,34 @@ jobs:
             assert.ok(Math.abs(one(rrVehiclesImport.dre.pisCofins) - 113784.11) < .02);
             assert.ok(Math.abs(one(rrVehiclesImport.dre.icms) - 268275.13) < .02);
             assert.ok(Math.abs(one(rrVehiclesImport.dre.iss) - 71436.13) < .02);
+            assert.ok(Math.abs(one(rrVehiclesImport.dre.legacyRate) - 4.4025890798) < .001);
+            assert.match(rrVehiclesImport.dre.legacyRate[0].reason, /ICMS \+ ISS.*receita bruta/i);
+            assert.ok(Math.abs(one(rrVehiclesImport.dre.purchasesProxy) - 63.3771738869) < .001);
+            assert.equal(rrVehiclesImport.dre.purchasesProxy[0].confidence, 'medium');
+            assert.equal(rrVehiclesImport.dre.usedVehiclesMention, true);
             assert.ok(Math.abs(one(rrVehiclesImport.dre.payroll) - 35308.90833333333) < .02);
             if (rrVehiclesImport.dre.cpp.length) assert.ok(Math.abs(one(rrVehiclesImport.dre.cpp) - 17402.3025) < .02);
+
+            const financeFallbackCheck = await page.evaluate(() => {
+              const set=(id,v)=>{const el=document.getElementById(id);if(el)el.value=String(v)};
+              set('financeRateMode','auto');set('dreMonths',12);set('debtStart','');set('debtEnd',487136.34);set('interestExpense',515765.94);
+              const inconsistent=financialMetrics();
+              const fallbackValue=Number(document.getElementById('financeRate')?.value||0);
+              const fallbackText=document.getElementById('financeRateSource')?.textContent||'';
+              set('debtEnd',2025636.34);
+              const reconciled=financialMetrics();
+              const reconciledValue=Number(document.getElementById('financeRate')?.value||0);
+              return {inconsistent,fallbackValue,fallbackText,reconciled,reconciledValue};
+            });
+            assert.ok(Math.abs(financeFallbackCheck.inconsistent.rawAnnualRate - 1.0587712261) < .001);
+            assert.equal(financeFallbackCheck.inconsistent.rateSource, 'reference');
+            assert.equal(financeFallbackCheck.inconsistent.needsReview, true);
+            assert.ok(Math.abs(financeFallbackCheck.fallbackValue - 25) < .001);
+            assert.match(financeFallbackCheck.fallbackText, /25% a\.a\.|25,0% a\.a\./i);
+            assert.ok(Math.abs(financeFallbackCheck.reconciled.rawAnnualRate - .2546192176) < .001);
+            assert.equal(financeFallbackCheck.reconciled.rateSource, 'observed');
+            assert.equal(financeFallbackCheck.reconciled.needsReview, false);
+            assert.ok(Math.abs(financeFallbackCheck.reconciledValue - 25.46) < .02);
 
             const fiscalMismatchCheck = await page.evaluate(() => {
               const syntheticLossDre = [
