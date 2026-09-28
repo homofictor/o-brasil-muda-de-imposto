@@ -1,0 +1,50 @@
+{
+  "updated": "2026-09-28",
+  "policy": "Use the exact approved asset. Do not regenerate or substitute covers.",
+  "books": {
+    "esquecer": {
+      "display_title": "ESQUECER — O maior poder humano",
+      "catalog_cover": {
+        "source_file_id": "file_00000000e180820e9121e6ec38aff01c",
+        "source_name": "Esquecer.jpg",
+        "target": "assets/covers/esquecer.jpg",
+        "status": "identified"
+      },
+      "amazon_kindle_asin": "B0HGP6RV5C"
+    },
+    "forgetting": {
+      "display_title": "FORGETTING — Humanity's Greatest Power",
+      "catalog_cover": {
+        "source_file_id": "file_0000000003c8820ebfa4203f7280e34b",
+        "source_name": "FORGETTING CAPA KINDLE.jpg",
+        "target": "assets/covers/forgetting.jpg",
+        "status": "identified"
+      },
+      "paperback_cover": {
+        "source_file_id": "file_00000000b754820e99729a2d33075069",
+        "source_name": "FORGETTING_KDP_PAPERBACK_COVER_99P_CREAM_6x9_600dpi.png",
+        "target": "assets/covers/forgetting-paperback.png",
+        "status": "identified_separate_print_cover"
+      },
+      "amazon_kindle_asin": "B0HGQM4BT5",
+      "amazon_paperback_asin": "B0HGZN5WB5"
+    },
+    "what_does_god_need": {
+      "display_title": "WHAT DOES GOD NEED? — A Short Story",
+      "catalog_cover": {
+        "source_file_id": "file_00000000eed0820eaf3adabe501d4622",
+        "source_name": "WHAT_DOES_GOD_NEED_KDP_Cover.jpg",
+        "target": "assets/covers/what-does-god-need.jpg",
+        "status": "identified"
+      },
+      "paperback_cover": {
+        "source_file_id": "file_00000000ce1c81f7b0c828c2f964e43b",
+        "source_name": "WHAT_DOES_GOD_NEED_KDP_PAPERBACK_6X9_CREAM_38P_COVER.jpg",
+        "target": "assets/covers/what-does-god-need-paperback.jpg",
+        "status": "identified_separate_print_cover"
+      },
+      "amazon_kindle_asin": "B0HGH11VFL",
+      "amazon_paperback_asin": "B0HGHV4FXC"
+    }
+  }
+}
