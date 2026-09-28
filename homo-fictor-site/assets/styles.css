@@ -58,6 +58,9 @@ img{max-width:100%;display:block}
 .mini-cover b{font-size:1.5rem;line-height:1}
 .catalog-card h3{font-family:Georgia,serif;font-size:1.25rem;margin:16px 0 5px}
 .catalog-card p{font-size:.92rem;color:var(--muted)}
+.buy-links{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.buy-links a{display:inline-flex;align-items:center;min-height:36px;padding:7px 11px;border:1px solid var(--line);border-radius:999px;background:var(--paper);font-size:.82rem;font-weight:700}
+.buy-links a:hover{border-color:var(--hf);color:var(--hf)}
 .feature{display:grid;grid-template-columns:1fr 1fr;gap:44px;align-items:center}
 .feature-box{background:var(--hf);color:white;padding:42px;min-height:340px;display:flex;flex-direction:column;justify-content:space-between}
 .feature-box h3{font-family:Georgia,serif;font-size:2rem;font-weight:500;margin:0}
