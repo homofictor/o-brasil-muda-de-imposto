@@ -150,7 +150,7 @@ function weightedScore(rows,defs,minMetrics=2){
 }
 function scoreSector(block){
   const rows=block.stocks||[];
-  const isBank=block.sector==='Finance'&&rows.some(r=>String(r.subsector||'').toLowerCase().includes('banco'));
+  const isBank=block.isBank===true;
   const valuationDefs=isBank
     ?[{key:'pe',dir:'lower',w:.55},{key:'pb',dir:'lower',w:.45}]
     :[{key:'pe',dir:'lower',w:.30},{key:'pb',dir:'lower',w:.15},{key:'evEbit',dir:'lower',w:.30},{key:'cfoYield',dir:'higher',w:.25}];
@@ -201,7 +201,7 @@ function renderSector(block){
   return `
     <section class="sector-block">
       <div class="sector-block-head">
-        <div><h3>${esc(sectorPt(block.sector))}</h3><small>${block.total} ativos · ${coverage} com fundamentos disponíveis nesta sessão</small></div>
+        <div><h3>${esc(block.label||sectorPt(block.sector))}</h3><small>${block.total} ativos · ${coverage} com fundamentos disponíveis nesta sessão</small></div>
         <small>Fonte de mercado: brapi</small>
       </div>
       <div class="table-wrap">
@@ -234,12 +234,12 @@ function renderSector(block){
 function renderResults(){
   state.assetMap.clear();
   for(const b of state.sectorData){
-    for(const r of b.scored||[])state.assetMap.set(r.ticker,{...r,sector:b.sector});
+    for(const r of b.scored||[])state.assetMap.set(r.ticker,{...r,sector:b.sector,peerLabel:b.label});
   }
   $('sectorResults').innerHTML=state.sectorData.map(renderSector).join('');
   const total=state.sectorData.reduce((a,b)=>a+(b.total||0),0);
   const coverage=state.sectorData.reduce((a,b)=>a+(b.fundamentalsCoverage||0),0);
-  $('summarySectors').textContent=state.sectorData.length;
+  $('summarySectors').textContent=state.selected.size;
   $('summaryStocks').textContent=total;
   $('summaryCoverage').textContent=coverage;
   const first=state.sectorData.find(x=>x.requestedAt);
@@ -256,14 +256,33 @@ async function runScreen(){
   $('universeStatus').textContent='Cruzando preços do último pregão com demonstrações financeiras oficiais da CVM...';
   try{
     if(!state.cvmBase)state.cvmBase=await api('/api/bolsa360-cvm');
-    const blocks=[...state.selected].map(sector=>{
-      const stocks=(state.cvmBase.companies||[]).filter(x=>x.sector===sector);
-      const covered=stocks.filter(x=>x.fundamentals&&(
+    const peerGroup=(row,sector)=>{
+      const sub=String(row.subsector||'').toLowerCase();
+      if(sector==='Finance'){
+        if(sub.includes('banco')||sub.includes('crédito')||sub.includes('credito'))return {key:'finance:banks',label:'Bancos',isBank:true};
+        if(sub.includes('segur')||sub.includes('ressegur'))return {key:'finance:insurance',label:'Seguros e resseguros',isBank:false};
+        if(sub.includes('incorpora')||sub.includes('imóve')||sub.includes('imove')||sub.includes('shopping'))return {key:'finance:realestate',label:'Imobiliário',isBank:false};
+        if(sub.includes('aluguel de carro'))return {key:'finance:rental',label:'Locação de veículos e ativos',isBank:false};
+        if(sub.includes('dados financeiros')||sub.includes('bolsas')||sub.includes('gestão')||sub.includes('gestao')||sub.includes('títulos')||sub.includes('titulos'))return {key:'finance:services',label:'Serviços financeiros',isBank:false};
+        return {key:'finance:other',label:'Financeiro, outros',isBank:false};
+      }
+      return {key:sector,label:sectorPt(sector),isBank:false};
+    };
+    const groups=new Map();
+    for(const sector of state.selected){
+      for(const stock of (state.cvmBase.companies||[]).filter(x=>x.sector===sector)){
+        const g=peerGroup(stock,sector);
+        if(!groups.has(g.key))groups.set(g.key,{sector,label:g.label,isBank:g.isBank,stocks:[]});
+        groups.get(g.key).stocks.push(stock);
+      }
+    }
+    const blocks=[...groups.values()].map(block=>{
+      const covered=block.stocks.filter(x=>x.fundamentals&&(
         x.fundamentals.trailingPE!==null||x.fundamentals.priceToBook!==null||x.fundamentals.returnOnEquity!==null
       )).length;
-      const block={sector,total:stocks.length,fundamentalsCoverage:covered,requestedAt:state.cvmBase.requestedAt,stocks};
-      return {...block,scored:scoreSector(block)};
-    });
+      const base={...block,total:block.stocks.length,fundamentalsCoverage:covered,requestedAt:state.cvmBase.requestedAt};
+      return {...base,scored:scoreSector(base)};
+    }).filter(b=>b.total>0);
     state.sectorData=blocks;
     renderResults();
     $('universeStatus').textContent='Análise concluída com fundamentos calculados pelo Bolsa 360 a partir das DFP da CVM.';
@@ -291,7 +310,7 @@ function openDrawer(a){
   const f=a.fundamentals||{};
   $('drawerBody').innerHTML=`
     <div class="drawer-title">
-      <p class="eyebrow">${esc(sectorPt(a.sector))}</p>
+      <p class="eyebrow">${esc(a.peerLabel||sectorPt(a.sector))}</p>
       <h2>${esc(a.ticker)}</h2>
       <p class="muted">Comparação fundamentalista preliminar dentro do setor.</p>
     </div>
