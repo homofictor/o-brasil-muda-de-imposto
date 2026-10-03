@@ -222,6 +222,16 @@ module.exports=async function handler(req,res){
       const bpa=parseCsv(decode(files['dfp_cia_aberta_BPA_con_2025.csv']||Buffer.alloc(0)));
       return res.status(200).json({dre:dre.slice(0,3),bpa:bpa.slice(0,3)});
     }
+    if(String(req.query?.debug||'')==='bb'){
+      const zipBuf=await fetchBuffer(CVM_DFP_URL);
+      const wanted=new Set(['dfp_cia_aberta_BPP_con_2025.csv','dfp_cia_aberta_DRE_con_2025.csv']);
+      const files=unzipSelected(zipBuf,wanted);
+      const bpp=parseCsv(decode(files['dfp_cia_aberta_BPP_con_2025.csv']||Buffer.alloc(0)))
+        .filter(r=>cvmCode(r.CD_CVM)==='1023'&&String(r.ORDEM_EXERC).toUpperCase()==='ÚLTIMO'&&cleanText(r.DS_CONTA).includes('PATRIMONIO'));
+      const dre=parseCsv(decode(files['dfp_cia_aberta_DRE_con_2025.csv']||Buffer.alloc(0)))
+        .filter(r=>cvmCode(r.CD_CVM)==='1023'&&String(r.ORDEM_EXERC).toUpperCase()==='ÚLTIMO'&&(String(r.CD_CONTA)==='3.11'||cleanText(r.DS_CONTA).includes('LUCRO')));
+      return res.status(200).json({bpp,dre});
+    }
     const [stocks,cadBuf,zipBuf]=await Promise.all([
       marketUniverse(160),fetchBuffer(CVM_CAD_URL),fetchBuffer(CVM_DFP_URL)
     ]);
