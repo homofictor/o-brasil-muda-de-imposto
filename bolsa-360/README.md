@@ -49,7 +49,7 @@ O Bolsa 360 é um motor de análise fundamentalista para companhias listadas na 
 4. combinar preço de mercado com demonstrações financeiras oficiais;
 5. calcular indicadores fundamentalistas internamente;
 6. comparar empresas apenas com grupos economicamente comparáveis;
-7. ordenar valuation relativo sem confundir preço nominal da ação com empresa barata;
+7. ordenar valuation relativo sem confundir preço nominal da ação com atratividade de valuation;
 8. manter Valuation, Qualidade e Solidez como dimensões independentes.
 
 ## Fontes da V0.2
@@ -101,7 +101,7 @@ A V0.2 calcula, quando os dados permitem:
 - dívida líquida / EBIT;
 - caixa / dívida.
 
-Múltiplos negativos não são interpretados como baratos.
+Múltiplos negativos não são interpretados como sinal de valuation atrativo.
 
 ## Valuation 360
 
