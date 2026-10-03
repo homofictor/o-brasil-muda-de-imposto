@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Bolsa 360 Iniciante | Monte e simule sua carteira</title>
+  <meta name="description" content="Screener setorial de ações brasileiras com comparação fundamentalista e valuation relativo.">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div class="devbar">BOLSA 360 | MVP EM AMBIENTE ESPELHO | NÃO É RECOMENDAÇÃO DE INVESTIMENTO</div>
+
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="Bolsa 360">
+      <span class="brand-mark">B360</span>
+      <span>
+        <strong>BOLSA 360 INICIANTE</strong>
+        <small>Aprenda, compare e monte uma carteira fictícia passo a passo</small>
+      </span>
+    </a>
+    <div class="top-actions"><a class="back-link" href="../">Análise completa</a><a class="back-link" href="../../empresa-360/">Empresa 360</a></div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">SCREENER SETORIAL</p>
+        <h1>Escolha os setores. Compare empresas. <em>Monte sua carteira passo a passo.</em></h1>
+        <p class="lead">O Bolsa 360 traduz fundamentos em uma jornada simples: você escolhe onde quer investir, compara empresas, adiciona as que deseja estudar e monta uma carteira fictícia antes de colocar dinheiro real no mercado.</p>
+        <div class="hero-flags">
+          <span>Preço do último pregão</span>
+          <span>Ranking por setor</span>
+          <span>Valuation relativo</span>
+          <span>Qualidade</span>
+          <span>Crescimento 360</span>
+          <span>Valor Justo 360</span>
+          <span>Valor Intrínseco 360</span>
+          <span>Fundamentos CVM + TTM</span>
+        </div>
+      </div>
+      <aside class="method-card">
+        <p class="eyebrow light">PRINCÍPIO</p>
+        <h2>R$ 8 não é necessariamente mais barato que R$ 80.</h2>
+        <p>O ranking fundamentalista utiliza múltiplos, fluxo de caixa, rentabilidade e estrutura financeira. O preço nominal da ação aparece apenas como referência de mercado.</p>
+      </aside>
+    </section>
+
+    <section class="journey">
+      <div><b>1</b><span>Escolha setores</span></div>
+      <div><b>2</b><span>Compare empresas</span></div>
+      <div><b>3</b><span>Adicione à seleção</span></div>
+      <div><b>4</b><span>Defina valor e pesos</span></div>
+      <div><b>5</b><span>Acompanhe a carteira</span></div>
+    </section>
+
+    <section class="panel selector-panel">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">1. UNIVERSO</p>
+          <h2>Quais setores devem compor sua busca?</h2>
+          <p id="universeStatus" class="muted">Carregando universo de ações da B3...</p>
+        </div>
+        <div class="selection-actions">
+          <button id="clearSectors" type="button" class="secondary">Limpar</button>
+          <button id="runScreen" type="button" disabled>Analisar setores selecionados</button>
+        </div>
+      </div>
+      <div id="sectorGrid" class="sector-grid"></div>
+      <details class="advanced-settings">
+        <summary>Premissas avançadas do Valor Intrínseco 360</summary>
+      <div class="assumptions-box">
+        <div>
+          <p class="eyebrow">PREMISSAS DO VALOR INTRÍNSECO 360</p>
+          <h3>Premissas explícitas e editáveis</h3>
+          <p class="muted">São parâmetros do modelo, não taxas de mercado. Alterações recalculam o DCF e os modelos bancários sem refazer a consulta à CVM.</p>
+        </div>
+        <div class="assumption-grid">
+          <label>WACC operacional
+            <span><input id="dcfWacc" type="number" step="0.1" min="7" max="30" value="14.5">%</span>
+          </label>
+          <label>Crescimento terminal
+            <span><input id="terminalGrowth" type="number" step="0.1" min="0" max="8" value="4.0">%</span>
+          </label>
+          <label>Alíquota de imposto
+            <span><input id="taxRate" type="number" step="0.5" min="0" max="50" value="34">%</span>
+          </label>
+          <label>Custo de capital bancário
+            <span><input id="bankCostEquity" type="number" step="0.1" min="8" max="30" value="15.0">%</span>
+          </label>
+          <label>Payout bancário DDM
+            <span><input id="bankPayout" type="number" step="1" min="10" max="90" value="50">%</span>
+          </label>
+        </div>
+      </div>
+      </details>
+    </section>
+
+    <section id="resultsSection" class="results hidden">
+      <div class="summary-grid">
+        <article class="summary-card dark">
+          <span>Setores analisados</span>
+          <strong id="summarySectors">0</strong>
+          <small>Comparações sempre dentro do próprio setor</small>
+        </article>
+        <article class="summary-card">
+          <span>Ações no universo</span>
+          <strong id="summaryStocks">0</strong>
+          <small>Ordenadas inicialmente por liquidez</small>
+        </article>
+        <article class="summary-card">
+          <span>Com fundamentos</span>
+          <strong id="summaryCoverage">0</strong>
+          <small id="coverageNote">Cobertura disponível no provedor</small>
+        </article>
+        <article class="summary-card">
+          <span>Base contábil</span>
+          <strong id="summaryDate">—</strong>
+          <small>Referência mais recente do ITR</small>
+        </article>
+      </div>
+
+      <section class="panel ranking-panel">
+        <div class="section-head ranking-head">
+          <div>
+            <p class="eyebrow">2. RANKING</p>
+            <h2>Mais barato relativamente → mais caro relativamente</h2>
+            <p class="muted">Comece pela visão simples. Quanto maior a nota, melhor o posicionamento relativo naquele critério. Clique no ticker para ver a análise completa ou use “Adicionar” para levar o ativo à sua seleção.</p>
+          </div>
+          <div class="ranking-controls">
+            <div class="view-toggle" aria-label="Modo de visualização">
+              <button id="simpleView" type="button" class="view-btn active">Visão simples</button>
+              <button id="advancedView" type="button" class="view-btn">Visão avançada</button>
+            </div>
+            <div class="sort-wrap">
+            <label for="sortBy">Ordenar por</label>
+            <select id="sortBy">
+              <option value="valuation">Valuation 360</option>
+              <option value="quality">Qualidade</option>
+              <option value="priceAsc">Preço da ação</option>
+              <option value="solidity">Solidez</option>
+              <option value="growth">Crescimento 360</option>
+              <option value="fairDistance">Distância ao valor justo</option>
+              <option value="intrinsicDistance">Distância ao valor intrínseco</option>
+              <option value="roe">ROE</option>
+              <option value="evEbit">EV/EBIT</option>
+            </select>
+            </div>
+          </div>
+        </div>
+
+        <div id="dataWarning" class="data-warning hidden"></div>
+        <div id="sectorResults" class="sector-results"></div>
+      </section>
+
+      <section id="savedPortfolioSection" class="panel saved-portfolio hidden">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">MINHA CARTEIRA SIMULADA</p>
+            <h2>Uma carteira para aprender antes de investir.</h2>
+            <p class="muted">Os valores abaixo são fictícios e usam o preço de fechamento registrado no momento em que a carteira foi salva.</p>
+          </div>
+          <button id="editSavedPortfolio" type="button" class="secondary">Editar carteira</button>
+        </div>
+        <div id="savedPortfolioBody"></div>
+      </section>
+
+      <section class="panel simulator-preview">
+        <div>
+          <p class="eyebrow">PRÓXIMA CAMADA</p>
+          <h2>Acompanhar sem arriscar dinheiro real.</h2>
+          <p>A carteira salva já cria a base do futuro simulador. Na próxima etapa, o Bolsa 360 poderá atualizar os preços e comparar a evolução da carteira fictícia com IBOV e Selic.</p>
+        </div>
+        <div class="simulator-tags">
+          <span>Rentabilidade acumulada</span><span>IBOV</span><span>Selic</span><span>Aportes fictícios</span><span>Rebalanceamento</span>
+        </div>
+      </section>
+
+      <section class="panel methodology">
+        <div>
+          <p class="eyebrow">3. COMO LER</p>
+          <h2>Barato não significa bom.</h2>
+          <p>O Bolsa 360 mantém notas separadas para valuation, qualidade, solidez e crescimento. O Valor Justo 360 compara pares. O Valor Intrínseco 360 usa DCF para empresas operacionais e lucro residual/dividendos para bancos, com premissas visíveis. Uma companhia pode negociar com múltiplos baixos porque seus fundamentos deterioraram. O objetivo do screener é reduzir o universo para análise aprofundada, preservando a origem dos dados e dos cálculos.</p>
+        </div>
+        <div class="quadrants">
+          <div><b>Cara e boa</b><small>qualidade alta, valuation pouco atrativo</small></div>
+          <div class="accent"><b>Barata e boa</b><small>valuation e qualidade acima dos pares</small></div>
+          <div><b>Cara e fraca</b><small>baixa qualidade e valuation exigente</small></div>
+          <div><b>Barata e fraca</b><small>múltiplos baixos, mas fundamentos frágeis</small></div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <div id="selectionDock" class="selection-dock hidden">
+    <div><span>Minha seleção</span><strong id="selectionCount">0 ativos</strong></div>
+    <button id="openPortfolioBuilder" type="button">Montar carteira</button>
+  </div>
+
+  <div id="portfolioBackdrop" class="drawer-backdrop hidden"></div>
+  <aside id="portfolioDrawer" class="portfolio-drawer" aria-hidden="true">
+    <button id="closePortfolioDrawer" class="drawer-close" type="button">×</button>
+    <div class="portfolio-head">
+      <p class="eyebrow">CONSTRUTOR DE CARTEIRA</p>
+      <h2>Transforme sua seleção em uma carteira fictícia.</h2>
+      <p class="muted">Informe quanto gostaria de investir e o peso de cada ativo. O Bolsa 360 calcula quantidades inteiras de ações e o caixa restante.</p>
+    </div>
+    <div class="capital-box">
+      <label>Quanto você quer simular?
+        <span>R$ <input id="portfolioCapital" type="number" min="100" step="100" value="10000"></span>
+      </label>
+      <button id="equalWeights" type="button" class="secondary">Dividir igualmente</button>
+    </div>
+    <div id="portfolioSelectionList" class="portfolio-selection-list"></div>
+    <div id="portfolioSummary" class="portfolio-summary"></div>
+    <div class="portfolio-actions">
+      <button id="normalizeWeights" type="button" class="secondary">Ajustar para 100%</button>
+      <button id="savePortfolio" type="button">Salvar carteira simulada</button>
+    </div>
+    <p class="portfolio-disclaimer">Simulação educacional. Não é recomendação de investimento e não executa ordens.</p>
+  </aside>
+
+  <div id="drawerBackdrop" class="drawer-backdrop hidden"></div>
+  <aside id="assetDrawer" class="asset-drawer" aria-hidden="true">
+    <button id="closeDrawer" class="drawer-close" type="button">×</button>
+    <div id="drawerBody"></div>
+  </aside>
+
+  <footer>
+    <span>Bolsa 360 | Homo Fictor</span>
+    <span>Ferramenta analítica. Não constitui recomendação, oferta ou aconselhamento de investimento.</span>
+  </footer>
+
+  <script src="./app.js"></script>
+</body>
+</html>
