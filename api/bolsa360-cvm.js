@@ -306,6 +306,58 @@ async function loadMapsFromUrl(url,prefix,year,allowedCvms){
   return maps;
 }
 
+
+function normalizeRecommendation(key,mean){
+  const k=String(key||'').toLowerCase().replace(/[\s_-]+/g,'');
+  if(k.includes('buy')||k.includes('outperform')||k.includes('overweight'))return 'Compra';
+  if(k.includes('hold')||k.includes('neutral')||k.includes('marketperform')||k.includes('equalweight'))return 'Neutro';
+  if(k.includes('sell')||k.includes('underperform')||k.includes('underweight'))return 'Venda';
+  const m=parseNumber(mean);
+  if(m!==null){
+    if(m<=2.5)return 'Compra';
+    if(m<=3.5)return 'Neutro';
+    return 'Venda';
+  }
+  return null;
+}
+async function analystConsensusMap(tickers){
+  const map=new Map(),key=process.env.BRAPI_API_KEY;
+  const chunks=[];
+  for(let i=0;i<tickers.length;i+=40)chunks.push(tickers.slice(i,i+40));
+  for(const chunk of chunks){
+    try{
+      const headers={Accept:'application/json','User-Agent':'Bolsa360-HomoFictor/0.8'};
+      if(key)headers.Authorization='Bearer '+key;
+      const url='https://brapi.dev/api/v2/stocks/financial-data?symbols='+encodeURIComponent(chunk.join(','))+'&mode=current';
+      const r=await fetch(url,{headers});
+      if(!r.ok)continue;
+      const j=await r.json();
+      for(const item of (j.results||[])){
+        const ticker=item.symbol||item.requestedSymbol;
+        const d=item.data||item.financialData||{};
+        if(!ticker)continue;
+        const mean=parseNumber(d.targetMeanPrice),median=parseNumber(d.targetMedianPrice);
+        const low=parseNumber(d.targetLowPrice),high=parseNumber(d.targetHighPrice);
+        const opinions=parseNumber(d.numberOfAnalystOpinions),recMean=parseNumber(d.recommendationMean);
+        const recKey=d.recommendationKey||null;
+        if(mean===null&&median===null&&low===null&&high===null&&opinions===null&&!recKey&&recMean===null)continue;
+        map.set(ticker,{
+          source:'brapi financialData',
+          targetMeanPrice:mean!==null&&mean>0?mean:null,
+          targetMedianPrice:median!==null&&median>0?median:null,
+          targetLowPrice:low!==null&&low>0?low:null,
+          targetHighPrice:high!==null&&high>0?high:null,
+          numberOfAnalystOpinions:opinions!==null&&opinions>=0?opinions:null,
+          recommendationMean:recMean,
+          recommendationKey:recKey,
+          recommendation:normalizeRecommendation(recKey,recMean)
+        });
+      }
+    }catch(_){}
+  }
+  return map;
+}
+
 module.exports=async function handler(req,res){
   try{
     const [stocks,cadBuf]=await Promise.all([
@@ -325,14 +377,27 @@ module.exports=async function handler(req,res){
     const dfpMaps=await loadMapsFromUrl(CVM_DFP_URL,'dfp',2025,allowedCvms);
     const itrMaps=await loadMapsFromUrl(CVM_ITR_URL,'itr',2026,allowedCvms);
 
-    const companies=matched.map(c=>({...c,fundamentals:buildFundamentals(c,dfpMaps,itrMaps)}));
+    const consensus=await analystConsensusMap(matched.map(c=>c.ticker));
+    const companies=matched.map(c=>{
+      const analystConsensus=consensus.get(c.ticker)||null;
+      const target=analystConsensus?.targetMeanPrice??analystConsensus?.targetMedianPrice??null;
+      return {
+        ...c,
+        analystConsensus:analystConsensus?{
+          ...analystConsensus,
+          targetDistance:target!==null&&c.close>0?target/c.close-1:null,
+          collectedAt:new Date().toISOString()
+        }:null,
+        fundamentals:buildFundamentals(c,dfpMaps,itrMaps)
+      };
+    });
     const covered=companies.filter(c=>c.fundamentals.trailingPE!==null||c.fundamentals.priceToBook!==null||c.fundamentals.returnOnEquity!==null).length;
     const ttmCovered=companies.filter(c=>c.fundamentals.ttmAvailable).length;
     const latestItrReference=companies.map(c=>c.fundamentals.referenceDate).filter(d=>d&&d>'2025-12-31').sort().pop()||null;
 
     res.setHeader('Cache-Control','s-maxage=21600, stale-while-revalidate=86400');
     return res.status(200).json({
-      provider:'Mercado operacional + CVM DFP 2025 + ITR 2026',
+      provider:'Mercado operacional + CVM DFP 2025 + ITR 2026 + consenso de analistas brapi',
       methodology:'BP usa a posição mais recente do ITR; DRE e DFC usam TTM = DFP 2025 + acumulado 2026 - período comparável de 2025.',
       requestedAt:new Date().toISOString(),
       latestItrReference,total:companies.length,covered,ttmCovered,companies
