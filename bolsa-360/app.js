@@ -287,7 +287,7 @@ function renderSector(block){
       <div class="table-wrap">
         <table>
           <thead><tr>
-            <th>Ativo</th><th>Fechamento</th><th>P/L</th><th>P/VP</th><th>EV/EBIT</th><th>ROE</th><th>Margem EBIT</th><th>Dívida/PL</th><th>Valuation 360</th><th>Qualidade</th><th>Solidez</th><th>Crescimento</th>
+            <th>Ativo</th><th>Fechamento</th><th>Valor justo</th><th>Distância</th><th>P/L</th><th>P/VP</th><th>EV/EBIT</th><th>ROE</th><th>Valuation 360</th><th>Qualidade</th><th>Solidez</th><th>Crescimento</th>
           </tr></thead>
           <tbody>
             ${rows.map(r=>{
@@ -295,12 +295,12 @@ function renderSector(block){
               return `<tr>
                 <td><button class="asset-btn" data-ticker="${esc(r.ticker)}">${esc(r.ticker)}</button><small>Vol. ${compactMoney(r.volume)}</small></td>
                 <td><strong>${money(r.close)}</strong><small>${n(r.change)!==null?(n(r.change)>=0?'+':'')+n(r.change).toFixed(2)+'%':'N/D'}</small></td>
+                <td><strong>${money(r.fairValue?.central)}</strong><small>${r.fairValue?money(r.fairValue.low)+' a '+money(r.fairValue.high):'N/D'}</small></td>
+                <td>${r.fairValue?pct(r.fairValue.distance):'<span class="na">N/D</span>'}</td>
                 <td>${mult(f.trailingPE)}</td>
                 <td>${mult(f.priceToBook)}</td>
                 <td>${mult(f.enterpriseToEbit)}</td>
                 <td>${pct(f.returnOnEquity)}</td>
-                <td>${pct(f.ebitMargin)}</td>
-                <td>${mult(f.debtToEquity)}</td>
                 <td>${scoreBadge(r.valuationScore)}</td>
                 <td>${scoreBadge(r.qualityScore)}</td>
                 <td>${scoreBadge(r.solidityScore)}</td>
