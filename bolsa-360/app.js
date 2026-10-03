@@ -1,4 +1,4 @@
-const state={universe:null,cvmBase:null,selected:new Set(),sectorData:[],assetMap:new Map()};
+const state={universe:null,cvmBase:null,historyByCvm:{},selected:new Set(),sectorData:[],assetMap:new Map()};
 
 const $=id=>document.getElementById(id);
 const sectorNames={
@@ -110,7 +110,13 @@ function metricValue(row,key){
     profitMargin:f.profitMargin,
     debtEquity:f.debtToEquity,
     netDebtEbit:f.netDebtToEbit,
-    currentRatio:f.currentRatio
+    currentRatio:f.currentRatio,
+    gRevenue3:row.growth?.revenueCagr3,
+    gRevenueLong:row.growth?.revenueCagrLong,
+    gEbit3:row.growth?.ebitCagr3,
+    gProfit3:row.growth?.profitCagr3,
+    gMargin:row.growth?.ebitMarginDelta,
+    gProfitYears:row.growth?.positiveProfitYears
   }[key];
 }
 function validMetric(key,v){
@@ -162,6 +168,14 @@ function scoreSector(block){
     {key:'netDebtEbit',dir:'lower',w:.40},
     {key:'currentRatio',dir:'higher',w:.20}
   ];
+  const growthDefs=[
+    {key:'gRevenue3',dir:'higher',w:.25},
+    {key:'gRevenueLong',dir:'higher',w:.15},
+    {key:'gEbit3',dir:'higher',w:.20},
+    {key:'gProfit3',dir:'higher',w:.20},
+    {key:'gMargin',dir:'higher',w:.10},
+    {key:'gProfitYears',dir:'higher',w:.10}
+  ];
 
   const ready=rows.filter(r=>{
     const f=r.fundamentals||{};
@@ -172,12 +186,14 @@ function scoreSector(block){
   const valuation=weightedScore(rows,valuationDefs,isBank?2:2);
   const quality=weightedScore(rows,qualityDefs,1);
   const solidity=isBank?new Map():weightedScore(rows,solidityDefs,2);
+  const growth=weightedScore(rows,growthDefs,3);
 
   return rows.map(r=>({
     ...r,
     valuationScore:valuation.get(r.ticker)??null,
     qualityScore:quality.get(r.ticker)??null,
-    solidityScore:isBank?null:(solidity.get(r.ticker)??null)
+    solidityScore:isBank?null:(solidity.get(r.ticker)??null),
+    growthScore:growth.get(r.ticker)??null
   }));
 }
 function sortRows(rows){
@@ -187,6 +203,7 @@ function sortRows(rows){
   if(mode==='valuation')return copy.sort((a,b)=>v(b,'valuationScore')-v(a,'valuationScore'));
   if(mode==='quality')return copy.sort((a,b)=>v(b,'qualityScore')-v(a,'qualityScore'));
   if(mode==='solidity')return copy.sort((a,b)=>v(b,'solidityScore')-v(a,'solidityScore'));
+  if(mode==='growth')return copy.sort((a,b)=>v(b,'growthScore')-v(a,'growthScore'));
   if(mode==='priceAsc')return copy.sort((a,b)=>(n(a.close)??Infinity)-(n(b.close)??Infinity));
   if(mode==='roe')return copy.sort((a,b)=>(n(b.fundamentals?.returnOnEquity)??-Infinity)-(n(a.fundamentals?.returnOnEquity)??-Infinity));
   if(mode==='evEbit')return copy.sort((a,b)=>(n(a.fundamentals?.enterpriseToEbit)??Infinity)-(n(b.fundamentals?.enterpriseToEbit)??Infinity));
@@ -207,7 +224,7 @@ function renderSector(block){
       <div class="table-wrap">
         <table>
           <thead><tr>
-            <th>Ativo</th><th>Fechamento</th><th>P/L</th><th>P/VP</th><th>EV/EBIT</th><th>ROE</th><th>Margem EBIT</th><th>Dívida/PL</th><th>Valuation 360</th><th>Qualidade</th><th>Solidez</th>
+            <th>Ativo</th><th>Fechamento</th><th>P/L</th><th>P/VP</th><th>EV/EBIT</th><th>ROE</th><th>Margem EBIT</th><th>Dívida/PL</th><th>Valuation 360</th><th>Qualidade</th><th>Solidez</th><th>Crescimento</th>
           </tr></thead>
           <tbody>
             ${rows.map(r=>{
@@ -224,6 +241,7 @@ function renderSector(block){
                 <td>${scoreBadge(r.valuationScore)}</td>
                 <td>${scoreBadge(r.qualityScore)}</td>
                 <td>${scoreBadge(r.solidityScore)}</td>
+                <td>${scoreBadge(r.growthScore)}</td>
               </tr>`;
             }).join('')}
           </tbody>
@@ -249,6 +267,42 @@ function renderResults(){
   $('dataWarning').innerHTML='<b>Base TTM incorporada.</b> Balanço patrimonial usa a posição mais recente do ITR 2026. DRE e DFC usam TTM = DFP 2025 + acumulado de 2026 - período comparável de 2025. Referência mais recente da base: <b>'+formatDate(state.cvmBase?.latestItrReference)+'</b>.';
   $('resultsSection').classList.remove('hidden');
 }
+function cagr(start,end,years){
+  const a=n(start),b=n(end);
+  if(a===null||b===null||a<=0||b<=0||!years)return null;
+  return Math.pow(b/a,1/years)-1;
+}
+function growthFromHistory(stock){
+  const annual=[...(state.historyByCvm[String(stock.cvm)]||[])].sort((a,b)=>a.year-b.year);
+  const ttm=stock.fundamentals||{};
+  const history=[...annual];
+  if(ttm.ttmAvailable)history.push({
+    year:'TTM',
+    revenue:ttm.revenue,ebit:ttm.ebit,netIncome:ttm.netIncome,
+    ebitMargin:ttm.ebitMargin,profitMargin:ttm.profitMargin
+  });
+  const byYear=y=>annual.find(x=>x.year===y)||null;
+  const y21=byYear(2021),y22=byYear(2022),y25=byYear(2025);
+  const annualValid=annual.filter(x=>n(x.netIncome)!==null);
+  return {
+    history,
+    revenueCagr3:y22&&y25?cagr(y22.revenue,y25.revenue,3):null,
+    revenueCagrLong:y21&&y25?cagr(y21.revenue,y25.revenue,4):null,
+    ebitCagr3:y22&&y25?cagr(y22.ebit,y25.ebit,3):null,
+    profitCagr3:y22&&y25?cagr(y22.netIncome,y25.netIncome,3):null,
+    ebitMarginDelta:y22&&y25&&n(y22.ebitMargin)!==null&&n(y25.ebitMargin)!==null?y25.ebitMargin-y22.ebitMargin:null,
+    positiveProfitYears:annualValid.length?annualValid.filter(x=>n(x.netIncome)>0).length/annualValid.length:null,
+    ttmVs2025:y25&&n(y25.revenue)>0&&n(ttm.revenue)!==null?ttm.revenue/y25.revenue-1:null
+  };
+}
+async function loadHistoryFor(stocks){
+  const missing=[...new Set(stocks.map(s=>String(s.cvm)).filter(c=>c&&!state.historyByCvm[c]))];
+  for(let i=0;i<missing.length;i+=35){
+    const chunk=missing.slice(i,i+35);
+    const data=await api('/api/bolsa360-history?cvms='+encodeURIComponent(chunk.join(',')));
+    Object.assign(state.historyByCvm,data.series||{});
+  }
+}
 async function runScreen(){
   if(!state.selected.size)return;
   $('runScreen').disabled=true;
@@ -268,12 +322,17 @@ async function runScreen(){
       }
       return {key:sector,label:sectorPt(sector),isBank:false};
     };
+    const selectedStocks=(state.cvmBase.companies||[]).filter(x=>state.selected.has(x.sector));
+    $('universeStatus').textContent='Carregando histórico de 2021 a 2025 para as companhias selecionadas...';
+    await loadHistoryFor(selectedStocks);
+
     const groups=new Map();
     for(const sector of state.selected){
-      for(const stock of (state.cvmBase.companies||[]).filter(x=>x.sector===sector)){
-        const g=peerGroup(stock,sector);
+      for(const stock of selectedStocks.filter(x=>x.sector===sector)){
+        const enriched={...stock,growth:growthFromHistory(stock)};
+        const g=peerGroup(enriched,sector);
         if(!groups.has(g.key))groups.set(g.key,{sector,label:g.label,isBank:g.isBank,stocks:[]});
-        groups.get(g.key).stocks.push(stock);
+        groups.get(g.key).stocks.push(enriched);
       }
     }
     const blocks=[...groups.values()].map(block=>{
@@ -285,7 +344,7 @@ async function runScreen(){
     }).filter(b=>b.total>0);
     state.sectorData=blocks;
     renderResults();
-    $('universeStatus').textContent='Análise concluída com fundamentos calculados pelo Bolsa 360 a partir das DFP da CVM.';
+    $('universeStatus').textContent='Análise concluída com TTM 2026 e histórico anual 2021-2025 da CVM.';
     $('resultsSection').scrollIntoView({behavior:'smooth',block:'start'});
   }catch(e){
     $('universeStatus').textContent='Falha na análise: '+e.message;
@@ -305,6 +364,12 @@ $('sectorResults').addEventListener('click',e=>{
 });
 function drawerMetric(label,value){
   return '<div class="drawer-metric"><span>'+esc(label)+'</span><strong>'+esc(value)+'</strong></div>';
+}
+function renderHistory(rows){
+  if(!rows.length)return '';
+  return '<div class="history-box"><p class="eyebrow">HISTÓRICO FUNDAMENTALISTA</p><div class="history-list">'+rows.map(r=>
+    '<div class="history-row"><b>'+esc(r.year)+'</b><span>Receita '+compactMoney(r.revenue)+'</span><span>EBIT '+compactMoney(r.ebit)+'</span><span>Lucro '+compactMoney(r.netIncome)+'</span><span>Margem EBIT '+pct(r.ebitMargin)+'</span></div>'
+  ).join('')+'</div></div>';
 }
 function openDrawer(a){
   const f=a.fundamentals||{};
@@ -331,8 +396,15 @@ function openDrawer(a){
       ${drawerMetric('Dívida líquida / EBIT',mult(f.netDebtToEbit))}
       ${drawerMetric('Liquidez corrente',mult(f.currentRatio))}
       ${drawerMetric('Solidez',a.solidityScore===null?'N/D':a.solidityScore+'/100')}
+      ${drawerMetric('Crescimento 360',a.growthScore===null?'N/D':a.growthScore+'/100')}
+      ${drawerMetric('Receita CAGR 3a',pct(a.growth?.revenueCagr3))}
+      ${drawerMetric('Receita CAGR 2021-25',pct(a.growth?.revenueCagrLong))}
+      ${drawerMetric('EBIT CAGR 3a',pct(a.growth?.ebitCagr3))}
+      ${drawerMetric('Lucro CAGR 3a',pct(a.growth?.profitCagr3))}
+      ${drawerMetric('Margem EBIT Δ',pct(a.growth?.ebitMarginDelta))}
+      ${drawerMetric('Anos com lucro',pct(a.growth?.positiveProfitYears))}
     </div>
-    <div class="drawer-note">Valuation 360 compara múltiplos e geração de caixa com pares do mesmo setor. Os fundamentos desta versão são calculados a partir das DFP 2025 da CVM e combinados com preços de mercado. Não representa recomendação de compra, venda ou manutenção.</div>
+    ${renderHistory(a.growth?.history||[])}\n    <div class="drawer-note">Valuation, Qualidade, Solidez e Crescimento 360 são dimensões independentes. O histórico usa DFP anuais da CVM de 2021 a 2025 e acrescenta o TTM 2026 quando disponível. Não representa recomendação de compra, venda ou manutenção.</div>
   `;
   $('drawerBackdrop').classList.remove('hidden');
   $('assetDrawer').classList.add('open');
