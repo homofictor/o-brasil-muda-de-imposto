@@ -308,3 +308,16 @@ O sistema diferencia falta de dados de inviabilidade econômica do modelo. Quand
 Quando CFO e CAPEX passam por filtros de plausibilidade, é exibida uma checagem independente pelo caixa reportado. Ela não entra no valor central e funciona apenas como controle de consistência.
 
 A calibração automática de WACC, custo de capital e crescimento terminal por dados de mercado continua sendo etapa posterior.
+
+
+## Consenso de mercado
+
+O Bolsa 360 está preparado para exibir uma terceira referência externa:
+
+- preço-alvo médio e mediano;
+- faixa de preço-alvo;
+- número de opiniões;
+- recomendação agregada normalizada em Compra, Neutro ou Venda;
+- distância entre preço-alvo médio e fechamento.
+
+Fonte prevista: brapi `financialData`. Essa camada não entra no Valor Justo, Valor Intrínseco ou Scores 360. Campos nulos permanecem N/D. O ambiente atual sem `BRAPI_API_KEY` opera em modo público de demonstração e pode não fornecer cobertura de consenso.
