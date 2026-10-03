@@ -128,3 +128,12 @@ footer{max-width:1280px;margin:auto;padding:0 28px 44px;display:flex;justify-con
   .sort-wrap,.sort-wrap select{width:100%}
   footer{padding:0 15px 30px;display:block}
 }
+.history-box{margin-top:24px;border-top:1px solid var(--line);padding-top:20px}
+.history-list{display:grid;gap:7px}
+.history-row{display:grid;grid-template-columns:58px 1.15fr 1fr 1fr 1fr;gap:8px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:10px 11px;background:#fafbfa;font-size:11px}
+.history-row b{color:var(--green);font-size:12px}
+.history-row span{color:#536057}
+@media(max-width:700px){
+  .history-row{grid-template-columns:48px 1fr 1fr}
+  .history-row span:nth-of-type(n+3){display:none}
+}
