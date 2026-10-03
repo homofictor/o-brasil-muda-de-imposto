@@ -1,4 +1,7 @@
-const state={universe:null,cvmBase:null,historyByCvm:{},selected:new Set(),sectorData:[],assetMap:new Map()};
+const state={universe:null,cvmBase:null,historyByCvm:{},selected:new Set(),sectorData:[],assetMap:new Map(),selection:new Map(),weights:{},savedPortfolio:null,viewMode:'simple'};
+const STORAGE_SELECTION='bolsa360.selection.v01';
+const STORAGE_WEIGHTS='bolsa360.weights.v01';
+const STORAGE_PORTFOLIO='bolsa360.portfolio.v01';
 
 const $=id=>document.getElementById(id);
 const sectorNames={
@@ -47,6 +50,188 @@ function sectorPt(s){return sectorNames[s]||s||'Não classificado'}
 function formatDate(v){
   if(!v)return '—';
   const d=new Date(v);return Number.isNaN(d.getTime())?'—':d.toLocaleDateString('pt-BR');
+}
+
+function persistSelection(){
+  localStorage.setItem(STORAGE_SELECTION,JSON.stringify([...state.selection.values()]));
+  localStorage.setItem(STORAGE_WEIGHTS,JSON.stringify(state.weights));
+}
+function loadLocalState(){
+  try{
+    const items=JSON.parse(localStorage.getItem(STORAGE_SELECTION)||'[]');
+    state.selection=new Map((items||[]).filter(x=>x&&x.ticker).map(x=>[x.ticker,x]));
+    state.weights=JSON.parse(localStorage.getItem(STORAGE_WEIGHTS)||'{}')||{};
+    state.savedPortfolio=JSON.parse(localStorage.getItem(STORAGE_PORTFOLIO)||'null');
+  }catch(_){
+    state.selection=new Map();state.weights={};state.savedPortfolio=null;
+  }
+}
+function setViewMode(mode){
+  state.viewMode=mode==='advanced'?'advanced':'simple';
+  document.body.classList.toggle('beginner-mode',state.viewMode==='simple');
+  $('simpleView')?.classList.toggle('active',state.viewMode==='simple');
+  $('advancedView')?.classList.toggle('active',state.viewMode==='advanced');
+}
+function equalizeWeights(){
+  const tickers=[...state.selection.keys()];
+  if(!tickers.length){state.weights={};persistSelection();return}
+  const base=Math.floor((100/tickers.length)*100)/100;
+  let used=0;
+  tickers.forEach((t,i)=>{
+    const w=i===tickers.length-1?Number((100-used).toFixed(2)):base;
+    state.weights[t]=w;used+=w;
+  });
+  persistSelection();
+}
+function toggleAssetSelection(asset){
+  if(!asset?.ticker)return;
+  if(state.selection.has(asset.ticker)){
+    state.selection.delete(asset.ticker);
+    delete state.weights[asset.ticker];
+  }else{
+    state.selection.set(asset.ticker,{
+      ticker:asset.ticker,
+      name:asset.name||asset.cvmName||asset.ticker,
+      sector:asset.sector||null,
+      subsector:asset.subsector||null,
+      close:n(asset.close),
+      valuationScore:asset.valuationScore??null,
+      qualityScore:asset.qualityScore??null,
+      growthScore:asset.growthScore??null,
+      fairValue:asset.fairValue?.central??null,
+      intrinsicValue:asset.intrinsicValue?.central??null
+    });
+  }
+  equalizeWeights();
+  updateSelectionDock();
+  renderResults();
+  renderPortfolioBuilder();
+}
+function updateSelectionDock(){
+  const count=state.selection.size;
+  $('selectionDock')?.classList.toggle('hidden',count===0);
+  if($('selectionCount'))$('selectionCount').textContent=count+' ativo'+(count===1?'':'s');
+}
+function allocationRows(){
+  const capital=Math.max(0,n($('portfolioCapital')?.value)||0);
+  const rows=[...state.selection.values()].map(a=>{
+    const weight=Math.max(0,n(state.weights[a.ticker])||0);
+    const price=Math.max(0,n(a.close)||0);
+    const target=capital*weight/100;
+    const qty=price>0?Math.floor(target/price):0;
+    const invested=qty*price;
+    return {...a,weight,target,qty,invested};
+  });
+  const invested=rows.reduce((s,r)=>s+r.invested,0);
+  const weightTotal=rows.reduce((s,r)=>s+r.weight,0);
+  return {capital,rows,invested,cash:Math.max(0,capital-invested),weightTotal};
+}
+function renderPortfolioBuilder(){
+  if(!$('portfolioSelectionList'))return;
+  const assets=[...state.selection.values()];
+  $('portfolioSelectionList').innerHTML=assets.length?assets.map(a=>`
+    <div class="portfolio-item">
+      <div><b>${esc(a.ticker)}</b><small>${esc(a.name||'')} · ${esc(sectorPt(a.sector))}</small></div>
+      <div class="portfolio-price"><label>Preço atual</label><b>${money(a.close)}</b></div>
+      <label>Peso desejado
+        <input class="weight-input" data-weight-ticker="${esc(a.ticker)}" type="number" min="0" max="100" step="0.1" value="${n(state.weights[a.ticker])??0}">
+      </label>
+      <button class="remove-selection" data-remove-ticker="${esc(a.ticker)}" type="button" aria-label="Remover ${esc(a.ticker)}">×</button>
+    </div>`).join(''):'<p class="muted">Adicione ativos no ranking para começar.</p>';
+  renderPortfolioSummary();
+}
+function renderPortfolioSummary(){
+  if(!$('portfolioSummary'))return;
+  const x=allocationRows();
+  const rows=x.rows.map(r=>`
+    <div class="portfolio-summary-row">
+      <b>${esc(r.ticker)}</b>
+      <span>${r.weight.toFixed(1)}%</span>
+      <span>${r.qty} ações</span>
+      <span>${money(r.invested)}</span>
+    </div>`).join('');
+  $('portfolioSummary').innerHTML=x.rows.length?`
+    <div class="portfolio-summary-row head"><span>Ativo</span><span>Peso</span><span>Quantidade</span><span>Valor aplicado</span></div>
+    ${rows}
+    <div class="portfolio-totals">
+      <div><span>Pesos</span><strong>${x.weightTotal.toFixed(1)}%</strong></div>
+      <div><span>Investido</span><strong>${money(x.invested)}</strong></div>
+      <div><span>Caixa restante</span><strong>${money(x.cash)}</strong></div>
+    </div>`:'';
+  if($('savePortfolio'))$('savePortfolio').disabled=!x.rows.length||x.capital<=0||Math.abs(x.weightTotal-100)>.05;
+}
+function normalizeWeights(){
+  const vals=[...state.selection.keys()].map(t=>Math.max(0,n(state.weights[t])||0));
+  const total=vals.reduce((a,b)=>a+b,0);
+  if(total<=0){equalizeWeights();renderPortfolioBuilder();return}
+  let used=0;
+  const tickers=[...state.selection.keys()];
+  tickers.forEach((t,i)=>{
+    const w=i===tickers.length-1?Number((100-used).toFixed(2)):Number((vals[i]/total*100).toFixed(2));
+    state.weights[t]=w;used+=w;
+  });
+  persistSelection();renderPortfolioBuilder();
+}
+function openPortfolioDrawer(){
+  renderPortfolioBuilder();
+  $('portfolioBackdrop')?.classList.remove('hidden');
+  $('portfolioDrawer')?.classList.add('open');
+  $('portfolioDrawer')?.setAttribute('aria-hidden','false');
+}
+function closePortfolioDrawer(){
+  $('portfolioBackdrop')?.classList.add('hidden');
+  $('portfolioDrawer')?.classList.remove('open');
+  $('portfolioDrawer')?.setAttribute('aria-hidden','true');
+}
+function saveSimulatedPortfolio(){
+  const x=allocationRows();
+  if(!x.rows.length||Math.abs(x.weightTotal-100)>.05)return;
+  const now=new Date().toISOString();
+  state.savedPortfolio={
+    version:1,
+    createdAt:now,
+    startingCapital:x.capital,
+    invested:x.invested,
+    cash:x.cash,
+    benchmark:'IBOV',
+    positions:x.rows.map(r=>({
+      ticker:r.ticker,name:r.name||r.ticker,sector:r.sector||null,
+      targetWeight:r.weight,entryPrice:r.close,quantity:r.qty,initialValue:r.invested,
+      fairValue:r.fairValue??null,intrinsicValue:r.intrinsicValue??null
+    }))
+  };
+  localStorage.setItem(STORAGE_PORTFOLIO,JSON.stringify(state.savedPortfolio));
+  renderSavedPortfolio();
+  closePortfolioDrawer();
+  $('savedPortfolioSection')?.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function renderSavedPortfolio(){
+  const p=state.savedPortfolio;
+  $('savedPortfolioSection')?.classList.toggle('hidden',!p);
+  if(!p||!$('savedPortfolioBody'))return;
+  $('savedPortfolioBody').innerHTML=`
+    <div class="saved-portfolio-grid">
+      <div class="saved-card"><span>Capital simulado</span><strong>${money(p.startingCapital)}</strong></div>
+      <div class="saved-card"><span>Valor aplicado</span><strong>${money(p.invested)}</strong></div>
+      <div class="saved-card"><span>Caixa inicial</span><strong>${money(p.cash)}</strong></div>
+      <div class="saved-card"><span>Referência futura</span><strong>${esc(p.benchmark||'IBOV')}</strong></div>
+    </div>
+    <div class="saved-positions">
+      ${p.positions.map(pos=>`<div class="saved-position">
+        <b>${esc(pos.ticker)}</b><span>${pos.targetWeight.toFixed(1)}%</span><span>${pos.quantity} ações</span><span>${money(pos.initialValue)}</span>
+      </div>`).join('')}
+    </div>`;
+}
+function prepareSavedPortfolioForEdit(){
+  const p=state.savedPortfolio;if(!p)return;
+  state.selection=new Map(p.positions.map(pos=>[pos.ticker,{
+    ticker:pos.ticker,name:pos.name,sector:pos.sector,close:pos.entryPrice,
+    fairValue:pos.fairValue,intrinsicValue:pos.intrinsicValue
+  }]));
+  state.weights=Object.fromEntries(p.positions.map(pos=>[pos.ticker,pos.targetWeight]));
+  persistSelection();
+  if($('portfolioCapital'))$('portfolioCapital').value=p.startingCapital;
+  updateSelectionDock();openPortfolioDrawer();
 }
 
 async function api(url){
@@ -410,21 +595,27 @@ function renderSector(block){
       <div class="table-wrap">
         <table>
           <thead><tr>
-            <th>Ativo</th><th>Fechamento</th><th>Valor justo</th><th>V. intrínseco</th><th>Dist. intrínseca</th><th>P/L</th><th>P/VP</th><th>EV/EBIT</th><th>ROE</th><th>Valuation 360</th><th>Qualidade</th><th>Solidez</th><th>Crescimento</th>
+            <th>Ativo</th><th>Fechamento</th><th>Valor justo</th><th>V. intrínseco</th><th>Dist. intrínseca</th><th class="adv-col">P/L</th><th class="adv-col">P/VP</th><th class="adv-col">EV/EBIT</th><th class="adv-col">ROE</th><th>Valuation 360</th><th>Qualidade</th><th>Solidez</th><th>Crescimento</th>
           </tr></thead>
           <tbody>
             ${rows.map(r=>{
               const f=r.fundamentals||{};
               return `<tr>
-                <td><button class="asset-btn" data-ticker="${esc(r.ticker)}">${esc(r.ticker)}</button><small>Vol. ${compactMoney(r.volume)}</small></td>
+                <td>
+                  <div class="asset-actions">
+                    <button class="asset-btn" data-ticker="${esc(r.ticker)}">${esc(r.ticker)}</button>
+                    <button class="add-asset-btn ${state.selection.has(r.ticker)?'selected':''}" data-add-ticker="${esc(r.ticker)}" type="button">${state.selection.has(r.ticker)?'Selecionado':'Adicionar +'}</button>
+                  </div>
+                  <small>Vol. ${compactMoney(r.volume)}</small>
+                </td>
                 <td><strong>${money(r.close)}</strong><small>${n(r.change)!==null?(n(r.change)>=0?'+':'')+n(r.change).toFixed(2)+'%':'N/D'}</small></td>
                 <td><strong>${money(r.fairValue?.central)}</strong><small>${r.fairValue?money(r.fairValue.low)+' a '+money(r.fairValue.high):'N/D'}</small></td>
                 <td><strong>${money(r.intrinsicValue?.central)}</strong><small>${r.intrinsicValue?money(r.intrinsicValue.low)+' a '+money(r.intrinsicValue.high):'N/D'}</small></td>
                 <td>${r.intrinsicValue?pct(r.intrinsicValue.distance):'<span class="na">N/D</span>'}</td>
-                <td>${mult(f.trailingPE)}</td>
-                <td>${mult(f.priceToBook)}</td>
-                <td>${mult(f.enterpriseToEbit)}</td>
-                <td>${pct(f.returnOnEquity)}</td>
+                <td class="adv-col">${mult(f.trailingPE)}</td>
+                <td class="adv-col">${mult(f.priceToBook)}</td>
+                <td class="adv-col">${mult(f.enterpriseToEbit)}</td>
+                <td class="adv-col">${pct(f.returnOnEquity)}</td>
                 <td>${scoreBadge(r.valuationScore)}</td>
                 <td>${scoreBadge(r.qualityScore)}</td>
                 <td>${scoreBadge(r.solidityScore)}</td>
@@ -439,8 +630,16 @@ function renderSector(block){
 function renderResults(){
   state.assetMap.clear();
   for(const b of state.sectorData){
-    for(const r of b.scored||[])state.assetMap.set(r.ticker,{...r,sector:b.sector,peerLabel:b.label});
+    for(const r of b.scored||[]){
+      const full={...r,sector:b.sector,peerLabel:b.label};
+      state.assetMap.set(r.ticker,full);
+      if(state.selection.has(r.ticker)){
+        const prior=state.selection.get(r.ticker);
+        state.selection.set(r.ticker,{...prior,...full,fairValue:full.fairValue?.central??prior.fairValue??null,intrinsicValue:full.intrinsicValue?.central??prior.intrinsicValue??null});
+      }
+    }
   }
+  if(state.selection.size)persistSelection();
   $('sectorResults').innerHTML=state.sectorData.map(renderSector).join('');
   const total=state.sectorData.reduce((a,b)=>a+(b.total||0),0);
   const coverage=state.sectorData.reduce((a,b)=>a+(b.fundamentalsCoverage||0),0);
@@ -544,6 +743,12 @@ $('runScreen').addEventListener('click',runScreen);
 $('sortBy').addEventListener('change',renderResults);
 
 $('sectorResults').addEventListener('click',e=>{
+  const add=e.target.closest('[data-add-ticker]');
+  if(add){
+    const asset=state.assetMap.get(add.dataset.addTicker);
+    if(asset)toggleAssetSelection(asset);
+    return;
+  }
   const btn=e.target.closest('[data-ticker]');
   if(!btn)return;
   const asset=state.assetMap.get(btn.dataset.ticker);
@@ -631,6 +836,29 @@ function closeDrawer(){
 $('closeDrawer').addEventListener('click',closeDrawer);
 $('drawerBackdrop').addEventListener('click',closeDrawer);
 
+$('simpleView')?.addEventListener('click',()=>setViewMode('simple'));
+$('advancedView')?.addEventListener('click',()=>setViewMode('advanced'));
+$('openPortfolioBuilder')?.addEventListener('click',openPortfolioDrawer);
+$('closePortfolioDrawer')?.addEventListener('click',closePortfolioDrawer);
+$('portfolioBackdrop')?.addEventListener('click',closePortfolioDrawer);
+$('equalWeights')?.addEventListener('click',()=>{equalizeWeights();renderPortfolioBuilder()});
+$('normalizeWeights')?.addEventListener('click',normalizeWeights);
+$('savePortfolio')?.addEventListener('click',saveSimulatedPortfolio);
+$('editSavedPortfolio')?.addEventListener('click',prepareSavedPortfolioForEdit);
+$('portfolioCapital')?.addEventListener('input',renderPortfolioSummary);
+$('portfolioSelectionList')?.addEventListener('input',e=>{
+  const input=e.target.closest('[data-weight-ticker]');
+  if(!input)return;
+  state.weights[input.dataset.weightTicker]=Math.max(0,n(input.value)||0);
+  persistSelection();renderPortfolioSummary();
+});
+$('portfolioSelectionList')?.addEventListener('click',e=>{
+  const btn=e.target.closest('[data-remove-ticker]');
+  if(!btn)return;
+  const asset=state.selection.get(btn.dataset.removeTicker);
+  if(asset)toggleAssetSelection(asset);
+});
+
 function recomputeWithAssumptions(){
   if(!state.sectorData.length)return;
   state.sectorData=state.sectorData.map(block=>{
@@ -643,4 +871,9 @@ function recomputeWithAssumptions(){
   const el=$(id);
   if(el)el.addEventListener('change',recomputeWithAssumptions);
 });
+loadLocalState();
+setViewMode('simple');
+updateSelectionDock();
+renderSavedPortfolio();
+renderPortfolioBuilder();
 loadUniverse();
