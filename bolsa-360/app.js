@@ -428,6 +428,13 @@ $('sectorResults').addEventListener('click',e=>{
 function drawerMetric(label,value){
   return '<div class="drawer-metric"><span>'+esc(label)+'</span><strong>'+esc(value)+'</strong></div>';
 }
+function renderFairValue(fv){
+  if(!fv)return '<div class="fair-value-box unavailable"><p class="eyebrow">VALOR JUSTO 360</p><h3>Dados insuficientes</h3><p>O grupo de pares ainda não possui múltiplos suficientes para uma faixa relativa robusta.</p></div>';
+  const models=fv.models.map(m=>
+    '<div class="fair-model"><b>'+esc(m.label)+'</b><span>Referência '+mult(m.benchmarkCentral)+'</span><strong>'+money(m.central)+'</strong><small>'+m.peers+' pares</small></div>'
+  ).join('');
+  return '<div class="fair-value-box"><div class="fair-head"><div><p class="eyebrow">VALOR JUSTO 360</p><h3>'+money(fv.central)+'</h3><small>Faixa '+money(fv.low)+' a '+money(fv.high)+'</small></div><div class="fair-distance"><span>Distância ao fechamento</span><strong>'+pct(fv.distance)+'</strong><small>Confiança '+esc(fv.confidence)+'</small></div></div><div class="fair-models">'+models+'</div></div>';
+}
 function renderHistory(rows){
   if(!rows.length)return '';
   return '<div class="history-box"><p class="eyebrow">HISTÓRICO FUNDAMENTALISTA</p><div class="history-list">'+rows.map(r=>
@@ -446,8 +453,12 @@ function openDrawer(a){
       <div><span>Último fechamento</span><strong>${money(a.close)}</strong></div>
       <div><span>Valor de mercado</span><strong>${compactMoney(a.marketCap)}</strong></div>
     </div>
+    ${renderFairValue(a.fairValue)}
     <div class="drawer-grid">
       ${drawerMetric('Valuation 360',a.valuationScore===null?'N/D':a.valuationScore+'/100')}
+      ${drawerMetric('Valor Justo 360',a.fairValue?money(a.fairValue.central):'N/D')}
+      ${drawerMetric('Faixa de valor',a.fairValue?money(a.fairValue.low)+' a '+money(a.fairValue.high):'N/D')}
+      ${drawerMetric('Distância do preço',a.fairValue?pct(a.fairValue.distance):'N/D')}
       ${drawerMetric('Qualidade',a.qualityScore===null?'N/D':a.qualityScore+'/100')}
       ${drawerMetric('P/L',mult(f.trailingPE))}
       ${drawerMetric('P/VP',mult(f.priceToBook))}
@@ -467,7 +478,7 @@ function openDrawer(a){
       ${drawerMetric('Margem EBIT Δ',pct(a.growth?.ebitMarginDelta))}
       ${drawerMetric('Anos com lucro',pct(a.growth?.positiveProfitYears))}
     </div>
-    ${renderHistory(a.growth?.history||[])}\n    <div class="drawer-note">Valuation, Qualidade, Solidez e Crescimento 360 são dimensões independentes. O histórico usa DFP anuais da CVM de 2021 a 2025 e acrescenta o TTM 2026 quando disponível. Não representa recomendação de compra, venda ou manutenção.</div>
+    ${renderHistory(a.growth?.history||[])}\n    <div class="drawer-note">Valor Justo 360 é uma estimativa relativa baseada nos múltiplos dos pares e nos fundamentos TTM da companhia. Valuation, Qualidade, Solidez e Crescimento 360 permanecem dimensões independentes. O histórico usa DFP anuais da CVM de 2021 a 2025 e acrescenta o TTM 2026 quando disponível. Não representa recomendação de compra, venda ou manutenção.</div>
   `;
   $('drawerBackdrop').classList.remove('hidden');
   $('assetDrawer').classList.add('open');
