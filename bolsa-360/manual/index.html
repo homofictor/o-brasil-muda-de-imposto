@@ -146,6 +146,15 @@
       <div class="formula">Distância intrínseca = Valor Intrínseco central / preço de fechamento - 1</div>
     </section>
 
+    <section id="consenso" class="panel manual-section">
+      <h2>7A. Consenso de mercado e preço-alvo</h2>
+      <p>O Bolsa 360 pode apresentar uma terceira referência independente dos seus próprios modelos: o consenso agregado de analistas de mercado.</p>
+      <p>Quando disponível na fonte, são exibidos preço-alvo médio, preço-alvo mediano, faixa mínima/máxima, número de opiniões e recomendação agregada em três categorias: <b>Compra</b>, <b>Neutro</b> ou <b>Venda</b>.</p>
+      <div class="formula">Distância ao preço-alvo = preço-alvo médio / preço de fechamento - 1</div>
+      <p>Essa informação não altera o Valor Justo 360, o Valor Intrínseco 360 nem os Scores 360. É uma referência externa para comparação.</p>
+      <div class="manual-callout"><b>Limitação de cobertura</b><p>A documentação da brapi prevê os campos de consenso, mas a disponibilidade varia por ativo e plano. O sistema preserva valores nulos e mostra N/D quando não há cobertura. A data individual de cada relatório de analista não é fornecida no campo agregado.</p></div>
+    </section>
+
     <section id="confiabilidade" class="panel manual-section">
       <h2>8. Qualidade e confiabilidade</h2>
       <table class="reliability">
