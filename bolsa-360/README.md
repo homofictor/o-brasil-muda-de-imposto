@@ -1,4 +1,4 @@
-# Bolsa 360 | MVP V0.5
+# Bolsa 360 | MVP V0.6
 
 ## Objetivo
 
@@ -162,19 +162,76 @@ O sistema exibe também a distância percentual entre o fechamento e o valor cen
 
 Esta versão é um valuation relativo por pares. Um DCF próprio, com premissas explícitas de custo de capital e crescimento terminal, ficará separado para não misturar metodologias.
 
+## Valor Intrínseco 360
+
+A V0.6 acrescenta um segundo método de valuation, independente do Valor Justo 360 por pares.
+
+### Empresas operacionais
+
+O modelo utiliza DCF de FCFF derivado de NOPAT, crescimento e reinvestimento implícito:
+
+1. NOPAT inicial = EBIT TTM × (1 - alíquota de imposto).
+2. Capital investido aproximado = patrimônio líquido + dívida líquida.
+3. ROIC estimado = NOPAT / capital investido.
+4. A taxa de crescimento-base é derivada da mediana dos históricos de receita e EBIT e limitada a uma faixa prudencial.
+5. O reinvestimento necessário é aproximado por crescimento / ROIC, limitado para evitar extrapolações extremas.
+6. O crescimento converge gradualmente ao crescimento terminal ao longo de cinco anos.
+7. O fluxo de caixa livre da firma é NOPAT × (1 - reinvestimento).
+8. Os fluxos são descontados pelo WACC informado pelo usuário.
+9. O valor terminal usa crescimento perpétuo, desde que WACC > crescimento terminal.
+10. Dívida líquida é deduzida do valor da firma para chegar ao valor do patrimônio.
+
+O preço por classe é obtido proporcionalmente pela relação entre valor intrínseco do patrimônio e valor de mercado atual, evitando inferir uma quantidade de ações potencialmente incorreta para estruturas com ON, PN ou units.
+
+### Bancos
+
+Bancos utilizam dois modelos patrimoniais:
+
+- lucro residual;
+- dividend discount model com payout implícito pela relação crescimento / ROE.
+
+O modelo de lucro residual parte do patrimônio líquido atual e soma o valor presente dos lucros residuais projetados. O modelo de dividendos projeta dividendos a partir do lucro e do payout sustentável.
+
+Quando ambos são válidos, o Valor Intrínseco 360 bancário central utiliza:
+- 70% lucro residual;
+- 30% dividendos.
+
+### Cenários
+
+São exibidos três cenários:
+- conservador;
+- central;
+- otimista.
+
+As variações afetam taxa de desconto, crescimento-base e crescimento terminal.
+
+### Premissas editáveis
+
+A interface permite alterar:
+- WACC operacional;
+- crescimento terminal;
+- alíquota de imposto;
+- custo de capital próprio dos bancos.
+
+Os valores iniciais são premissas do modelo, não taxas de mercado observadas:
+- WACC: 14,5%;
+- crescimento terminal: 4,0%;
+- imposto: 34%;
+- custo de capital bancário: 15,0%.
+
+Alterações nessas premissas recalculam o Valor Intrínseco 360 localmente sem nova consulta à CVM.
+
+O sistema retorna N/D quando os fundamentos necessários são insuficientes ou economicamente inválidos. O objetivo é preservar auditabilidade e evitar produzir um preço-alvo artificial.
+
 ## Normalização
 
 Cada indicador é convertido em percentil dentro do grupo comparável. Valores ausentes não são inventados e os scores exigem uma quantidade mínima de métricas válidas.
-
-## Valor justo
-
-Ainda não implementado nesta versão. O futuro Valor Justo Bolsa 360 será independente do ranking relativo e usará modelos adequados ao setor, como DCF, múltiplos comparáveis e modelos de dividendos ou residual income para instituições financeiras.
 
 ## Próximas etapas
 
 1. incorporar classificação setorial oficial B3;
 2. refinar Solidez 360 por setor;
-3. criar DCF e modelos intrínsecos setoriais;
+3. calibrar premissas do Valor Intrínseco 360 por setor;
 4. criar construtor de carteira por pesos setoriais;
 5. acompanhar carteiras e novas divulgações;
 6. devolver resultados ao dossiê 360.
