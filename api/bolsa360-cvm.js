@@ -77,6 +77,19 @@ function unzipSelected(buf, wanted){
   }
   return out;
 }
+function listZipEntries(buf){
+  const names=[]; let eocd=-1;
+  for(let i=buf.length-22;i>=Math.max(0,buf.length-65557);i--){if(buf.readUInt32LE(i)===0x06054b50){eocd=i;break}}
+  if(eocd<0)return names;
+  const total=buf.readUInt16LE(eocd+10); let p=buf.readUInt32LE(eocd+16);
+  for(let i=0;i<total;i++){
+    if(buf.readUInt32LE(p)!==0x02014b50)break;
+    const nlen=buf.readUInt16LE(p+28),elen=buf.readUInt16LE(p+30),clen=buf.readUInt16LE(p+32);
+    names.push(buf.slice(p+46,p+46+nlen).toString('utf8'));
+    p+=46+nlen+elen+clen;
+  }
+  return names;
+}
 async function fetchBuffer(url){
   const r=await fetch(url,{headers:{'User-Agent':'Bolsa360-HomoFictor/0.2'}});
   if(!r.ok)throw new Error('Falha ao baixar fonte oficial: '+r.status);
@@ -182,6 +195,10 @@ function buildFundamentals(company,maps){
 
 module.exports=async function handler(req,res){
   try{
+    if(String(req.query?.debug||'')==='zip'){
+      const zipBuf=await fetchBuffer(CVM_DFP_URL);
+      return res.status(200).json({entries:listZipEntries(zipBuf)});
+    }
     const [stocks,cadBuf,zipBuf]=await Promise.all([
       marketUniverse(160),fetchBuffer(CVM_CAD_URL),fetchBuffer(CVM_DFP_URL)
     ]);
