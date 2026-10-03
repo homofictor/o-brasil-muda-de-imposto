@@ -206,6 +206,8 @@ function getByDesc(rows,patterns,{contains=false,avoidNested=false}={}){
   return selected.length?selected.reduce((s,x)=>s+x.val,0):null;
 }
 function safeDiv(a,b){return a!==null&&b!==null&&b!==0?a/b:null}
+function safePositiveDiv(a,b){return a!==null&&b!==null&&b>0?a/b:null}
+function selectDfc(mi,md){return (mi&&mi.length)?mi:((md&&md.length)?md:[])}
 function addTtm(annual,current,previous){
   return annual!==null&&current!==null&&previous!==null?annual+current-previous:annual;
 }
@@ -239,7 +241,7 @@ function buildFundamentals(company,dfpMaps,itrMaps){
     bpa:getPeriod(dfpMaps.bpa,company.cvm),
     bpp:getPeriod(dfpMaps.bpp,company.cvm),
     dre:getPeriod(dfpMaps.dre,company.cvm),
-    dfc:[...getPeriod(dfpMaps.dfcmi,company.cvm),...getPeriod(dfpMaps.dfcmd,company.cvm)]
+    dfc:selectDfc(getPeriod(dfpMaps.dfcmi,company.cvm),getPeriod(dfpMaps.dfcmd,company.cvm))
   });
 
   const itrEntry=itrMaps.dre.get(String(company.cvm))||itrMaps.bpa.get(String(company.cvm))||null;
@@ -247,11 +249,11 @@ function buildFundamentals(company,dfpMaps,itrMaps){
     bpa:getPeriod(itrMaps.bpa,company.cvm,'current'),
     bpp:getPeriod(itrMaps.bpp,company.cvm,'current'),
     dre:getPeriod(itrMaps.dre,company.cvm,'current'),
-    dfc:[...getPeriod(itrMaps.dfcmi,company.cvm,'current'),...getPeriod(itrMaps.dfcmd,company.cvm,'current')]
+    dfc:selectDfc(getPeriod(itrMaps.dfcmi,company.cvm,'current'),getPeriod(itrMaps.dfcmd,company.cvm,'current'))
   });
   const itrPrevious=extractSnapshot({
     dre:getPeriod(itrMaps.dre,company.cvm,'previous'),
-    dfc:[...getPeriod(itrMaps.dfcmi,company.cvm,'previous'),...getPeriod(itrMaps.dfcmd,company.cvm,'previous')]
+    dfc:selectDfc(getPeriod(itrMaps.dfcmi,company.cvm,'previous'),getPeriod(itrMaps.dfcmd,company.cvm,'previous'))
   });
 
   const latestBalance=itrEntry?itrCurrent:annual;
@@ -279,15 +281,15 @@ function buildFundamentals(company,dfpMaps,itrMaps){
     enterpriseToEbit:(ev!==null&&ebit>0)?ev/ebit:null,
     fcfYield:(fcf!==null&&company.marketCap>0)?fcf/company.marketCap:null,
     cfoYield:(cfo!==null&&company.marketCap>0)?cfo/company.marketCap:null,
-    returnOnEquity:safeDiv(netIncome,equity),
-    returnOnAssets:safeDiv(netIncome,assets),
-    grossMargin:safeDiv(grossProfit,revenue),
-    ebitMargin:safeDiv(ebit,revenue),
-    profitMargin:safeDiv(netIncome,revenue),
-    currentRatio:safeDiv(currentAssets,currentLiabilities),
-    debtToEquity:safeDiv(debt,equity),
-    netDebtToEbit:safeDiv(netDebt,ebit),
-    cashToDebt:safeDiv(cash,debt)
+    returnOnEquity:safePositiveDiv(netIncome,equity),
+    returnOnAssets:safePositiveDiv(netIncome,assets),
+    grossMargin:safePositiveDiv(grossProfit,revenue),
+    ebitMargin:safePositiveDiv(ebit,revenue),
+    profitMargin:safePositiveDiv(netIncome,revenue),
+    currentRatio:safePositiveDiv(currentAssets,currentLiabilities),
+    debtToEquity:safePositiveDiv(debt,equity),
+    netDebtToEbit:safePositiveDiv(netDebt,ebit),
+    cashToDebt:safePositiveDiv(cash,debt)
   };
 }
 async function loadMapsFromUrl(url,prefix,year,allowedCvms){
