@@ -25,7 +25,7 @@ const sectorNames={
 };
 
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
-function n(v){const x=Number(v);return Number.isFinite(x)?x:null}
+function n(v){if(v===null||v===undefined||v==='')return null;const x=Number(v);return Number.isFinite(x)?x:null}
 function money(v){
   const x=n(v); if(x===null)return 'N/D';
   return x.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:2,maximumFractionDigits:2});
@@ -168,7 +168,10 @@ function fairValueFor(row,rows,isBank){
   if(!close||!marketCap||marketCap<=0)return null;
   const shares=marketCap/close;
   if(!Number.isFinite(shares)||shares<=0)return null;
-  const peers=rows.filter(x=>x.ticker!==row.ticker);
+  const allPeers=rows.filter(x=>x.ticker!==row.ticker);
+  const sameSubsector=!isBank&&row.subsector?allPeers.filter(x=>x.subsector===row.subsector):allPeers;
+  const peers=isBank?allPeers:(sameSubsector.length>=3?sameSubsector:[]);
+  if(peers.length<3)return null;
   const models=[];
 
   const addMultipleModel=(label,key,baseValue)=>{
@@ -208,7 +211,12 @@ function fairValueFor(row,rows,isBank){
   let high=median(valid.map(m=>m.high).filter(v=>n(v)!==null&&v>0));
   if(low===null||central===null||high===null)return null;
   [low,central,high]=[low,central,high].sort((a,b)=>a-b);
-  return {low,central,high,distance:central/close-1,confidence:valid.length>=3?'Alta':valid.length===2?'Média':'Baixa',modelCount:valid.length,models:valid};
+  const minPeers=Math.min(...valid.map(m=>m.peers));
+  const spread=low>0?high/low:null;
+  let confidence=valid.length>=3&&minPeers>=5?'Alta':valid.length>=2&&minPeers>=3?'Média':'Baixa';
+  if(spread!==null&&spread>2.5&&confidence==='Alta')confidence='Média';
+  if(spread!==null&&spread>3.5)confidence='Baixa';
+  return {low,central,high,distance:central/close-1,confidence,modelCount:valid.length,peerCount:minPeers,models:valid};
 }
 function attachFairValues(rows,isBank){return rows.map(r=>({...r,fairValue:fairValueFor(r,rows,isBank)}))}
 function scoreSector(block){
@@ -430,10 +438,11 @@ function drawerMetric(label,value){
 }
 function renderFairValue(fv){
   if(!fv)return '<div class="fair-value-box unavailable"><p class="eyebrow">VALOR JUSTO 360</p><h3>Dados insuficientes</h3><p>O grupo de pares ainda não possui múltiplos suficientes para uma faixa relativa robusta.</p></div>';
-  const models=fv.models.map(m=>
-    '<div class="fair-model"><b>'+esc(m.label)+'</b><span>Referência '+mult(m.benchmarkCentral)+'</span><strong>'+money(m.central)+'</strong><small>'+m.peers+' pares</small></div>'
-  ).join('');
-  return '<div class="fair-value-box"><div class="fair-head"><div><p class="eyebrow">VALOR JUSTO 360</p><h3>'+money(fv.central)+'</h3><small>Faixa '+money(fv.low)+' a '+money(fv.high)+'</small></div><div class="fair-distance"><span>Distância ao fechamento</span><strong>'+pct(fv.distance)+'</strong><small>Confiança '+esc(fv.confidence)+'</small></div></div><div class="fair-models">'+models+'</div></div>';
+  const models=fv.models.map(m=>{
+    const benchmark=m.label==='CFO Yield'?pct(m.benchmarkCentral):mult(m.benchmarkCentral);
+    return '<div class="fair-model"><b>'+esc(m.label)+'</b><span>Referência '+benchmark+'</span><strong>'+money(m.central)+'</strong><small>'+m.peers+' pares</small></div>';
+  }).join('');
+  return '<div class="fair-value-box"><div class="fair-head"><div><p class="eyebrow">VALOR JUSTO 360</p><h3>'+money(fv.central)+'</h3><small>Faixa '+money(fv.low)+' a '+money(fv.high)+'</small></div><div class="fair-distance"><span>Distância ao fechamento</span><strong>'+pct(fv.distance)+'</strong><small>Confiança '+esc(fv.confidence)+' · '+fv.peerCount+' pares mínimos</small></div></div><div class="fair-models">'+models+'</div></div>';
 }
 function renderHistory(rows){
   if(!rows.length)return '';
