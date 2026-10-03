@@ -22,8 +22,17 @@ function similarity(a,b){
 }
 function parseNumber(v){
   if(v===null||v===undefined||v==='')return null;
-  let s=String(v).trim().replace(/\./g,'').replace(',','.');
+  const s=String(v).trim().replace(',','.');
   const n=Number(s); return Number.isFinite(n)?n:null;
+}
+function cvmCode(v){
+  const s=String(v||'').trim();
+  return s.replace(/^0+/,'')||'0';
+}
+function accountValue(row){
+  const n=parseNumber(row?.VL_CONTA);
+  if(n===null)return null;
+  return n*(String(row?.ESCALA_MOEDA||'').toUpperCase()==='MIL'?1000:1);
 }
 function decode(buf){
   try{return new TextDecoder('windows-1252').decode(buf)}
@@ -108,7 +117,7 @@ async function marketUniverse(limit=140){
 }
 function latestActiveCad(rows){
   return rows.filter(r=>String(r.SIT||'').toUpperCase().includes('ATIVO')).map(r=>({
-    cvm:String(r.CD_CVM||'').trim(),cnpj:String(r.CNPJ_CIA||'').replace(/\D/g,''),
+    cvm:cvmCode(r.CD_CVM),cnpj:String(r.CNPJ_CIA||'').replace(/\D/g,''),
     name:r.DENOM_SOCIAL||'',trade:r.DENOM_COMERC||''
   }));
 }
@@ -137,7 +146,7 @@ function accountMap(rows){
   const byCvm=new Map();
   for(const r of rows){
     if(r.ORDEM_EXERC&&String(r.ORDEM_EXERC).toUpperCase()!=='ÚLTIMO'&&String(r.ORDEM_EXERC).toUpperCase()!=='ULTIMO')continue;
-    const cvm=String(r.CD_CVM||'').trim(); if(!cvm)continue;
+    const cvm=cvmCode(r.CD_CVM); if(!cvm)continue;
     if(!byCvm.has(cvm))byCvm.set(cvm,[]);
     byCvm.get(cvm).push(r);
   }
@@ -147,7 +156,7 @@ function getCode(rows,code){
   const candidates=rows.filter(r=>String(r.CD_CONTA||'').trim()===code);
   if(!candidates.length)return null;
   candidates.sort((a,b)=>(Number(b.VERSAO)||0)-(Number(a.VERSAO)||0));
-  return parseNumber(candidates[0].VL_CONTA);
+  return accountValue(candidates[0]);
 }
 function getByDesc(rows,patterns){
   const seen=new Set(); let total=0,found=false;
@@ -156,7 +165,7 @@ function getByDesc(rows,patterns){
     if(!patterns.some(p=>d===p||d.includes(p)))continue;
     const code=String(r.CD_CONTA||'');
     if(seen.has(code))continue;
-    const val=parseNumber(r.VL_CONTA); if(val===null)continue;
+    const val=accountValue(r); if(val===null)continue;
     seen.add(code); total+=val; found=true;
   }
   return found?total:null;
