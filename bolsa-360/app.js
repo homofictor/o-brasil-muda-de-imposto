@@ -228,6 +228,7 @@ function intrinsicAssumptions(){
     terminalGrowth:clamp(read('terminalGrowth',4),0,.08),
     taxRate:clamp(read('taxRate',34),0,.50),
     bankCostEquity:clamp(read('bankCostEquity',15),.08,.30),
+    bankPayout:clamp(read('bankPayout',50),.10,.90),
     years:5
   };
 }
@@ -265,7 +266,7 @@ function operatingDcfScenario(row,{wacc,terminalGrowth,taxRate,baseGrowth,years}
   if(!Number.isFinite(equityValue)||equityValue<=0)return null;
   return {price:close*(equityValue/marketCap),equityValue,enterpriseValue,roic,baseGrowth,wacc,terminalGrowth,taxRate,terminalRoic};
 }
-function bankEquityScenario(row,{costEquity,terminalGrowth,baseGrowth,years}){
+function bankEquityScenario(row,{costEquity,terminalGrowth,baseGrowth,years,payoutAssumption}){
   const f=row.fundamentals||{},close=n(row.close),marketCap=n(row.marketCap),book0=n(f.equity),income0=n(f.netIncome);
   if(!close||!marketCap||marketCap<=0||book0===null||book0<=0||income0===null||income0<=0||costEquity<=terminalGrowth)return null;
   let book=book0,income=income0,pvResidual=0,pvDividends=0,lastPayout=.5;
@@ -277,7 +278,7 @@ function bankEquityScenario(row,{costEquity,terminalGrowth,baseGrowth,years}){
     const retention=roe>0?clamp(g/roe,0,.85):0;
     const payout=1-retention;
     const residual=income-costEquity*book;
-    const dividend=income*payout;
+    const dividend=income*payoutAssumption;
     const disc=Math.pow(1+costEquity,t);
     pvResidual+=residual/disc;
     pvDividends+=dividend/disc;
@@ -289,7 +290,7 @@ function bankEquityScenario(row,{costEquity,terminalGrowth,baseGrowth,years}){
   const retention6=roe6>0?clamp(terminalGrowth/roe6,0,.85):0;
   const payout6=1-retention6;
   const residual6=income6-costEquity*book;
-  const dividend6=income6*payout6;
+  const dividend6=income6*payoutAssumption;
   const residualTerminal=residual6/(costEquity-terminalGrowth);
   const dividendTerminal=dividend6/(costEquity-terminalGrowth);
   const riValue=book0+pvResidual+residualTerminal/Math.pow(1+costEquity,years);
@@ -302,7 +303,7 @@ function bankEquityScenario(row,{costEquity,terminalGrowth,baseGrowth,years}){
     price:close*(equityValue/marketCap),equityValue,
     riPrice:validRi!==null?close*(validRi/marketCap):null,
     ddmPrice:validDdm!==null?close*(validDdm/marketCap):null,
-    costEquity,terminalGrowth,baseGrowth,payout:lastPayout,roe:n(f.returnOnEquity)
+    costEquity,terminalGrowth,baseGrowth,payout:lastPayout,ddmPayout:payoutAssumption,roe:n(f.returnOnEquity)
   };
 }
 function intrinsicValueFor(row,isBank){
@@ -312,9 +313,9 @@ function intrinsicValueFor(row,isBank){
   let conservative,central,optimistic,model;
   if(isBank){
     model='Lucro residual + dividendos';
-    conservative=bankEquityScenario(row,{costEquity:clamp(a.bankCostEquity+.02,.08,.35),terminalGrowth:clamp(a.terminalGrowth-.01,0,.06),baseGrowth:clamp(baseGrowth-.02,0,.10),years:a.years});
-    central=bankEquityScenario(row,{costEquity:a.bankCostEquity,terminalGrowth:Math.min(a.terminalGrowth,a.bankCostEquity-.02),baseGrowth,years:a.years});
-    optimistic=bankEquityScenario(row,{costEquity:clamp(a.bankCostEquity-.015,.08,.30),terminalGrowth:clamp(a.terminalGrowth+.01,0,.07),baseGrowth:clamp(baseGrowth+.02,0,.14),years:a.years});
+    conservative=bankEquityScenario(row,{costEquity:clamp(a.bankCostEquity+.02,.08,.35),terminalGrowth:clamp(a.terminalGrowth-.01,0,.06),baseGrowth:clamp(baseGrowth-.02,0,.10),years:a.years,payoutAssumption:a.bankPayout});
+    central=bankEquityScenario(row,{costEquity:a.bankCostEquity,terminalGrowth:Math.min(a.terminalGrowth,a.bankCostEquity-.02),baseGrowth,years:a.years,payoutAssumption:a.bankPayout});
+    optimistic=bankEquityScenario(row,{costEquity:clamp(a.bankCostEquity-.015,.08,.30),terminalGrowth:clamp(a.terminalGrowth+.01,0,.07),baseGrowth:clamp(baseGrowth+.02,0,.14),years:a.years,payoutAssumption:a.bankPayout});
   }else{
     model='DCF FCFF por NOPAT/ROIC';
     conservative=operatingDcfScenario(row,{wacc:clamp(a.wacc+.02,.08,.35),terminalGrowth:clamp(a.terminalGrowth-.01,0,.06),taxRate:a.taxRate,baseGrowth:clamp(baseGrowth-.02,-.05,.10),years:a.years});
@@ -558,7 +559,7 @@ function renderIntrinsicValue(iv){
   if(iv.model.startsWith('DCF')){
     detail='<div class="intrinsic-model-grid"><div><span>ROIC estimado</span><strong>'+pct(d.roic)+'</strong></div><div><span>Crescimento-base</span><strong>'+pct(iv.baseGrowth)+'</strong></div><div><span>WACC</span><strong>'+pct(d.wacc)+'</strong></div><div><span>Crescimento terminal</span><strong>'+pct(d.terminalGrowth)+'</strong></div></div>';
   }else{
-    detail='<div class="intrinsic-model-grid"><div><span>Lucro residual</span><strong>'+money(d.riPrice)+'</strong></div><div><span>Dividendos</span><strong>'+money(d.ddmPrice)+'</strong></div><div><span>Custo do capital</span><strong>'+pct(d.costEquity)+'</strong></div><div><span>Payout implícito</span><strong>'+pct(d.payout)+'</strong></div></div>';
+    detail='<div class="intrinsic-model-grid"><div><span>Lucro residual</span><strong>'+money(d.riPrice)+'</strong></div><div><span>Dividendos</span><strong>'+money(d.ddmPrice)+'</strong></div><div><span>Custo do capital</span><strong>'+pct(d.costEquity)+'</strong></div><div><span>Payout DDM</span><strong>'+pct(d.ddmPayout)+'</strong></div></div>';
   }
   return '<div class="intrinsic-box"><div class="intrinsic-head"><div><p class="eyebrow">VALOR INTRÍNSECO 360</p><h3>'+money(iv.central)+'</h3><small>'+esc(iv.model)+' · faixa '+money(iv.low)+' a '+money(iv.high)+'</small></div><div class="intrinsic-distance"><span>Distância ao fechamento</span><strong>'+pct(iv.distance)+'</strong><small>Confiança '+esc(iv.confidence)+'</small></div></div>'+detail+'</div>';
 }
@@ -638,7 +639,7 @@ function recomputeWithAssumptions(){
   });
   renderResults();
 }
-['dcfWacc','terminalGrowth','taxRate','bankCostEquity'].forEach(id=>{
+['dcfWacc','terminalGrowth','taxRate','bankCostEquity','bankPayout'].forEach(id=>{
   const el=$(id);
   if(el)el.addEventListener('change',recomputeWithAssumptions);
 });
