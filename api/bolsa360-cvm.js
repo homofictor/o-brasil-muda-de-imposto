@@ -1,12 +1,13 @@
 const zlib=require('zlib');
 
 const CVM_DFP_URL='https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/dfp_cia_aberta_2025.zip';
+const CVM_ITR_URL='https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/ITR/DADOS/itr_cia_aberta_2026.zip';
 const CVM_CAD_URL='https://dados.cvm.gov.br/dados/CIA_ABERTA/CAD/DADOS/cad_cia_aberta.csv';
 
 function cleanText(s){
   return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'')
     .toUpperCase().replace(/\bBCO\b/g,'BANCO').replace(/\bCIA\b/g,'COMPANHIA')
-    .replace(/[^A-Z0-9 ]+/g,' ').replace(/\b(S A|SA|S A A|LTDA|HOLDING|PARTICIPACOES|PARTICIPACOES)\b/g,' ')
+    .replace(/[^A-Z0-9 ]+/g,' ').replace(/\b(S A|SA|S A A|LTDA|HOLDING|PARTICIPACOES)\b/g,' ')
     .replace(/\s+/g,' ').trim();
 }
 function tokens(s){return new Set(cleanText(s).split(' ').filter(x=>x.length>1))}
@@ -22,24 +23,21 @@ function similarity(a,b){
 }
 function parseNumber(v){
   if(v===null||v===undefined||v==='')return null;
-  const s=String(v).trim().replace(',','.');
-  const n=Number(s); return Number.isFinite(n)?n:null;
+  const n=Number(String(v).trim().replace(',','.'));
+  return Number.isFinite(n)?n:null;
 }
-function cvmCode(v){
-  const s=String(v||'').trim();
-  return s.replace(/^0+/,'')||'0';
-}
+function cvmCode(v){const s=String(v||'').trim();return s.replace(/^0+/,'')||'0'}
 function accountValue(row){
   const n=parseNumber(row?.VL_CONTA);
   if(n===null)return null;
-  return n*(String(row?.ESCALA_MOEDA||'').toUpperCase()==='MIL'?1000:1);
+  return n*(cleanText(row?.ESCALA_MOEDA)==='MIL'?1000:1);
 }
 function decode(buf){
   try{return new TextDecoder('windows-1252').decode(buf)}
   catch(_){return Buffer.from(buf).toString('latin1')}
 }
 function parseCsv(text){
-  const rows=[]; let row=[],field='',q=false;
+  const rows=[];let row=[],field='',q=false;
   for(let i=0;i<text.length;i++){
     const c=text[i];
     if(q){
@@ -57,12 +55,11 @@ function parseCsv(text){
   if(!rows.length)return [];
   const headers=rows[0].map(x=>x.replace(/^\uFEFF/,''));
   return rows.slice(1).filter(r=>r.length>1).map(r=>{
-    const o={}; headers.forEach((h,i)=>o[h]=r[i]??''); return o;
+    const o={};headers.forEach((h,i)=>o[h]=r[i]??'');return o;
   });
 }
-function unzipSelected(buf, wanted){
-  const out={};
-  let eocd=-1;
+function unzipSelected(buf,wanted){
+  const out={};let eocd=-1;
   for(let i=buf.length-22;i>=Math.max(0,buf.length-65557);i--){
     if(buf.readUInt32LE(i)===0x06054b50){eocd=i;break}
   }
@@ -78,33 +75,19 @@ function unzipSelected(buf, wanted){
     const base=name.split('/').pop();
     if(wanted.has(base)){
       const ln=buf.readUInt16LE(local+26),le=buf.readUInt16LE(local+28);
-      const start=local+30+ln+le;
-      const comp=buf.slice(start,start+csize);
+      const start=local+30+ln+le,comp=buf.slice(start,start+csize);
       out[base]=method===0?comp:method===8?zlib.inflateRawSync(comp):null;
     }
     p+=46+nlen+elen+clen;
   }
   return out;
 }
-function listZipEntries(buf){
-  const names=[]; let eocd=-1;
-  for(let i=buf.length-22;i>=Math.max(0,buf.length-65557);i--){if(buf.readUInt32LE(i)===0x06054b50){eocd=i;break}}
-  if(eocd<0)return names;
-  const total=buf.readUInt16LE(eocd+10); let p=buf.readUInt32LE(eocd+16);
-  for(let i=0;i<total;i++){
-    if(buf.readUInt32LE(p)!==0x02014b50)break;
-    const nlen=buf.readUInt16LE(p+28),elen=buf.readUInt16LE(p+30),clen=buf.readUInt16LE(p+32);
-    names.push(buf.slice(p+46,p+46+nlen).toString('utf8'));
-    p+=46+nlen+elen+clen;
-  }
-  return names;
-}
 async function fetchBuffer(url){
-  const r=await fetch(url,{headers:{'User-Agent':'Bolsa360-HomoFictor/0.2'}});
+  const r=await fetch(url,{headers:{'User-Agent':'Bolsa360-HomoFictor/0.3'}});
   if(!r.ok)throw new Error('Falha ao baixar fonte oficial: '+r.status);
   return Buffer.from(await r.arrayBuffer());
 }
-async function marketUniverse(limit=140){
+async function marketUniverse(limit=160){
   const q=new URLSearchParams({type:'stock',limit:String(limit),sortBy:'volume',sortOrder:'desc'});
   const r=await fetch('https://brapi.dev/api/quote/list?'+q,{headers:{Accept:'application/json'}});
   if(!r.ok)throw new Error('Falha ao consultar universo de mercado.');
@@ -116,7 +99,7 @@ async function marketUniverse(limit=140){
   })).filter(x=>x.ticker&&x.close!==null);
 }
 function latestActiveCad(rows){
-  return rows.filter(r=>String(r.SIT||'').toUpperCase().includes('ATIVO')).map(r=>({
+  return rows.filter(r=>cleanText(r.SIT).includes('ATIVO')).map(r=>({
     cvm:cvmCode(r.CD_CVM),cnpj:String(r.CNPJ_CIA||'').replace(/\D/g,''),
     name:r.DENOM_SOCIAL||'',trade:r.DENOM_COMERC||''
   }));
@@ -142,60 +125,125 @@ function matchCompanies(stocks,cad){
   }
   return result;
 }
-function accountMap(rows){
-  const byCvm=new Map();
+function latestPeriodMap(rows){
+  const meta=new Map();
   for(const r of rows){
-    if(r.ORDEM_EXERC&&String(r.ORDEM_EXERC).toUpperCase()!=='ÚLTIMO'&&String(r.ORDEM_EXERC).toUpperCase()!=='ULTIMO')continue;
-    const cvm=cvmCode(r.CD_CVM); if(!cvm)continue;
-    if(!byCvm.has(cvm))byCvm.set(cvm,[]);
-    byCvm.get(cvm).push(r);
+    const cvm=cvmCode(r.CD_CVM),ref=String(r.DT_REFER||''),ver=Number(r.VERSAO)||0;
+    if(!cvm||!ref)continue;
+    const m=meta.get(cvm);
+    if(!m||ref>m.refDate||(ref===m.refDate&&ver>m.version))meta.set(cvm,{refDate:ref,version:ver});
   }
-  return byCvm;
+  const out=new Map();
+  for(const r of rows){
+    const cvm=cvmCode(r.CD_CVM),m=meta.get(cvm);
+    if(!m||String(r.DT_REFER||'')!==m.refDate||(Number(r.VERSAO)||0)!==m.version)continue;
+    if(!out.has(cvm))out.set(cvm,{refDate:m.refDate,version:m.version,current:[],previous:[]});
+    const ord=cleanText(r.ORDEM_EXERC);
+    if(ord==='ULTIMO')out.get(cvm).current.push(r);
+    else if(ord==='PENULTIMO')out.get(cvm).previous.push(r);
+  }
+  return out;
+}
+function cumulativeRows(rows){
+  const byCode=new Map();
+  for(const r of rows||[]){
+    const code=String(r.CD_CONTA||'').trim();
+    if(!code)continue;
+    const prior=byCode.get(code);
+    const start=String(r.DT_INI_EXERC||'9999-99-99');
+    if(!prior||start<String(prior.DT_INI_EXERC||'9999-99-99'))byCode.set(code,r);
+  }
+  return [...byCode.values()];
 }
 function getCode(rows,code){
-  const candidates=rows.filter(r=>String(r.CD_CONTA||'').trim()===code);
+  const candidates=(rows||[]).filter(r=>String(r.CD_CONTA||'').trim()===code);
   if(!candidates.length)return null;
-  candidates.sort((a,b)=>(Number(b.VERSAO)||0)-(Number(a.VERSAO)||0));
   return accountValue(candidates[0]);
 }
 function getByDesc(rows,patterns,{contains=false,avoidNested=false}={}){
-  const matched=[];
-  const seen=new Set();
-  for(const r of rows){
-    const d=cleanText(r.DS_CONTA);
-    const hit=patterns.some(p=>contains?d.includes(p):d===p);
+  const matched=[],seen=new Set();
+  for(const r of rows||[]){
+    const d=cleanText(r.DS_CONTA),hit=patterns.some(p=>contains?d.includes(p):d===p);
     if(!hit)continue;
     const code=String(r.CD_CONTA||'');
     if(seen.has(code))continue;
-    const val=accountValue(r); if(val===null)continue;
-    seen.add(code); matched.push({code,val});
+    const val=accountValue(r);if(val===null)continue;
+    seen.add(code);matched.push({code,val});
   }
   const selected=avoidNested
     ?matched.filter(x=>!matched.some(y=>y.code!==x.code&&x.code.startsWith(y.code+'.')))
     :matched;
   return selected.length?selected.reduce((s,x)=>s+x.val,0):null;
 }
-function chooseRows(map,cvm){return map.get(String(cvm))||[]}
 function safeDiv(a,b){return a!==null&&b!==null&&b!==0?a/b:null}
-function buildFundamentals(company,maps){
-  const bpa=chooseRows(maps.bpa,company.cvm),bpp=chooseRows(maps.bpp,company.cvm),dre=chooseRows(maps.dre,company.cvm);
-  const dfc=[...chooseRows(maps.dfcmi,company.cvm),...chooseRows(maps.dfcmd,company.cvm)];
+function addTtm(annual,current,previous){
+  return annual!==null&&current!==null&&previous!==null?annual+current-previous:annual;
+}
+function extractSnapshot({bpa=[],bpp=[],dre=[],dfc=[]}){
+  const flowDre=cumulativeRows(dre),flowDfc=cumulativeRows(dfc);
   const assets=getByDesc(bpa,['ATIVO TOTAL'])??getCode(bpa,'1');
   const currentAssets=getCode(bpa,'1.01');
   const cash=getByDesc(bpa,['CAIXA E EQUIVALENTES DE CAIXA']);
   const equity=getByDesc(bpp,['PATRIMONIO LIQUIDO CONSOLIDADO'])??getByDesc(bpp,['PATRIMONIO LIQUIDO'])??getCode(bpp,'2.03');
   const currentLiabilities=getCode(bpp,'2.01');
   const debt=getByDesc(bpp,['EMPRESTIMOS E FINANCIAMENTOS','DEBENTURES','PASSIVOS DE ARRENDAMENTO','ARRENDAMENTOS'],{avoidNested:true});
-  const revenue=getCode(dre,'3.01'),grossProfit=getCode(dre,'3.03'),ebit=getCode(dre,'3.05');
-  const netIncome=getCode(dre,'3.11')??getByDesc(dre,['LUCRO OU PREJUIZO LIQUIDO CONSOLIDADO DO PERIODO','LUCRO LIQUIDO CONSOLIDADO DO PERIODO','LUCRO OU PREJUIZO LIQUIDO DO PERIODO']);
-  const cfo=getCode(dfc,'6.01');
-  const capex=getByDesc(dfc,['AQUISICAO DE IMOBILIZADO','AQUISICAO DE ATIVO IMOBILIZADO','AQUISICAO DE INTANGIVEL'],{contains:true});
-  const fcf=(cfo!==null&&capex!==null)?cfo+(capex>0?-capex:capex):null;
-  const netDebt=(debt!==null)?debt-(cash||0):null;
-  const ev=(company.marketCap!==null&&netDebt!==null)?company.marketCap+netDebt:null;
+  const revenue=getCode(flowDre,'3.01');
+  const grossProfit=getCode(flowDre,'3.03');
+  const ebit=getCode(flowDre,'3.05');
+  const netIncome=getCode(flowDre,'3.11')??getByDesc(flowDre,[
+    'LUCRO OU PREJUIZO LIQUIDO CONSOLIDADO DO PERIODO',
+    'LUCRO PREJUIZO CONSOLIDADO DO PERIODO',
+    'LUCRO LIQUIDO CONSOLIDADO DO PERIODO',
+    'LUCRO OU PREJUIZO LIQUIDO DO PERIODO'
+  ]);
+  const cfo=getCode(flowDfc,'6.01');
+  const capex=getByDesc(flowDfc,['AQUISICAO DE IMOBILIZADO','AQUISICAO DE ATIVO IMOBILIZADO','AQUISICAO DE INTANGIVEL'],{contains:true});
+  return {assets,currentAssets,currentLiabilities,cash,equity,debt,revenue,grossProfit,ebit,netIncome,cfo,capex};
+}
+function getPeriod(map,cvm,which='current'){
+  const e=map.get(String(cvm));
+  return e?e[which]||[]:[];
+}
+function buildFundamentals(company,dfpMaps,itrMaps){
+  const annual=extractSnapshot({
+    bpa:getPeriod(dfpMaps.bpa,company.cvm),
+    bpp:getPeriod(dfpMaps.bpp,company.cvm),
+    dre:getPeriod(dfpMaps.dre,company.cvm),
+    dfc:[...getPeriod(dfpMaps.dfcmi,company.cvm),...getPeriod(dfpMaps.dfcmd,company.cvm)]
+  });
+
+  const itrEntry=itrMaps.dre.get(String(company.cvm))||itrMaps.bpa.get(String(company.cvm))||null;
+  const itrCurrent=extractSnapshot({
+    bpa:getPeriod(itrMaps.bpa,company.cvm,'current'),
+    bpp:getPeriod(itrMaps.bpp,company.cvm,'current'),
+    dre:getPeriod(itrMaps.dre,company.cvm,'current'),
+    dfc:[...getPeriod(itrMaps.dfcmi,company.cvm,'current'),...getPeriod(itrMaps.dfcmd,company.cvm,'current')]
+  });
+  const itrPrevious=extractSnapshot({
+    dre:getPeriod(itrMaps.dre,company.cvm,'previous'),
+    dfc:[...getPeriod(itrMaps.dfcmi,company.cvm,'previous'),...getPeriod(itrMaps.dfcmd,company.cvm,'previous')]
+  });
+
+  const latestBalance=itrEntry?itrCurrent:annual;
+  const revenue=addTtm(annual.revenue,itrCurrent.revenue,itrPrevious.revenue);
+  const grossProfit=addTtm(annual.grossProfit,itrCurrent.grossProfit,itrPrevious.grossProfit);
+  const ebit=addTtm(annual.ebit,itrCurrent.ebit,itrPrevious.ebit);
+  const netIncome=addTtm(annual.netIncome,itrCurrent.netIncome,itrPrevious.netIncome);
+  const cfo=addTtm(annual.cfo,itrCurrent.cfo,itrPrevious.cfo);
+  const capex=addTtm(annual.capex,itrCurrent.capex,itrPrevious.capex);
+  const fcf=cfo!==null&&capex!==null?cfo+(capex>0?-capex:capex):null;
+
+  const {assets,currentAssets,currentLiabilities,cash,equity,debt}=latestBalance;
+  const netDebt=debt!==null?debt-(cash||0):null;
+  const ev=company.marketCap!==null&&netDebt!==null?company.marketCap+netDebt:null;
+  const ttmAvailable=!!itrEntry&&[revenue,ebit,netIncome].some(v=>v!==null);
+
   return {
-    source:'CVM DFP 2025',
-    assets,currentAssets,currentLiabilities,cash,equity,debt,netDebt,revenue,grossProfit,ebit,netIncome,cfo,capex,fcf,
+    source:ttmAvailable?'CVM DFP 2025 + ITR 2026 (TTM)':'CVM DFP 2025',
+    referenceDate:itrEntry?.refDate||'2025-12-31',
+    ttmAvailable,
+    assets,currentAssets,currentLiabilities,cash,equity,debt,netDebt,
+    revenue,grossProfit,ebit,netIncome,cfo,capex,fcf,
     trailingPE:(company.marketCap!==null&&netIncome>0)?company.marketCap/netIncome:null,
     priceToBook:(company.marketCap!==null&&equity>0)?company.marketCap/equity:null,
     enterpriseToEbit:(ev!==null&&ebit>0)?ev/ebit:null,
@@ -212,37 +260,25 @@ function buildFundamentals(company,maps){
     cashToDebt:safeDiv(cash,debt)
   };
 }
+function makeMaps(files,prefix,year){
+  const read=name=>parseCsv(decode(files[`${prefix}_cia_aberta_${name}_con_${year}.csv`]||Buffer.alloc(0)));
+  return {
+    bpa:latestPeriodMap(read('BPA')),
+    bpp:latestPeriodMap(read('BPP')),
+    dre:latestPeriodMap(read('DRE')),
+    dfcmi:latestPeriodMap(read('DFC_MI')),
+    dfcmd:latestPeriodMap(read('DFC_MD'))
+  };
+}
 
 module.exports=async function handler(req,res){
   try{
-    if(String(req.query?.debug||'')==='zip'){
-      const zipBuf=await fetchBuffer(CVM_DFP_URL);
-      return res.status(200).json({entries:listZipEntries(zipBuf)});
-    }
-    if(String(req.query?.debug||'')==='sample'){
-      const zipBuf=await fetchBuffer(CVM_DFP_URL);
-      const wanted=new Set(['dfp_cia_aberta_DRE_con_2025.csv','dfp_cia_aberta_BPA_con_2025.csv']);
-      const files=unzipSelected(zipBuf,wanted);
-      const dre=parseCsv(decode(files['dfp_cia_aberta_DRE_con_2025.csv']||Buffer.alloc(0)));
-      const bpa=parseCsv(decode(files['dfp_cia_aberta_BPA_con_2025.csv']||Buffer.alloc(0)));
-      return res.status(200).json({dre:dre.slice(0,3),bpa:bpa.slice(0,3)});
-    }
-    if(String(req.query?.debug||'')==='bb'){
-      const zipBuf=await fetchBuffer(CVM_DFP_URL);
-      const wanted=new Set(['dfp_cia_aberta_BPP_con_2025.csv','dfp_cia_aberta_DRE_con_2025.csv']);
-      const files=unzipSelected(zipBuf,wanted);
-      const bpp=parseCsv(decode(files['dfp_cia_aberta_BPP_con_2025.csv']||Buffer.alloc(0)))
-        .filter(r=>cvmCode(r.CD_CVM)==='1023'&&String(r.ORDEM_EXERC).toUpperCase()==='ÚLTIMO'&&cleanText(r.DS_CONTA).includes('PATRIMONIO'));
-      const dre=parseCsv(decode(files['dfp_cia_aberta_DRE_con_2025.csv']||Buffer.alloc(0)))
-        .filter(r=>cvmCode(r.CD_CVM)==='1023'&&String(r.ORDEM_EXERC).toUpperCase()==='ÚLTIMO'&&(String(r.CD_CONTA)==='3.11'||cleanText(r.DS_CONTA).includes('LUCRO')));
-      return res.status(200).json({bpp,dre});
-    }
-    const [stocks,cadBuf,zipBuf]=await Promise.all([
-      marketUniverse(160),fetchBuffer(CVM_CAD_URL),fetchBuffer(CVM_DFP_URL)
+    const [stocks,cadBuf,dfpZip,itrZip]=await Promise.all([
+      marketUniverse(160),fetchBuffer(CVM_CAD_URL),fetchBuffer(CVM_DFP_URL),fetchBuffer(CVM_ITR_URL)
     ]);
+
     const cad=latestActiveCad(parseCsv(decode(cadBuf)));
     let matched=matchCompanies(stocks,cad);
-
     const byCompany=new Map();
     for(const s of matched){
       const prior=byCompany.get(s.cvm);
@@ -250,28 +286,28 @@ module.exports=async function handler(req,res){
     }
     matched=[...byCompany.values()].sort((a,b)=>b.volume-a.volume).slice(0,100);
 
-    const wanted=new Set([
+    const dfpWanted=new Set([
       'dfp_cia_aberta_BPA_con_2025.csv','dfp_cia_aberta_BPP_con_2025.csv',
-      'dfp_cia_aberta_DRE_con_2025.csv','dfp_cia_aberta_DFC_MI_con_2025.csv',
-      'dfp_cia_aberta_DFC_MD_con_2025.csv'
+      'dfp_cia_aberta_DRE_con_2025.csv','dfp_cia_aberta_DFC_MI_con_2025.csv','dfp_cia_aberta_DFC_MD_con_2025.csv'
     ]);
-    const files=unzipSelected(zipBuf,wanted);
-    const maps={
-      bpa:accountMap(parseCsv(decode(files['dfp_cia_aberta_BPA_con_2025.csv']||Buffer.alloc(0)))),
-      bpp:accountMap(parseCsv(decode(files['dfp_cia_aberta_BPP_con_2025.csv']||Buffer.alloc(0)))),
-      dre:accountMap(parseCsv(decode(files['dfp_cia_aberta_DRE_con_2025.csv']||Buffer.alloc(0)))),
-      dfcmi:accountMap(parseCsv(decode(files['dfp_cia_aberta_DFC_MI_con_2025.csv']||Buffer.alloc(0)))),
-      dfcmd:accountMap(parseCsv(decode(files['dfp_cia_aberta_DFC_MD_con_2025.csv']||Buffer.alloc(0))))
-    };
-    const companies=matched.map(c=>({...c,fundamentals:buildFundamentals(c,maps)}));
-    const covered=companies.filter(c=>c.fundamentals.trailingPE!==null||c.fundamentals.priceToBook!==null||c.fundamentals.returnOnEquity!==null).length;
+    const itrWanted=new Set([
+      'itr_cia_aberta_BPA_con_2026.csv','itr_cia_aberta_BPP_con_2026.csv',
+      'itr_cia_aberta_DRE_con_2026.csv','itr_cia_aberta_DFC_MI_con_2026.csv','itr_cia_aberta_DFC_MD_con_2026.csv'
+    ]);
+    const dfpMaps=makeMaps(unzipSelected(dfpZip,dfpWanted),'dfp',2025);
+    const itrMaps=makeMaps(unzipSelected(itrZip,itrWanted),'itr',2026);
 
-    res.setHeader('Cache-Control','s-maxage=86400, stale-while-revalidate=604800');
+    const companies=matched.map(c=>({...c,fundamentals:buildFundamentals(c,dfpMaps,itrMaps)}));
+    const covered=companies.filter(c=>c.fundamentals.trailingPE!==null||c.fundamentals.priceToBook!==null||c.fundamentals.returnOnEquity!==null).length;
+    const ttmCovered=companies.filter(c=>c.fundamentals.ttmAvailable).length;
+    const latestItrReference=companies.map(c=>c.fundamentals.referenceDate).filter(d=>d&&d>'2025-12-31').sort().pop()||null;
+
+    res.setHeader('Cache-Control','s-maxage=21600, stale-while-revalidate=86400');
     return res.status(200).json({
-      provider:'B3/brapi preços + CVM DFP 2025',
-      methodology:'Companhia deduplicada pela ação mais líquida; fundamentos calculados pelo Bolsa 360.',
+      provider:'Mercado operacional + CVM DFP 2025 + ITR 2026',
+      methodology:'BP usa a posição mais recente do ITR; DRE e DFC usam TTM = DFP 2025 + acumulado 2026 - período comparável de 2025.',
       requestedAt:new Date().toISOString(),
-      total:companies.length,covered,companies
+      latestItrReference,total:companies.length,covered,ttmCovered,companies
     });
   }catch(e){
     console.error('bolsa360-cvm',e);
