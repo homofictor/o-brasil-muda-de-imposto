@@ -1,4 +1,4 @@
-# Bolsa 360 | MVP V0.7.1
+# Bolsa 360 | MVP V0.8.1
 
 ## Manual e governança metodológica
 
@@ -288,3 +288,23 @@ Cada indicador é convertido em percentil dentro do grupo comparável. Valores a
 ## Regra de produto
 
 O sistema informa, calcula e compara. A decisão de investimento pertence ao usuário.
+
+
+## Valor Intrínseco 360 V2
+
+A V0.8 substitui o DCF único por famílias metodológicas.
+
+- bancos: lucro residual + DDM;
+- seguradoras: lucro residual + DDM com custo de capital ajustado;
+- holdings de participações: DCF genérico desativado; requer SOTP;
+- utilities, telecom, infraestrutura, varejo, tecnologia, saúde, imobiliário e serviços financeiros: DCF operacional com perfis explícitos;
+- commodities e negócios cíclicos: EBIT-base normalizado pela mediana histórica de margem operacional, combinado ao TTM;
+- companhias com ROIC e crescimento elevados podem receber horizonte explícito maior antes da convergência ao crescimento terminal.
+
+Premissas-base iniciais da V0.8: WACC operacional de 12,0%, crescimento terminal de 3,5%, imposto de 34%, custo de capital bancário de 14,0% e payout DDM de 50%. São premissas de modelo, não taxas de mercado observadas.
+
+O sistema diferencia falta de dados de inviabilidade econômica do modelo. Quando o enterprise value estimado não cobre a dívida líquida, a causa é explicada em vez de aparecer genericamente como N/D.
+
+Quando CFO e CAPEX passam por filtros de plausibilidade, é exibida uma checagem independente pelo caixa reportado. Ela não entra no valor central e funciona apenas como controle de consistência.
+
+A calibração automática de WACC, custo de capital e crescimento terminal por dados de mercado continua sendo etapa posterior.
