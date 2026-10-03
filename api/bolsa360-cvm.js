@@ -58,6 +58,36 @@ function parseCsv(text){
     const o={};headers.forEach((h,i)=>o[h]=r[i]??'');return o;
   });
 }
+function parseCsvForCvms(text,allowedCvms){
+  const out=[];let headers=null,cvmIndex=-1,row=[],field='',q=false;
+  const push=()=>{
+    if(!headers){
+      headers=row.map(x=>x.replace(/^\uFEFF/,''));
+      cvmIndex=headers.indexOf('CD_CVM');
+    }else if(row.length>1){
+      const cvm=cvmCode(row[cvmIndex]||'');
+      if(allowedCvms.has(cvm)){
+        const o={};headers.forEach((h,i)=>o[h]=row[i]??'');out.push(o);
+      }
+    }
+    row=[];field='';
+  };
+  for(let i=0;i<text.length;i++){
+    const ch=text[i];
+    if(q){
+      if(ch==='"'&&text[i+1]==='"'){field+='"';i++}
+      else if(ch==='"')q=false;
+      else field+=ch;
+    }else{
+      if(ch==='"')q=true;
+      else if(ch===';'){row.push(field);field=''}
+      else if(ch==='\n'){row.push(field.replace(/\r$/,''));push()}
+      else field+=ch;
+    }
+  }
+  if(field||row.length){row.push(field);push()}
+  return out;
+}
 function unzipSelected(buf,wanted){
   const out={};let eocd=-1;
   for(let i=buf.length-22;i>=Math.max(0,buf.length-65557);i--){
@@ -260,21 +290,24 @@ function buildFundamentals(company,dfpMaps,itrMaps){
     cashToDebt:safeDiv(cash,debt)
   };
 }
-function makeMaps(files,prefix,year){
-  const read=name=>parseCsv(decode(files[`${prefix}_cia_aberta_${name}_con_${year}.csv`]||Buffer.alloc(0)));
-  return {
-    bpa:latestPeriodMap(read('BPA')),
-    bpp:latestPeriodMap(read('BPP')),
-    dre:latestPeriodMap(read('DRE')),
-    dfcmi:latestPeriodMap(read('DFC_MI')),
-    dfcmd:latestPeriodMap(read('DFC_MD'))
-  };
+async function loadMapsFromUrl(url,prefix,year,allowedCvms){
+  const zip=await fetchBuffer(url);
+  const specs=[['bpa','BPA'],['bpp','BPP'],['dre','DRE'],['dfcmi','DFC_MI'],['dfcmd','DFC_MD']];
+  const maps={};
+  for(const [key,label] of specs){
+    const filename=`${prefix}_cia_aberta_${label}_con_${year}.csv`;
+    const file=unzipSelected(zip,new Set([filename]))[filename]||Buffer.alloc(0);
+    const text=decode(file);
+    const rows=parseCsvForCvms(text,allowedCvms);
+    maps[key]=latestPeriodMap(rows);
+  }
+  return maps;
 }
 
 module.exports=async function handler(req,res){
   try{
-    const [stocks,cadBuf,dfpZip,itrZip]=await Promise.all([
-      marketUniverse(160),fetchBuffer(CVM_CAD_URL),fetchBuffer(CVM_DFP_URL),fetchBuffer(CVM_ITR_URL)
+    const [stocks,cadBuf]=await Promise.all([
+      marketUniverse(160),fetchBuffer(CVM_CAD_URL)
     ]);
 
     const cad=latestActiveCad(parseCsv(decode(cadBuf)));
@@ -286,16 +319,9 @@ module.exports=async function handler(req,res){
     }
     matched=[...byCompany.values()].sort((a,b)=>b.volume-a.volume).slice(0,100);
 
-    const dfpWanted=new Set([
-      'dfp_cia_aberta_BPA_con_2025.csv','dfp_cia_aberta_BPP_con_2025.csv',
-      'dfp_cia_aberta_DRE_con_2025.csv','dfp_cia_aberta_DFC_MI_con_2025.csv','dfp_cia_aberta_DFC_MD_con_2025.csv'
-    ]);
-    const itrWanted=new Set([
-      'itr_cia_aberta_BPA_con_2026.csv','itr_cia_aberta_BPP_con_2026.csv',
-      'itr_cia_aberta_DRE_con_2026.csv','itr_cia_aberta_DFC_MI_con_2026.csv','itr_cia_aberta_DFC_MD_con_2026.csv'
-    ]);
-    const dfpMaps=makeMaps(unzipSelected(dfpZip,dfpWanted),'dfp',2025);
-    const itrMaps=makeMaps(unzipSelected(itrZip,itrWanted),'itr',2026);
+    const allowedCvms=new Set(matched.map(x=>String(x.cvm)));
+    const dfpMaps=await loadMapsFromUrl(CVM_DFP_URL,'dfp',2025,allowedCvms);
+    const itrMaps=await loadMapsFromUrl(CVM_ITR_URL,'itr',2026,allowedCvms);
 
     const companies=matched.map(c=>({...c,fundamentals:buildFundamentals(c,dfpMaps,itrMaps)}));
     const covered=companies.filter(c=>c.fundamentals.trailingPE!==null||c.fundamentals.priceToBook!==null||c.fundamentals.returnOnEquity!==null).length;
