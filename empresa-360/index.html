@@ -4,294 +4,225 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
-  <title>Empresa 360 IA | Diagnóstico empresarial</title>
-  <meta name="description" content="Diagnóstico empresarial preliminar com CNPJ, contexto setorial, Reforma Tributária e prioridades de aprofundamento.">
+  <title>Empresa 360 IA | Cockpit empresarial</title>
+  <meta name="description" content="Cockpit para priorização de empresas e acesso aos motores especializados do Empresa 360 IA.">
   <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-  <div class="devbar">AMBIENTE ESPELHO | DESENVOLVIMENTO ISOLADO DA PRODUÇÃO</div>
+  <div class="devbar">AMBIENTE ESPELHO | PRODUÇÃO NÃO ALTERADA</div>
 
   <header class="topbar">
     <a class="brand" href="./" aria-label="Empresa 360 IA">
       <span class="brand-mark">360</span>
       <span class="brand-copy">
         <strong>EMPRESA 360 IA</strong>
-        <small>Inteligência empresarial com supervisão humana</small>
+        <small>Cockpit de inteligência empresarial</small>
       </span>
     </a>
-    <span class="version">V0.2 DIAGNÓSTICO</span>
+    <span class="version">V0.3 COCKPIT</span>
   </header>
 
   <main>
     <section class="hero">
-      <div class="hero-main">
-        <p class="eyebrow">RAIO X EMPRESARIAL</p>
-        <h1>Antes de procurar soluções, descubra <em>onde olhar primeiro.</em></h1>
-        <p class="lead">O Empresa 360 cruza o perfil cadastral da empresa com respostas operacionais para priorizar impactos da Reforma Tributária, precificação, créditos, caixa e necessidade de análise financeira.</p>
-
-        <form id="cnpjForm" class="search-card" novalidate>
-          <label for="cnpj">Comece pelo CNPJ</label>
-          <div class="search-row">
-            <input id="cnpj" name="cnpj" inputmode="numeric" autocomplete="off" placeholder="00.000.000/0000-00" maxlength="18">
-            <button id="analisarBtn" type="submit">Mapear empresa</button>
-          </div>
-          <p id="status" class="status" role="status" aria-live="polite"></p>
-        </form>
-
-        <div class="hero-signals" aria-label="Etapas">
-          <span><b>01</b> Identificação</span>
-          <span><b>02</b> Contexto</span>
-          <span><b>03</b> Prioridades</span>
-          <span><b>04</b> Aprofundamento</span>
-        </div>
+      <div>
+        <p class="eyebrow">CARTEIRA EMPRESARIAL</p>
+        <h1>Não analise empresas ao acaso. <em>Descubra quem merece atenção primeiro.</em></h1>
+        <p class="lead">O Empresa 360 organiza a carteira, faz uma triagem inicial pelos dados do CNPJ e encaminha cada empresa para o motor especializado adequado. O Reforma 360 já nasce conectado ao simulador que temos.</p>
       </div>
-
-      <aside class="hero-aside">
-        <div class="aside-top">
-          <span class="live-dot"></span>
-          <span>Motor de análise preliminar</span>
-        </div>
-        <h2>O resultado precisa responder quatro perguntas.</h2>
-        <ol>
-          <li><span>01</span><div><b>O que merece atenção?</b><small>Prioridades, não uma lista genérica.</small></div></li>
-          <li><span>02</span><div><b>Por que apareceu?</b><small>Evidências utilizadas no diagnóstico.</small></div></li>
-          <li><span>03</span><div><b>Qual a confiança?</b><small>Quanto sabemos e o que ainda falta.</small></div></li>
-          <li><span>04</span><div><b>Qual a próxima ação?</b><small>O que fazer para confirmar ou quantificar.</small></div></li>
-        </ol>
+      <aside class="hero-note">
+        <span>Princípio do produto</span>
+        <strong>O Empresa 360 não substitui os motores. Ele organiza, prioriza e distribui as análises.</strong>
+        <small>Primeiro motor disponível: Reforma 360.</small>
       </aside>
     </section>
 
-    <section id="workspace" class="workspace hidden">
-      <div class="company-banner">
-        <div>
-          <p class="eyebrow">EMPRESA IDENTIFICADA</p>
-          <h2 id="companyName">Empresa</h2>
-          <p id="companySubtitle" class="company-subtitle"></p>
-        </div>
-        <button id="novaConsulta" class="secondary" type="button">Analisar outro CNPJ</button>
+    <section class="toolbar panel">
+      <div class="toolbar-copy">
+        <p class="eyebrow">ADICIONAR EMPRESAS</p>
+        <h2>Monte a carteira de análise</h2>
+        <p>Inclua um CNPJ ou importe uma lista CSV/TXT. Os dados ficam somente neste ambiente de desenvolvimento.</p>
       </div>
 
-      <div class="snapshot-grid">
-        <article class="panel snapshot">
-          <div class="panel-title">
-            <div>
-              <p class="eyebrow">PERFIL AUTOMÁTICO</p>
-              <h3>Leitura inicial</h3>
-            </div>
-            <span id="sectorBadge" class="pill"></span>
-          </div>
-          <dl id="companyData" class="facts"></dl>
-          <div id="profileInsight" class="profile-insight"></div>
-        </article>
+      <form id="cnpjForm" class="add-form" novalidate>
+        <label for="cnpj">CNPJ</label>
+        <div class="add-row">
+          <input id="cnpj" inputmode="numeric" autocomplete="off" placeholder="00.000.000/0000-00" maxlength="18">
+          <button id="addBtn" type="submit">Adicionar à carteira</button>
+        </div>
+        <p id="status" class="status" role="status" aria-live="polite"></p>
+      </form>
 
-        <article class="panel questionnaire">
-          <div class="panel-title">
-            <div>
-              <p class="eyebrow">CONTEXTO OPERACIONAL</p>
-              <h3>Complete o que o CNPJ não revela</h3>
-            </div>
-            <span class="pill subtle">6 respostas</span>
-          </div>
-
-          <form id="contextForm">
-            <div class="question-grid">
-              <label class="field">
-                <span>Faturamento anual aproximado</span>
-                <select id="revenueBand" required>
-                  <option value="">Selecione</option>
-                  <option value="360000">Até R$ 360 mil</option>
-                  <option value="2400000">R$ 360 mil a R$ 4,8 milhões</option>
-                  <option value="12400000">R$ 4,8 a R$ 20 milhões</option>
-                  <option value="60000000">R$ 20 a R$ 100 milhões</option>
-                  <option value="150000000">Acima de R$ 100 milhões</option>
-                </select>
-              </label>
-
-              <label class="field">
-                <span id="customerQuestion">Principal perfil de clientes</span>
-                <select id="customerProfile" required>
-                  <option value="">Selecione</option>
-                  <option value="b2b">Principalmente outras empresas</option>
-                  <option value="b2c">Principalmente consumidor final</option>
-                  <option value="gov">Governo / setor público relevante</option>
-                  <option value="mixed">Carteira mista</option>
-                </select>
-              </label>
-
-              <label class="field">
-                <span>Compras e insumos sobre a receita</span>
-                <select id="purchaseIntensity" required>
-                  <option value="">Selecione</option>
-                  <option value="15">Baixa, até 20%</option>
-                  <option value="35">Média, de 20% a 50%</option>
-                  <option value="60">Alta, acima de 50%</option>
-                </select>
-              </label>
-
-              <label class="field">
-                <span>Fornecedores predominantes</span>
-                <select id="supplierProfile" required>
-                  <option value="">Selecione</option>
-                  <option value="regular">Fora do Simples / regime regular</option>
-                  <option value="simples">Predominantemente Simples Nacional</option>
-                  <option value="imports">Importações relevantes</option>
-                  <option value="mixed">Misto / não sei</option>
-                </select>
-              </label>
-
-              <label class="field">
-                <span>Facilidade para reajustar preços</span>
-                <select id="pricingPower" required>
-                  <option value="">Selecione</option>
-                  <option value="high">Relativamente fácil</option>
-                  <option value="medium">Depende de negociação</option>
-                  <option value="low">Difícil / mercado muito competitivo</option>
-                </select>
-              </label>
-
-              <label class="field">
-                <span id="investmentQuestion">Investimentos relevantes nos próximos 24 meses?</span>
-                <select id="investmentLevel" required>
-                  <option value="">Selecione</option>
-                  <option value="none">Não previstos</option>
-                  <option value="moderate">Moderados</option>
-                  <option value="high">Relevantes</option>
-                </select>
-              </label>
-            </div>
-
-            <div class="advanced-toggle">
-              <button id="showAdvanced" type="button" class="text-button">+ adicionar dois dados para aumentar a precisão</button>
-            </div>
-
-            <div id="advancedFields" class="advanced-fields hidden">
-              <label class="field">
-                <span>Margem operacional aproximada</span>
-                <select id="marginBand">
-                  <option value="">Não informar</option>
-                  <option value="3">Até 5%</option>
-                  <option value="8">5% a 10%</option>
-                  <option value="15">10% a 20%</option>
-                  <option value="25">Acima de 20%</option>
-                </select>
-              </label>
-
-              <label class="field">
-                <span>Vendas interestaduais</span>
-                <select id="interstateShare">
-                  <option value="">Não informar</option>
-                  <option value="5">Pouco relevantes</option>
-                  <option value="30">Relevantes</option>
-                  <option value="60">Muito relevantes</option>
-                </select>
-              </label>
-            </div>
-
-            <button class="primary full" type="submit">Gerar Radar Empresa 360</button>
-            <p class="form-note">O radar indica relevância para investigação. Não é rating, parecer tributário ou conclusão definitiva.</p>
-          </form>
-        </article>
+      <div class="import-box">
+        <input id="portfolioFile" type="file" accept=".csv,.txt,text/csv,text/plain" hidden>
+        <button id="importBtn" type="button" class="secondary">Importar lista de CNPJs</button>
+        <small>O arquivo pode conter uma coluna de CNPJ ou CNPJs misturados ao texto.</small>
       </div>
     </section>
 
-    <section id="diagnostic" class="diagnostic hidden">
-      <div class="diagnostic-head">
-        <div>
-          <p class="eyebrow">DIAGNÓSTICO PRELIMINAR</p>
-          <h2>Onde vale a pena olhar primeiro</h2>
-          <p id="diagnosticIntro" class="muted-lg"></p>
-        </div>
-        <button id="editContext" class="secondary" type="button">Revisar respostas</button>
-      </div>
-
+    <section id="dashboard" class="dashboard">
       <div class="summary-grid">
-        <article class="summary-card dark">
-          <span>Prioridade principal</span>
-          <strong id="topPriority">Reforma Tributária</strong>
-          <small id="topPriorityReason"></small>
+        <article class="metric-card dark">
+          <span>Empresas na carteira</span>
+          <strong id="metricTotal">0</strong>
+          <small>Base atual deste navegador</small>
         </article>
-        <article class="summary-card">
-          <span>Confiança do radar</span>
-          <strong id="confidenceValue">0%</strong>
-          <small id="confidenceNote">Com base nos dados disponíveis</small>
+        <article class="metric-card">
+          <span>Prioridade alta para Reforma 360</span>
+          <strong id="metricHigh">0</strong>
+          <small>Triagem cadastral preliminar</small>
         </article>
-        <article class="summary-card">
-          <span>1 ponto percentual da receita</span>
-          <strong id="onePointValue">R$ 0</strong>
-          <small>Referência para dimensionar impactos sobre margem</small>
+        <article class="metric-card">
+          <span>Regime precisa de confirmação</span>
+          <strong id="metricRegime">0</strong>
+          <small>Dado ausente ou anterior a 2026</small>
         </article>
-        <article class="summary-card">
-          <span>Base econômica indicativa</span>
-          <strong id="economicBase">R$ 0</strong>
-          <small>Centro da faixa de faturamento informada</small>
-        </article>
-      </div>
-
-      <div class="diagnostic-layout">
-        <article class="panel radar-panel">
-          <div class="panel-title">
-            <div>
-              <p class="eyebrow">RADAR</p>
-              <h3>Relevância para investigação</h3>
-            </div>
-            <span class="pill subtle">0 a 100</span>
-          </div>
-          <div id="radarRows" class="score-list"></div>
-          <p class="score-legend">Quanto maior o índice, maior a necessidade de aprofundar aquele tema com dados adicionais. Não mede a qualidade da empresa.</p>
-        </article>
-
-        <article class="panel priorities-panel">
-          <div class="panel-title">
-            <div>
-              <p class="eyebrow">TOP 3</p>
-              <h3>Prioridades identificadas</h3>
-            </div>
-          </div>
-          <div id="priorityCards" class="priority-cards"></div>
+        <article class="metric-card">
+          <span>Diagnóstico RT ainda não iniciado</span>
+          <strong id="metricPending">0</strong>
+          <small>Empresas ainda sem abertura do Reforma 360</small>
         </article>
       </div>
 
-      <div class="diagnostic-layout second">
-        <article class="panel evidence-panel">
-          <div class="panel-title">
+      <div class="cockpit-grid">
+        <article class="panel portfolio-panel">
+          <div class="panel-head">
             <div>
-              <p class="eyebrow">EVIDÊNCIAS</p>
-              <h3>Por que o radar chegou aqui</h3>
+              <p class="eyebrow">PRIORIZAÇÃO</p>
+              <h2>Quem analisar primeiro</h2>
+            </div>
+            <div class="panel-actions">
+              <input id="portfolioSearch" type="search" placeholder="Buscar empresa ou CNPJ">
+              <select id="portfolioFilter">
+                <option value="all">Todas</option>
+                <option value="high">Prioridade alta</option>
+                <option value="regime">Regime a confirmar</option>
+                <option value="pending">Ainda não iniciadas</option>
+              </select>
             </div>
           </div>
-          <ul id="evidenceList" class="evidence-list"></ul>
+
+          <div id="emptyState" class="empty-state">
+            <span>360</span>
+            <h3>Sua carteira ainda está vazia</h3>
+            <p>Adicione um CNPJ acima. Com várias empresas, o diferencial do cockpit começa a aparecer.</p>
+          </div>
+
+          <div id="portfolioWrap" class="table-wrap hidden">
+            <table>
+              <thead>
+                <tr>
+                  <th>Empresa</th>
+                  <th>Setor</th>
+                  <th>Regime disponível</th>
+                  <th>Triagem RT</th>
+                  <th>Status</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="portfolioBody"></tbody>
+            </table>
+          </div>
         </article>
 
-        <article class="panel gaps-panel">
-          <div class="panel-title">
-            <div>
-              <p class="eyebrow">PRÓXIMOS DADOS</p>
-              <h3>O que falta para aumentar a confiança</h3>
+        <aside id="companyDrawer" class="panel drawer">
+          <div id="drawerEmpty" class="drawer-empty">
+            <p class="eyebrow">DOSSIÊ DA EMPRESA</p>
+            <h2>Selecione uma empresa</h2>
+            <p>O dossiê mostrará por que ela foi priorizada, qual motor usar e qual é a próxima ação.</p>
+          </div>
+
+          <div id="drawerContent" class="hidden">
+            <div class="drawer-head">
+              <div>
+                <p class="eyebrow">DOSSIÊ DA EMPRESA</p>
+                <h2 id="drawerName">Empresa</h2>
+                <p id="drawerSubtitle" class="muted"></p>
+              </div>
+              <button id="removeCompany" type="button" class="text-danger">Remover</button>
+            </div>
+
+            <div class="triage-block">
+              <div>
+                <span>Prioridade atual</span>
+                <strong id="drawerPriority">Alta</strong>
+              </div>
+              <div>
+                <span>Índice de triagem RT</span>
+                <strong id="drawerScore">0/100</strong>
+              </div>
+            </div>
+
+            <div id="drawerReasons" class="reason-list"></div>
+
+            <div class="motor-card active">
+              <div class="motor-head">
+                <div>
+                  <span class="motor-state">MOTOR DISPONÍVEL</span>
+                  <h3>Reforma 360</h3>
+                </div>
+                <b>ATIVO</b>
+              </div>
+              <p>Simula regimes, IBS/CBS, créditos, preço, margem, split payment, caixa e dados financeiros usando o simulador já desenvolvido.</p>
+              <a id="openReforma" href="../simulador/guiado/" class="primary-link">Abrir Reforma 360</a>
+            </div>
+
+            <div class="next-engines">
+              <p class="eyebrow">PRÓXIMOS MOTORES</p>
+              <div class="engine-row"><span>Crédito 360</span><small>capacidade financeira, endividamento e financiamento</small></div>
+              <div class="engine-row"><span>Valor 360</span><small>valuation indicativo e gatilhos para avaliação completa</small></div>
+              <div class="engine-row"><span>Fiscal 360</span><small>oportunidades tributárias fora do escopo da Reforma do Consumo</small></div>
             </div>
           </div>
-          <div id="gapList" class="gap-list"></div>
-        </article>
+        </aside>
       </div>
 
-      <section class="action-zone">
-        <div>
-          <p class="eyebrow light">PRÓXIMA DECISÃO</p>
-          <h2 id="actionTitle">Aprofundar a Reforma Tributária</h2>
-          <p id="actionText">Leve o perfil desta empresa para o módulo Reforma 360 e quantifique cenários de carga, preço e margem.</p>
+      <section class="panel opportunities">
+        <div class="panel-head">
+          <div>
+            <p class="eyebrow">VISÃO DA CARTEIRA</p>
+            <h2>Oportunidades que o cockpit já consegue separar</h2>
+          </div>
         </div>
-        <a id="reformaLink" href="../simulador/guiado/" class="action-button">Abrir Reforma 360</a>
+        <div class="opportunity-grid">
+          <article>
+            <span id="oppIndustry">0</span>
+            <b>Empresas com cadeias intensivas em compras</b>
+            <small>Indústria, atacado, construção, transporte e atividades semelhantes.</small>
+          </article>
+          <article>
+            <span id="oppServices">0</span>
+            <b>Serviços com atenção a preço e créditos</b>
+            <small>Empresas em que folha, poucos créditos e poder de repasse podem ser relevantes.</small>
+          </article>
+          <article>
+            <span id="oppSimple">0</span>
+            <b>Optantes do Simples identificados</b>
+            <small>Casos que merecem simular a posição durante a transição e a relação B2B.</small>
+          </article>
+          <article>
+            <span id="oppOldRegime">0</span>
+            <b>Regimes públicos desatualizados</b>
+            <small>Empresas que precisam confirmar o enquadramento atual antes do diagnóstico.</small>
+          </article>
+        </div>
       </section>
 
-      <div class="method-note">
-        <b>Como este resultado foi gerado:</b>
-        <span>CNPJ + classificação setorial + regime disponível na fonte + respostas operacionais + regras determinísticas. A IA será usada posteriormente para explicação e documentos, não para substituir os cálculos.</span>
-      </div>
+      <section class="architecture panel">
+        <div>
+          <p class="eyebrow">ARQUITETURA</p>
+          <h2>Um cockpit. Vários motores.</h2>
+          <p>O Empresa 360 mantém a visão da empresa e da carteira. Cada motor faz o trabalho técnico especializado e devolve o resultado ao dossiê.</p>
+        </div>
+        <div class="flow">
+          <span>Carteira</span><i>→</i><span>Triagem</span><i>→</i><b>Reforma 360</b><i>+</i><span>Crédito 360</span><i>+</i><span>Valor 360</span><i>+</i><span>Fiscal 360</span><i>→</i><b>Dossiê 360</b>
+        </div>
+      </section>
     </section>
   </main>
 
   <footer>
     <span>Empresa 360 IA | Homo Fictor</span>
-    <span>Ambiente de desenvolvimento. Resultados preliminares sujeitos a validação profissional.</span>
+    <span>Ambiente de desenvolvimento. A triagem cadastral não substitui análise profissional.</span>
   </footer>
 
   <script src="./app.js"></script>
