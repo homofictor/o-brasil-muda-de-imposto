@@ -166,40 +166,43 @@ function median(values){return quantile(values,.5)}
 function fairValueFor(row,rows,isBank){
   const close=n(row.close),marketCap=n(row.marketCap),f=row.fundamentals||{};
   if(!close||!marketCap||marketCap<=0)return null;
-  const shares=marketCap/close;
-  if(!Number.isFinite(shares)||shares<=0)return null;
   const allPeers=rows.filter(x=>x.ticker!==row.ticker);
   const sameSubsector=!isBank&&row.subsector?allPeers.filter(x=>x.subsector===row.subsector):allPeers;
   const peers=isBank?allPeers:(sameSubsector.length>=3?sameSubsector:[]);
   if(peers.length<3)return null;
   const models=[];
 
-  const addMultipleModel=(label,key,baseValue)=>{
-    const base=n(baseValue);
-    if(base===null||base<=0)return;
+  const addMultipleModel=(label,key)=>{
+    const current=n(f[key]);
+    if(current===null||current<=0)return;
     const vals=peers.map(p=>n(p.fundamentals?.[key])).filter(v=>v!==null&&v>0);
     if(vals.length<3)return;
     const q25=quantile(vals,.25),q50=quantile(vals,.5),q75=quantile(vals,.75);
-    const price=m=>m===null?null:(base*m)/shares;
+    const price=m=>m===null?null:close*(m/current);
     models.push({label,peers:vals.length,benchmarkLow:q25,benchmarkCentral:q50,benchmarkHigh:q75,low:price(q25),central:price(q50),high:price(q75)});
   };
 
-  addMultipleModel('P/L','trailingPE',f.netIncome);
-  addMultipleModel('P/VP','priceToBook',f.equity);
+  addMultipleModel('P/L','trailingPE');
+  addMultipleModel('P/VP','priceToBook');
 
   if(!isBank){
     const ebit=n(f.ebit),netDebt=n(f.netDebt);
     const vals=peers.map(p=>n(p.fundamentals?.enterpriseToEbit)).filter(v=>v!==null&&v>0);
     if(ebit!==null&&ebit>0&&netDebt!==null&&vals.length>=3){
       const q25=quantile(vals,.25),q50=quantile(vals,.5),q75=quantile(vals,.75);
-      const price=m=>{const equityValue=ebit*m-netDebt;return m!==null&&equityValue>0?equityValue/shares:null};
+      const price=m=>{
+        if(m===null)return null;
+        const targetEquity=ebit*m-netDebt;
+        return targetEquity>0?close*(targetEquity/marketCap):null;
+      };
       models.push({label:'EV/EBIT',peers:vals.length,benchmarkLow:q25,benchmarkCentral:q50,benchmarkHigh:q75,low:price(q25),central:price(q50),high:price(q75)});
     }
+
     const cfo=n(f.cfo);
     const yields=peers.map(p=>n(p.fundamentals?.cfoYield)).filter(v=>v!==null&&v>0);
     if(cfo!==null&&cfo>0&&yields.length>=3){
       const q25=quantile(yields,.25),q50=quantile(yields,.5),q75=quantile(yields,.75);
-      const price=y=>y&&y>0?(cfo/y)/shares:null;
+      const price=y=>{const targetMarketCap=y&&y>0?cfo/y:null;return targetMarketCap?close*(targetMarketCap/marketCap):null};
       models.push({label:'CFO Yield',peers:yields.length,benchmarkLow:q75,benchmarkCentral:q50,benchmarkHigh:q25,low:price(q75),central:price(q50),high:price(q25)});
     }
   }
@@ -213,9 +216,7 @@ function fairValueFor(row,rows,isBank){
   [low,central,high]=[low,central,high].sort((a,b)=>a-b);
   const minPeers=Math.min(...valid.map(m=>m.peers));
   const spread=low>0?high/low:null;
-  let confidence=valid.length>=3&&minPeers>=5?'Alta':valid.length>=2&&minPeers>=3?'Média':'Baixa';
-  if(spread!==null&&spread>2.5&&confidence==='Alta')confidence='Média';
-  if(spread!==null&&spread>3.5)confidence='Baixa';
+  let confidence=valid.length>=3&&minPeers>=5&&spread!==null&&spread<=2?'Alta':valid.length>=2&&minPeers>=3&&spread!==null&&spread<=3.5?'Média':'Baixa';
   return {low,central,high,distance:central/close-1,confidence,modelCount:valid.length,peerCount:minPeers,models:valid};
 }
 function attachFairValues(rows,isBank){return rows.map(r=>({...r,fairValue:fairValueFor(r,rows,isBank)}))}
