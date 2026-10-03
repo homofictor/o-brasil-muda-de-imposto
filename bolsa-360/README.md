@@ -1,106 +1,126 @@
-# Bolsa 360 | MVP V0.1
+# Bolsa 360 | MVP V0.2
 
 ## Objetivo
 
-Criar um motor especializado em análise fundamentalista de companhias listadas na B3, com foco em:
+O Bolsa 360 é um motor de análise fundamentalista para companhias listadas na B3. O MVP atual foi desenhado para:
 
-1. construção de universo por setor;
-2. comparação apenas entre empresas economicamente comparáveis;
-3. ranking de valuation relativo;
-4. notas independentes de qualidade;
-5. preço de fechamento do último pregão;
-6. preço-alvo de consenso separado do valuation próprio;
-7. futura construção e acompanhamento de carteiras.
+1. permitir que o usuário escolha setores;
+2. construir um universo de ações líquidas;
+3. associar ticker, companhia, CNPJ e código CVM;
+4. combinar preço de mercado com demonstrações financeiras oficiais;
+5. calcular indicadores fundamentalistas internamente;
+6. comparar empresas apenas com grupos economicamente comparáveis;
+7. ordenar valuation relativo sem confundir preço nominal da ação com empresa barata;
+8. manter Valuation, Qualidade e Solidez como dimensões independentes.
 
-## Fontes
+## Fontes da V0.2
 
 ### Mercado
-- brapi `/api/quote/list`: universo, ticker, fechamento, volume, valor de mercado e setor.
-- brapi v2: estatísticas e dados financeiros.
-- O endpoint de listagem funciona sem token.
-- Sem `BRAPI_API_KEY`, fundamentos são consultáveis apenas para os tickers de demonstração liberados pelo provedor.
-- A chave, quando utilizada, deve existir apenas como variável de ambiente do servidor.
+A listagem operacional da brapi é usada para ticker, preço de fechamento, variação, volume, valor de mercado, setor e subsetor. A aplicação não depende dos fundamentos pagos da brapi para o ranking atual.
 
 ### Demonstrações financeiras
-Fonte definitiva planejada: CVM DFP e ITR.
-O motor deverá manter separação entre:
-- dado bruto da fonte;
-- indicador calculado;
-- score relativo;
-- narrativa explicativa.
+Fonte principal atual:
+- CVM, DFP consolidadas de 2025;
+- cadastro oficial de companhias abertas da CVM.
 
-### Classificação setorial
-No MVP, utiliza o campo de setor do provedor operacional.
-Na evolução, a classificação oficial B3 setor → subsetor → segmento será a referência principal.
+A base lê Balanço Patrimonial Ativo, Balanço Patrimonial Passivo, DRE e DFC. Os valores com escala MIL são convertidos para reais.
+
+### Atualização seguinte
+Os ITR de 2026 serão incorporados para que o motor utilize os resultados mais recentes disponíveis ao longo do exercício.
+
+## Ligação ticker → companhia
+
+O universo de mercado é associado ao cadastro de companhias abertas por nome normalizado, nome fantasia quando disponível e aliases explícitos em casos relevantes. Quando uma companhia possui mais de uma classe negociada, o MVP mantém a ação de maior volume como representante no ranking.
+
+## Grupos comparáveis
+
+O ranking não mistura modelos de negócio incompatíveis. A seleção inicial pode usar setores amplos do provedor operacional. Antes do cálculo, o Bolsa 360 cria grupos de pares. Em Finance, por exemplo, separa:
+- bancos;
+- seguros e resseguros;
+- imobiliário;
+- locação de veículos e ativos;
+- serviços financeiros;
+- outros.
+
+A classificação oficial B3 setor → subsetor → segmento será incorporada como referência definitiva.
+
+## Indicadores calculados internamente
+
+A V0.2 calcula, quando os dados permitem:
+- P/L;
+- P/VP;
+- EV/EBIT;
+- CFO Yield;
+- FCF Yield quando CAPEX é identificável;
+- ROE;
+- ROA;
+- margem bruta;
+- margem EBIT;
+- margem líquida;
+- liquidez corrente;
+- dívida / patrimônio líquido;
+- dívida líquida / EBIT;
+- caixa / dívida.
+
+Múltiplos negativos não são interpretados como baratos.
 
 ## Valuation 360
 
-O score não é uma recomendação.
+Valuation 360 é um índice relativo de 0 a 100 dentro do grupo de pares.
 
 ### Empresas não financeiras
-Indicadores iniciais:
-- P/L: menor é melhor, somente valores positivos;
-- P/VP: menor é melhor, somente valores positivos;
-- EV/EBITDA: menor é melhor, somente valores positivos;
-- FCF Yield: maior é melhor.
+- P/L: 30%;
+- P/VP: 15%;
+- EV/EBIT: 30%;
+- CFO Yield: 25%.
 
-Pesos iniciais:
-- P/L: 25%
-- P/VP: 15%
-- EV/EBITDA: 35%
-- FCF Yield: 25%
+### Bancos
+- P/L: 55%;
+- P/VP: 45%.
 
-### Financeiro
-Indicadores iniciais:
-- P/L: 45%
-- P/VP: 40%
-- Dividend Yield: 15%
+O ranking só é exibido quando existe cobertura mínima suficiente no grupo.
 
-EV/EBITDA não é usado como métrica principal para bancos.
-
-## Qualidade
+## Qualidade 360
 
 ### Empresas não financeiras
-- ROE: 25%
-- ROA: 15%
-- margem EBITDA: 35%
-- margem líquida: 25%
+- ROE: 30%;
+- ROA: 15%;
+- margem EBIT: 30%;
+- margem líquida: 25%.
 
-### Financeiro
-- ROE: 70%
-- margem líquida: 30%
+### Bancos
+- ROE: 75%;
+- margem líquida: 25%.
+
+## Solidez 360
+
+Para empresas não financeiras:
+- dívida / patrimônio líquido: 40%;
+- dívida líquida / EBIT: 40%;
+- liquidez corrente: 20%.
+
+Bancos não recebem Solidez 360 por essa fórmula. Instituições financeiras exigem métricas próprias de capital, inadimplência, eficiência e qualidade da carteira.
 
 ## Normalização
 
-Cada indicador é convertido em percentil dentro do próprio setor.
+Cada indicador é convertido em percentil dentro do grupo comparável. Valores ausentes não são inventados e os scores exigem uma quantidade mínima de métricas válidas.
 
-- indicadores em que menor é melhor: o menor valor recebe o maior percentil;
-- indicadores em que maior é melhor: o maior valor recebe o maior percentil;
-- múltiplos negativos não são interpretados como baratos;
-- score só é exibido quando existe quantidade mínima de métricas válidas.
+## Valor justo
 
-## Preço-alvo
-
-Na V0.1:
-- fechamento: dado de mercado;
-- preço-alvo: consenso externo disponível no provedor;
-- valor justo Bolsa 360: ainda não implementado.
-
-O valor justo próprio será separado do consenso e deverá utilizar modelos por setor, como DCF, múltiplos comparáveis e modelos específicos para instituições financeiras.
+Ainda não implementado nesta versão. O futuro Valor Justo Bolsa 360 será independente do ranking relativo e usará modelos adequados ao setor, como DCF, múltiplos comparáveis e modelos de dividendos ou residual income para instituições financeiras.
 
 ## Próximas etapas
 
-1. configurar cobertura fundamentalista para universo maior;
-2. incorporar classificação oficial B3;
-3. consolidar CVM DFP/ITR;
-4. criar score de solidez financeira;
-5. criar score de crescimento;
-6. adicionar histórico de 3 e 5 anos;
-7. desenvolver Valor Justo Bolsa 360;
-8. construtor de carteira por pesos setoriais;
-9. acompanhamento de carteira e alertas após novos ITR/DFP;
-10. integração do resultado ao dossiê 360.
+1. incorporar ITR 2026;
+2. incorporar classificação setorial oficial B3;
+3. criar histórico de 3 e 5 anos;
+4. criar Crescimento 360;
+5. refinar Solidez 360 por setor;
+6. criar Valor Justo Bolsa 360;
+7. criar construtor de carteira por pesos setoriais;
+8. acompanhar carteiras e novas divulgações;
+9. devolver resultados ao dossiê 360.
 
 ## Regra de produto
 
-O sistema informa e compara. O usuário toma a decisão de investimento.
+O sistema informa, calcula e compara. A decisão de investimento pertence ao usuário.
