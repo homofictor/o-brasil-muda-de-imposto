@@ -49,6 +49,10 @@ function value(v){
 function field(label,val){
   return '<div><dt>'+label+'</dt><dd>'+val+'</dd></div>';
 }
+function regimeLabel(data){
+  const r=data.regime_tributario_recente;
+  return r&&r.forma_de_tributacao?value(r.forma_de_tributacao)+' ('+value(r.ano)+')':'Não informado';
+}
 function renderCompany(data,cnpj){
   companyName.textContent=data.razao_social||data.nome_fantasia||'Empresa identificada';
   companyTrade.textContent=data.nome_fantasia&&data.nome_fantasia!==data.razao_social?data.nome_fantasia:'';
@@ -58,13 +62,14 @@ function renderCompany(data,cnpj){
     field('Início da atividade',value(data.data_inicio_atividade)),
     field('Matriz ou filial',value(data.descricao_identificador_matriz_filial)),
     field('Porte',value(data.porte)),
+    field('Regime mais recente',regimeLabel(data)),
     field('Natureza jurídica',value(data.natureza_juridica)),
     field('CNAE principal',value(data.cnae_fiscal)+' '+value(data.cnae_fiscal_descricao)),
     field('Município / UF',value(data.municipio)+' / '+value(data.uf)),
     field('Simples Nacional',yesNo(data.opcao_pelo_simples)),
     field('MEI',yesNo(data.opcao_pelo_mei)),
     field('Capital social',money(data.capital_social)),
-    field('CNAEs secundários',Array.isArray(data.cnaes_secundarios)?String(data.cnaes_secundarios.length):'Não informado')
+    field('CNAEs secundários',value(data.cnaes_secundarios_count))
   ].join('');
   section.classList.remove('hidden');
   section.scrollIntoView({behavior:'smooth',block:'start'});
@@ -77,7 +82,7 @@ async function lookup(cnpj){
   btn.textContent='Consultando...';
   showStatus('Consultando dados cadastrais...');
   try{
-    const res=await fetch('/api/cnpj?cnpj='+encodeURIComponent(cnpj),{headers:{Accept:'application/json'}});
+    const res=await fetch('/api/empresa360-cnpj?cnpj='+encodeURIComponent(cnpj),{headers:{Accept:'application/json'}});
     const payload=await res.json().catch(()=>({}));
     if(!res.ok)throw new Error(payload.error||'Não foi possível consultar este CNPJ.');
     if(!payload.data)throw new Error('A consulta não retornou dados da empresa.');
@@ -106,6 +111,7 @@ novaConsulta.addEventListener('click',()=>{
   section.classList.add('hidden');
   input.value='';
   showStatus('');
+  try{sessionStorage.removeItem('empresa360.company')}catch(_){}
   window.scrollTo({top:0,behavior:'smooth'});
   setTimeout(()=>input.focus(),350);
 });
