@@ -1,4 +1,4 @@
-# Bolsa 360 | MVP V0.3
+# Bolsa 360 | MVP V0.4
 
 ## Objetivo
 
@@ -101,6 +101,28 @@ Para empresas não financeiras:
 
 Bancos não recebem Solidez 360 por essa fórmula. Instituições financeiras exigem métricas próprias de capital, inadimplência, eficiência e qualidade da carteira.
 
+## Crescimento 360
+
+O motor histórico consulta as DFP consolidadas de 2021, 2022, 2023, 2024 e 2025 sob demanda para as companhias dos setores selecionados. O TTM 2026 é acrescentado à ficha do ativo como leitura mais recente.
+
+### Empresas não financeiras
+Pesos iniciais:
+- CAGR de receita 2022-2025: 25%;
+- CAGR de receita 2021-2025: 15%;
+- CAGR de EBIT 2022-2025: 20%;
+- CAGR de lucro líquido 2022-2025: 20%;
+- variação da margem EBIT 2022-2025: 10%;
+- proporção de exercícios com lucro positivo: 10%.
+
+### Bancos
+EBIT não entra na nota de crescimento bancária. Pesos iniciais:
+- CAGR de receita 2022-2025: 30%;
+- CAGR de receita 2021-2025: 15%;
+- CAGR de lucro líquido 2022-2025: 35%;
+- proporção de exercícios com lucro positivo: 20%.
+
+Quando o ponto inicial ou final de EBIT/lucro é negativo, o CAGR correspondente não é calculado. A ausência não é convertida em zero; o score é recalibrado com os indicadores válidos.
+
 ## Normalização
 
 Cada indicador é convertido em percentil dentro do grupo comparável. Valores ausentes não são inventados e os scores exigem uma quantidade mínima de métricas válidas.
@@ -112,13 +134,11 @@ Ainda não implementado nesta versão. O futuro Valor Justo Bolsa 360 será inde
 ## Próximas etapas
 
 1. incorporar classificação setorial oficial B3;
-2. criar histórico de 3 e 5 anos;
-3. criar Crescimento 360;
-4. refinar Solidez 360 por setor;
-5. criar Valor Justo Bolsa 360;
-6. criar construtor de carteira por pesos setoriais;
-7. acompanhar carteiras e novas divulgações;
-8. devolver resultados ao dossiê 360.
+2. refinar Solidez 360 por setor;
+3. criar Valor Justo Bolsa 360;
+4. criar construtor de carteira por pesos setoriais;
+5. acompanhar carteiras e novas divulgações;
+6. devolver resultados ao dossiê 360.
 
 ## Regra de produto
 
