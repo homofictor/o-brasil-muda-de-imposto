@@ -1,4 +1,4 @@
-# Bolsa 360 | MVP V0.2
+# Bolsa 360 | MVP V0.3
 
 ## Objetivo
 
@@ -25,8 +25,8 @@ Fonte principal atual:
 
 A base lê Balanço Patrimonial Ativo, Balanço Patrimonial Passivo, DRE e DFC. Os valores com escala MIL são convertidos para reais.
 
-### Atualização seguinte
-Os ITR de 2026 serão incorporados para que o motor utilize os resultados mais recentes disponíveis ao longo do exercício.
+### ITR 2026 e TTM
+Os ITR de 2026 já estão incorporados. O balanço usa a posição mais recente disponível. Para DRE e DFC, o motor calcula TTM pela fórmula: DFP 2025 + acumulado 2026 - período comparável de 2025. Quando o ITR não está disponível para uma companhia, a DFP 2025 permanece como fallback.
 
 ## Ligação ticker → companhia
 
@@ -111,15 +111,14 @@ Ainda não implementado nesta versão. O futuro Valor Justo Bolsa 360 será inde
 
 ## Próximas etapas
 
-1. incorporar ITR 2026;
-2. incorporar classificação setorial oficial B3;
-3. criar histórico de 3 e 5 anos;
-4. criar Crescimento 360;
-5. refinar Solidez 360 por setor;
-6. criar Valor Justo Bolsa 360;
-7. criar construtor de carteira por pesos setoriais;
-8. acompanhar carteiras e novas divulgações;
-9. devolver resultados ao dossiê 360.
+1. incorporar classificação setorial oficial B3;
+2. criar histórico de 3 e 5 anos;
+3. criar Crescimento 360;
+4. refinar Solidez 360 por setor;
+5. criar Valor Justo Bolsa 360;
+6. criar construtor de carteira por pesos setoriais;
+7. acompanhar carteiras e novas divulgações;
+8. devolver resultados ao dossiê 360.
 
 ## Regra de produto
 
