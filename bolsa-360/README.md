@@ -190,7 +190,7 @@ Bancos utilizam dois modelos patrimoniais:
 - lucro residual;
 - dividend discount model com payout implícito pela relação crescimento / ROE.
 
-O modelo de lucro residual parte do patrimônio líquido atual e soma o valor presente dos lucros residuais projetados. O modelo de dividendos projeta dividendos a partir do lucro e do payout sustentável.
+O modelo de lucro residual parte do patrimônio líquido atual e soma o valor presente dos lucros residuais projetados. O modelo de dividendos projeta dividendos a partir do lucro e de uma premissa de payout bancário independente e editável. Essa separação evita que os dois modelos se tornem matematicamente equivalentes.
 
 Quando ambos são válidos, o Valor Intrínseco 360 bancário central utiliza:
 - 70% lucro residual;
@@ -211,13 +211,15 @@ A interface permite alterar:
 - WACC operacional;
 - crescimento terminal;
 - alíquota de imposto;
-- custo de capital próprio dos bancos.
+- custo de capital próprio dos bancos;
+- payout bancário utilizado no modelo de dividendos.
 
 Os valores iniciais são premissas do modelo, não taxas de mercado observadas:
 - WACC: 14,5%;
 - crescimento terminal: 4,0%;
 - imposto: 34%;
-- custo de capital bancário: 15,0%.
+- custo de capital bancário: 15,0%;
+- payout bancário DDM: 50%.
 
 Alterações nessas premissas recalculam o Valor Intrínseco 360 localmente sem nova consulta à CVM.
 
