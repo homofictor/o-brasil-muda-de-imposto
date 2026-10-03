@@ -125,14 +125,24 @@
 
     <section id="intrinseco" class="panel manual-section">
       <h2>7. Valor Intrínseco 360</h2>
-      <p>É um valuation econômico da própria companhia, separado do Valor Justo.</p>
-      <h3>Empresas operacionais: DCF</h3>
-      <div class="formula">NOPAT = EBIT TTM × (1 - imposto)<br>ROIC ≈ NOPAT / (patrimônio + dívida líquida)<br>Reinvestimento ≈ crescimento / ROIC<br>FCFF = NOPAT × (1 - reinvestimento)</div>
-      <p>O crescimento histórico converge para o crescimento terminal em cinco anos. Os fluxos são descontados pelo WACC. A dívida líquida é deduzida do valor da firma.</p>
-      <h3>Bancos: lucro residual + DDM</h3>
-      <p>O modelo combina 70% lucro residual e 30% Dividend Discount Model quando ambos são válidos. O payout do DDM é uma premissa independente.</p>
-      <h3>Premissas iniciais</h3>
-      <p>WACC 14,5%; crescimento terminal 4,0%; imposto 34%; custo de capital bancário 15,0%; payout bancário 50%. São parâmetros editáveis, não taxas observadas nem recomendações.</p>
+      <p>É um valuation econômico da própria companhia, separado do Valor Justo. A versão 2 deixa de aplicar um único DCF a todo o universo e escolhe uma família metodológica conforme o tipo de negócio.</p>
+      <h3>Empresas operacionais: DCF por FCFF</h3>
+      <div class="formula">NOPAT = EBIT-base × (1 - imposto)<br>ROIC ≈ NOPAT / (patrimônio + dívida líquida)<br>Reinvestimento ≈ crescimento / ROIC<br>FCFF = NOPAT × (1 - reinvestimento)</div>
+      <p>O crescimento histórico converge para o crescimento terminal. O horizonte explícito varia conforme o perfil e pode ser maior em companhias com ROIC e crescimento elevados. A dívida líquida é deduzida do valor da firma.</p>
+      <h3>Setores cíclicos e commodities</h3>
+      <p>O EBIT-base pode ser normalizado pela mediana histórica da margem EBIT de 2021 a 2025 e combinado ao TTM. Isso reduz a dependência de um único ponto do ciclo.</p>
+      <h3>Bancos e seguradoras</h3>
+      <p>Usam modelos de patrimônio, com lucro residual e Dividend Discount Model. Quando ambos são válidos, o valor central combina 70% lucro residual e 30% DDM. Seguradoras recebem ajuste próprio no custo de capital.</p>
+      <h3>Holdings</h3>
+      <p>O DCF operacional genérico é desativado para holdings de participações identificadas. Nesses casos o sistema informa que o método adequado é Soma das Partes (SOTP), que exige valorar as investidas e a dívida da holding.</p>
+      <h3>Perfis metodológicos</h3>
+      <p>Utilities, telecomunicações, infraestrutura, varejo, tecnologia, saúde, imobiliário, locação de ativos e serviços financeiros recebem ajustes transparentes sobre WACC-base, crescimento terminal e horizonte explícito. Esses ajustes são regras do modelo e ainda não representam calibração automática por taxas de mercado.</p>
+      <h3>Premissas-base iniciais</h3>
+      <p>WACC-base operacional 12,0%; crescimento terminal-base 3,5%; imposto 34%; custo de capital bancário 14,0%; payout bancário 50%. São parâmetros editáveis do modelo, não taxas observadas nem recomendações.</p>
+      <h3>Checagem por caixa reportado</h3>
+      <p>Quando CFO e CAPEX passam por filtros de plausibilidade, o sistema apresenta uma segunda leitura baseada no caixa reportado. Ela é um controle de consistência e não compõe o Valor Intrínseco central, pois CFO menos CAPEX não é automaticamente equivalente a FCFF padronizado.</p>
+      <h3>Quando aparece “Não calculado”</h3>
+      <p>Não calculado não significa necessariamente ausência de demonstrações. O sistema passa a informar a causa: preço ou valor de mercado indisponível, EBIT não positivo, patrimônio não positivo, dívida líquida não identificada, modelo inadequado ao tipo de empresa ou valor operacional estimado insuficiente para cobrir a dívida líquida sob as premissas centrais.</p>
       <div class="formula">Distância intrínseca = Valor Intrínseco central / preço de fechamento - 1</div>
     </section>
 
