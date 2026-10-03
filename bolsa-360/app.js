@@ -201,7 +201,7 @@ function renderSector(block){
   return `
     <section class="sector-block">
       <div class="sector-block-head">
-        <div><h3>${esc(block.label||sectorPt(block.sector))}</h3><small>${block.total} ativos · ${coverage} com fundamentos disponíveis nesta sessão</small></div>
+        <div><h3>${esc(block.label||sectorPt(block.sector))}</h3><small>${block.total} ativos · ${coverage} com fundamentos · TTM até ${formatDate(state.cvmBase?.latestItrReference)}</small></div>
         <small>Fonte de mercado: brapi</small>
       </div>
       <div class="table-wrap">
@@ -242,11 +242,11 @@ function renderResults(){
   $('summarySectors').textContent=state.selected.size;
   $('summaryStocks').textContent=total;
   $('summaryCoverage').textContent=coverage;
-  const first=state.sectorData.find(x=>x.requestedAt);
-  $('summaryDate').textContent=formatDate(first?.requestedAt);
+  $('coverageNote').textContent=state.cvmBase?.ttmCovered?state.cvmBase.ttmCovered+' companhias com dados TTM no universo-base':'Cobertura disponível na base';
+  $('summaryDate').textContent=formatDate(state.cvmBase?.latestItrReference);
 
   $('dataWarning').classList.remove('hidden');
-  $('dataWarning').innerHTML='<b>Base própria em validação.</b> Preço, volume e setor vêm do mercado operacional. P/L, P/VP, EV/EBIT, ROE, margens e indicadores de dívida são calculados pelo Bolsa 360 a partir das DFP 2025 oficiais da CVM. A próxima camada incorporará ITR 2026 para atualizar resultados ao longo do ano.';
+  $('dataWarning').innerHTML='<b>Base TTM incorporada.</b> Balanço patrimonial usa a posição mais recente do ITR 2026. DRE e DFC usam TTM = DFP 2025 + acumulado de 2026 - período comparável de 2025. Referência mais recente da base: <b>'+formatDate(state.cvmBase?.latestItrReference)+'</b>.';
   $('resultsSection').classList.remove('hidden');
 }
 async function runScreen(){
@@ -312,7 +312,7 @@ function openDrawer(a){
     <div class="drawer-title">
       <p class="eyebrow">${esc(a.peerLabel||sectorPt(a.sector))}</p>
       <h2>${esc(a.ticker)}</h2>
-      <p class="muted">Comparação fundamentalista preliminar dentro do setor.</p>
+      <p class="muted">Comparação fundamentalista dentro do grupo de pares · ${esc(f.source||'CVM')} · referência ${formatDate(f.referenceDate)}.</p>
     </div>
     <div class="drawer-price">
       <div><span>Último fechamento</span><strong>${money(a.close)}</strong></div>
