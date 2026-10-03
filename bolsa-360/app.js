@@ -222,7 +222,7 @@ function fairValueFor(row,rows,isBank){
 function attachFairValues(rows,isBank){return rows.map(r=>({...r,fairValue:fairValueFor(r,rows,isBank)}))}
 function clamp(v,min,max){return Math.min(max,Math.max(min,v))}
 function intrinsicAssumptions(){
-  const read=(id,fallback)=>{const el=$(id);const v=el?n(el.value):null;return v===null?fallback:v/100};
+  const read=(id,fallback)=>{const el=$(id);const v=el?n(el.value):null;return (v===null?fallback:v)/100};
   return {
     wacc:clamp(read('dcfWacc',14.5),.07,.30),
     terminalGrowth:clamp(read('terminalGrowth',4),0,.08),
