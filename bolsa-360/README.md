@@ -151,10 +151,12 @@ Para cada modelo são calculados:
 
 O Valor Justo 360 central é a mediana dos valores centrais dos modelos válidos. A faixa é construída da mesma forma com os cenários conservadores e superiores.
 
-Cada modelo exige pelo menos três pares válidos, excluindo a própria companhia. A confiança é:
-- Alta: 3 ou 4 modelos válidos;
-- Média: 2 modelos;
-- Baixa: 1 modelo.
+Cada modelo exige pelo menos três pares válidos, excluindo a própria companhia. Para empresas não financeiras, o Valor Justo 360 usa preferencialmente empresas do mesmo subsetor; se não houver pelo menos três pares do mesmo subsetor, a faixa não é calculada. Isso evita comparar, por exemplo, siderúrgica com mineradora apenas porque ambas estão em um setor amplo. A confiança é:
+- Alta: 3 ou 4 modelos válidos e pelo menos 5 pares por modelo;
+- Média: pelo menos 2 modelos e 3 pares;
+- Baixa: apenas 1 modelo ou faixa excessivamente dispersa.
+
+Faixas muito abertas reduzem automaticamente o nível de confiança.
 
 O sistema exibe também a distância percentual entre o fechamento e o valor central. Essa distância é descritiva e não equivale a recomendação de compra ou venda.
 
