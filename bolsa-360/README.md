@@ -1,4 +1,12 @@
-# Bolsa 360 | MVP V0.7
+# Bolsa 360 | MVP V0.7.1
+
+## Manual e governança metodológica
+
+A rota `/bolsa-360/manual/` reúne o Manual do Usuário e Nota Metodológica. Ela documenta fontes, tratamento, indicadores, scores, valuations, controles de qualidade, limitações e uso responsável.
+
+Durante a preparação do manual, a base CVM recebeu dois controles adicionais:
+- preferência pela DFC indireta, usando a DFC direta apenas como fallback, para evitar duplicidade quando os dois formatos coexistem;
+- indicadores com denominadores economicamente inválidos passam a retornar N/D em métricas como ROE, dívida/PL e dívida líquida/EBIT.
 
 ## Duas experiências de uso
 
