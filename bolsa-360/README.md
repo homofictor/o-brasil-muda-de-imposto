@@ -1,4 +1,43 @@
-# Bolsa 360 | MVP V0.6
+# Bolsa 360 | MVP V0.7
+
+## Duas experiências de uso
+
+A V0.7 separa a interface em dois ambientes que compartilham o mesmo motor de dados e valuation.
+
+### Bolsa 360 Analítico
+
+Rota: `/bolsa-360/`
+
+Mantém a ferramenta completa para análise:
+- ranking setorial;
+- Valuation 360;
+- Qualidade 360;
+- Solidez 360;
+- Crescimento 360;
+- Valor Justo 360;
+- Valor Intrínseco 360;
+- múltiplos e indicadores;
+- premissas editáveis de valuation;
+- histórico fundamentalista.
+
+Nenhuma simplificação metodológica é aplicada a esse ambiente.
+
+### Bolsa 360 Iniciante
+
+Rota: `/bolsa-360/iniciante/`
+
+Usa o mesmo universo de dados, fundamentos e valuations, mas conduz o usuário por uma jornada guiada:
+1. escolher setores;
+2. comparar empresas;
+3. adicionar ativos a uma seleção;
+4. montar uma carteira fictícia;
+5. informar capital e pesos;
+6. calcular quantidades inteiras de ações e caixa remanescente;
+7. salvar a carteira localmente para acompanhamento posterior.
+
+A carteira simulada registra preços de entrada e alocações fictícias. Ela não executa ordens nem constitui recomendação.
+
+A próxima etapa desse ambiente será acompanhar a evolução temporal da carteira e compará-la a benchmarks como Ibovespa e Selic.
 
 ## Objetivo
 
