@@ -158,8 +158,9 @@ function getCode(rows,code){
   candidates.sort((a,b)=>(Number(b.VERSAO)||0)-(Number(a.VERSAO)||0));
   return accountValue(candidates[0]);
 }
-function getByDesc(rows,patterns,{contains=false}={}){
-  const seen=new Set(); let total=0,found=false;
+function getByDesc(rows,patterns,{contains=false,avoidNested=false}={}){
+  const matched=[];
+  const seen=new Set();
   for(const r of rows){
     const d=cleanText(r.DS_CONTA);
     const hit=patterns.some(p=>contains?d.includes(p):d===p);
@@ -167,9 +168,12 @@ function getByDesc(rows,patterns,{contains=false}={}){
     const code=String(r.CD_CONTA||'');
     if(seen.has(code))continue;
     const val=accountValue(r); if(val===null)continue;
-    seen.add(code); total+=val; found=true;
+    seen.add(code); matched.push({code,val});
   }
-  return found?total:null;
+  const selected=avoidNested
+    ?matched.filter(x=>!matched.some(y=>y.code!==x.code&&x.code.startsWith(y.code+'.')))
+    :matched;
+  return selected.length?selected.reduce((s,x)=>s+x.val,0):null;
 }
 function chooseRows(map,cvm){return map.get(String(cvm))||[]}
 function safeDiv(a,b){return a!==null&&b!==null&&b!==0?a/b:null}
@@ -179,10 +183,11 @@ function buildFundamentals(company,maps){
   const assets=getByDesc(bpa,['ATIVO TOTAL'])??getCode(bpa,'1');
   const currentAssets=getCode(bpa,'1.01');
   const cash=getByDesc(bpa,['CAIXA E EQUIVALENTES DE CAIXA']);
-  const equity=getByDesc(bpp,['PATRIMONIO LIQUIDO'])??getCode(bpp,'2.03');
+  const equity=getByDesc(bpp,['PATRIMONIO LIQUIDO CONSOLIDADO'])??getByDesc(bpp,['PATRIMONIO LIQUIDO'])??getCode(bpp,'2.03');
   const currentLiabilities=getCode(bpp,'2.01');
-  const debt=getByDesc(bpp,['EMPRESTIMOS E FINANCIAMENTOS','DEBENTURES','PASSIVOS DE ARRENDAMENTO','ARRENDAMENTOS']);
-  const revenue=getCode(dre,'3.01'),grossProfit=getCode(dre,'3.03'),ebit=getCode(dre,'3.05'),netIncome=getCode(dre,'3.11');
+  const debt=getByDesc(bpp,['EMPRESTIMOS E FINANCIAMENTOS','DEBENTURES','PASSIVOS DE ARRENDAMENTO','ARRENDAMENTOS'],{avoidNested:true});
+  const revenue=getCode(dre,'3.01'),grossProfit=getCode(dre,'3.03'),ebit=getCode(dre,'3.05');
+  const netIncome=getCode(dre,'3.11')??getByDesc(dre,['LUCRO OU PREJUIZO LIQUIDO CONSOLIDADO DO PERIODO','LUCRO LIQUIDO CONSOLIDADO DO PERIODO','LUCRO OU PREJUIZO LIQUIDO DO PERIODO']);
   const cfo=getCode(dfc,'6.01');
   const capex=getByDesc(dfc,['AQUISICAO DE IMOBILIZADO','AQUISICAO DE ATIVO IMOBILIZADO','AQUISICAO DE INTANGIVEL'],{contains:true});
   const fcf=(cfo!==null&&capex!==null)?cfo+(capex>0?-capex:capex):null;
