@@ -215,3 +215,18 @@ footer{max-width:1280px;margin:auto;padding:0 28px 44px;display:flex;justify-con
   .method-card{min-height:auto;padding:20px 22px 24px}
   .method-visual img{max-height:220px}
 }
+
+/* Consenso externo de analistas */
+.analyst-box{margin-top:14px;border:1px solid #d9e2dc;border-radius:18px;padding:18px;background:#fbfcfb}
+.analyst-box.unavailable{background:#f7f8f7}
+.analyst-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;margin-bottom:14px}
+.analyst-head h3{font-size:28px;margin:4px 0}
+.analyst-head small{color:var(--muted);font-size:10px}
+.analyst-call{text-align:right;display:grid;justify-items:end;gap:5px}
+.analyst-call>span{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:850}
+.analyst-rec{display:inline-flex;align-items:center;justify-content:center;min-width:72px;padding:7px 10px;border-radius:999px;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.04em}
+.analyst-rec.buy{background:#e5f3e9;color:#145d3b}
+.analyst-rec.neutral{background:#f3efe4;color:#785d21}
+.analyst-rec.sell{background:#f6e8e6;color:#8a3f36}
+.analyst-rec.na{background:#eef1ef;color:#6a746d}
+@media(max-width:700px){.analyst-head{display:block}.analyst-call{text-align:left;justify-items:start;margin-top:12px}}
