@@ -353,15 +353,15 @@ function fairValueFor(row,rows,isBank){
   if(!close||!marketCap||marketCap<=0)return null;
   const allPeers=rows.filter(x=>x.ticker!==row.ticker);
   const sameSubsector=!isBank&&row.subsector?allPeers.filter(x=>x.subsector===row.subsector):allPeers;
-  const peers=isBank?allPeers:(sameSubsector.length>=3?sameSubsector:[]);
-  if(peers.length<3)return null;
+  const peers=isBank?allPeers:(sameSubsector.length>=2?sameSubsector:[]);
+  if(peers.length<2)return null;
   const models=[];
 
   const addMultipleModel=(label,key)=>{
     const current=n(f[key]);
     if(current===null||current<=0)return;
     const vals=peers.map(p=>n(p.fundamentals?.[key])).filter(v=>v!==null&&v>0);
-    if(vals.length<3)return;
+    if(vals.length<2)return;
     const q25=quantile(vals,.25),q50=quantile(vals,.5),q75=quantile(vals,.75);
     const price=m=>m===null?null:close*(m/current);
     models.push({label,peers:vals.length,benchmarkLow:q25,benchmarkCentral:q50,benchmarkHigh:q75,low:price(q25),central:price(q50),high:price(q75)});
@@ -373,7 +373,7 @@ function fairValueFor(row,rows,isBank){
   if(!isBank){
     const ebit=n(f.ebit),netDebt=n(f.netDebt);
     const vals=peers.map(p=>n(p.fundamentals?.enterpriseToEbit)).filter(v=>v!==null&&v>0);
-    if(ebit!==null&&ebit>0&&netDebt!==null&&vals.length>=3){
+    if(ebit!==null&&ebit>0&&netDebt!==null&&vals.length>=2){
       const q25=quantile(vals,.25),q50=quantile(vals,.5),q75=quantile(vals,.75);
       const price=m=>{
         if(m===null)return null;
@@ -385,7 +385,7 @@ function fairValueFor(row,rows,isBank){
 
     const cfo=n(f.cfo);
     const yields=peers.map(p=>n(p.fundamentals?.cfoYield)).filter(v=>v!==null&&v>0);
-    if(cfo!==null&&cfo>0&&yields.length>=3){
+    if(cfo!==null&&cfo>0&&yields.length>=2){
       const q25=quantile(yields,.25),q50=quantile(yields,.5),q75=quantile(yields,.75);
       const price=y=>{const targetMarketCap=y&&y>0?cfo/y:null;return targetMarketCap?close*(targetMarketCap/marketCap):null};
       models.push({label:'CFO Yield',peers:yields.length,benchmarkLow:q75,benchmarkCentral:q50,benchmarkHigh:q25,low:price(q75),central:price(q50),high:price(q25)});
