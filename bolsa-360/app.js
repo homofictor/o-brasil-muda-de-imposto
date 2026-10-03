@@ -149,6 +149,12 @@ function weightedScore(rows,defs,minMetrics=2){
 function scoreSector(block){
   const rows=block.stocks||[];
   const isFinance=block.sector==='Finance';
+  const fundamentalReady=rows.filter(r=>{
+    const f=r.fundamentals||{};
+    const candidates=isFinance?[f.trailingPE,f.priceToBook,f.dividendYield]:[f.trailingPE,f.priceToBook,f.enterpriseToEbitda,f.fcfYield];
+    return candidates.filter(x=>validMetric('pe',x)||n(x)!==null).length>=2;
+  }).length;
+  if(fundamentalReady<3)return rows.map(r=>({...r,valuationScore:null,qualityScore:null,targetUpside:(n(r.fundamentals?.targetMeanPrice)!==null&&n(r.close)>0)?n(r.fundamentals.targetMeanPrice)/n(r.close)-1:null}));
   const valuationDefs=isFinance
     ?[{key:'pe',dir:'lower',w:.45},{key:'pb',dir:'lower',w:.4},{key:'dy',dir:'higher',w:.15}]
     :[{key:'pe',dir:'lower',w:.25},{key:'pb',dir:'lower',w:.15},{key:'evEbitda',dir:'lower',w:.35},{key:'fcfYield',dir:'higher',w:.25}];
