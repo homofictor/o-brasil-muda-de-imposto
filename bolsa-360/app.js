@@ -409,7 +409,7 @@ function renderSector(block){
       <div class="table-wrap">
         <table>
           <thead><tr>
-            <th>Ativo</th><th>Fechamento</th><th>Valor justo</th><th>Distância</th><th>P/L</th><th>P/VP</th><th>EV/EBIT</th><th>ROE</th><th>Valuation 360</th><th>Qualidade</th><th>Solidez</th><th>Crescimento</th>
+            <th>Ativo</th><th>Fechamento</th><th>Valor justo</th><th>V. intrínseco</th><th>Dist. intrínseca</th><th>P/L</th><th>P/VP</th><th>EV/EBIT</th><th>ROE</th><th>Valuation 360</th><th>Qualidade</th><th>Solidez</th><th>Crescimento</th>
           </tr></thead>
           <tbody>
             ${rows.map(r=>{
@@ -418,7 +418,8 @@ function renderSector(block){
                 <td><button class="asset-btn" data-ticker="${esc(r.ticker)}">${esc(r.ticker)}</button><small>Vol. ${compactMoney(r.volume)}</small></td>
                 <td><strong>${money(r.close)}</strong><small>${n(r.change)!==null?(n(r.change)>=0?'+':'')+n(r.change).toFixed(2)+'%':'N/D'}</small></td>
                 <td><strong>${money(r.fairValue?.central)}</strong><small>${r.fairValue?money(r.fairValue.low)+' a '+money(r.fairValue.high):'N/D'}</small></td>
-                <td>${r.fairValue?pct(r.fairValue.distance):'<span class="na">N/D</span>'}</td>
+                <td><strong>${money(r.intrinsicValue?.central)}</strong><small>${r.intrinsicValue?money(r.intrinsicValue.low)+' a '+money(r.intrinsicValue.high):'N/D'}</small></td>
+                <td>${r.intrinsicValue?pct(r.intrinsicValue.distance):'<span class="na">N/D</span>'}</td>
                 <td>${mult(f.trailingPE)}</td>
                 <td>${mult(f.priceToBook)}</td>
                 <td>${mult(f.enterpriseToEbit)}</td>
@@ -550,6 +551,17 @@ $('sectorResults').addEventListener('click',e=>{
 function drawerMetric(label,value){
   return '<div class="drawer-metric"><span>'+esc(label)+'</span><strong>'+esc(value)+'</strong></div>';
 }
+function renderIntrinsicValue(iv){
+  if(!iv)return '<div class="intrinsic-box unavailable"><p class="eyebrow">VALOR INTRÍNSECO 360</p><h3>Dados insuficientes</h3><p>O modelo intrínseco exige fundamentos positivos e dados históricos mínimos.</p></div>';
+  const d=iv.details||{};
+  let detail='';
+  if(iv.model.startsWith('DCF')){
+    detail='<div class="intrinsic-model-grid"><div><span>ROIC estimado</span><strong>'+pct(d.roic)+'</strong></div><div><span>Crescimento-base</span><strong>'+pct(iv.baseGrowth)+'</strong></div><div><span>WACC</span><strong>'+pct(d.wacc)+'</strong></div><div><span>Crescimento terminal</span><strong>'+pct(d.terminalGrowth)+'</strong></div></div>';
+  }else{
+    detail='<div class="intrinsic-model-grid"><div><span>Lucro residual</span><strong>'+money(d.riPrice)+'</strong></div><div><span>Dividendos</span><strong>'+money(d.ddmPrice)+'</strong></div><div><span>Custo do capital</span><strong>'+pct(d.costEquity)+'</strong></div><div><span>Payout implícito</span><strong>'+pct(d.payout)+'</strong></div></div>';
+  }
+  return '<div class="intrinsic-box"><div class="intrinsic-head"><div><p class="eyebrow">VALOR INTRÍNSECO 360</p><h3>'+money(iv.central)+'</h3><small>'+esc(iv.model)+' · faixa '+money(iv.low)+' a '+money(iv.high)+'</small></div><div class="intrinsic-distance"><span>Distância ao fechamento</span><strong>'+pct(iv.distance)+'</strong><small>Confiança '+esc(iv.confidence)+'</small></div></div>'+detail+'</div>';
+}
 function renderFairValue(fv){
   if(!fv)return '<div class="fair-value-box unavailable"><p class="eyebrow">VALOR JUSTO 360</p><h3>Dados insuficientes</h3><p>O grupo de pares ainda não possui múltiplos suficientes para uma faixa relativa robusta.</p></div>';
   const models=fv.models.map(m=>{
@@ -577,9 +589,12 @@ function openDrawer(a){
       <div><span>Valor de mercado</span><strong>${compactMoney(a.marketCap)}</strong></div>
     </div>
     ${renderFairValue(a.fairValue)}
+    ${renderIntrinsicValue(a.intrinsicValue)}
     <div class="drawer-grid">
       ${drawerMetric('Valuation 360',a.valuationScore===null?'N/D':a.valuationScore+'/100')}
       ${drawerMetric('Valor Justo 360',a.fairValue?money(a.fairValue.central):'N/D')}
+      ${drawerMetric('Valor Intrínseco 360',a.intrinsicValue?money(a.intrinsicValue.central):'N/D')}
+      ${drawerMetric('Distância intrínseca',a.intrinsicValue?pct(a.intrinsicValue.distance):'N/D')}
       ${drawerMetric('Faixa de valor',a.fairValue?money(a.fairValue.low)+' a '+money(a.fairValue.high):'N/D')}
       ${drawerMetric('Distância do preço',a.fairValue?pct(a.fairValue.distance):'N/D')}
       ${drawerMetric('Qualidade',a.qualityScore===null?'N/D':a.qualityScore+'/100')}
@@ -601,7 +616,7 @@ function openDrawer(a){
       ${drawerMetric('Margem EBIT Δ',pct(a.growth?.ebitMarginDelta))}
       ${drawerMetric('Anos com lucro',pct(a.growth?.positiveProfitYears))}
     </div>
-    ${renderHistory(a.growth?.history||[])}\n    <div class="drawer-note">Valor Justo 360 é uma estimativa relativa baseada nos múltiplos dos pares e nos fundamentos TTM da companhia. Valuation, Qualidade, Solidez e Crescimento 360 permanecem dimensões independentes. O histórico usa DFP anuais da CVM de 2021 a 2025 e acrescenta o TTM 2026 quando disponível. Não representa recomendação de compra, venda ou manutenção.</div>
+    ${renderHistory(a.growth?.history||[])}\n    <div class="drawer-note">Valor Justo 360 é uma estimativa relativa baseada nos múltiplos dos pares. Valor Intrínseco 360 usa DCF nas empresas operacionais e lucro residual/dividendos nos bancos. Valuation, Qualidade, Solidez e Crescimento 360 permanecem dimensões independentes. O histórico usa DFP anuais da CVM de 2021 a 2025 e acrescenta o TTM 2026 quando disponível. Não representa recomendação de compra, venda ou manutenção.</div>
   `;
   $('drawerBackdrop').classList.remove('hidden');
   $('assetDrawer').classList.add('open');
@@ -615,4 +630,16 @@ function closeDrawer(){
 $('closeDrawer').addEventListener('click',closeDrawer);
 $('drawerBackdrop').addEventListener('click',closeDrawer);
 
+function recomputeWithAssumptions(){
+  if(!state.sectorData.length)return;
+  state.sectorData=state.sectorData.map(block=>{
+    const base={...block,stocks:block.stocks};
+    return {...base,scored:scoreSector(base)};
+  });
+  renderResults();
+}
+['dcfWacc','terminalGrowth','taxRate','bankCostEquity'].forEach(id=>{
+  const el=$(id);
+  if(el)el.addEventListener('change',recomputeWithAssumptions);
+});
 loadUniverse();
