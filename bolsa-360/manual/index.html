@@ -18,7 +18,16 @@
     .manual-card b{display:block;color:var(--green);margin-bottom:5px}.formula{border:1px solid var(--line);border-radius:13px;padding:13px 15px;background:#f8faf8;margin:10px 0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
     .reliability{width:100%;border-collapse:collapse;margin-top:12px}.reliability th,.reliability td{padding:11px;border:1px solid var(--line);text-align:left;vertical-align:top;font-size:11px}.reliability th{background:var(--green);color:#fff}
     .source-list a{word-break:break-all}.manual-version{display:inline-block;padding:7px 10px;border-radius:999px;background:#f2eee5;color:#745b2c;font-size:10px;font-weight:900}
+    .manual-print{cursor:pointer}
     @media(max-width:760px){.manual-grid{grid-template-columns:1fr}.reliability{display:block;overflow:auto}.manual-hero{padding-top:20px}}
+    @media print{
+      .devbar,.topbar,.manual-nav{display:none!important}
+      body{background:#fff}
+      main{max-width:none;padding:0}
+      .panel{box-shadow:none;break-inside:avoid}
+      .manual-section{border:0;border-bottom:1px solid #ddd;border-radius:0}
+      a{color:#000;text-decoration:none}
+    }
   </style>
 </head>
 <body>
@@ -31,6 +40,7 @@
     <div class="top-actions">
       <a class="back-link" href="../">Análise completa</a>
       <a class="back-link" href="../iniciante/">Modo iniciante</a>
+      <button class="back-link manual-print" type="button" onclick="window.print()">Imprimir / salvar em PDF</button>
     </div>
   </header>
   <main>
