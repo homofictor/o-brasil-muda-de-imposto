@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 470 96" role="img" aria-labelledby="title desc">
+<title id="title">Bolsa 360</title>
+<desc id="desc">Marca Bolsa 360 com gráfico de barras e movimento circular ascendente.</desc>
+<defs>
+  <linearGradient id="gGreen" x1="0" y1="1" x2="1" y2="0">
+    <stop offset="0" stop-color="#082c20"/>
+    <stop offset="1" stop-color="#197047"/>
+  </linearGradient>
+  <linearGradient id="gGold" x1="0" y1="1" x2="1" y2="0">
+    <stop offset="0" stop-color="#b58b45"/>
+    <stop offset=".55" stop-color="#e1c27e"/>
+    <stop offset="1" stop-color="#f0d69c"/>
+  </linearGradient>
+  <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+    <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#082c20" flood-opacity=".18"/>
+  </filter>
+</defs>
+<g transform="translate(4 5)" filter="url(#soft)">
+  <path d="M75 16A35 35 0 1 0 79 68" fill="none" stroke="url(#gGreen)" stroke-width="10" stroke-linecap="round"/>
+  <rect x="27" y="49" width="10" height="22" rx="2" fill="#1c6b47"/>
+  <rect x="43" y="39" width="10" height="32" rx="2" fill="#207b50"/>
+  <rect x="59" y="27" width="10" height="44" rx="2" fill="#2d8a5c"/>
+  <path d="M18 68C39 76 62 73 79 60C90 52 94 40 92 27" fill="none" stroke="url(#gGold)" stroke-width="7" stroke-linecap="round"/>
+  <path d="M82 15L98 18L91 33Z" fill="url(#gGold)"/>
+</g>
+<g transform="translate(118 0)">
+  <text x="0" y="57" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="45" font-weight="800" letter-spacing="-1.6" fill="#0d231a">BOLSA</text>
+  <text x="155" y="57" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="45" font-weight="850" letter-spacing="-1.2" fill="#135c3e">360</text>
+</g>
+</svg>
