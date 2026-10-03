@@ -192,3 +192,6 @@ footer{max-width:1280px;margin:auto;padding:0 28px 44px;display:flex;justify-con
 .top-actions{display:flex;gap:8px;align-items:center}
 .beginner-link{background:var(--green);color:#fff;border-color:var(--green)}
 @media(max-width:700px){.top-actions .back-link:last-child{display:none}.beginner-link{display:inline-flex}}
+
+.manual-link{background:#f3eee3;color:#745b2c;border-color:#d9c9a5;font-weight:900}
+.manual-link:hover{background:#ebe2cf;color:#5f481f}
