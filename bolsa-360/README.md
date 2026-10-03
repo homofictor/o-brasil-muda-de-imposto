@@ -1,4 +1,4 @@
-# Bolsa 360 | MVP V0.4
+# Bolsa 360 | MVP V0.5
 
 ## Objetivo
 
@@ -123,6 +123,43 @@ EBIT não entra na nota de crescimento bancária. Pesos iniciais:
 
 Quando o ponto inicial ou final de EBIT/lucro é negativo, o CAGR correspondente não é calculado. A ausência não é convertida em zero; o score é recalibrado com os indicadores válidos.
 
+## Valor Justo 360
+
+A V0.5 acrescenta uma faixa de valor relativo por ação, separada das notas de Valuation, Qualidade, Solidez e Crescimento.
+
+O cálculo usa a própria companhia como numerador econômico e os múltiplos observados nas demais empresas do mesmo grupo de pares como referência. O ativo avaliado é excluído da amostra de benchmark para reduzir circularidade.
+
+### Empresas não financeiras
+Podem entrar até quatro modelos:
+- P/L aplicado ao lucro líquido TTM;
+- P/VP aplicado ao patrimônio líquido mais recente;
+- EV/EBIT aplicado ao EBIT TTM, descontando a dívida líquida;
+- CFO Yield aplicado ao fluxo de caixa operacional TTM.
+
+### Bancos
+A primeira versão utiliza:
+- P/L;
+- P/VP.
+
+EV/EBIT e métricas de dívida industrial não são usados para bancos.
+
+### Faixa
+Para cada modelo são calculados:
+- cenário conservador com quartil inferior do múltiplo, ou quartil superior no caso de yield;
+- cenário central com a mediana dos pares;
+- cenário superior com quartil superior do múltiplo, ou quartil inferior no caso de yield.
+
+O Valor Justo 360 central é a mediana dos valores centrais dos modelos válidos. A faixa é construída da mesma forma com os cenários conservadores e superiores.
+
+Cada modelo exige pelo menos três pares válidos, excluindo a própria companhia. A confiança é:
+- Alta: 3 ou 4 modelos válidos;
+- Média: 2 modelos;
+- Baixa: 1 modelo.
+
+O sistema exibe também a distância percentual entre o fechamento e o valor central. Essa distância é descritiva e não equivale a recomendação de compra ou venda.
+
+Esta versão é um valuation relativo por pares. Um DCF próprio, com premissas explícitas de custo de capital e crescimento terminal, ficará separado para não misturar metodologias.
+
 ## Normalização
 
 Cada indicador é convertido em percentil dentro do grupo comparável. Valores ausentes não são inventados e os scores exigem uma quantidade mínima de métricas válidas.
@@ -135,7 +172,7 @@ Ainda não implementado nesta versão. O futuro Valor Justo Bolsa 360 será inde
 
 1. incorporar classificação setorial oficial B3;
 2. refinar Solidez 360 por setor;
-3. criar Valor Justo Bolsa 360;
+3. criar DCF e modelos intrínsecos setoriais;
 4. criar construtor de carteira por pesos setoriais;
 5. acompanhar carteiras e novas divulgações;
 6. devolver resultados ao dossiê 360.
