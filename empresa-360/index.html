@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Empresa 360 IA | Ambiente de desenvolvimento</title>
+  <meta name="description" content="Protótipo do Empresa 360 IA. Ambiente de desenvolvimento separado do site em produção.">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div class="devbar">AMBIENTE DE DESENVOLVIMENTO | Nenhuma alteração afeta o simulador publicado</div>
+
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="Empresa 360 IA">
+      <span class="brand-mark">360</span>
+      <span>
+        <strong>EMPRESA 360</strong>
+        <small>Inteligência empresarial com IA e validação profissional</small>
+      </span>
+    </a>
+    <span class="badge">MVP V1</span>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">DIAGNÓSTICO EMPRESARIAL</p>
+        <h1>Veja sua empresa por inteiro.</h1>
+        <p class="lead">Comece pelo CNPJ. O Empresa 360 organiza dados empresariais e abre uma trilha de análise tributária, financeira e estratégica para mostrar onde vale a pena olhar primeiro.</p>
+
+        <form id="cnpjForm" class="cnpj-box" novalidate>
+          <label for="cnpj">CNPJ da empresa</label>
+          <div class="cnpj-row">
+            <input id="cnpj" name="cnpj" inputmode="numeric" autocomplete="off" placeholder="00.000.000/0000-00" maxlength="18" aria-describedby="cnpjHelp">
+            <button id="analisarBtn" type="submit">Analisar empresa</button>
+          </div>
+          <p id="cnpjHelp" class="helper">Consulta cadastral inicial. O diagnóstico completo exigirá confirmação de dados e, quando necessário, documentos da empresa.</p>
+          <p id="status" class="status" role="status" aria-live="polite"></p>
+        </form>
+
+        <div class="trust-grid">
+          <div><strong>1</strong><span>CNPJ</span></div>
+          <div><strong>2</strong><span>Radar inicial</span></div>
+          <div><strong>3</strong><span>Reforma 360</span></div>
+          <div><strong>4</strong><span>BP e DRE</span></div>
+          <div><strong>5</strong><span>Prioridades</span></div>
+        </div>
+      </div>
+
+      <aside class="hero-panel" aria-label="Como o diagnóstico funciona">
+        <p class="panel-kicker">O QUE O SISTEMA ENTREGA</p>
+        <h2>Menos alertas genéricos. Mais prioridade.</h2>
+        <div class="metric">
+          <span>Impacto</span>
+          <b>Quanto pode representar</b>
+        </div>
+        <div class="metric">
+          <span>Confiança</span>
+          <b>Quanto sabemos com os dados disponíveis</b>
+        </div>
+        <div class="metric">
+          <span>Evidência</span>
+          <b>Por que o ponto foi identificado</b>
+        </div>
+        <div class="metric">
+          <span>Próxima ação</span>
+          <b>O que precisa ser feito para confirmar</b>
+        </div>
+      </aside>
+    </section>
+
+    <section id="companySection" class="company-section hidden" aria-live="polite">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">EMPRESA IDENTIFICADA</p>
+          <h2 id="companyName">Empresa</h2>
+          <p id="companyTrade" class="muted"></p>
+        </div>
+        <button id="novaConsulta" class="ghost" type="button">Nova consulta</button>
+      </div>
+
+      <div class="company-grid">
+        <article class="card data-card">
+          <h3>Dados cadastrais</h3>
+          <dl id="companyData"></dl>
+        </article>
+
+        <article class="card radar-card">
+          <div class="card-head">
+            <div>
+              <p class="eyebrow">RADAR INICIAL</p>
+              <h3>Primeiras dimensões</h3>
+            </div>
+            <span class="analysis-pill">Pré-diagnóstico</span>
+          </div>
+          <div class="radar-list">
+            <div><span>Reforma Tributária</span><b class="wait">A aprofundar</b></div>
+            <div><span>Regime tributário</span><b class="wait">A confirmar</b></div>
+            <div><span>Formação de preços</span><b class="wait">A aprofundar</b></div>
+            <div><span>Margem</span><b class="locked">Aguardando DRE</b></div>
+            <div><span>Liquidez</span><b class="locked">Aguardando BP</b></div>
+            <div><span>Endividamento</span><b class="locked">Aguardando BP</b></div>
+          </div>
+        </article>
+      </div>
+
+      <div class="next-grid">
+        <article class="next-card featured">
+          <span class="step">PRÓXIMO MÓDULO</span>
+          <h3>Reforma 360</h3>
+          <p>Usaremos um espelho do simulador existente para evoluir a análise sem modificar a versão hoje publicada.</p>
+          <a href="../simulador/guiado/" class="button-link">Abrir espelho do simulador</a>
+        </article>
+        <article class="next-card">
+          <span class="step">EM CONSTRUÇÃO</span>
+          <h3>Financeiro 360</h3>
+          <p>Upload de BP e DRE, conferência dos números e cálculo dos indicadores financeiros.</p>
+          <button type="button" disabled>Disponível na próxima etapa</button>
+        </article>
+        <article class="next-card">
+          <span class="step">EM CONSTRUÇÃO</span>
+          <h3>Relatório 360</h3>
+          <p>Impacto, confiança, evidências, dados faltantes e próxima ação em uma única visão.</p>
+          <button type="button" disabled>Disponível na próxima etapa</button>
+        </article>
+      </div>
+    </section>
+
+    <section class="architecture">
+      <p class="eyebrow">ARQUITETURA DO PRODUTO</p>
+      <h2>Um núcleo, vários módulos especializados.</h2>
+      <div class="architecture-flow">
+        <span>CNPJ</span><i>→</i><span>Empresa</span><i>→</i><span>Reforma 360</span><i>→</i><span>Financeiro 360</span><i>→</i><span>Motor de regras</span><i>→</i><span>Relatório</span>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Empresa 360 IA | Protótipo interno da Homo Fictor</p>
+    <p>Resultados preliminares não substituem análise profissional.</p>
+  </footer>
+
+  <script src="./app.js"></script>
+</body>
+</html>
