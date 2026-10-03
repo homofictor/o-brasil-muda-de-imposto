@@ -168,7 +168,12 @@ function scoreSector(block){
     {key:'netDebtEbit',dir:'lower',w:.40},
     {key:'currentRatio',dir:'higher',w:.20}
   ];
-  const growthDefs=[
+  const growthDefs=isBank?[
+    {key:'gRevenue3',dir:'higher',w:.30},
+    {key:'gRevenueLong',dir:'higher',w:.15},
+    {key:'gProfit3',dir:'higher',w:.35},
+    {key:'gProfitYears',dir:'higher',w:.20}
+  ]:[
     {key:'gRevenue3',dir:'higher',w:.25},
     {key:'gRevenueLong',dir:'higher',w:.15},
     {key:'gEbit3',dir:'higher',w:.20},
