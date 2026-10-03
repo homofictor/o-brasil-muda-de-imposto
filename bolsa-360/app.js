@@ -1,4 +1,4 @@
-const state={universe:null,selected:new Set(),sectorData:[],assetMap:new Map()};
+const state={universe:null,cvmBase:null,selected:new Set(),sectorData:[],assetMap:new Map()};
 
 const $=id=>document.getElementById(id);
 const sectorNames={
@@ -102,19 +102,21 @@ function metricValue(row,key){
   return {
     pe:f.trailingPE,
     pb:f.priceToBook,
-    evEbitda:f.enterpriseToEbitda,
-    fcfYield:f.fcfYield,
+    evEbit:f.enterpriseToEbit,
+    cfoYield:f.cfoYield,
     roe:f.returnOnEquity,
     roa:f.returnOnAssets,
-    ebitdaMargin:f.ebitdaMargins,
-    profitMargin:f.profitMargins,
-    dy:f.dividendYield,
-    netDebtEbitda:f.netDebtToEbitda
+    ebitMargin:f.ebitMargin,
+    profitMargin:f.profitMargin,
+    debtEquity:f.debtToEquity,
+    netDebtEbit:f.netDebtToEbit,
+    currentRatio:f.currentRatio
   }[key];
 }
 function validMetric(key,v){
   const x=n(v);if(x===null)return false;
-  if(['pe','pb','evEbitda'].includes(key))return x>0;
+  if(['pe','pb','evEbit'].includes(key))return x>0;
+  if(key==='currentRatio')return x>=0;
   return true;
 }
 function percentile(rows,key,direction){
@@ -124,8 +126,8 @@ function percentile(rows,key,direction){
   for(const r of rows){
     const v=n(metricValue(r,key));
     if(!validMetric(key,v))continue;
-    let lower=vals.filter(x=>x<v).length;
-    let equal=vals.filter(x=>x===v).length;
+    const lower=vals.filter(x=>x<v).length;
+    const equal=vals.filter(x=>x===v).length;
     const rank=lower+(equal-1)/2;
     let s=vals.length===1?50:(rank/(vals.length-1))*100;
     if(direction==='lower')s=100-s;
@@ -148,33 +150,35 @@ function weightedScore(rows,defs,minMetrics=2){
 }
 function scoreSector(block){
   const rows=block.stocks||[];
-  const isFinance=block.sector==='Finance';
-  const fundamentalReady=rows.filter(r=>{
+  const isBank=block.sector==='Finance'&&rows.some(r=>String(r.subsector||'').toLowerCase().includes('banco'));
+  const valuationDefs=isBank
+    ?[{key:'pe',dir:'lower',w:.55},{key:'pb',dir:'lower',w:.45}]
+    :[{key:'pe',dir:'lower',w:.30},{key:'pb',dir:'lower',w:.15},{key:'evEbit',dir:'lower',w:.30},{key:'cfoYield',dir:'higher',w:.25}];
+  const qualityDefs=isBank
+    ?[{key:'roe',dir:'higher',w:.75},{key:'profitMargin',dir:'higher',w:.25}]
+    :[{key:'roe',dir:'higher',w:.30},{key:'roa',dir:'higher',w:.15},{key:'ebitMargin',dir:'higher',w:.30},{key:'profitMargin',dir:'higher',w:.25}];
+  const solidityDefs=isBank?[]:[
+    {key:'debtEquity',dir:'lower',w:.40},
+    {key:'netDebtEbit',dir:'lower',w:.40},
+    {key:'currentRatio',dir:'higher',w:.20}
+  ];
+
+  const ready=rows.filter(r=>{
     const f=r.fundamentals||{};
-    const candidates=isFinance?[f.trailingPE,f.priceToBook,f.dividendYield]:[f.trailingPE,f.priceToBook,f.enterpriseToEbitda,f.fcfYield];
-    return candidates.filter(x=>validMetric('pe',x)||n(x)!==null).length>=2;
+    return [f.trailingPE,f.priceToBook,f.returnOnEquity].filter(x=>n(x)!==null).length>=2;
   }).length;
-  if(fundamentalReady<3)return rows.map(r=>({...r,valuationScore:null,qualityScore:null,targetUpside:(n(r.fundamentals?.targetMeanPrice)!==null&&n(r.close)>0)?n(r.fundamentals.targetMeanPrice)/n(r.close)-1:null}));
-  const valuationDefs=isFinance
-    ?[{key:'pe',dir:'lower',w:.45},{key:'pb',dir:'lower',w:.4},{key:'dy',dir:'higher',w:.15}]
-    :[{key:'pe',dir:'lower',w:.25},{key:'pb',dir:'lower',w:.15},{key:'evEbitda',dir:'lower',w:.35},{key:'fcfYield',dir:'higher',w:.25}];
-  const qualityDefs=isFinance
-    ?[{key:'roe',dir:'higher',w:.7},{key:'profitMargin',dir:'higher',w:.3}]
-    :[{key:'roe',dir:'higher',w:.25},{key:'roa',dir:'higher',w:.15},{key:'ebitdaMargin',dir:'higher',w:.35},{key:'profitMargin',dir:'higher',w:.25}];
+  if(ready<3)return rows.map(r=>({...r,valuationScore:null,qualityScore:null,solidityScore:null}));
 
-  const valuation=weightedScore(rows,valuationDefs,isFinance?2:2);
+  const valuation=weightedScore(rows,valuationDefs,isBank?2:2);
   const quality=weightedScore(rows,qualityDefs,1);
+  const solidity=isBank?new Map():weightedScore(rows,solidityDefs,2);
 
-  return rows.map(r=>{
-    const f=r.fundamentals||{};
-    const target=n(f.targetMeanPrice),close=n(r.close);
-    return {
-      ...r,
-      valuationScore:valuation.get(r.ticker)??null,
-      qualityScore:quality.get(r.ticker)??null,
-      targetUpside:target!==null&&close&&close>0?(target/close)-1:null
-    };
-  });
+  return rows.map(r=>({
+    ...r,
+    valuationScore:valuation.get(r.ticker)??null,
+    qualityScore:quality.get(r.ticker)??null,
+    solidityScore:isBank?null:(solidity.get(r.ticker)??null)
+  }));
 }
 function sortRows(rows){
   const mode=$('sortBy').value;
@@ -182,13 +186,12 @@ function sortRows(rows){
   const v=(r,key)=>n(r[key])??-Infinity;
   if(mode==='valuation')return copy.sort((a,b)=>v(b,'valuationScore')-v(a,'valuationScore'));
   if(mode==='quality')return copy.sort((a,b)=>v(b,'qualityScore')-v(a,'qualityScore'));
+  if(mode==='solidity')return copy.sort((a,b)=>v(b,'solidityScore')-v(a,'solidityScore'));
   if(mode==='priceAsc')return copy.sort((a,b)=>(n(a.close)??Infinity)-(n(b.close)??Infinity));
-  if(mode==='dy')return copy.sort((a,b)=>(n(b.fundamentals?.dividendYield)??-Infinity)-(n(a.fundamentals?.dividendYield)??-Infinity));
   if(mode==='roe')return copy.sort((a,b)=>(n(b.fundamentals?.returnOnEquity)??-Infinity)-(n(a.fundamentals?.returnOnEquity)??-Infinity));
-  if(mode==='evEbitda')return copy.sort((a,b)=>(n(a.fundamentals?.enterpriseToEbitda)??Infinity)-(n(b.fundamentals?.enterpriseToEbitda)??Infinity));
+  if(mode==='evEbit')return copy.sort((a,b)=>(n(a.fundamentals?.enterpriseToEbit)??Infinity)-(n(b.fundamentals?.enterpriseToEbit)??Infinity));
   return copy;
 }
-
 function scoreBadge(v){
   return v===null?'<span class="na">N/D</span>':'<span class="score '+scoreClass(v)+'">'+v+'</span>';
 }
@@ -204,7 +207,7 @@ function renderSector(block){
       <div class="table-wrap">
         <table>
           <thead><tr>
-            <th>Ativo</th><th>Fechamento</th><th>P/L</th><th>P/VP</th><th>EV/EBITDA</th><th>ROE</th><th>DY</th><th>Valuation 360</th><th>Qualidade</th><th>Consenso</th>
+            <th>Ativo</th><th>Fechamento</th><th>P/L</th><th>P/VP</th><th>EV/EBIT</th><th>ROE</th><th>Margem EBIT</th><th>Dívida/PL</th><th>Valuation 360</th><th>Qualidade</th><th>Solidez</th>
           </tr></thead>
           <tbody>
             ${rows.map(r=>{
@@ -214,12 +217,13 @@ function renderSector(block){
                 <td><strong>${money(r.close)}</strong><small>${n(r.change)!==null?(n(r.change)>=0?'+':'')+n(r.change).toFixed(2)+'%':'N/D'}</small></td>
                 <td>${mult(f.trailingPE)}</td>
                 <td>${mult(f.priceToBook)}</td>
-                <td>${mult(f.enterpriseToEbitda)}</td>
+                <td>${mult(f.enterpriseToEbit)}</td>
                 <td>${pct(f.returnOnEquity)}</td>
-                <td>${pct(f.dividendYield)}</td>
+                <td>${pct(f.ebitMargin)}</td>
+                <td>${mult(f.debtToEquity)}</td>
                 <td>${scoreBadge(r.valuationScore)}</td>
                 <td>${scoreBadge(r.qualityScore)}</td>
-                <td><strong>${money(f.targetMeanPrice)}</strong><small>${r.targetUpside===null?'N/D':pct(r.targetUpside)}</small></td>
+                <td>${scoreBadge(r.solidityScore)}</td>
               </tr>`;
             }).join('')}
           </tbody>
@@ -241,25 +245,28 @@ function renderResults(){
   const first=state.sectorData.find(x=>x.requestedAt);
   $('summaryDate').textContent=formatDate(first?.requestedAt);
 
-  const publicDemo=state.sectorData.some(x=>x.authMode==='public-demo');
-  $('dataWarning').classList.toggle('hidden',!publicDemo);
-  if(publicDemo){
-    $('dataWarning').innerHTML='<b>Modo público de desenvolvimento.</b> O universo, setores, fechamento e volume funcionam sem chave. A brapi libera fundamentos sem autenticação apenas para PETR4, VALE3, ITUB4 e MGLU3. O motor já aceita <code>BRAPI_API_KEY</code> no servidor para ampliar a cobertura sem expor a chave ao navegador.';
-  }
+  $('dataWarning').classList.remove('hidden');
+  $('dataWarning').innerHTML='<b>Base própria em validação.</b> Preço, volume e setor vêm do mercado operacional. P/L, P/VP, EV/EBIT, ROE, margens e indicadores de dívida são calculados pelo Bolsa 360 a partir das DFP 2025 oficiais da CVM. A próxima camada incorporará ITR 2026 para atualizar resultados ao longo do ano.';
   $('resultsSection').classList.remove('hidden');
 }
 async function runScreen(){
   if(!state.selected.size)return;
   $('runScreen').disabled=true;
   $('runScreen').textContent='Analisando...';
-  $('universeStatus').textContent='Buscando preços e fundamentos dos setores selecionados...';
+  $('universeStatus').textContent='Cruzando preços do último pregão com demonstrações financeiras oficiais da CVM...';
   try{
-    const blocks=await Promise.all([...state.selected].map(sector=>
-      api('/api/bolsa360?op=sector&sector='+encodeURIComponent(sector)+'&limit=20')
-    ));
-    state.sectorData=blocks.map(b=>({...b,scored:scoreSector(b)}));
+    if(!state.cvmBase)state.cvmBase=await api('/api/bolsa360-cvm');
+    const blocks=[...state.selected].map(sector=>{
+      const stocks=(state.cvmBase.companies||[]).filter(x=>x.sector===sector);
+      const covered=stocks.filter(x=>x.fundamentals&&(
+        x.fundamentals.trailingPE!==null||x.fundamentals.priceToBook!==null||x.fundamentals.returnOnEquity!==null
+      )).length;
+      const block={sector,total:stocks.length,fundamentalsCoverage:covered,requestedAt:state.cvmBase.requestedAt,stocks};
+      return {...block,scored:scoreSector(block)};
+    });
+    state.sectorData=blocks;
     renderResults();
-    $('universeStatus').textContent='Análise concluída. O ranking é recalculado dentro de cada setor.';
+    $('universeStatus').textContent='Análise concluída com fundamentos calculados pelo Bolsa 360 a partir das DFP da CVM.';
     $('resultsSection').scrollIntoView({behavior:'smooth',block:'start'});
   }catch(e){
     $('universeStatus').textContent='Falha na análise: '+e.message;
@@ -290,23 +297,23 @@ function openDrawer(a){
     </div>
     <div class="drawer-price">
       <div><span>Último fechamento</span><strong>${money(a.close)}</strong></div>
-      <div><span>Consenso de analistas</span><strong>${money(f.targetMeanPrice)}</strong></div>
+      <div><span>Valor de mercado</span><strong>${compactMoney(a.marketCap)}</strong></div>
     </div>
     <div class="drawer-grid">
       ${drawerMetric('Valuation 360',a.valuationScore===null?'N/D':a.valuationScore+'/100')}
       ${drawerMetric('Qualidade',a.qualityScore===null?'N/D':a.qualityScore+'/100')}
       ${drawerMetric('P/L',mult(f.trailingPE))}
       ${drawerMetric('P/VP',mult(f.priceToBook))}
-      ${drawerMetric('EV/EBITDA',mult(f.enterpriseToEbitda))}
-      ${drawerMetric('FCF Yield',pct(f.fcfYield))}
+      ${drawerMetric('EV/EBIT',mult(f.enterpriseToEbit))}
+      ${drawerMetric('CFO Yield',pct(f.cfoYield))}
       ${drawerMetric('ROE',pct(f.returnOnEquity))}
-      ${drawerMetric('Margem EBITDA',pct(f.ebitdaMargins))}
-      ${drawerMetric('Dívida líquida/EBITDA',mult(f.netDebtToEbitda))}
-      ${drawerMetric('Dividend Yield',pct(f.dividendYield))}
-      ${drawerMetric('Preço-alvo mínimo',money(f.targetLowPrice))}
-      ${drawerMetric('Preço-alvo máximo',money(f.targetHighPrice))}
+      ${drawerMetric('Margem EBIT',pct(f.ebitMargin))}
+      ${drawerMetric('Dívida / PL',mult(f.debtToEquity))}
+      ${drawerMetric('Dívida líquida / EBIT',mult(f.netDebtToEbit))}
+      ${drawerMetric('Liquidez corrente',mult(f.currentRatio))}
+      ${drawerMetric('Solidez',a.solidityScore===null?'N/D':a.solidityScore+'/100')}
     </div>
-    <div class="drawer-note">Valuation 360 compara múltiplos e geração de caixa com pares do mesmo setor. Não representa recomendação de compra, venda ou manutenção. O preço-alvo exibido, quando disponível, é consenso externo de analistas e não o valor justo próprio do Bolsa 360.</div>
+    <div class="drawer-note">Valuation 360 compara múltiplos e geração de caixa com pares do mesmo setor. Os fundamentos desta versão são calculados a partir das DFP 2025 da CVM e combinados com preços de mercado. Não representa recomendação de compra, venda ou manutenção.</div>
   `;
   $('drawerBackdrop').classList.remove('hidden');
   $('assetDrawer').classList.add('open');
