@@ -220,6 +220,118 @@ function fairValueFor(row,rows,isBank){
   return {low,central,high,distance:central/close-1,confidence,modelCount:valid.length,peerCount:minPeers,models:valid};
 }
 function attachFairValues(rows,isBank){return rows.map(r=>({...r,fairValue:fairValueFor(r,rows,isBank)}))}
+function clamp(v,min,max){return Math.min(max,Math.max(min,v))}
+function intrinsicAssumptions(){
+  const read=(id,fallback)=>{const el=$(id);const v=el?n(el.value):null;return v===null?fallback:v/100};
+  return {
+    wacc:clamp(read('dcfWacc',14.5),.07,.30),
+    terminalGrowth:clamp(read('terminalGrowth',4),0,.08),
+    taxRate:clamp(read('taxRate',34),0,.50),
+    bankCostEquity:clamp(read('bankCostEquity',15),.08,.30),
+    years:5
+  };
+}
+function historicalGrowth(row){
+  const vals=[row.growth?.revenueCagr3,row.growth?.ebitCagr3,row.growth?.revenueCagrLong].map(n).filter(v=>v!==null&&v>-0.5&&v<0.5);
+  return vals.length?clamp(median(vals),-.03,.12):.04;
+}
+function bankHistoricalGrowth(row){
+  const vals=[row.growth?.profitCagr3,row.growth?.revenueCagr3,row.growth?.revenueCagrLong].map(n).filter(v=>v!==null&&v>-0.5&&v<0.5);
+  return vals.length?clamp(median(vals),0,.12):.04;
+}
+function operatingDcfScenario(row,{wacc,terminalGrowth,taxRate,baseGrowth,years}){
+  const f=row.fundamentals||{},close=n(row.close),marketCap=n(row.marketCap);
+  const ebit=n(f.ebit),equity=n(f.equity),netDebt=n(f.netDebt);
+  if(!close||!marketCap||marketCap<=0||ebit===null||ebit<=0||equity===null||equity<=0||netDebt===null||wacc<=terminalGrowth)return null;
+  const nopat0=ebit*(1-taxRate);
+  const investedCapital=equity+netDebt;
+  if(nopat0<=0||investedCapital<=0)return null;
+  const roic=clamp(nopat0/investedCapital,.03,.50);
+  let nopat=nopat0,pv=0;
+  for(let t=1;t<=years;t++){
+    const mix=years===1?1:(t-1)/(years-1);
+    const g=baseGrowth+(terminalGrowth-baseGrowth)*mix;
+    nopat*=1+g;
+    const reinvest=g>0?clamp(g/roic,0,.85):0;
+    const fcff=nopat*(1-reinvest);
+    pv+=fcff/Math.pow(1+wacc,t);
+  }
+  const terminalRoic=clamp(roic,Math.max(terminalGrowth+.02,.06),.25);
+  const terminalReinvest=terminalGrowth>0?clamp(terminalGrowth/terminalRoic,0,.80):0;
+  const terminalFcff=nopat*(1+terminalGrowth)*(1-terminalReinvest);
+  const terminalValue=terminalFcff/(wacc-terminalGrowth);
+  const enterpriseValue=pv+terminalValue/Math.pow(1+wacc,years);
+  const equityValue=enterpriseValue-netDebt;
+  if(!Number.isFinite(equityValue)||equityValue<=0)return null;
+  return {price:close*(equityValue/marketCap),equityValue,enterpriseValue,roic,baseGrowth,wacc,terminalGrowth,taxRate,terminalRoic};
+}
+function bankEquityScenario(row,{costEquity,terminalGrowth,baseGrowth,years}){
+  const f=row.fundamentals||{},close=n(row.close),marketCap=n(row.marketCap),book0=n(f.equity),income0=n(f.netIncome);
+  if(!close||!marketCap||marketCap<=0||book0===null||book0<=0||income0===null||income0<=0||costEquity<=terminalGrowth)return null;
+  let book=book0,income=income0,pvResidual=0,pvDividends=0,lastPayout=.5;
+  for(let t=1;t<=years;t++){
+    const mix=years===1?1:(t-1)/(years-1);
+    const g=baseGrowth+(terminalGrowth-baseGrowth)*mix;
+    income*=1+g;
+    const roe=income/book;
+    const retention=roe>0?clamp(g/roe,0,.85):0;
+    const payout=1-retention;
+    const residual=income-costEquity*book;
+    const dividend=income*payout;
+    const disc=Math.pow(1+costEquity,t);
+    pvResidual+=residual/disc;
+    pvDividends+=dividend/disc;
+    book+=income*retention;
+    lastPayout=payout;
+  }
+  const income6=income*(1+terminalGrowth);
+  const roe6=income6/book;
+  const retention6=roe6>0?clamp(terminalGrowth/roe6,0,.85):0;
+  const payout6=1-retention6;
+  const residual6=income6-costEquity*book;
+  const dividend6=income6*payout6;
+  const residualTerminal=residual6/(costEquity-terminalGrowth);
+  const dividendTerminal=dividend6/(costEquity-terminalGrowth);
+  const riValue=book0+pvResidual+residualTerminal/Math.pow(1+costEquity,years);
+  const ddmValue=pvDividends+dividendTerminal/Math.pow(1+costEquity,years);
+  const validRi=Number.isFinite(riValue)&&riValue>0?riValue:null;
+  const validDdm=Number.isFinite(ddmValue)&&ddmValue>0?ddmValue:null;
+  if(validRi===null&&validDdm===null)return null;
+  const equityValue=validRi!==null&&validDdm!==null?.70*validRi+.30*validDdm:(validRi??validDdm);
+  return {
+    price:close*(equityValue/marketCap),equityValue,
+    riPrice:validRi!==null?close*(validRi/marketCap):null,
+    ddmPrice:validDdm!==null?close*(validDdm/marketCap):null,
+    costEquity,terminalGrowth,baseGrowth,payout:lastPayout,roe:n(f.returnOnEquity)
+  };
+}
+function intrinsicValueFor(row,isBank){
+  const a=intrinsicAssumptions(),close=n(row.close);
+  if(close===null||close<=0)return null;
+  const baseGrowth=isBank?bankHistoricalGrowth(row):historicalGrowth(row);
+  let conservative,central,optimistic,model;
+  if(isBank){
+    model='Lucro residual + dividendos';
+    conservative=bankEquityScenario(row,{costEquity:clamp(a.bankCostEquity+.02,.08,.35),terminalGrowth:clamp(a.terminalGrowth-.01,0,.06),baseGrowth:clamp(baseGrowth-.02,0,.10),years:a.years});
+    central=bankEquityScenario(row,{costEquity:a.bankCostEquity,terminalGrowth:Math.min(a.terminalGrowth,a.bankCostEquity-.02),baseGrowth,years:a.years});
+    optimistic=bankEquityScenario(row,{costEquity:clamp(a.bankCostEquity-.015,.08,.30),terminalGrowth:clamp(a.terminalGrowth+.01,0,.07),baseGrowth:clamp(baseGrowth+.02,0,.14),years:a.years});
+  }else{
+    model='DCF FCFF por NOPAT/ROIC';
+    conservative=operatingDcfScenario(row,{wacc:clamp(a.wacc+.02,.08,.35),terminalGrowth:clamp(a.terminalGrowth-.01,0,.06),taxRate:a.taxRate,baseGrowth:clamp(baseGrowth-.02,-.05,.10),years:a.years});
+    central=operatingDcfScenario(row,{wacc:a.wacc,terminalGrowth:Math.min(a.terminalGrowth,a.wacc-.025),taxRate:a.taxRate,baseGrowth,years:a.years});
+    optimistic=operatingDcfScenario(row,{wacc:clamp(a.wacc-.015,.07,.30),terminalGrowth:clamp(a.terminalGrowth+.01,0,.07),taxRate:a.taxRate,baseGrowth:clamp(baseGrowth+.02,-.03,.14),years:a.years});
+  }
+  if(!central||n(central.price)===null||central.price<=0)return null;
+  const values=[conservative?.price,central.price,optimistic?.price].map(n).filter(v=>v!==null&&v>0);
+  const low=Math.min(...values),high=Math.max(...values);
+  const historyInputs=isBank?[row.growth?.profitCagr3,row.growth?.revenueCagr3]:[row.growth?.ebitCagr3,row.growth?.revenueCagr3];
+  const historyCount=historyInputs.map(n).filter(v=>v!==null).length;
+  const spread=low>0?high/low:null;
+  let confidence=historyCount>=2&&spread!==null&&spread<=2?'Alta':historyCount>=1&&spread!==null&&spread<=3?'Média':'Baixa';
+  return {model,low,central:central.price,high,distance:central.price/close-1,confidence,baseGrowth,assumptions:a,details:central};
+}
+function attachIntrinsicValues(rows,isBank){return rows.map(r=>({...r,intrinsicValue:intrinsicValueFor(r,isBank)}))}
+
 function scoreSector(block){
   const rows=block.stocks||[];
   const isBank=block.isBank===true;
@@ -252,20 +364,20 @@ function scoreSector(block){
     const f=r.fundamentals||{};
     return [f.trailingPE,f.priceToBook,f.returnOnEquity].filter(x=>n(x)!==null).length>=2;
   }).length;
-  if(ready<3)return attachFairValues(rows.map(r=>({...r,valuationScore:null,qualityScore:null,solidityScore:null,growthScore:null})),isBank);
+  if(ready<3)return attachIntrinsicValues(attachFairValues(rows.map(r=>({...r,valuationScore:null,qualityScore:null,solidityScore:null,growthScore:null})),isBank),isBank);
 
   const valuation=weightedScore(rows,valuationDefs,isBank?2:2);
   const quality=weightedScore(rows,qualityDefs,1);
   const solidity=isBank?new Map():weightedScore(rows,solidityDefs,2);
   const growth=weightedScore(rows,growthDefs,3);
 
-  return attachFairValues(rows.map(r=>({
+  return attachIntrinsicValues(attachFairValues(rows.map(r=>({
     ...r,
     valuationScore:valuation.get(r.ticker)??null,
     qualityScore:quality.get(r.ticker)??null,
     solidityScore:isBank?null:(solidity.get(r.ticker)??null),
     growthScore:growth.get(r.ticker)??null
-  })),isBank);
+  })),isBank),isBank);
 }
 function sortRows(rows){
   const mode=$('sortBy').value;
@@ -276,6 +388,7 @@ function sortRows(rows){
   if(mode==='solidity')return copy.sort((a,b)=>v(b,'solidityScore')-v(a,'solidityScore'));
   if(mode==='growth')return copy.sort((a,b)=>v(b,'growthScore')-v(a,'growthScore'));
   if(mode==='fairDistance')return copy.sort((a,b)=>(n(b.fairValue?.distance)??-Infinity)-(n(a.fairValue?.distance)??-Infinity));
+  if(mode==='intrinsicDistance')return copy.sort((a,b)=>(n(b.intrinsicValue?.distance)??-Infinity)-(n(a.intrinsicValue?.distance)??-Infinity));
   if(mode==='priceAsc')return copy.sort((a,b)=>(n(a.close)??Infinity)-(n(b.close)??Infinity));
   if(mode==='roe')return copy.sort((a,b)=>(n(b.fundamentals?.returnOnEquity)??-Infinity)-(n(a.fundamentals?.returnOnEquity)??-Infinity));
   if(mode==='evEbit')return copy.sort((a,b)=>(n(a.fundamentals?.enterpriseToEbit)??Infinity)-(n(b.fundamentals?.enterpriseToEbit)??Infinity));
