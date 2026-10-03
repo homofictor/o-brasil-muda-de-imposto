@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Bolsa 360 | Screener fundamentalista</title>
+  <meta name="description" content="Screener setorial de ações brasileiras com comparação fundamentalista e valuation relativo.">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div class="devbar">BOLSA 360 | MVP EM AMBIENTE ESPELHO | NÃO É RECOMENDAÇÃO DE INVESTIMENTO</div>
+
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="Bolsa 360">
+      <span class="brand-mark">B360</span>
+      <span>
+        <strong>BOLSA 360</strong>
+        <small>Análise fundamentalista e construção de universo de investimento</small>
+      </span>
+    </a>
+    <a class="back-link" href="../empresa-360/">Empresa 360</a>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">SCREENER SETORIAL</p>
+        <h1>Escolha os setores. Compare fundamentos. <em>Descubra o que está relativamente mais barato.</em></h1>
+        <p class="lead">O Bolsa 360 separa preço de ação de valuation. Empresas são comparadas com pares do mesmo setor, usando múltiplos e indicadores adequados ao perfil econômico.</p>
+        <div class="hero-flags">
+          <span>Preço do último pregão</span>
+          <span>Ranking por setor</span>
+          <span>Valuation relativo</span>
+          <span>Qualidade</span>
+          <span>Preço-alvo de consenso</span>
+        </div>
+      </div>
+      <aside class="method-card">
+        <p class="eyebrow light">PRINCÍPIO</p>
+        <h2>R$ 8 não é necessariamente mais barato que R$ 80.</h2>
+        <p>O ranking fundamentalista utiliza múltiplos, fluxo de caixa, rentabilidade e estrutura financeira. O preço nominal da ação aparece apenas como referência de mercado.</p>
+      </aside>
+    </section>
+
+    <section class="panel selector-panel">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">1. UNIVERSO</p>
+          <h2>Quais setores devem compor sua busca?</h2>
+          <p id="universeStatus" class="muted">Carregando universo de ações da B3...</p>
+        </div>
+        <div class="selection-actions">
+          <button id="clearSectors" type="button" class="secondary">Limpar</button>
+          <button id="runScreen" type="button" disabled>Analisar setores selecionados</button>
+        </div>
+      </div>
+      <div id="sectorGrid" class="sector-grid"></div>
+    </section>
+
+    <section id="resultsSection" class="results hidden">
+      <div class="summary-grid">
+        <article class="summary-card dark">
+          <span>Setores analisados</span>
+          <strong id="summarySectors">0</strong>
+          <small>Comparações sempre dentro do próprio setor</small>
+        </article>
+        <article class="summary-card">
+          <span>Ações no universo</span>
+          <strong id="summaryStocks">0</strong>
+          <small>Ordenadas inicialmente por liquidez</small>
+        </article>
+        <article class="summary-card">
+          <span>Com fundamentos</span>
+          <strong id="summaryCoverage">0</strong>
+          <small id="coverageNote">Cobertura disponível no provedor</small>
+        </article>
+        <article class="summary-card">
+          <span>Última atualização</span>
+          <strong id="summaryDate">—</strong>
+          <small>Data informada pela fonte de mercado</small>
+        </article>
+      </div>
+
+      <section class="panel ranking-panel">
+        <div class="section-head ranking-head">
+          <div>
+            <p class="eyebrow">2. RANKING</p>
+            <h2>Mais barato relativamente → mais caro relativamente</h2>
+            <p class="muted">Valuation 360 é um índice comparativo de 0 a 100. Quanto maior, mais barato o ativo aparece em relação aos pares com dados disponíveis.</p>
+          </div>
+          <div class="sort-wrap">
+            <label for="sortBy">Ordenar por</label>
+            <select id="sortBy">
+              <option value="valuation">Valuation 360</option>
+              <option value="quality">Qualidade</option>
+              <option value="priceAsc">Preço da ação</option>
+              <option value="dy">Dividend Yield</option>
+              <option value="roe">ROE</option>
+              <option value="evEbitda">EV/EBITDA</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="dataWarning" class="data-warning hidden"></div>
+        <div id="sectorResults" class="sector-results"></div>
+      </section>
+
+      <section class="panel methodology">
+        <div>
+          <p class="eyebrow">3. COMO LER</p>
+          <h2>Barato não significa bom.</h2>
+          <p>O Bolsa 360 mantém notas separadas para valuation e qualidade. Uma companhia pode negociar com múltiplos baixos porque seus fundamentos deterioraram. O objetivo do screener é reduzir o universo para análise aprofundada.</p>
+        </div>
+        <div class="quadrants">
+          <div><b>Cara e boa</b><small>qualidade alta, valuation pouco atrativo</small></div>
+          <div class="accent"><b>Barata e boa</b><small>valuation e qualidade acima dos pares</small></div>
+          <div><b>Cara e fraca</b><small>baixa qualidade e valuation exigente</small></div>
+          <div><b>Barata e fraca</b><small>múltiplos baixos, mas fundamentos frágeis</small></div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <div id="drawerBackdrop" class="drawer-backdrop hidden"></div>
+  <aside id="assetDrawer" class="asset-drawer" aria-hidden="true">
+    <button id="closeDrawer" class="drawer-close" type="button">×</button>
+    <div id="drawerBody"></div>
+  </aside>
+
+  <footer>
+    <span>Bolsa 360 | Homo Fictor</span>
+    <span>Ferramenta analítica. Não constitui recomendação, oferta ou aconselhamento de investimento.</span>
+  </footer>
+
+  <script src="./app.js"></script>
+</body>
+</html>
