@@ -199,6 +199,14 @@ module.exports=async function handler(req,res){
       const zipBuf=await fetchBuffer(CVM_DFP_URL);
       return res.status(200).json({entries:listZipEntries(zipBuf)});
     }
+    if(String(req.query?.debug||'')==='sample'){
+      const zipBuf=await fetchBuffer(CVM_DFP_URL);
+      const wanted=new Set(['dfp_cia_aberta_DRE_con_2025.csv','dfp_cia_aberta_BPA_con_2025.csv']);
+      const files=unzipSelected(zipBuf,wanted);
+      const dre=parseCsv(decode(files['dfp_cia_aberta_DRE_con_2025.csv']||Buffer.alloc(0)));
+      const bpa=parseCsv(decode(files['dfp_cia_aberta_BPA_con_2025.csv']||Buffer.alloc(0)));
+      return res.status(200).json({dre:dre.slice(0,3),bpa:bpa.slice(0,3)});
+    }
     const [stocks,cadBuf,zipBuf]=await Promise.all([
       marketUniverse(160),fetchBuffer(CVM_CAD_URL),fetchBuffer(CVM_DFP_URL)
     ]);
