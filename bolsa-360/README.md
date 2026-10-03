@@ -190,10 +190,10 @@ Para cada modelo são calculados:
 
 O Valor Justo 360 central é a mediana dos valores centrais dos modelos válidos. A faixa é construída da mesma forma com os cenários conservadores e superiores. Em EV/EBIT e CFO Yield, a reprecificação parte do valor econômico total calculado e o converte proporcionalmente para a classe negociada usando o valor de mercado atual, sem estimar número de ações.
 
-Cada modelo exige pelo menos três pares válidos, excluindo a própria companhia. Para empresas não financeiras, o Valor Justo 360 usa preferencialmente empresas do mesmo subsetor; se não houver pelo menos três pares do mesmo subsetor, a faixa não é calculada. Isso evita comparar, por exemplo, siderúrgica com mineradora apenas porque ambas estão em um setor amplo. A confiança é:
+Cada modelo exige pelo menos dois pares válidos, excluindo a própria companhia. Para empresas não financeiras, o Valor Justo 360 usa preferencialmente empresas do mesmo subsetor; se não houver pelo menos dois pares do mesmo subsetor, a faixa não é calculada. Amostras com apenas dois comparáveis recebem confiança baixa. Isso evita comparar, por exemplo, siderúrgica com mineradora apenas porque ambas estão em um setor amplo. A confiança é:
 - Alta: 3 ou 4 modelos válidos e pelo menos 5 pares por modelo;
 - Média: pelo menos 2 modelos e 3 pares;
-- Baixa: apenas 1 modelo ou faixa excessivamente dispersa.
+- Baixa: base com apenas 2 pares, apenas 1 modelo ou faixa excessivamente dispersa.
 
 Faixas muito abertas reduzem automaticamente o nível de confiança.
 
