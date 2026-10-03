@@ -158,11 +158,12 @@ function getCode(rows,code){
   candidates.sort((a,b)=>(Number(b.VERSAO)||0)-(Number(a.VERSAO)||0));
   return accountValue(candidates[0]);
 }
-function getByDesc(rows,patterns){
+function getByDesc(rows,patterns,{contains=false}={}){
   const seen=new Set(); let total=0,found=false;
   for(const r of rows){
     const d=cleanText(r.DS_CONTA);
-    if(!patterns.some(p=>d===p||d.includes(p)))continue;
+    const hit=patterns.some(p=>contains?d.includes(p):d===p);
+    if(!hit)continue;
     const code=String(r.CD_CONTA||'');
     if(seen.has(code))continue;
     const val=accountValue(r); if(val===null)continue;
@@ -175,12 +176,15 @@ function safeDiv(a,b){return a!==null&&b!==null&&b!==0?a/b:null}
 function buildFundamentals(company,maps){
   const bpa=chooseRows(maps.bpa,company.cvm),bpp=chooseRows(maps.bpp,company.cvm),dre=chooseRows(maps.dre,company.cvm);
   const dfc=[...chooseRows(maps.dfcmi,company.cvm),...chooseRows(maps.dfcmd,company.cvm)];
-  const assets=getCode(bpa,'1'),currentAssets=getCode(bpa,'1.01'),cash=getByDesc(bpa,['CAIXA E EQUIVALENTES DE CAIXA']);
-  const equity=getCode(bpp,'2.03'),currentLiabilities=getCode(bpp,'2.01');
-  const debt=getByDesc(bpp,['EMPRESTIMOS E FINANCIAMENTOS','DEBENTURES','PASSIVOS DE ARRENDAMENTO']);
+  const assets=getByDesc(bpa,['ATIVO TOTAL'])??getCode(bpa,'1');
+  const currentAssets=getCode(bpa,'1.01');
+  const cash=getByDesc(bpa,['CAIXA E EQUIVALENTES DE CAIXA']);
+  const equity=getByDesc(bpp,['PATRIMONIO LIQUIDO'])??getCode(bpp,'2.03');
+  const currentLiabilities=getCode(bpp,'2.01');
+  const debt=getByDesc(bpp,['EMPRESTIMOS E FINANCIAMENTOS','DEBENTURES','PASSIVOS DE ARRENDAMENTO','ARRENDAMENTOS']);
   const revenue=getCode(dre,'3.01'),grossProfit=getCode(dre,'3.03'),ebit=getCode(dre,'3.05'),netIncome=getCode(dre,'3.11');
   const cfo=getCode(dfc,'6.01');
-  const capex=getByDesc(dfc,['AQUISICAO DE IMOBILIZADO','AQUISICAO DE ATIVO IMOBILIZADO','AQUISICAO DE INTANGIVEL']);
+  const capex=getByDesc(dfc,['AQUISICAO DE IMOBILIZADO','AQUISICAO DE ATIVO IMOBILIZADO','AQUISICAO DE INTANGIVEL'],{contains:true});
   const fcf=(cfo!==null&&capex!==null)?cfo+(capex>0?-capex:capex):null;
   const netDebt=(debt!==null)?debt-(cash||0):null;
   const ev=(company.marketCap!==null&&netDebt!==null)?company.marketCap+netDebt:null;
@@ -198,7 +202,9 @@ function buildFundamentals(company,maps){
     ebitMargin:safeDiv(ebit,revenue),
     profitMargin:safeDiv(netIncome,revenue),
     currentRatio:safeDiv(currentAssets,currentLiabilities),
-    debtToEquity:safeDiv(debt,equity)
+    debtToEquity:safeDiv(debt,equity),
+    netDebtToEbit:safeDiv(netDebt,ebit),
+    cashToDebt:safeDiv(cash,debt)
   };
 }
 
