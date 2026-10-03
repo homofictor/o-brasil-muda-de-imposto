@@ -164,13 +164,39 @@ function renderIntrinsicValue(iv){
   }
   return '<div class="intrinsic-box"><div class="intrinsic-head"><div><p class="eyebrow">VALOR INTRÍNSECO 360</p><h3>'+money(iv.central)+'</h3><small>'+esc(iv.model)+' · faixa '+money(iv.low)+' a '+money(iv.high)+'</small></div><div class="intrinsic-distance"><span>Distância ao fechamento</span><strong>'+pct(iv.distance)+'</strong><small>Confiança '+esc(iv.confidence)+'</small></div></div>'+detail+'</div>';
 }
+
+function analystTarget(row){
+  const a=row?.analystConsensus||{};
+  return n(a.targetMeanPrice)??n(a.targetMedianPrice);
+}
+function analystRecommendationClass(value){
+  const v=String(value||'').toLowerCase();
+  return v==='compra'?'buy':v==='venda'?'sell':v==='neutro'?'neutral':'na';
+}
+function analystRecommendationBadge(value){
+  if(!value)return '<span class="analyst-rec na">N/D</span>';
+  return '<span class="analyst-rec '+analystRecommendationClass(value)+'">'+esc(value)+'</span>';
+}
+function renderAnalystConsensus(consensus,close){
+  if(!consensus)return '<div class="analyst-box unavailable"><p class="eyebrow">CONSENSO DE MERCADO</p><h3>Sem cobertura disponível</h3><p>Não há preço-alvo ou recomendação agregada disponível na fonte para este ativo.</p></div>';
+  const target=n(consensus.targetMeanPrice)??n(consensus.targetMedianPrice);
+  const distance=target!==null&&n(close)>0?target/n(close)-1:n(consensus.targetDistance);
+  const opinions=n(consensus.numberOfAnalystOpinions);
+  return '<div class="analyst-box">'+
+    '<div class="analyst-head"><div><p class="eyebrow">CONSENSO DE MERCADO</p><h3>'+(target!==null?money(target):'N/D')+'</h3><small>Preço-alvo médio do consenso</small></div>'+
+    '<div class="analyst-call"><span>Indicação agregada</span>'+analystRecommendationBadge(consensus.recommendation)+'<small>'+(opinions!==null?opinions+' opinião'+(opinions===1?'':'ões'):'Número de analistas N/D')+'</small></div></div>'+
+    '<div class="intrinsic-model-grid"><div><span>Mediana</span><strong>'+money(consensus.targetMedianPrice)+'</strong></div><div><span>Faixa dos alvos</span><strong>'+money(consensus.targetLowPrice)+' a '+money(consensus.targetHighPrice)+'</strong></div><div><span>Distância ao fechamento</span><strong>'+pct(distance)+'</strong></div><div><span>Recommendation mean</span><strong>'+(n(consensus.recommendationMean)!==null?n(consensus.recommendationMean).toFixed(2):'N/D')+'</strong></div></div>'+
+    '<p class="drawer-note">Fonte externa: brapi financialData. O consenso agrega opiniões de analistas e não representa recomendação do Bolsa 360. A fonte não informa, neste campo agregado, a data individual de cada relatório.</p></div>';
+}
+
 function renderSector(block){
   const rows=sortRows(block.scored||[]),coverage=block.fundamentalsCoverage||0;
   const beginner=state?.selection instanceof Map;
-  return '<section class="sector-block"><div class="sector-block-head"><div><h3>'+esc(block.label||sectorPt(block.sector))+'</h3><small>'+block.total+' ativos · '+coverage+' com fundamentos · TTM até '+formatDate(state.cvmBase?.latestItrReference)+'</small></div><small>Fonte de mercado: brapi</small></div><div class="table-wrap"><table><thead><tr><th>Ativo</th><th>Fechamento</th><th>Valor justo</th><th>V. intrínseco</th><th>Dist. intrínseca</th><th class="adv-col">P/L</th><th class="adv-col">P/VP</th><th class="adv-col">EV/EBIT</th><th class="adv-col">ROE</th><th>Valuation 360</th><th>Qualidade</th><th>Solidez</th><th>Crescimento</th></tr></thead><tbody>'+
+  return '<section class="sector-block"><div class="sector-block-head"><div><h3>'+esc(block.label||sectorPt(block.sector))+'</h3><small>'+block.total+' ativos · '+coverage+' com fundamentos · TTM até '+formatDate(state.cvmBase?.latestItrReference)+'</small></div><small>Mercado/consenso: brapi · fundamentos: CVM</small></div><div class="table-wrap"><table><thead><tr><th>Ativo</th><th>Fechamento</th><th>Valor justo</th><th>V. intrínseco</th><th>Preço-alvo</th><th>Consenso</th><th>Dist. intrínseca</th><th class="adv-col">P/L</th><th class="adv-col">P/VP</th><th class="adv-col">EV/EBIT</th><th class="adv-col">ROE</th><th>Valuation 360</th><th>Qualidade</th><th>Solidez</th><th>Crescimento</th></tr></thead><tbody>'+
   rows.map(r=>{
-    const f=r.fundamentals||{},iv=r.intrinsicValue,available=iv?.available===true;
+    const f=r.fundamentals||{},iv=r.intrinsicValue,available=iv?.available===true,ac=r.analystConsensus||null,target=analystTarget(r);
     const intrinsicSub=available?money(iv.low)+' a '+money(iv.high):esc(iv?.reason||'N/D');
+    const opinions=n(ac?.numberOfAnalystOpinions);
     const assetCell=beginner
       ?'<div class="asset-actions"><button class="asset-btn" data-ticker="'+esc(r.ticker)+'">'+esc(r.ticker)+'</button><button class="add-asset-btn '+(state.selection.has(r.ticker)?'selected':'')+'" data-add-ticker="'+esc(r.ticker)+'" type="button">'+(state.selection.has(r.ticker)?'Selecionado':'Adicionar +')+'</button></div><small>Vol. '+compactMoney(r.volume)+'</small>'
       :'<button class="asset-btn" data-ticker="'+esc(r.ticker)+'">'+esc(r.ticker)+'</button><small>Vol. '+compactMoney(r.volume)+'</small>';
@@ -178,8 +204,22 @@ function renderSector(block){
       '<td><strong>'+money(r.close)+'</strong><small>'+(n(r.change)!==null?(n(r.change)>=0?'+':'')+n(r.change).toFixed(2)+'%':'N/D')+'</small></td>'+
       '<td><strong>'+money(r.fairValue?.central)+'</strong><small>'+(r.fairValue?money(r.fairValue.low)+' a '+money(r.fairValue.high):'N/D')+'</small></td>'+
       '<td><strong>'+money(iv?.central)+'</strong><small>'+intrinsicSub+'</small></td>'+
+      '<td><strong>'+money(target)+'</strong><small>'+(target!==null&&n(r.close)>0?pct(target/n(r.close)-1)+' vs. fechamento':'Consenso externo')+'</small></td>'+
+      '<td>'+analystRecommendationBadge(ac?.recommendation)+'<small>'+(opinions!==null?opinions+' analista'+(opinions===1?'':'s'):'Cobertura N/D')+'</small></td>'+
       '<td>'+(available?pct(iv.distance):'<span class="na">N/D</span>')+'</td>'+
       '<td class="adv-col">'+mult(f.trailingPE)+'</td><td class="adv-col">'+mult(f.priceToBook)+'</td><td class="adv-col">'+mult(f.enterpriseToEbit)+'</td><td class="adv-col">'+pct(f.returnOnEquity)+'</td>'+
       '<td>'+scoreBadge(r.valuationScore)+'</td><td>'+scoreBadge(r.qualityScore)+'</td><td>'+scoreBadge(r.solidityScore)+'</td><td>'+scoreBadge(r.growthScore)+'</td></tr>';
   }).join('')+'</tbody></table></div></section>';
 }
+
+const bolsa360OpenDrawerBase=openDrawer;
+openDrawer=function(a){
+  bolsa360OpenDrawerBase(a);
+  const box=renderAnalystConsensus(a.analystConsensus,a.close);
+  const intrinsic=document.querySelector('#drawerBody .intrinsic-box');
+  if(intrinsic)intrinsic.insertAdjacentHTML('afterend',box);
+  else{
+    const price=document.querySelector('#drawerBody .drawer-price');
+    if(price)price.insertAdjacentHTML('afterend',box);
+  }
+};
