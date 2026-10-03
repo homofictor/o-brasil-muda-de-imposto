@@ -127,7 +127,7 @@ Quando o ponto inicial ou final de EBIT/lucro é negativo, o CAGR correspondente
 
 A V0.5 acrescenta uma faixa de valor relativo por ação, separada das notas de Valuation, Qualidade, Solidez e Crescimento.
 
-O cálculo usa a própria companhia como numerador econômico e os múltiplos observados nas demais empresas do mesmo grupo de pares como referência. O ativo avaliado é excluído da amostra de benchmark para reduzir circularidade.
+O cálculo usa os múltiplos observados nas demais empresas do mesmo grupo de pares como referência. O ativo avaliado é excluído da amostra de benchmark para reduzir circularidade. Para P/L e P/VP, o preço da própria classe negociada é reprecificado pela razão entre múltiplo dos pares e múltiplo atual da companhia. Isso evita inferir quantidade de ações a partir de valor de mercado e preço, o que poderia distorcer empresas com ON, PN ou units.
 
 ### Empresas não financeiras
 Podem entrar até quatro modelos:
@@ -149,7 +149,7 @@ Para cada modelo são calculados:
 - cenário central com a mediana dos pares;
 - cenário superior com quartil superior do múltiplo, ou quartil inferior no caso de yield.
 
-O Valor Justo 360 central é a mediana dos valores centrais dos modelos válidos. A faixa é construída da mesma forma com os cenários conservadores e superiores.
+O Valor Justo 360 central é a mediana dos valores centrais dos modelos válidos. A faixa é construída da mesma forma com os cenários conservadores e superiores. Em EV/EBIT e CFO Yield, a reprecificação parte do valor econômico total calculado e o converte proporcionalmente para a classe negociada usando o valor de mercado atual, sem estimar número de ações.
 
 Cada modelo exige pelo menos três pares válidos, excluindo a própria companhia. Para empresas não financeiras, o Valor Justo 360 usa preferencialmente empresas do mesmo subsetor; se não houver pelo menos três pares do mesmo subsetor, a faixa não é calculada. Isso evita comparar, por exemplo, siderúrgica com mineradora apenas porque ambas estão em um setor amplo. A confiança é:
 - Alta: 3 ou 4 modelos válidos e pelo menos 5 pares por modelo;
