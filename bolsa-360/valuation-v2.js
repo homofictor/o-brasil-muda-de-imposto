@@ -166,16 +166,20 @@ function renderIntrinsicValue(iv){
 }
 function renderSector(block){
   const rows=sortRows(block.scored||[]),coverage=block.fundamentalsCoverage||0;
-  return '<section class="sector-block"><div class="sector-block-head"><div><h3>'+esc(block.label||sectorPt(block.sector))+'</h3><small>'+block.total+' ativos · '+coverage+' com fundamentos · TTM até '+formatDate(state.cvmBase?.latestItrReference)+'</small></div><small>Fonte de mercado: brapi</small></div><div class="table-wrap"><table><thead><tr><th>Ativo</th><th>Fechamento</th><th>Valor justo</th><th>V. intrínseco</th><th>Dist. intrínseca</th><th>P/L</th><th>P/VP</th><th>EV/EBIT</th><th>ROE</th><th>Valuation 360</th><th>Qualidade</th><th>Solidez</th><th>Crescimento</th></tr></thead><tbody>'+
+  const beginner=state?.selection instanceof Map;
+  return '<section class="sector-block"><div class="sector-block-head"><div><h3>'+esc(block.label||sectorPt(block.sector))+'</h3><small>'+block.total+' ativos · '+coverage+' com fundamentos · TTM até '+formatDate(state.cvmBase?.latestItrReference)+'</small></div><small>Fonte de mercado: brapi</small></div><div class="table-wrap"><table><thead><tr><th>Ativo</th><th>Fechamento</th><th>Valor justo</th><th>V. intrínseco</th><th>Dist. intrínseca</th><th class="adv-col">P/L</th><th class="adv-col">P/VP</th><th class="adv-col">EV/EBIT</th><th class="adv-col">ROE</th><th>Valuation 360</th><th>Qualidade</th><th>Solidez</th><th>Crescimento</th></tr></thead><tbody>'+
   rows.map(r=>{
     const f=r.fundamentals||{},iv=r.intrinsicValue,available=iv?.available===true;
     const intrinsicSub=available?money(iv.low)+' a '+money(iv.high):esc(iv?.reason||'N/D');
-    return '<tr><td><button class="asset-btn" data-ticker="'+esc(r.ticker)+'">'+esc(r.ticker)+'</button><small>Vol. '+compactMoney(r.volume)+'</small></td>'+
+    const assetCell=beginner
+      ?'<div class="asset-actions"><button class="asset-btn" data-ticker="'+esc(r.ticker)+'">'+esc(r.ticker)+'</button><button class="add-asset-btn '+(state.selection.has(r.ticker)?'selected':'')+'" data-add-ticker="'+esc(r.ticker)+'" type="button">'+(state.selection.has(r.ticker)?'Selecionado':'Adicionar +')+'</button></div><small>Vol. '+compactMoney(r.volume)+'</small>'
+      :'<button class="asset-btn" data-ticker="'+esc(r.ticker)+'">'+esc(r.ticker)+'</button><small>Vol. '+compactMoney(r.volume)+'</small>';
+    return '<tr><td>'+assetCell+'</td>'+
       '<td><strong>'+money(r.close)+'</strong><small>'+(n(r.change)!==null?(n(r.change)>=0?'+':'')+n(r.change).toFixed(2)+'%':'N/D')+'</small></td>'+
       '<td><strong>'+money(r.fairValue?.central)+'</strong><small>'+(r.fairValue?money(r.fairValue.low)+' a '+money(r.fairValue.high):'N/D')+'</small></td>'+
       '<td><strong>'+money(iv?.central)+'</strong><small>'+intrinsicSub+'</small></td>'+
       '<td>'+(available?pct(iv.distance):'<span class="na">N/D</span>')+'</td>'+
-      '<td>'+mult(f.trailingPE)+'</td><td>'+mult(f.priceToBook)+'</td><td>'+mult(f.enterpriseToEbit)+'</td><td>'+pct(f.returnOnEquity)+'</td>'+
+      '<td class="adv-col">'+mult(f.trailingPE)+'</td><td class="adv-col">'+mult(f.priceToBook)+'</td><td class="adv-col">'+mult(f.enterpriseToEbit)+'</td><td class="adv-col">'+pct(f.returnOnEquity)+'</td>'+
       '<td>'+scoreBadge(r.valuationScore)+'</td><td>'+scoreBadge(r.qualityScore)+'</td><td>'+scoreBadge(r.solidityScore)+'</td><td>'+scoreBadge(r.growthScore)+'</td></tr>';
   }).join('')+'</tbody></table></div></section>';
 }
