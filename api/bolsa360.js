@@ -37,8 +37,11 @@ async function getList(params={}){
   if(params.sector)q.set('sector',params.sector);
   if(params.subsector)q.set('subsector',params.subsector);
   const data=await getJson('https://brapi.dev/api/quote/list?'+q.toString(),false);
+  let stocks=(data.stocks||[]).map(compactStock).filter(x=>x.ticker&&x.close!==null);
+  if(params.sector)stocks=stocks.filter(x=>x.sector===params.sector);
+  if(params.subsector)stocks=stocks.filter(x=>x.subsector===params.subsector);
   return {
-    stocks:(data.stocks||[]).map(compactStock).filter(x=>x.ticker&&x.close!==null),
+    stocks,
     sectors:data.availableSectors||[],
     subsectors:data.availableSubsectors||[],
     requestedAt:data.requestedAt||null
@@ -115,9 +118,9 @@ function merge(stock,stats={},fin={}){
       operatingCashflow:num(fin.operatingCashflow),
       revenueGrowth:num(fin.revenueGrowthAnnual??fin.revenueGrowth),
       earningsGrowth:num(fin.earningsGrowthAnnual??fin.earningsGrowth),
-      targetMeanPrice:num(fin.targetMeanPrice),
-      targetLowPrice:num(fin.targetLowPrice),
-      targetHighPrice:num(fin.targetHighPrice),
+      targetMeanPrice:num(fin.targetMeanPrice)>0?num(fin.targetMeanPrice):null,
+      targetLowPrice:num(fin.targetLowPrice)>0?num(fin.targetLowPrice):null,
+      targetHighPrice:num(fin.targetHighPrice)>0?num(fin.targetHighPrice):null,
       analystOpinions:num(fin.numberOfAnalystOpinions),
       fcfYield:(freeCashflow!==null&&marketCap&&marketCap>0)?freeCashflow/marketCap:null,
       netDebtToEbitda:(num(fin.totalDebt)!==null&&num(fin.totalCash)!==null&&num(fin.ebitda)&&num(fin.ebitda)!==0)
@@ -135,7 +138,7 @@ module.exports=async function handler(req,res){
       res.setHeader('Cache-Control','s-maxage=3600, stale-while-revalidate=21600');
       return res.status(200).json({
         provider:'brapi + arquitetura CVM/B3',
-        requestedAt:list.requestedAt,
+        requestedAt:list.requestedAt||new Date().toISOString(),
         sectors:list.sectors,
         subsectors:list.subsectors,
         stocks:list.stocks
@@ -155,7 +158,7 @@ module.exports=async function handler(req,res){
       return res.status(200).json({
         provider:'brapi',
         sector,
-        requestedAt:list.requestedAt,
+        requestedAt:list.requestedAt||new Date().toISOString(),
         authMode:f.authMode,
         fundamentalsCoverage:f.coverage,
         total:stocks.length,
