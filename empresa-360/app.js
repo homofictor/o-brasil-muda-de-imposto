@@ -1,13 +1,11 @@
-const state={company:null,sector:null,context:null,diagnostic:null};
+const KEY='empresa360.portfolio.v03';
+const state={portfolio:[],selected:null};
 
 const $=id=>document.getElementById(id);
 const form=$('cnpjForm');
 const input=$('cnpj');
+const addBtn=$('addBtn');
 const statusEl=$('status');
-const workspace=$('workspace');
-const diagnostic=$('diagnostic');
-const contextForm=$('contextForm');
-const btn=$('analisarBtn');
 
 function onlyDigits(v){return String(v||'').replace(/\D/g,'').slice(0,14)}
 function maskCnpj(v){
@@ -29,41 +27,36 @@ function validCnpj(cnpj){
   const d2=calc(c.slice(0,12)+d1,[6,5,4,3,2,9,8,7,6,5,4,3,2]);
   return c.endsWith(String(d1)+String(d2));
 }
-function showStatus(msg,type=''){
-  statusEl.textContent=msg;
-  statusEl.className='status '+type;
-}
-function money(v){
-  const n=Number(v||0);
-  return n.toLocaleString('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0});
-}
-function value(v){return v===null||v===undefined||v===''?'Não informado':String(v)}
-function yesNo(v){return v===true?'Sim':v===false?'Não':'Não informado'}
-function clamp(n,min=0,max=100){return Math.max(min,Math.min(max,Math.round(n)))}
-function field(label,val){return '<div><dt>'+label+'</dt><dd>'+val+'</dd></div>'}
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+function showStatus(msg,type=''){statusEl.textContent=msg;statusEl.className='status '+type}
+function save(){localStorage.setItem(KEY,JSON.stringify(state.portfolio))}
+function load(){
+  try{
+    const p=JSON.parse(localStorage.getItem(KEY)||'[]');
+    state.portfolio=Array.isArray(p)?p:[];
+  }catch(_){state.portfolio=[]}
+}
 
 const sectors={
-  agriculture:{name:'Agropecuária',base:68,insight:'Operações com cadeias longas, insumos e regimes específicos exigem atenção especial à apropriação de créditos e à transição tributária.'},
-  extractive:{name:'Indústria extrativa',base:78,insight:'Atividade intensiva em ativos, insumos e cadeias B2B. Créditos, investimentos e fluxo financeiro tendem a ser temas materiais.'},
-  industry:{name:'Indústria',base:82,insight:'Perfil industrial normalmente torna créditos, cadeia de fornecedores, formação de preços e investimentos centrais na transição para IBS e CBS.'},
-  utilities:{name:'Energia e utilidades',base:80,insight:'Setor com forte intensidade de capital e regras próprias. A análise precisa separar efeitos tributários, investimentos e repasse de preços.'},
-  construction:{name:'Construção',base:84,insight:'Construção combina contratos longos, insumos relevantes e particularidades setoriais. A transição tributária pode afetar margem, preço e caixa.'},
-  wholesale:{name:'Comércio atacadista',base:78,insight:'Negócios B2B e alta circulação de mercadorias tornam crédito tributário, cadeia de fornecedores e capital de giro especialmente relevantes.'},
-  retail:{name:'Comércio varejista',base:76,insight:'No varejo, preço final, concorrência e composição das compras são determinantes para medir o efeito econômico da reforma.'},
-  transport:{name:'Transporte e logística',base:76,insight:'Combustíveis, ativos, operações interestaduais e contratos podem tornar o impacto tributário e financeiro relevante.'},
-  hospitality:{name:'Hospedagem e alimentação',base:74,insight:'Negócio geralmente exposto a consumidor final, custos operacionais e sensibilidade de preço. Margem e repasse merecem atenção.'},
-  tech:{name:'Tecnologia e informação',base:66,insight:'Empresas de tecnologia podem ter baixa intensidade de insumos e alta folha, alterando a dinâmica de créditos e margem no novo sistema.'},
-  finance:{name:'Financeiro e seguros',base:55,insight:'O setor possui tratamento específico e exige cautela antes de aplicar regras genéricas de consumo e crédito tributário.'},
-  realestate:{name:'Imobiliário',base:78,insight:'Operações imobiliárias possuem regras próprias e ciclos longos. É importante avaliar a transição por operação e modelo de negócio.'},
-  professional:{name:'Serviços profissionais',base:72,insight:'Serviços intensivos em folha e com poucos insumos podem ter dinâmica de créditos diferente da indústria e do comércio.'},
-  admin:{name:'Serviços administrativos',base:70,insight:'Estrutura de mão de obra, contratos e perfil dos clientes ajudam a determinar o efeito sobre preço e margem.'},
-  education:{name:'Educação',base:68,insight:'Setor com tratamento específico e alta participação de mão de obra. A análise deve considerar benefícios aplicáveis e capacidade de repasse.'},
-  health:{name:'Saúde',base:72,insight:'O setor possui reduções e particularidades. Mix de serviços, insumos e contratos deve ser analisado antes de estimar impacto.'},
-  arts:{name:'Cultura e entretenimento',base:68,insight:'Receitas ao consumidor final e estrutura de custos tornam preço, benefício setorial e margem pontos importantes.'},
-  services:{name:'Serviços',base:70,insight:'Em serviços, intensidade de folha, poucos créditos e capacidade de repassar preços costumam ser variáveis decisivas.'}
+  agriculture:{name:'Agropecuária',group:'supply',base:76},
+  extractive:{name:'Indústria extrativa',group:'supply',base:88},
+  industry:{name:'Indústria',group:'supply',base:90},
+  utilities:{name:'Energia e utilidades',group:'supply',base:84},
+  construction:{name:'Construção',group:'supply',base:92},
+  wholesale:{name:'Comércio atacadista',group:'supply',base:86},
+  retail:{name:'Comércio varejista',group:'supply',base:82},
+  transport:{name:'Transporte e logística',group:'supply',base:83},
+  hospitality:{name:'Hospedagem e alimentação',group:'consumer',base:80},
+  tech:{name:'Tecnologia e informação',group:'services',base:74},
+  finance:{name:'Financeiro e seguros',group:'specific',base:58},
+  realestate:{name:'Imobiliário',group:'specific',base:84},
+  professional:{name:'Serviços profissionais',group:'services',base:78},
+  admin:{name:'Serviços administrativos',group:'services',base:76},
+  education:{name:'Educação',group:'services',base:72},
+  health:{name:'Saúde',group:'services',base:74},
+  arts:{name:'Cultura e entretenimento',group:'consumer',base:72},
+  services:{name:'Serviços',group:'services',base:74}
 };
-
 function sectorFromCnae(cnae){
   const raw=String(cnae||'').padStart(7,'0');
   const div=Number(raw.slice(0,2));
@@ -86,282 +79,234 @@ function sectorFromCnae(cnae){
   if(div>=90&&div<=93)return sectors.arts;
   return sectors.services;
 }
-function revenueMid(v){
-  const map={360000:180000,2400000:2580000,12400000:12400000,60000000:60000000,150000000:150000000};
-  return map[Number(v)]||0;
-}
 function regimeInfo(c){
+  if(c.opcao_pelo_simples===true)return {name:'Simples Nacional',year:2026,source:'opção pública'};
   const r=c.regime_tributario_recente;
-  if(c.opcao_pelo_simples===true)return {name:'Simples Nacional',year:null,simple:true};
-  if(r&&r.forma_de_tributacao)return {name:r.forma_de_tributacao,year:r.ano||null,simple:false};
-  return {name:'Não confirmado',year:null,simple:false};
+  if(r&&r.forma_de_tributacao)return {name:r.forma_de_tributacao,year:Number(r.ano)||null,source:'histórico disponível'};
+  return {name:'Não identificado',year:null,source:'não disponível'};
 }
-function customerLabel(v){return {b2b:'predominantemente B2B',b2c:'predominantemente consumidor final',gov:'com presença relevante do setor público',mixed:'com carteira mista'}[v]||v}
-function supplierLabel(v){return {regular:'predominantemente em regime regular',simples:'predominantemente no Simples Nacional',imports:'com importações relevantes',mixed:'com composição mista ou ainda não detalhada'}[v]||v}
-function pricingLabel(v){return {high:'boa flexibilidade de reajuste',medium:'reajuste dependente de negociação',low:'baixa flexibilidade de reajuste'}[v]||v}
-function investmentLabel(v){return {none:'sem investimento relevante previsto',moderate:'com investimentos moderados previstos',high:'com investimentos relevantes previstos'}[v]||v}
-
-function renderCompany(c,cnpj){
-  state.company=c;
-  state.sector=sectorFromCnae(c.cnae_fiscal);
+function buildTriage(c){
+  const sector=sectorFromCnae(c.cnae_fiscal);
   const regime=regimeInfo(c);
+  let score=sector.base;
+  const reasons=[];
 
-  $('companyName').textContent=c.razao_social||c.nome_fantasia||'Empresa identificada';
-  $('companySubtitle').textContent=[c.nome_fantasia,c.municipio&&c.uf?c.municipio+' / '+c.uf:null].filter(Boolean).join(' · ');
-  $('sectorBadge').textContent=state.sector.name;
-
-  const regimeText=regime.year?regime.name+' · dado disponível de '+regime.year:regime.name;
-  $('companyData').innerHTML=[
-    field('CNPJ',maskCnpj(cnpj)),
-    field('Situação',value(c.descricao_situacao_cadastral)),
-    field('Setor inferido',state.sector.name),
-    field('Regime disponível',regimeText),
-    field('CNAE principal',value(c.cnae_fiscal_descricao)),
-    field('Porte cadastral',value(c.porte)),
-    field('Início da atividade',value(c.data_inicio_atividade)),
-    field('Matriz / filial',value(c.descricao_identificador_matriz_filial))
-  ].join('');
-
-  $('profileInsight').innerHTML='<b>Leitura setorial inicial.</b> '+esc(state.sector.insight);
-  adaptQuestions(state.sector);
-
-  workspace.classList.remove('hidden');
-  diagnostic.classList.add('hidden');
-  workspace.scrollIntoView({behavior:'smooth',block:'start'});
-  try{sessionStorage.setItem('empresa360.company',JSON.stringify({cnpj:onlyDigits(cnpj),data:c}))}catch(_){}
-}
-
-function adaptQuestions(sector){
-  const cq=$('customerQuestion');
-  const iq=$('investmentQuestion');
-  if(sector===sectors.retail||sector===sectors.hospitality){
-    cq.textContent='Quanto das vendas vai para consumidor final?';
-  }else if(sector===sectors.wholesale||sector===sectors.industry){
-    cq.textContent='Sua receita é principalmente B2B ou consumidor final?';
-  }else{
-    cq.textContent='Principal perfil de clientes';
+  if(sector.group==='supply'){
+    score+=4;
+    reasons.push('Setor com cadeia de compras, insumos ou ativos que justifica avaliar créditos e efeitos de caixa.');
   }
-  if([sectors.industry,sectors.construction,sectors.utilities,sectors.transport].includes(sector)){
-    iq.textContent='Há expansão, máquinas ou investimentos relevantes em 24 meses?';
-  }else{
-    iq.textContent='Investimentos relevantes nos próximos 24 meses?';
+  if(sector.group==='services'){
+    score+=2;
+    reasons.push('Atividade de serviços merece testar a relação entre créditos disponíveis, preço e margem.');
   }
-}
-
-async function lookup(cnpj){
-  btn.disabled=true; btn.textContent='Mapeando...';
-  showStatus('Consultando dados cadastrais e classificando o perfil da empresa...');
-  try{
-    const res=await fetch('/api/empresa360-cnpj?cnpj='+encodeURIComponent(cnpj),{headers:{Accept:'application/json'}});
-    const payload=await res.json().catch(()=>({}));
-    if(!res.ok)throw new Error(payload.error||'Não foi possível consultar este CNPJ.');
-    renderCompany(payload.data,cnpj);
-    showStatus('Empresa localizada. Complete o contexto para gerar o radar.','success');
-  }catch(err){
-    showStatus(err.message||'Falha na consulta. Tente novamente.','error');
-  }finally{
-    btn.disabled=false; btn.textContent='Mapear empresa';
+  if(sector.group==='specific'){
+    reasons.push('Atividade com tratamento ou dinâmica específica. O simulador deve ser usado com revisão cuidadosa das premissas.');
   }
-}
+  if(c.opcao_pelo_simples===true){
+    score+=5;
+    reasons.push('Optante do Simples identificado. A transição e a relação com clientes B2B justificam simulação específica.');
+  }
+  if(!regime.year){
+    score+=5;
+    reasons.push('O regime atual não foi identificado automaticamente e precisa ser confirmado.');
+  }else if(regime.year<2026){
+    score+=7;
+    reasons.push('O regime público disponível é de '+regime.year+' e precisa ser confirmado para 2026.');
+  }
+  const secondary=Number(c.cnaes_secundarios_count||0);
+  if(secondary>=5){
+    score+=3;
+    reasons.push('A empresa possui vários CNAEs secundários, o que pode exigir revisão da composição real das receitas.');
+  }
+  if(String(c.porte||'').toUpperCase()==='DEMAIS'){
+    score+=2;
+    reasons.push('Porte cadastral indica maior complexidade potencial para a análise.');
+  }
+  score=Math.max(0,Math.min(100,Math.round(score)));
 
-function collectContext(){
   return {
-    revenueBand:$('revenueBand').value,
-    revenue:revenueMid($('revenueBand').value),
-    customer:$('customerProfile').value,
-    purchase:Number($('purchaseIntensity').value||0),
-    supplier:$('supplierProfile').value,
-    pricing:$('pricingPower').value,
-    investment:$('investmentLevel').value,
-    margin:Number($('marginBand').value||0),
-    interstate:Number($('interstateShare').value||0)
+    score,
+    level:score>=80?'Alta':score>=65?'Média':'Inicial',
+    sector,
+    regime,
+    regimeNeedsConfirmation:(!regime.year||regime.year<2026),
+    reasons:reasons.slice(0,4)
   };
 }
+function hydrate(entry){
+  const triage=buildTriage(entry.data);
+  return {...entry,triage};
+}
+function priorityClass(level){return level==='Alta'?'high':level==='Média'?'medium':'low'}
+function portfolioSorted(){return state.portfolio.map(hydrate).sort((a,b)=>b.triage.score-a.triage.score)}
+function companyName(e){return e.data.razao_social||e.data.nome_fantasia||e.cnpj}
 
-function buildDiagnostic(c,ctx){
-  const s=state.sector;
-  const regime=regimeInfo(c);
-  const isIndustry=[sectors.industry,sectors.extractive,sectors.utilities,sectors.construction,sectors.wholesale,sectors.retail,sectors.transport].includes(s);
-  const isService=[sectors.professional,sectors.admin,sectors.tech,sectors.education,sectors.health,sectors.services].includes(s);
-  const customerImpact=ctx.customer==='b2c'?14:ctx.customer==='mixed'?9:ctx.customer==='gov'?10:6;
-  const lowPricing=ctx.pricing==='low'?18:ctx.pricing==='medium'?10:2;
-  const highPurchase=ctx.purchase>=60?18:ctx.purchase>=35?10:3;
-  const supplierCredit=ctx.supplier==='regular'?14:ctx.supplier==='imports'?17:ctx.supplier==='simples'?4:8;
-  const investmentImpact=ctx.investment==='high'?16:ctx.investment==='moderate'?8:1;
-  const interstateImpact=ctx.interstate>=60?10:ctx.interstate>=30?6:1;
-  const marginPressure=ctx.margin>0&&ctx.margin<=8?12:ctx.margin>0&&ctx.margin<=15?6:2;
-  const simpleComplexity=regime.simple?16:0;
-  const serviceCreditPenalty=isService?8:0;
-
-  const scores={
-    reform:clamp(s.base+customerImpact/2+highPurchase/3+interstateImpact/2+simpleComplexity/2),
-    pricing:clamp(38+customerImpact+lowPricing+marginPressure+(s===sectors.retail||s===sectors.hospitality?9:0)),
-    credits:clamp(30+highPurchase+supplierCredit+(isIndustry?12:0)-serviceCreditPenalty+(regime.simple?8:0)),
-    cash:clamp(34+highPurchase/2+investmentImpact+(ctx.customer==='gov'?12:ctx.customer==='b2b'?7:4)+lowPricing/2+(s===sectors.construction?12:0)),
-    regime:clamp(42+simpleComplexity+(regime.year&&regime.year<2026?12:5)+(isService?8:4)),
-    financial:clamp(34+investmentImpact+(ctx.revenue>=20000000?10:ctx.revenue>=4800000?6:3)+(ctx.margin>0&&ctx.margin<=8?12:4))
-  };
-
-  const completeAdvanced=(ctx.margin?1:0)+(ctx.interstate?1:0);
-  let confidence=68+completeAdvanced*6+(c.cnae_fiscal?4:0)+(regime.name!=='Não confirmado'?4:0);
-  confidence=clamp(confidence,0,88);
-
-  const meta={
-    reform:{
-      label:'Reforma Tributária',
-      why:regime.simple
-        ?'O enquadramento no Simples e a relação com clientes e fornecedores tornam a escolha de tratamento do IBS/CBS um tema estratégico.'
-        :'Setor, regime, perfil de clientes e intensidade de compras indicam que a transição para IBS/CBS merece simulação específica.',
-      next:'Simular carga, créditos, preço e margem no Reforma 360.'
-    },
-    pricing:{
-      label:'Precificação e margem',
-      why:ctx.pricing==='low'
-        ?'A empresa informou baixa flexibilidade para reajustar preços, o que aumenta a importância de medir qualquer variação de carga ou crédito.'
-        :'O impacto tributário deve ser traduzido em preço e margem antes de qualquer decisão comercial.',
-      next:'Testar cenários de manter preço, manter margem e compartilhar impacto.'
-    },
-    credits:{
-      label:'Créditos de IBS/CBS',
-      why:ctx.purchase>=60
-        ?'Compras e insumos representam parcela elevada da receita, tornando o mecanismo de créditos economicamente relevante.'
-        :'O perfil de fornecedores e a estrutura de compras justificam mapear a capacidade efetiva de apropriação de créditos.',
-      next:'Detalhar compras, fornecedores e despesas elegíveis a crédito.'
-    },
-    cash:{
-      label:'Caixa e capital de giro',
-      why:ctx.investment==='high'
-        ?'Investimentos relevantes e a dinâmica tributária podem alterar desembolsos, créditos e necessidade de caixa ao longo da transição.'
-        :'O perfil operacional sinaliza que o efeito financeiro não deve ser analisado apenas pela alíquota nominal.',
-      next:'Incluir BP, DRE e ciclo financeiro para quantificar a pressão de caixa.'
-    },
-    regime:{
-      label:'Regime e enquadramento',
-      why:regime.year&&regime.year<2026
-        ?'O regime disponível na fonte pública é histórico e precisa ser confirmado antes de qualquer conclusão tributária.'
-        :'Regime, porte e atividade devem ser confrontados com os cenários da transição.',
-      next:'Confirmar regime atual e comparar os cenários permitidos para a empresa.'
-    },
-    financial:{
-      label:'Capacidade financeira',
-      why:'Sem BP e DRE não é possível avaliar liquidez, endividamento, cobertura financeira e capacidade de investimento com confiança.',
-      next:'Adicionar BP e DRE para calcular os indicadores financeiros.'
-    }
-  };
-
-  const ranked=Object.entries(scores).map(([key,score])=>({key,score,...meta[key]})).sort((a,b)=>b.score-a.score);
-  const evidences=[
-    'CNAE principal classificado como '+s.name+'.',
-    'Regime disponível: '+regime.name+(regime.year?' ('+regime.year+')':'')+'.',
-    'Perfil comercial informado como '+customerLabel(ctx.customer)+'.',
-    'Compras e insumos estimados em faixa equivalente a cerca de '+ctx.purchase+'% da receita.',
-    'Fornecedores '+supplierLabel(ctx.supplier)+'.',
-    'Empresa declarou '+pricingLabel(ctx.pricing)+' e '+investmentLabel(ctx.investment)+'.'
-  ];
-  if(ctx.interstate)evidences.push('Vendas interestaduais informadas como economicamente '+(ctx.interstate>=60?'muito relevantes':ctx.interstate>=30?'relevantes':'pouco relevantes')+'.');
-  if(ctx.margin)evidences.push('Margem operacional informada em faixa de aproximadamente '+ctx.margin+'% para fins indicativos.');
-
-  const gaps=[
-    {title:'BP e DRE',text:'Necessários para liquidez, endividamento, EBITDA, cobertura financeira e capital de giro.'},
-    {title:'Compras e documentos fiscais',text:'Necessários para confirmar quais créditos de IBS/CBS são efetivamente aproveitáveis.'},
-    {title:'Composição da receita',text:'Produtos, serviços, benefícios e destinos podem alterar significativamente o resultado tributário.'}
-  ];
-  if(regime.year&&regime.year<2026)gaps.unshift({title:'Regime tributário atual',text:'A fonte consultada informa '+regime.name+' em '+regime.year+'. O enquadramento de 2026 precisa ser confirmado.'});
-
-  return {scores,ranked,confidence,evidences,gaps,regime};
+async function fetchCompany(cnpj){
+  const res=await fetch('/api/empresa360-cnpj?cnpj='+encodeURIComponent(cnpj),{headers:{Accept:'application/json'}});
+  const payload=await res.json().catch(()=>({}));
+  if(!res.ok||!payload.data)throw new Error(payload.error||'Não foi possível consultar o CNPJ.');
+  return payload.data;
+}
+async function addCompany(cnpj,{silent=false}={}){
+  cnpj=onlyDigits(cnpj);
+  if(!validCnpj(cnpj))throw new Error('CNPJ inválido: '+cnpj);
+  const existing=state.portfolio.find(x=>x.cnpj===cnpj);
+  if(existing){if(!silent)selectCompany(cnpj);return {added:false,existing:true}}
+  const data=await fetchCompany(cnpj);
+  state.portfolio.push({cnpj,data,addedAt:new Date().toISOString(),reformaStartedAt:null});
+  save();
+  renderAll();
+  if(!silent)selectCompany(cnpj);
+  return {added:true};
 }
 
-function scoreLevel(score){
-  if(score>=80)return 'Muito alta';
-  if(score>=65)return 'Alta';
-  if(score>=50)return 'Relevante';
-  if(score>=35)return 'Moderada';
-  return 'Baixa';
+function renderMetrics(items){
+  $('metricTotal').textContent=items.length;
+  $('metricHigh').textContent=items.filter(x=>x.triage.level==='Alta').length;
+  $('metricRegime').textContent=items.filter(x=>x.triage.regimeNeedsConfirmation).length;
+  $('metricPending').textContent=items.filter(x=>!x.reformaStartedAt).length;
+
+  $('oppIndustry').textContent=items.filter(x=>x.triage.sector.group==='supply').length;
+  $('oppServices').textContent=items.filter(x=>x.triage.sector.group==='services').length;
+  $('oppSimple').textContent=items.filter(x=>x.data.opcao_pelo_simples===true).length;
+  $('oppOldRegime').textContent=items.filter(x=>x.triage.regime.year&&x.triage.regime.year<2026).length;
 }
-function renderDiagnostic(result,ctx){
-  state.diagnostic=result;
-  const top=result.ranked[0];
-  $('topPriority').textContent=top.label;
-  $('topPriorityReason').textContent=top.why;
-  $('confidenceValue').textContent=result.confidence+'%';
-  $('onePointValue').textContent=money(ctx.revenue/100);
-  $('economicBase').textContent=money(ctx.revenue);
-  $('diagnosticIntro').textContent='O radar encontrou '+result.ranked.filter(x=>x.score>=65).length+' frentes de alta relevância para aprofundamento. A prioridade é definida por regras, não por opinião da IA.';
+function filteredItems(items){
+  const q=$('portfolioSearch').value.trim().toLowerCase();
+  const f=$('portfolioFilter').value;
+  return items.filter(x=>{
+    const text=[companyName(x),x.cnpj,x.data.nome_fantasia,x.triage.sector.name,x.triage.regime.name].filter(Boolean).join(' ').toLowerCase();
+    if(q&&!text.includes(q))return false;
+    if(f==='high'&&x.triage.level!=='Alta')return false;
+    if(f==='regime'&&!x.triage.regimeNeedsConfirmation)return false;
+    if(f==='pending'&&x.reformaStartedAt)return false;
+    return true;
+  });
+}
+function renderTable(items){
+  const list=filteredItems(items);
+  $('emptyState').classList.toggle('hidden',state.portfolio.length>0);
+  $('portfolioWrap').classList.toggle('hidden',state.portfolio.length===0);
 
-  $('radarRows').innerHTML=result.ranked.map(item=>`
-    <div class="score-row">
-      <div class="score-head"><b>${esc(item.label)}</b><span>${item.score}/100</span></div>
-      <div class="score-track"><div class="score-fill" style="width:${item.score}%"></div></div>
-      <div class="score-meta"><span>${scoreLevel(item.score)}</span><span>índice de relevância</span></div>
-    </div>`).join('');
+  $('portfolioBody').innerHTML=list.map(x=>{
+    const regime=x.triage.regime;
+    const status=x.reformaStartedAt?'Reforma iniciada':'Ainda não iniciada';
+    return `
+      <tr>
+        <td><strong>${esc(companyName(x))}</strong><small>${maskCnpj(x.cnpj)} · ${esc(x.data.municipio||'')} ${esc(x.data.uf||'')}</small></td>
+        <td>${esc(x.triage.sector.name)}</td>
+        <td><strong>${esc(regime.name)}</strong><small>${regime.year?'referência '+regime.year:'confirmar'}</small></td>
+        <td><span class="score-pill ${priorityClass(x.triage.level)}">${x.triage.level} · ${x.triage.score}/100</span></td>
+        <td><span class="status-pill ${x.reformaStartedAt?'started':''}">${status}</span></td>
+        <td><button class="row-button" data-company="${x.cnpj}" type="button">Abrir dossiê</button></td>
+      </tr>`;
+  }).join('');
 
-  $('priorityCards').innerHTML=result.ranked.slice(0,3).map((item,i)=>`
-    <article class="priority-item">
-      <div class="priority-top"><span class="priority-rank">0${i+1}</span><span class="priority-score">${item.score}/100</span></div>
-      <h4>${esc(item.label)}</h4>
-      <p>${esc(item.why)}</p>
-      <span class="priority-next">Próxima ação: ${esc(item.next)}</span>
-    </article>`).join('');
+  if(state.portfolio.length>0&&!list.length){
+    $('portfolioBody').innerHTML='<tr><td colspan="6"><small>Nenhuma empresa corresponde ao filtro atual.</small></td></tr>';
+  }
+}
+function renderAll(){
+  const items=portfolioSorted();
+  renderMetrics(items);
+  renderTable(items);
+  if(state.selected){
+    const exists=state.portfolio.some(x=>x.cnpj===state.selected);
+    if(exists)renderDrawer(state.selected);else clearDrawer();
+  }
+}
+function clearDrawer(){
+  state.selected=null;
+  $('drawerContent').classList.add('hidden');
+  $('drawerEmpty').classList.remove('hidden');
+}
+function renderDrawer(cnpj){
+  const raw=state.portfolio.find(x=>x.cnpj===cnpj);
+  if(!raw)return clearDrawer();
+  const x=hydrate(raw);
+  state.selected=cnpj;
+  $('drawerEmpty').classList.add('hidden');
+  $('drawerContent').classList.remove('hidden');
 
-  $('evidenceList').innerHTML=result.evidences.map(e=>'<li>'+esc(e)+'</li>').join('');
-  $('gapList').innerHTML=result.gaps.map((g,i)=>`
-    <div class="gap"><span class="gap-icon">${i+1}</span><div><b>${esc(g.title)}</b><small>${esc(g.text)}</small></div></div>`).join('');
-
-  $('actionTitle').textContent='Quantifique a frente tributária no Reforma 360';
-  $('actionText').textContent='O radar já definiu onde a Reforma Tributária cruza com preço, créditos e caixa. O próximo passo disponível é transformar esse contexto em cenários numéricos no espelho do simulador.';
-  try{
-    sessionStorage.setItem('empresa360.handoff',JSON.stringify({
-      company:state.company,sector:state.sector.name,context:ctx,diagnostic:result,createdAt:new Date().toISOString()
-    }));
-  }catch(_){}
-
-  diagnostic.classList.remove('hidden');
-  diagnostic.scrollIntoView({behavior:'smooth',block:'start'});
+  $('drawerName').textContent=companyName(x);
+  $('drawerSubtitle').textContent=[x.data.nome_fantasia,x.triage.sector.name,x.data.municipio&&x.data.uf?x.data.municipio+' / '+x.data.uf:null].filter(Boolean).join(' · ');
+  $('drawerPriority').textContent=x.triage.level;
+  $('drawerScore').textContent=x.triage.score+'/100';
+  $('drawerReasons').innerHTML=x.triage.reasons.map(r=>'<div class="reason">'+esc(r)+'</div>').join('');
+  $('openReforma').href='../simulador/guiado/?empresa360=1&cnpj='+encodeURIComponent(x.cnpj);
+}
+function selectCompany(cnpj){
+  renderDrawer(cnpj);
+  $('companyDrawer').scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
-input.addEventListener('input',()=>{input.value=maskCnpj(input.value);showStatus('')});
-form.addEventListener('submit',e=>{
+form.addEventListener('submit',async e=>{
   e.preventDefault();
   const cnpj=onlyDigits(input.value);
   if(!validCnpj(cnpj)){showStatus('Informe um CNPJ válido com 14 dígitos.','error');input.focus();return}
-  lookup(cnpj);
+  addBtn.disabled=true;addBtn.textContent='Consultando...';showStatus('Consultando a empresa...');
+  try{
+    const result=await addCompany(cnpj);
+    input.value='';
+    showStatus(result.existing?'Empresa já estava na carteira.':'Empresa adicionada à carteira.','success');
+  }catch(err){showStatus(err.message||'Falha na consulta.','error')}
+  finally{addBtn.disabled=false;addBtn.textContent='Adicionar à carteira'}
+});
+input.addEventListener('input',()=>{input.value=maskCnpj(input.value);showStatus('')});
+
+$('portfolioBody').addEventListener('click',e=>{
+  const btn=e.target.closest('[data-company]');
+  if(btn)selectCompany(btn.dataset.company);
+});
+$('portfolioSearch').addEventListener('input',()=>renderTable(portfolioSorted()));
+$('portfolioFilter').addEventListener('change',()=>renderTable(portfolioSorted()));
+
+$('removeCompany').addEventListener('click',()=>{
+  if(!state.selected)return;
+  state.portfolio=state.portfolio.filter(x=>x.cnpj!==state.selected);
+  save();clearDrawer();renderAll();
 });
 
-contextForm.addEventListener('submit',e=>{
-  e.preventDefault();
-  if(!state.company)return;
-  const ctx=collectContext();
-  const required=[ctx.revenueBand,ctx.customer,ctx.purchase,ctx.supplier,ctx.pricing,ctx.investment];
-  if(required.some(v=>v===''||v===0)){return}
-  state.context=ctx;
-  const result=buildDiagnostic(state.company,ctx);
-  renderDiagnostic(result,ctx);
+$('openReforma').addEventListener('click',()=>{
+  if(!state.selected)return;
+  const i=state.portfolio.findIndex(x=>x.cnpj===state.selected);
+  if(i<0)return;
+  state.portfolio[i].reformaStartedAt=new Date().toISOString();
+  const entry=hydrate(state.portfolio[i]);
+  try{
+    sessionStorage.setItem('empresa360.selected',JSON.stringify({
+      cnpj:entry.cnpj,
+      company:entry.data,
+      triage:entry.triage,
+      source:'empresa-360-cockpit',
+      openedAt:new Date().toISOString()
+    }));
+  }catch(_){}
+  save();renderAll();
 });
 
-$('showAdvanced').addEventListener('click',()=>{
-  $('advancedFields').classList.toggle('hidden');
-  $('showAdvanced').textContent=$('advancedFields').classList.contains('hidden')
-    ?'+ adicionar dois dados para aumentar a precisão'
-    :'− ocultar dados adicionais';
-});
-
-$('novaConsulta').addEventListener('click',()=>{
-  state.company=null;state.context=null;state.diagnostic=null;
-  workspace.classList.add('hidden');diagnostic.classList.add('hidden');
-  contextForm.reset();input.value='';showStatus('');
-  try{sessionStorage.removeItem('empresa360.company');sessionStorage.removeItem('empresa360.handoff')}catch(_){}
-  window.scrollTo({top:0,behavior:'smooth'});setTimeout(()=>input.focus(),300);
-});
-
-$('editContext').addEventListener('click',()=>{
-  workspace.scrollIntoView({behavior:'smooth',block:'start'});
-});
-
-try{
-  const cached=JSON.parse(sessionStorage.getItem('empresa360.company')||'null');
-  if(cached&&cached.cnpj&&cached.data){
-    input.value=maskCnpj(cached.cnpj);
-    renderCompany(cached.data,cached.cnpj);
-    showStatus('Empresa recuperada nesta sessão. Revise o contexto e gere o radar.','success');
+$('importBtn').addEventListener('click',()=>$('portfolioFile').click());
+$('portfolioFile').addEventListener('change',async e=>{
+  const file=e.target.files?.[0];
+  if(!file)return;
+  const text=await file.text();
+  const matches=[...new Set((text.match(/\d[\d.\/-]{12,20}\d/g)||[]).map(onlyDigits).filter(x=>x.length===14&&validCnpj(x)))];
+  if(!matches.length){showStatus('Não encontrei CNPJs válidos no arquivo.','error');e.target.value='';return}
+  const batch=matches.slice(0,100);
+  $('importBtn').disabled=true;
+  let added=0,failed=0;
+  for(let i=0;i<batch.length;i++){
+    showStatus('Importando '+(i+1)+' de '+batch.length+' empresas...');
+    try{
+      const r=await addCompany(batch[i],{silent:true});
+      if(r.added)added++;
+    }catch(_){failed++}
   }
-}catch(_){}
+  renderAll();
+  showStatus('Importação concluída: '+added+' adicionadas'+(failed?', '+failed+' não consultadas':'')+'.','success');
+  $('importBtn').disabled=false;
+  e.target.value='';
+});
+
+load();
+renderAll();
