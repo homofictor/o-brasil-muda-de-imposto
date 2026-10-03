@@ -161,7 +161,7 @@ footer{max-width:1280px;margin:auto;padding:0 28px 44px;display:flex;justify-con
 
 .assumptions-box{margin-top:22px;border-top:1px solid var(--line);padding-top:22px;display:grid;grid-template-columns:.8fr 1.2fr;gap:24px;align-items:end}
 .assumptions-box h3{font-size:20px}
-.assumption-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.assumption-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
 .assumption-grid label{display:block;border:1px solid var(--line);border-radius:14px;padding:12px;background:#fafbfa;font-size:10px;text-transform:uppercase;letter-spacing:.06em;font-weight:850;color:var(--muted)}
 .assumption-grid label span{display:flex;align-items:center;gap:5px;margin-top:7px;color:var(--ink);font-size:14px;text-transform:none;letter-spacing:0}
 .assumption-grid input{width:100%;border:0;background:transparent;font-size:20px;font-weight:850;color:var(--green);outline:none}
