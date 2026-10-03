@@ -35,6 +35,7 @@
           <span>Qualidade</span>
           <span>Crescimento 360</span>
           <span>Valor Justo 360</span>
+          <span>Valor Intrínseco 360</span>
           <span>Fundamentos CVM + TTM</span>
         </div>
       </div>
@@ -58,6 +59,27 @@
         </div>
       </div>
       <div id="sectorGrid" class="sector-grid"></div>
+      <div class="assumptions-box">
+        <div>
+          <p class="eyebrow">PREMISSAS DO VALOR INTRÍNSECO 360</p>
+          <h3>Premissas explícitas e editáveis</h3>
+          <p class="muted">São parâmetros do modelo, não taxas de mercado. Alterações recalculam o DCF e os modelos bancários sem refazer a consulta à CVM.</p>
+        </div>
+        <div class="assumption-grid">
+          <label>WACC operacional
+            <span><input id="dcfWacc" type="number" step="0.1" min="7" max="30" value="14.5">%</span>
+          </label>
+          <label>Crescimento terminal
+            <span><input id="terminalGrowth" type="number" step="0.1" min="0" max="8" value="4.0">%</span>
+          </label>
+          <label>Alíquota de imposto
+            <span><input id="taxRate" type="number" step="0.5" min="0" max="50" value="34">%</span>
+          </label>
+          <label>Custo de capital bancário
+            <span><input id="bankCostEquity" type="number" step="0.1" min="8" max="30" value="15.0">%</span>
+          </label>
+        </div>
+      </div>
     </section>
 
     <section id="resultsSection" class="results hidden">
@@ -100,6 +122,7 @@
               <option value="solidity">Solidez</option>
               <option value="growth">Crescimento 360</option>
               <option value="fairDistance">Distância ao valor justo</option>
+              <option value="intrinsicDistance">Distância ao valor intrínseco</option>
               <option value="roe">ROE</option>
               <option value="evEbit">EV/EBIT</option>
             </select>
@@ -114,7 +137,7 @@
         <div>
           <p class="eyebrow">3. COMO LER</p>
           <h2>Barato não significa bom.</h2>
-          <p>O Bolsa 360 mantém notas separadas para valuation, qualidade, solidez e crescimento. O Valor Justo 360 transforma os múltiplos dos pares em uma faixa estimada de preço, sem misturá-la com as notas. Uma companhia pode negociar com múltiplos baixos porque seus fundamentos deterioraram. O objetivo do screener é reduzir o universo para análise aprofundada, preservando a origem dos dados e dos cálculos.</p>
+          <p>O Bolsa 360 mantém notas separadas para valuation, qualidade, solidez e crescimento. O Valor Justo 360 compara pares. O Valor Intrínseco 360 usa DCF para empresas operacionais e lucro residual/dividendos para bancos, com premissas visíveis. Uma companhia pode negociar com múltiplos baixos porque seus fundamentos deterioraram. O objetivo do screener é reduzir o universo para análise aprofundada, preservando a origem dos dados e dos cálculos.</p>
         </div>
         <div class="quadrants">
           <div><b>Cara e boa</b><small>qualidade alta, valuation pouco atrativo</small></div>
