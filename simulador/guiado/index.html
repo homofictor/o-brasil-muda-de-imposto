@@ -54,7 +54,21 @@
 <div id="reportModal" class="reportModal" hidden role="dialog" aria-modal="true" aria-labelledby="recommendationTitle"><div class="reportShell"><div class="reportToolbar"><div><strong>Relatório do diagnóstico</strong><span>Simulador Guiado · motor V3.2</span></div><div class="reportToolbarActions"><button id="reportPrintBtn" type="button">Imprimir resumo</button><button id="reportCloseBtn" type="button">Fechar</button></div></div><div id="resultsMount" hidden></div></div></div>
  <footer><div><strong>O Brasil muda de imposto</strong><span>Wagner Rubim Rangel · Homo Fictor Edições Independentes</span></div><p>Ferramenta educativa. Não substitui planejamento tributário, parecer contábil ou jurídico.</p></footer>
 <script>
-(async()=>{const [a,b]=await Promise.all([fetch('/simulador/v3/partials/setup.html?v=20260925-creditos-opex48').then(r=>r.text()),fetch('/simulador/v3/partials/results.html?v=20260925-creditos-opex48').then(r=>r.text())]);document.getElementById('setupMount').innerHTML=a;document.getElementById('resultsMount').innerHTML=b;for(const name of ['data.js','money-format.js','import.js','field-state.js','cnpj.js','models.js','risk-cash.js','economic-impact.js','render.js','enhanced-results.js','diagnosis.js','audit-core.js','audit-render.js','profit-sensitivity.js','tax-bridge.js','diagnosis-explain.js','boot.js','report-ui.js','shareholder-report.js'])await new Promise((ok,fail)=>{const s=document.createElement('script');s.src='/simulador/v3/'+name+'?v=20260925-creditos-opex48';s.onload=ok;s.onerror=fail;document.body.appendChild(s)});if(typeof initDocumentImport==='function')initDocumentImport();await new Promise((ok,fail)=>{const s=document.createElement('script');s.src='/simulador/guiado/guided.js?v=20260925-creditos-opex48';s.onload=ok;s.onerror=fail;document.body.appendChild(s)})})().catch(err=>{console.error(err);document.getElementById('setupMount').innerHTML='<section class="panel"><h2>Não foi possível carregar o simulador.</h2><p>Atualize a página e tente novamente.</p></section>'});
+(async()=>{const [a,b]=await Promise.all([fetch('/simulador/v3/partials/setup.html?v=20260925-creditos-opex48').then(r=>r.text()),fetch('/simulador/v3/partials/results.html?v=20260925-creditos-opex48').then(r=>r.text())]);document.getElementById('setupMount').innerHTML=a;document.getElementById('resultsMount').innerHTML=b;for(const name of ['data.js','money-format.js','import.js','field-state.js','cnpj.js','models.js','risk-cash.js','economic-impact.js','render.js','enhanced-results.js','diagnosis.js','audit-core.js','audit-render.js','profit-sensitivity.js','tax-bridge.js','diagnosis-explain.js','boot.js','report-ui.js','shareholder-report.js'])await new Promise((ok,fail)=>{const s=document.createElement('script');s.src='/simulador/v3/'+name+'?v=20260925-creditos-opex48';s.onload=ok;s.onerror=fail;document.body.appendChild(s)});if(typeof initDocumentImport==='function')initDocumentImport();await new Promise((ok,fail)=>{const s=document.createElement('script');s.src='/simulador/guiado/guided.js?v=20260925-creditos-opex48';s.onload=ok;s.onerror=fail;document.body.appendChild(s)});
+const empresa360Params=new URLSearchParams(location.search);
+const empresa360Cnpj=String(empresa360Params.get('cnpj')||'').replace(/\\D/g,'');
+if(empresa360Params.get('empresa360')==='1'&&empresa360Cnpj.length===14){
+  const input=document.getElementById('cnpj');
+  if(input){
+    input.value=typeof normalizeCnpjInput==='function'?normalizeCnpjInput(empresa360Cnpj):empresa360Cnpj;
+    const back=document.createElement('a');
+    back.href='/empresa-360/';
+    back.className='linkbtn erpAction';
+    back.textContent='← Empresa 360';
+    document.querySelector('.topactions')?.prepend(back);
+    setTimeout(()=>{if(typeof lookupCnpj==='function')lookupCnpj()},250);
+  }
+}})().catch(err=>{console.error(err);document.getElementById('setupMount').innerHTML='<section class="panel"><h2>Não foi possível carregar o simulador.</h2><p>Atualize a página e tente novamente.</p></section>'});
 </script>
 <script defer src="/assets/usage.js?v=20260922-metrics1"></script>
 </body></html>
