@@ -1,4 +1,4 @@
-# Bolsa 360 | MVP V0.8.1
+# Bolsa 360 | MVP V0.9.1
 
 ## Manual e governança metodológica
 
@@ -321,3 +321,21 @@ O Bolsa 360 está preparado para exibir uma terceira referência externa:
 - distância entre preço-alvo médio e fechamento.
 
 Fonte prevista: brapi `financialData`. Essa camada não entra no Valor Justo, Valor Intrínseco ou Scores 360. Campos nulos permanecem N/D. O ambiente atual sem `BRAPI_API_KEY` opera em modo público de demonstração e pode não fornecer cobertura de consenso.
+
+
+## Tendência 360
+
+A V0.9 adiciona uma leitura técnica própria, independente de valuation e consenso externo.
+
+Componentes:
+- preço versus média móvel de 20 pregões;
+- média móvel de 20 versus 50 pregões;
+- inclinação da MM20;
+- momentum de 20 e 60 pregões;
+- RSI 14;
+- MACD;
+- volatilidade anualizada de 20 pregões como informação complementar.
+
+Classificação: Alta forte, Alta moderada, Lateral, Baixa moderada ou Baixa forte. O resultado é uma leitura descritiva de tendência, não recomendação.
+
+Fonte: histórico diário ajustado da brapi, janela de 3 meses. O plano gratuito permite até 3 meses de histórico. Uma BRAPI_API_KEY gratuita é necessária para cobertura ampla; sem chave, o ambiente fica limitado aos símbolos públicos de demonstração.
