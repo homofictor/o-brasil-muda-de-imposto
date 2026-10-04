@@ -53,6 +53,10 @@
         <label>Senha
           <input id="password" type="password" minlength="8" autocomplete="current-password" required>
         </label>
+        <label id="consentLabel" class="hidden" style="display:flex;gap:8px;align-items:flex-start;font-weight:500">
+          <input id="consent" type="checkbox" style="width:auto;height:auto;margin-top:3px">
+          <span>Li e aceito os Termos de Uso e a Política de Privacidade da Plataforma 360.</span>
+        </label>
         <button id="submitAuth" type="submit">Entrar</button>
       </form>
       <p id="authStatus" class="auth-status"></p>
@@ -63,7 +67,17 @@
   <script>
     let signup=false;
     const $=id=>document.getElementById(id);
-    function setMode(v){signup=v;$('modeLogin').classList.toggle('active',!v);$('modeSignup').classList.toggle('active',v);$('nameLabel').classList.toggle('hidden',!v);$('submitAuth').textContent=v?'Criar conta':'Entrar';$('password').autocomplete=v?'new-password':'current-password';$('authStatus').textContent='';}
+    function setMode(v){
+      signup=v;
+      $('modeLogin').classList.toggle('active',!v);
+      $('modeSignup').classList.toggle('active',v);
+      $('nameLabel').classList.toggle('hidden',!v);
+      $('consentLabel').classList.toggle('hidden',!v);
+      $('consentLabel').style.display=v?'flex':'none';
+      $('submitAuth').textContent=v?'Criar conta':'Entrar';
+      $('password').autocomplete=v?'new-password':'current-password';
+      $('authStatus').textContent='';
+    }
     $('modeLogin').onclick=()=>setMode(false);$('modeSignup').onclick=()=>setMode(true);
     $('googleLogin').onclick=()=>P360Auth.signInWithGoogle().catch(showErr);
     $('facebookLogin').onclick=()=>P360Auth.signInWithFacebook().catch(showErr);
@@ -76,7 +90,7 @@
       e.preventDefault();$('authStatus').textContent='Processando...';$('authStatus').className='auth-status';
       try{
         const email=$('email').value.trim(),password=$('password').value;
-        const result=signup?await P360Auth.signUp(email,password,$('fullName').value.trim()):await P360Auth.signInWithPassword(email,password);
+        const result=signup?await P360Auth.signUp(email,password,$('fullName').value.trim(),$('consent').checked):await P360Auth.signInWithPassword(email,password);
         if(result.error)throw result.error;
         if(signup&&!result.data.session){$('authStatus').textContent='Conta criada. Verifique seu e-mail para confirmar o acesso.';$('authStatus').className='auth-status ok';return;}
         const q=new URLSearchParams(location.search),next=q.get('next')||'/360/';location.replace(next);
