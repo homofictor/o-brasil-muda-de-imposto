@@ -472,6 +472,191 @@ function initQuick360Search(){
 }
 setTimeout(initQuick360Search,0);
 
+
+function clamp360(v,min,max){const x=n(v);return x===null?null:Math.max(min,Math.min(max,x))}
+function median360(values){
+  const a=(values||[]).map(n).filter(v=>v!==null).sort((x,y)=>x-y);
+  if(!a.length)return null;
+  const m=Math.floor(a.length/2);
+  return a.length%2?a[m]:(a[m-1]+a[m])/2;
+}
+function growthEstimate360(a){
+  const g=a?.growth||{};
+  const raw=median360([g.revenueCagr3,g.ebitCagr3,g.profitCagr3,g.revenueCagrLong]);
+  return raw===null?0.03:clamp360(raw,-0.12,0.20);
+}
+function priceTarget360(a){
+  const close=n(a?.close);
+  if(close===null||close<=0)return {available:false,reason:'Preço atual indisponível.'};
+
+  const growth=growthEstimate360(a);
+  const iv=a?.intrinsicValue||null,fv=a?.fairValue||null;
+  const carry=clamp360(0.04+Math.max(-0.02,Math.min(0.08,growth*0.35)),0.02,0.12);
+  const growthAnchor=close*(1+growth);
+  const components=[];
+
+  if(iv?.available===true&&n(iv.central)>0){
+    components.push({
+      name:'Valor Intrínseco 360 projetado',
+      value:n(iv.central)*(1+carry),
+      low:n(iv.low)>0?n(iv.low)*(1+Math.max(0,carry-.03)):null,
+      high:n(iv.high)>0?n(iv.high)*(1+Math.min(.15,carry+.03)):null,
+      weight:.55
+    });
+  }
+  if(n(fv?.central)>0){
+    components.push({
+      name:'Pares 360 projetado',
+      value:n(fv.central)*(1+clamp360(growth,-.08,.15)),
+      low:n(fv.low)>0?n(fv.low)*(1+clamp360(growth-.04,-.12,.10)):null,
+      high:n(fv.high)>0?n(fv.high)*(1+clamp360(growth+.04,-.04,.20)):null,
+      weight:.30
+    });
+  }
+  components.push({
+    name:'Fundamentos 12m',
+    value:growthAnchor,
+    low:close*(1+clamp360(growth-.08,-.20,.12)),
+    high:close*(1+clamp360(growth+.08,-.04,.28)),
+    weight:.15
+  });
+
+  const valid=components.filter(x=>n(x.value)>0);
+  if(!valid.length)return {available:false,reason:'Modelos internos insuficientes.'};
+  const w=valid.reduce((s,x)=>s+x.weight,0);
+  const central=valid.reduce((s,x)=>s+x.value*x.weight,0)/w;
+  const lowVals=valid.map(x=>n(x.low)).filter(x=>x!==null&&x>0);
+  const highVals=valid.map(x=>n(x.high)).filter(x=>x!==null&&x>0);
+  const low=lowVals.length?Math.min(...lowVals):central*.88;
+  const high=highVals.length?Math.max(...highVals):central*1.12;
+  const dispersion=Math.max(...valid.map(x=>x.value))/Math.min(...valid.map(x=>x.value))-1;
+  const scoreCount=[a?.valuationScore,a?.qualityScore,a?.solidityScore,a?.growthScore].map(n).filter(x=>x!==null).length;
+  let confidence='Baixa';
+  if(valid.length>=3&&dispersion<=.35&&scoreCount>=3)confidence='Alta';
+  else if(valid.length>=2&&dispersion<=.70&&scoreCount>=2)confidence='Média';
+
+  return {
+    available:true,
+    horizonMonths:12,
+    central,low,high,
+    upside:central/close-1,
+    growthAssumption:growth,
+    confidence,
+    dispersion,
+    components:valid.map(x=>({name:x.name,value:x.value,weight:x.weight/w})),
+    methodology:'Combinação independente do Valor Intrínseco 360, valuation por pares e crescimento fundamental projetado. Não utiliza o consenso dos analistas.'
+  };
+}
+function convergence360(a,target){
+  const signals=[];
+  const add=(name,value)=>{
+    const v=n(value);if(v===null)return;
+    const s=v>=.10?1:v<=-.10?-1:0;
+    signals.push({name,value:v,signal:s});
+  };
+  add('Preço-Alvo 360',target?.available?target.upside:null);
+  add('Valor Intrínseco',a?.intrinsicValue?.available===true?a.intrinsicValue.distance:null);
+  add('Valor por pares',a?.fairValue?.distance);
+  const trend=state.trendMap?.get(a?.ticker);
+  if(trend?.available){
+    const s=trend.direction==='Alta'?1:trend.direction==='Baixa'?-1:0;
+    signals.push({name:'Tendência 360',value:null,signal:s});
+  }
+  if(!signals.length)return {label:'N/D',className:'na',score:0,count:0,signals:[]};
+  const score=signals.reduce((s,x)=>s+x.signal,0),ratio=score/signals.length;
+  let label='Mista',className='mixed';
+  if(signals.length>=3&&ratio>=.75){label='Forte positiva';className='strong-positive'}
+  else if(ratio>.20){label='Positiva';className='positive'}
+  else if(signals.length>=3&&ratio<=-.75){label='Forte negativa';className='strong-negative'}
+  else if(ratio<-.20){label='Negativa';className='negative'}
+  return {label,className,score,count:signals.length,signals};
+}
+function indication360(a,target,conv){
+  if(!target?.available)return {label:'NEUTRO',className:'neutral',reason:'Dados insuficientes para uma indicação quantitativa robusta.',expectedReturn:null,dividendYield:null};
+  const f=a?.fundamentals||{};
+  const dy=clamp360(f.dividendYield,0,.25);
+  const expectedReturn=target.upside+(dy??0);
+  const overall=bolsa360CompositeScore(a);
+  const quality=n(a?.qualityScore),solidity=n(a?.solidityScore);
+  const confidence=target.confidence;
+  const riskGate=(quality!==null&&quality<35)||(solidity!==null&&solidity<35)||confidence==='Baixa';
+
+  let label='NEUTRO',className='neutral',reason='';
+  if(expectedReturn<=-.10&&confidence!=='Baixa'){
+    label='VENDA';className='sell';
+    reason='O retorno esperado em 12 meses é negativo e os modelos internos apresentam confiança suficiente.';
+  }else if(expectedReturn>=.15&&!riskGate&&(overall===null||overall>=55)&&(quality===null||quality>=45)&&(solidity===null||solidity>=45)){
+    label='COMPRA';className='buy';
+    reason='O retorno esperado supera o limiar de 15% e os filtros mínimos de qualidade, solidez e confiança foram atendidos.';
+  }else if(expectedReturn>=.15&&riskGate){
+    reason='Há potencial de valorização, mas qualidade, solidez ou confiança do modelo impedem uma classificação de compra.';
+  }else if(expectedReturn<0&&['Negativa','Forte negativa'].includes(conv?.label)){
+    label='VENDA';className='sell';
+    reason='O retorno esperado é negativo e os sinais internos apresentam convergência desfavorável.';
+  }else{
+    reason='O potencial de retorno ou a combinação de fundamentos não é suficiente para classificar o ativo como compra ou venda.';
+  }
+  return {label,className,reason,expectedReturn,dividendYield:dy};
+}
+function analysis360(a){
+  const target=priceTarget360(a);
+  const convergence=convergence360(a,target);
+  const indication=indication360(a,target,convergence);
+  return {target,convergence,indication};
+}
+function analysisReason360(a,x){
+  const pieces=[];
+  if(x.target?.available)pieces.push('Preço-Alvo 360 '+money(x.target.central)+' ('+(x.target.upside>=0?'+':'')+pct(x.target.upside)+')');
+  if(a?.intrinsicValue?.available===true)pieces.push('valor intrínseco '+money(a.intrinsicValue.central)+' ('+(n(a.intrinsicValue.distance)>=0?'+':'')+pct(a.intrinsicValue.distance)+')');
+  const score=bolsa360CompositeScore(a);if(score!==null)pieces.push('Nota 360 '+score+'/100');
+  const trend=state.trendMap?.get(a?.ticker);if(trend?.available)pieces.push('tendência '+String(trend.strength||trend.direction).toLowerCase());
+  return pieces.join(' · ');
+}
+function renderDecision360(a){
+  const x=analysis360(a),t=x.target,i=x.indication,c=x.convergence;
+  if(!t.available)return '<section class="decision360 unavailable"><p class="eyebrow">DECISÃO 360</p><h3>Em cálculo</h3><p>Os modelos internos ainda não têm dados suficientes para calcular o Preço-Alvo 360.</p></section>';
+  return '<section class="decision360 '+i.className+'">'+
+    '<div class="decision360-main"><div><p class="eyebrow">INDICAÇÃO 360</p><h2>'+esc(i.label)+'</h2><small>Avaliação quantitativa padronizada, não recomendação individual.</small></div>'+
+    '<div class="decision360-target"><span>Preço-Alvo 360 · 12 meses</span><strong>'+money(t.central)+'</strong><b class="'+(t.upside>=0?'up':'down')+'">'+(t.upside>=0?'+':'')+pct(t.upside)+'</b></div></div>'+
+    '<div class="decision360-grid">'+
+      quick360Metric('Faixa 360',money(t.low)+' a '+money(t.high))+
+      quick360Metric('Confiança 360',t.confidence) +
+      quick360Metric('Convergência 360',c.label) +
+      quick360Metric('Nota 360',(bolsa360CompositeScore(a)??'N/D')+(bolsa360CompositeScore(a)!==null?'/100':''))+
+    '</div>'+
+    '<p class="decision360-reason"><b>Leitura:</b> '+esc(i.reason)+' '+esc(analysisReason360(a,x))+'</p>'+
+    '<details class="decision360-method"><summary>Como o Preço-Alvo 360 foi calculado</summary><p>'+esc(t.methodology)+'</p><div>'+t.components.map(k=>'<span>'+esc(k.name)+' <b>'+Math.round(k.weight*100)+'%</b></span>').join('')+'</div></details>'+
+    '</section>';
+}
+async function ensureTrendTicker360(ticker){
+  if(state.trendMap?.has(ticker))return state.trendMap.get(ticker);
+  try{
+    const r=await fetch('/api/bolsa360-trend?tickers='+encodeURIComponent(ticker),{headers:{Accept:'application/json'}});
+    const j=await r.json().catch(()=>({}));
+    const x=(j.results||[])[0];
+    if(x?.ticker){state.trendMap.set(x.ticker,x);if(typeof saveTrend360Cache==='function')saveTrend360Cache();return x}
+  }catch(_){}
+  return null;
+}
+async function ensureFullAsset360(ticker,request){
+  const existing=state.assetMap?.get(ticker);if(existing)return existing;
+  if(!state.cvmBase){
+    try{state.cvmBase=await api('/api/bolsa360-cvm')}catch(_){return null}
+  }
+  if(request!==quick360State.request)return null;
+  const cvm=(state.cvmBase?.companies||[]).find(s=>String(s.ticker||'').toUpperCase()===ticker);
+  if(!cvm)return null;
+  const sector=sectorKeyForStock(cvm);
+  if(!sector)return null;
+  state.selected.clear();
+  document.querySelectorAll('#sectorGrid input[type=checkbox]').forEach(x=>{x.checked=x.value===sector});
+  state.selected.add(sector);
+  const run=document.getElementById('runScreen');if(run)run.disabled=false;
+  try{await runScreen()}catch(_){return null}
+  if(request!==quick360State.request)return null;
+  return state.assetMap?.get(ticker)||null;
+}
+
 const BOLSA360_FILTERS_KEY='bolsa360.filters.v01';
 const BOLSA360_COMPARE_KEY='bolsa360.compare.v01';
 
