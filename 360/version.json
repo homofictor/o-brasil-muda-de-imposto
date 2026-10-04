@@ -1,6 +1,7 @@
 {
   "platform": "360",
-  "version": "0.9",
+  "version": "0.9.1",
   "feature": "Tendencia 360",
+  "brapi": "preview-key-enabled",
   "branch": "plataforma-360-mvp"
 }
