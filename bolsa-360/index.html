@@ -4,29 +4,29 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
-  <title>Bolsa 360 | Screener fundamentalista</title>
-  <meta name="description" content="Screener setorial de ações brasileiras com comparação fundamentalista e valuation relativo.">
+  <title>Bolsa 360 | Análise inteligente de ações</title>
+  <meta name="description" content="Análise integrada de ações brasileiras com Preço-Alvo 360, Indicação 360, valuation, fundamentos, tendência e comparação com pares.">
   <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-  <div class="devbar">BOLSA 360 | MVP EM AMBIENTE ESPELHO | NÃO É RECOMENDAÇÃO DE INVESTIMENTO</div>
+  <div class="devbar">BOLSA 360 | ANÁLISE QUANTITATIVA • DADOS DE MERCADO + CVM • NÃO É RECOMENDAÇÃO INDIVIDUAL</div>
 
   <header class="topbar">
     <a class="brand" href="./" aria-label="Bolsa 360">
       <span class="brand-identity">
         <img class="brand-logo" src="./assets/bolsa360-logo.svg" alt="Bolsa 360">
-        <small>Análise fundamentalista e construção de universo de investimento</small>
+        <small>Análise integrada, valuation e decisão quantitativa</small>
       </span>
     </a>
-    <div class="top-actions"><div id="p360Account" class="p360-account"></div><a class="back-link" href="../360/">Plataforma 360</a><a class="back-link beginner-link" href="./iniciante/">Modo iniciante</a><a class="back-link manual-link" href="./manual/" target="_blank" rel="noopener">Manual e Metodologia</a><a class="back-link" href="../empresa-360/">Empresa 360</a></div>
+    <div class="top-actions"><div id="p360Account" class="p360-account"></div><a class="back-link" href="../360/">Plataforma 360</a><a class="back-link manual-link" href="./manual/" target="_blank" rel="noopener">Manual e Metodologia</a><a class="back-link" href="../empresa-360/">Empresa 360</a></div>
   </header>
 
   <main>
     <section class="hero">
       <div class="hero-copy">
-        <p class="eyebrow">SCREENER SETORIAL</p>
-        <h1>Escolha os setores. Avalie fundamentos. <em>Identifique oportunidades.</em></h1>
-        <p class="lead">O Bolsa 360 separa preço de ação de valuation. Empresas são comparadas com pares do mesmo setor, usando múltiplos e indicadores adequados ao perfil econômico.</p>
+        <p class="eyebrow">ANÁLISE 360</p>
+        <h1>Digite um ticker. Entenda o ativo. <em>Decida com mais contexto.</em></h1>
+        <p class="lead">O Bolsa 360 abre a ficha do ativo imediatamente e combina preço, histórico, fundamentos CVM, valuation, pares, tendência, Preço-Alvo 360 e Indicação 360 em uma única análise.</p>
         <div class="hero-flags">
           <span>Preço do último pregão</span>
           <span>Ranking por setor</span>
@@ -36,6 +36,9 @@
           <span>Tendência 360</span>
           <span>Valor Justo 360</span>
           <span>Valor Intrínseco 360</span>
+          <span>Preço-Alvo 360</span>
+          <span>Indicação 360</span>
+          <span>Convergência 360</span>
           <span>Fundamentos CVM + TTM</span>
         </div>
       </div>
@@ -54,8 +57,8 @@
     <section class="panel selector-panel">
       <div class="section-head">
         <div>
-          <p class="eyebrow">1. UNIVERSO</p>
-          <h2>Quais setores devem compor sua busca?</h2>
+          <p class="eyebrow">BUSCA 360</p>
+          <h2>Digite um ativo ou explore o mercado por setor.</h2>
           <p id="universeStatus" class="muted">Carregando universo de ações da B3...</p>
         </div>
         <div class="selection-actions">
@@ -66,20 +69,21 @@
       <div class="individual-asset-box">
         <div>
           <p class="eyebrow">BUSCA DIRETA</p>
-          <h3>Quer analisar uma empresa específica?</h3>
-          <p class="muted">Digite o ticker ou o nome da companhia. O Bolsa 360 localizará o grupo de comparação adequado automaticamente.</p>
+          <h3>Qual ativo você quer analisar?</h3>
+          <p class="muted">Digite o ticker ou o nome da companhia. A ficha abre imediatamente e a Análise 360 é refinada em segundo plano.</p>
         </div>
         <div class="individual-asset-form">
           <input id="individualAssetInput" autocomplete="off" placeholder="Ex.: CYRE3, CURY3, Vale">
-          <button id="individualAssetAdd" type="button">Analisar empresa</button>
+          <button id="individualAssetAdd" type="button">Ver Análise 360</button>
           <small id="individualAssetStatus"></small>
         </div>
       </div>
       <div id="sectorGrid" class="sector-grid"></div>
+      <details class="advanced-settings"><summary>Configurações avançadas dos modelos</summary>
       <div class="assumptions-box">
         <div>
-          <p class="eyebrow">PREMISSAS DO VALOR INTRÍNSECO 360</p>
-          <h3>Premissas explícitas e editáveis</h3>
+          <p class="eyebrow">CONFIGURAÇÕES AVANÇADAS</p>
+          <h3>Premissas do Valor Intrínseco 360</h3>
           <p class="muted">São parâmetros-base do modelo, não taxas de mercado. O motor aplica ajustes transparentes por família de negócio; alterações recalculam os valuations sem refazer a consulta à CVM.</p>
         </div>
         <div class="assumption-grid">
@@ -100,6 +104,7 @@
           </label>
         </div>
       </div>
+      </details>
     </section>
 
     <section id="resultsSection" class="results hidden">
@@ -129,9 +134,9 @@
       <section class="panel ranking-panel">
         <div class="section-head ranking-head">
           <div>
-            <p class="eyebrow">2. RANKING</p>
-            <h2>Valuation mais atrativo → valuation mais exigente</h2>
-            <p class="muted">Valuation 360 é um índice comparativo de 0 a 100. Quanto maior, mais atrativo é o valuation do ativo em relação aos pares com dados disponíveis.</p>
+            <p class="eyebrow">RANKING 360</p>
+            <h2>Compare oportunidades com a mesma lógica da ficha individual</h2>
+            <p class="muted">A tabela prioriza Indicação 360, Preço-Alvo 360, potencial em 12 meses, Nota 360 e Convergência. Clique em qualquer ticker para abrir a ficha completa.</p>
           </div>
           <div class="sort-wrap">
             <label for="sortBy">Ordenar por</label>
