@@ -2,7 +2,7 @@ const state={universe:null,cvmBase:null,historyByCvm:{},selected:new Set(),secto
 
 const $=id=>document.getElementById(id);
 const sectorNames={
-  'Finance':'Financeiro',
+  'Finance':'Financeiro',\n  'Real Estate':'Imobiliário',
   'Utilities':'Utilidades e energia',
   'Energy Minerals':'Petróleo e energia',
   'Non-Energy Minerals':'Mineração e materiais',
@@ -44,6 +44,26 @@ function pct(v,scale=100){
 }
 function scoreClass(v){return v>=70?'high':v>=45?'mid':'low'}
 function sectorPt(s){return sectorNames[s]||s||'Não classificado'}
+function isRealEstateStock(s){
+  const sub=String(s?.subsector||'').toLowerCase();
+  return s?.sector==='Finance'&&(sub.includes('incorpora')||sub.includes('imóve')||sub.includes('imove')||sub.includes('shopping')||sub.includes('exploração de imóveis')||sub.includes('exploracao de imoveis'));
+}
+function sectorKeyForStock(s){return isRealEstateStock(s)?'Real Estate':s?.sector}
+function stockInSelectedSector(s,sector){
+  if(sector==='Real Estate')return isRealEstateStock(s);
+  if(sector==='Finance')return s?.sector==='Finance'&&!isRealEstateStock(s);
+  return s?.sector===sector;
+}
+function findIndividualStock(raw){
+  const q=String(raw||'').trim().toLowerCase();
+  if(!q||!state.universe?.stocks?.length)return null;
+  const ticker=q.toUpperCase().replace(/\s/g,'');
+  const exact=state.universe.stocks.find(s=>String(s.ticker||'').toUpperCase()===ticker);
+  if(exact)return exact;
+  const norm=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+  const nq=norm(q);
+  return state.universe.stocks.find(s=>norm(s.name).includes(nq)||norm(s.cvmName).includes(nq))||null;
+}
 function formatDate(v){
   if(!v)return '—';
   const d=new Date(v);return Number.isNaN(d.getTime())?'—':d.toLocaleDateString('pt-BR');
@@ -62,8 +82,9 @@ async function loadUniverse(){
     state.universe=data;
     const counts=new Map();
     for(const s of data.stocks||[]){
-      if(!s.sector)continue;
-      counts.set(s.sector,(counts.get(s.sector)||0)+1);
+      const sector=sectorKeyForStock(s);
+      if(!sector)continue;
+      counts.set(sector,(counts.get(sector)||0)+1);
     }
     const sectors=[...counts.entries()].sort((a,b)=>b[1]-a[1]);
     $('sectorGrid').innerHTML=sectors.map(([sector,count],i)=>`
@@ -91,6 +112,30 @@ $('sectorGrid').addEventListener('change',e=>{
   }else state.selected.delete(e.target.value);
   $('runScreen').disabled=state.selected.size===0;
 });
+async function analyzeIndividualAsset(){
+  const input=$('individualAssetInput'),status=$('individualAssetStatus');
+  const stock=findIndividualStock(input?.value);
+  if(!stock){
+    if(status)status.textContent='Empresa não encontrada no universo atual da B3.';
+    return;
+  }
+  const sector=sectorKeyForStock(stock);
+  state.selected.clear();
+  document.querySelectorAll('#sectorGrid input[type=checkbox]').forEach(x=>{x.checked=x.value===sector});
+  state.selected.add(sector);
+  $('runScreen').disabled=false;
+  if(status)status.textContent='Analisando '+stock.ticker+' em '+sectorPt(sector)+'...';
+  try{
+    await runScreen();
+    const asset=state.assetMap.get(stock.ticker);\n    if(asset)openDrawer(asset);
+    if(status)status.textContent=stock.ticker+' analisada e localizada.';
+  }catch(err){
+    if(status)status.textContent=err.message||'Não foi possível analisar a empresa.';
+  }
+}
+$('individualAssetAdd')?.addEventListener('click',analyzeIndividualAsset);
+$('individualAssetInput')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();analyzeIndividualAsset();}});
+
 $('clearSectors').addEventListener('click',()=>{
   state.selected.clear();
   document.querySelectorAll('#sectorGrid input[type=checkbox]').forEach(x=>x.checked=false);
@@ -509,13 +554,13 @@ async function runScreen(){
       }
       return {key:sector,label:sectorPt(sector),isBank:false};
     };
-    const selectedStocks=(state.cvmBase.companies||[]).filter(x=>state.selected.has(x.sector));
+    const selectedStocks=(state.cvmBase.companies||[]).filter(x=>[...state.selected].some(sector=>stockInSelectedSector(x,sector)));
     $('universeStatus').textContent='Carregando histórico de 2021 a 2025 para as companhias selecionadas...';
     await loadHistoryFor(selectedStocks);
 
     const groups=new Map();
     for(const sector of state.selected){
-      for(const stock of selectedStocks.filter(x=>x.sector===sector)){
+      for(const stock of selectedStocks.filter(x=>stockInSelectedSector(x,sector))){
         const enriched={...stock,growth:growthFromHistory(stock)};
         const g=peerGroup(enriched,sector);
         if(!groups.has(g.key))groups.set(g.key,{sector,label:g.label,isBank:g.isBank,stocks:[]});
