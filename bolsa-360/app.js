@@ -2,7 +2,8 @@ const state={universe:null,cvmBase:null,historyByCvm:{},selected:new Set(),secto
 
 const $=id=>document.getElementById(id);
 const sectorNames={
-  'Finance':'Financeiro',\n  'Real Estate':'Imobiliário',
+  'Finance':'Financeiro',
+  'Real Estate':'Imobiliário',
   'Utilities':'Utilidades e energia',
   'Energy Minerals':'Petróleo e energia',
   'Non-Energy Minerals':'Mineração e materiais',
@@ -679,7 +680,8 @@ function openDrawer(a){
       ${drawerMetric('Margem EBIT Δ',pct(a.growth?.ebitMarginDelta))}
       ${drawerMetric('Anos com lucro',pct(a.growth?.positiveProfitYears))}
     </div>
-    ${renderHistory(a.growth?.history||[])}\n    <div class="drawer-note">Valor Justo 360 é uma estimativa relativa baseada nos múltiplos dos pares. Valor Intrínseco 360 usa DCF nas empresas operacionais e lucro residual/dividendos nos bancos. Valuation, Qualidade, Solidez e Crescimento 360 permanecem dimensões independentes. O histórico usa DFP anuais da CVM de 2021 a 2025 e acrescenta o TTM 2026 quando disponível. Não representa recomendação de compra, venda ou manutenção.</div>
+    ${renderHistory(a.growth?.history||[])}
+    <div class="drawer-note">Valor Justo 360 é uma estimativa relativa baseada nos múltiplos dos pares. Valor Intrínseco 360 usa DCF nas empresas operacionais e lucro residual/dividendos nos bancos. Valuation, Qualidade, Solidez e Crescimento 360 permanecem dimensões independentes. O histórico usa DFP anuais da CVM de 2021 a 2025 e acrescenta o TTM 2026 quando disponível. Não representa recomendação de compra, venda ou manutenção.</div>
   `;
   $('drawerBackdrop').classList.remove('hidden');
   $('assetDrawer').classList.add('open');
