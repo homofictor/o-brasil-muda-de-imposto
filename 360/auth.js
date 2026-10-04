@@ -59,6 +59,20 @@
     },{onConflict:'id'});
     const {data}=await client.from('platform360_profiles').select('*').eq('id',u.id).maybeSingle();
     profile=data||null;
+    const acceptedAt=meta.policy_accepted_at;
+    if(acceptedAt){
+      const {data:existing}=await client.from('platform360_consents')
+        .select('id').eq('user_id',u.id).eq('consent_type','terms_privacy').eq('policy_version',meta.policy_version||'2026-10-03').maybeSingle();
+      if(!existing){
+        await client.from('platform360_consents').insert({
+          user_id:u.id,
+          consent_type:'terms_privacy',
+          policy_version:meta.policy_version||'2026-10-03',
+          accepted:true,
+          accepted_at:acceptedAt
+        });
+      }
+    }
   }
   function renderAccount(){
     const host=document.getElementById('p360Account');
@@ -69,9 +83,20 @@
   }
   function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
   async function signInWithPassword(email,password){if(!client)throw new Error('Autenticação ainda não configurada.');return client.auth.signInWithPassword({email,password});}
-  async function signUp(email,password,fullName){
+  async function signUp(email,password,fullName,acceptedPolicy){
     if(!client)throw new Error('Autenticação ainda não configurada.');
-    return client.auth.signUp({email,password,options:{data:{full_name:fullName||''},emailRedirectTo:location.origin+'/360/'}});
+    if(!acceptedPolicy)throw new Error('É necessário aceitar a Política de Privacidade e os Termos de Uso.');
+    return client.auth.signUp({
+      email,password,
+      options:{
+        data:{
+          full_name:fullName||'',
+          policy_version:'2026-10-03',
+          policy_accepted_at:new Date().toISOString()
+        },
+        emailRedirectTo:location.origin+'/360/'
+      }
+    });
   }
   async function signInWithGoogle(){
     if(!client)throw new Error('Autenticação ainda não configurada.');
