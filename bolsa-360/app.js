@@ -115,21 +115,37 @@ $('sectorGrid').addEventListener('change',e=>{
 });
 async function analyzeIndividualAsset(){
   const input=$('individualAssetInput'),status=$('individualAssetStatus');
-  const stock=findIndividualStock(input?.value);
-  if(!stock){
-    if(status)status.textContent='Empresa não encontrada no universo atual da B3.';
+  const raw=String(input?.value||'').trim();
+  if(!raw){
+    if(status)status.textContent='Digite um ticker ou nome de empresa.';
     return;
   }
-  const sector=sectorKeyForStock(stock);
-  state.selected.clear();
-  document.querySelectorAll('#sectorGrid input[type=checkbox]').forEach(x=>{x.checked=x.value===sector});
-  state.selected.add(sector);
-  $('runScreen').disabled=false;
-  if(status)status.textContent='Analisando '+stock.ticker+' em '+sectorPt(sector)+'...';
+  if(status)status.textContent='Localizando o ativo...';
   try{
+    if(!state.universe?.stocks?.length)await loadUniverse();
+    const marketStock=findIndividualStock(raw);
+    if(!marketStock)throw new Error('Ticker ou empresa não encontrado no universo atual da B3.');
+
+    if(!state.cvmBase)state.cvmBase=await api('/api/bolsa360-cvm');
+    const ticker=String(marketStock.ticker||'').toUpperCase();
+    const cvmStock=(state.cvmBase.companies||[]).find(s=>String(s.ticker||'').toUpperCase()===ticker);
+    if(!cvmStock)throw new Error(ticker+' foi localizado no mercado, mas ainda não possui demonstrações mapeadas na base CVM do Bolsa 360.');
+
+    const sector=sectorKeyForStock(cvmStock)||sectorKeyForStock(marketStock);
+    if(!sector)throw new Error('Não foi possível identificar o setor de '+ticker+'.');
+
+    state.selected.clear();
+    document.querySelectorAll('#sectorGrid input[type=checkbox]').forEach(x=>{x.checked=x.value===sector});
+    state.selected.add(sector);
+    $('runScreen').disabled=false;
+    if(status)status.textContent='Analisando '+ticker+' em '+sectorPt(sector)+'...';
+
     await runScreen();
-    const asset=state.assetMap.get(stock.ticker);\n    if(asset)openDrawer(asset);
-    if(status)status.textContent=stock.ticker+' analisada e localizada.';
+    const asset=state.assetMap.get(ticker);
+    if(!asset)throw new Error(ticker+' foi localizado, mas não entrou no grupo comparável.');
+
+    openDrawer(asset);
+    if(status)status.textContent=ticker+' analisada. Dossiê aberto.';
   }catch(err){
     if(status)status.textContent=err.message||'Não foi possível analisar a empresa.';
   }
