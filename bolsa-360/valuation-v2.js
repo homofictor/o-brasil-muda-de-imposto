@@ -189,12 +189,75 @@ function renderAnalystConsensus(consensus,close){
     '<p class="drawer-note">Fonte externa: brapi financialData. O consenso agrega opiniões de analistas e não representa recomendação do Bolsa 360. A fonte não informa, neste campo agregado, a data individual de cada relatório.</p></div>';
 }
 
+
+const TREND360_CACHE_KEY='bolsa360.trend.v01';
+state.trendMap=state.trendMap||new Map();
+state.trendAttempted=state.trendAttempted||new Set();
+state.activeDrawerTicker=state.activeDrawerTicker||null;
+
+(function loadTrend360Cache(){
+  try{
+    const cache=JSON.parse(localStorage.getItem(TREND360_CACHE_KEY)||'null');
+    if(!cache||Date.now()-Number(cache.savedAt||0)>6*60*60*1000||!Array.isArray(cache.results))return;
+    for(const x of cache.results)if(x?.ticker&&x.available)state.trendMap.set(x.ticker,x);
+  }catch(_){}
+})();
+function saveTrend360Cache(){
+  try{
+    const results=[...state.trendMap.values()].filter(x=>x?.available);
+    localStorage.setItem(TREND360_CACHE_KEY,JSON.stringify({savedAt:Date.now(),results}));
+  }catch(_){}
+}
+function trendClass(t){
+  if(!t?.available)return 'na';
+  return t.direction==='Alta'?'up':t.direction==='Baixa'?'down':'neutral';
+}
+function trendBadge(t){
+  if(!t?.available)return '<span class="trend-badge na">N/D</span>';
+  return '<span class="trend-badge '+trendClass(t)+'">'+esc(t.strength||t.direction)+'</span>';
+}
+function renderTrend360(t){
+  if(!t)return '<div class="trend-box unavailable"><p class="eyebrow">TENDÊNCIA 360</p><h3>Carregando histórico</h3><p>A leitura técnica é calculada separadamente a partir do histórico diário do ativo.</p></div>';
+  if(!t.available)return '<div class="trend-box unavailable"><p class="eyebrow">TENDÊNCIA 360</p><h3>Não calculada</h3><p>'+esc(t.reason||'Histórico insuficiente ou indisponível.')+'</p></div>';
+  const signalText=(t.signals||[]).map(s=>'<span class="trend-signal '+(s.value>0?'pos':s.value<0?'neg':'flat')+'">'+esc(s.name)+'</span>').join('');
+  return '<div class="trend-box"><div class="trend-head"><div><p class="eyebrow">TENDÊNCIA 360</p><h3>'+esc(t.strength)+'</h3><small>Leitura quantitativa · confiança '+esc(t.confidence)+'</small></div><div class="trend-score '+trendClass(t)+'"><span>Score técnico</span><strong>'+(t.score>0?'+':'')+esc(t.score)+'</strong></div></div>'+
+    '<div class="intrinsic-model-grid"><div><span>MM20</span><strong>'+money(t.sma20)+'</strong></div><div><span>MM50</span><strong>'+money(t.sma50)+'</strong></div><div><span>Momentum 20d</span><strong>'+pct(t.momentum20)+'</strong></div><div><span>Momentum 60d</span><strong>'+pct(t.momentum60)+'</strong></div><div><span>RSI 14</span><strong>'+(n(t.rsi14)!==null?n(t.rsi14).toFixed(1):'N/D')+'</strong></div><div><span>Volatilidade 20d</span><strong>'+pct(t.annualizedVolatility20)+'</strong></div></div>'+
+    '<div class="trend-signals">'+signalText+'</div>'+
+    '<p class="drawer-note">Tendência 360 usa preço ajustado, médias móveis, momentum, RSI e MACD. É uma leitura técnica descritiva, não recomendação de compra ou venda.</p></div>';
+}
+async function loadTrend360ForVisible(){
+  const tickers=[...new Set((state.sectorData||[]).flatMap(b=>(b.scored||[]).map(r=>r.ticker)).filter(Boolean))];
+  const pending=tickers.filter(t=>!state.trendMap.has(t)&&!state.trendAttempted.has(t));
+  if(!pending.length)return;
+  for(let i=0;i<pending.length;i+=20){
+    const chunk=pending.slice(i,i+20);
+    chunk.forEach(t=>state.trendAttempted.add(t));
+    try{
+      const r=await fetch('/api/bolsa360-trend?tickers='+encodeURIComponent(chunk.join(',')),{headers:{Accept:'application/json'}});
+      const j=await r.json().catch(()=>({}));
+      if(r.ok){
+        for(const x of (j.results||[]))if(x?.ticker)state.trendMap.set(x.ticker,x);
+      }else{
+        for(const t of chunk)state.trendMap.set(t,{ticker:t,available:false,reason:j.error||'Falha ao consultar histórico.'});
+      }
+    }catch(_){
+      for(const t of chunk)state.trendMap.set(t,{ticker:t,available:false,reason:'Falha de comunicação ao consultar o histórico.'});
+    }
+  }
+  saveTrend360Cache();
+  bolsa360RenderResultsBase();
+  if(state.activeDrawerTicker){
+    const asset=state.assetMap.get(state.activeDrawerTicker);
+    if(asset&&document.querySelector('#assetDrawer.open'))openDrawer(asset);
+  }
+}
+
 function renderSector(block){
   const rows=sortRows(block.scored||[]),coverage=block.fundamentalsCoverage||0;
   const beginner=state?.selection instanceof Map;
-  return '<section class="sector-block"><div class="sector-block-head"><div><h3>'+esc(block.label||sectorPt(block.sector))+'</h3><small>'+block.total+' ativos · '+coverage+' com fundamentos · TTM até '+formatDate(state.cvmBase?.latestItrReference)+'</small></div><small>Mercado/consenso: brapi · fundamentos: CVM</small></div><div class="table-wrap"><table><thead><tr><th>Ativo</th><th>Fechamento</th><th>Valor justo</th><th>V. intrínseco</th><th>Preço-alvo</th><th>Consenso</th><th>Dist. intrínseca</th><th class="adv-col">P/L</th><th class="adv-col">P/VP</th><th class="adv-col">EV/EBIT</th><th class="adv-col">ROE</th><th>Valuation 360</th><th>Qualidade</th><th>Solidez</th><th>Crescimento</th></tr></thead><tbody>'+
+  return '<section class="sector-block"><div class="sector-block-head"><div><h3>'+esc(block.label||sectorPt(block.sector))+'</h3><small>'+block.total+' ativos · '+coverage+' com fundamentos · TTM até '+formatDate(state.cvmBase?.latestItrReference)+'</small></div><small>Mercado/histórico: brapi · fundamentos: CVM</small></div><div class="table-wrap"><table><thead><tr><th>Ativo</th><th>Fechamento</th><th>Tendência 360</th><th>Valor justo</th><th>V. intrínseco</th><th>Preço-alvo</th><th>Consenso</th><th>Dist. intrínseca</th><th class="adv-col">P/L</th><th class="adv-col">P/VP</th><th class="adv-col">EV/EBIT</th><th class="adv-col">ROE</th><th>Valuation 360</th><th>Qualidade</th><th>Solidez</th><th>Crescimento</th></tr></thead><tbody>'+
   rows.map(r=>{
-    const f=r.fundamentals||{},iv=r.intrinsicValue,available=iv?.available===true,ac=r.analystConsensus||null,target=analystTarget(r);
+    const f=r.fundamentals||{},iv=r.intrinsicValue,available=iv?.available===true,ac=r.analystConsensus||null,target=analystTarget(r),trend=state.trendMap.get(r.ticker)||null;
     const intrinsicSub=available?money(iv.low)+' a '+money(iv.high):esc(iv?.reason||'N/D');
     const opinions=n(ac?.numberOfAnalystOpinions);
     const assetCell=beginner
@@ -202,6 +265,7 @@ function renderSector(block){
       :'<button class="asset-btn" data-ticker="'+esc(r.ticker)+'">'+esc(r.ticker)+'</button><small>Vol. '+compactMoney(r.volume)+'</small>';
     return '<tr><td>'+assetCell+'</td>'+
       '<td><strong>'+money(r.close)+'</strong><small>'+(n(r.change)!==null?(n(r.change)>=0?'+':'')+n(r.change).toFixed(2)+'%':'N/D')+'</small></td>'+
+      '<td>'+trendBadge(trend)+'<small>'+(trend?.available?'20d '+pct(trend.momentum20)+' · RSI '+(n(trend.rsi14)!==null?n(trend.rsi14).toFixed(0):'N/D'):(trend?.reason?'Histórico N/D':'Carregando...'))+'</small></td>'+
       '<td><strong>'+money(r.fairValue?.central)+'</strong><small>'+(r.fairValue?money(r.fairValue.low)+' a '+money(r.fairValue.high):'N/D')+'</small></td>'+
       '<td><strong>'+money(iv?.central)+'</strong><small>'+intrinsicSub+'</small></td>'+
       '<td><strong>'+money(target)+'</strong><small>'+(target!==null&&n(r.close)>0?pct(target/n(r.close)-1)+' vs. fechamento':'Consenso externo')+'</small></td>'+
@@ -214,14 +278,22 @@ function renderSector(block){
 
 const bolsa360OpenDrawerBase=openDrawer;
 openDrawer=function(a){
+  state.activeDrawerTicker=a?.ticker||null;
   bolsa360OpenDrawerBase(a);
-  const box=renderAnalystConsensus(a.analystConsensus,a.close);
+  const trendBox=renderTrend360(state.trendMap.get(a.ticker)||null);
+  const price=document.querySelector('#drawerBody .drawer-price');
+  if(price)price.insertAdjacentHTML('afterend',trendBox);
+
+  const analystBox=renderAnalystConsensus(a.analystConsensus,a.close);
   const intrinsic=document.querySelector('#drawerBody .intrinsic-box');
-  if(intrinsic)intrinsic.insertAdjacentHTML('afterend',box);
-  else{
-    const price=document.querySelector('#drawerBody .drawer-price');
-    if(price)price.insertAdjacentHTML('afterend',box);
-  }
+  if(intrinsic)intrinsic.insertAdjacentHTML('afterend',analystBox);
+  else if(price)price.insertAdjacentHTML('afterend',analystBox);
+};
+
+const bolsa360RenderResultsBase=renderResults;
+renderResults=function(){
+  bolsa360RenderResultsBase();
+  setTimeout(loadTrend360ForVisible,0);
 };
 
 (function plataforma360TickerDeepLink(){
