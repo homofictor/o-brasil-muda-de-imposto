@@ -20,7 +20,7 @@
     try{
       const cfg=await config();
       configured=Boolean(cfg.configured);
-      if(!configured){document.documentElement.dataset.auth='unconfigured';return {configured:false};}
+      if(!configured){document.documentElement.dataset.auth='blocked';if(!location.pathname.endsWith('/360/login.html')&&!location.pathname.endsWith('/360/login')) location.replace(LOGIN_PATH+'?next='+encodeURIComponent(location.pathname+location.search));return {configured:false};}
       await loadSdk();
       client=window.supabase.createClient(cfg.url,cfg.anonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
       const {data}=await client.auth.getSession();
@@ -41,7 +41,8 @@
       return {configured:true,session};
     }catch(err){
       console.error('Plataforma 360 auth:',err);
-      document.documentElement.dataset.auth='error';
+      document.documentElement.dataset.auth='blocked';
+      if(!location.pathname.endsWith('/360/login.html')&&!location.pathname.endsWith('/360/login')) location.replace(LOGIN_PATH+'?next='+encodeURIComponent(location.pathname+location.search));
       return {configured:false,error:err};
     }
   }
