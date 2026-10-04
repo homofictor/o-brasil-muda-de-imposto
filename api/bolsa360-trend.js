@@ -86,20 +86,30 @@ function trendFromHistory(points){
   };
 }
 
-async function fetchV2(symbols,key){
+async function fetchV2One(ticker,key){
   const headers={Accept:'application/json','User-Agent':'Bolsa360-HomoFictor/0.9'};
   if(key)headers.Authorization='Bearer '+key;
-  const url='https://brapi.dev/api/v2/stocks/historical?symbols='+encodeURIComponent(symbols.join(','))+'&range=3mo&interval=1d&sortOrder=asc';
+  const url='https://brapi.dev/api/v2/stocks/historical?symbols='+encodeURIComponent(ticker)+'&range=3mo&interval=1d&sortOrder=asc';
   const r=await fetch(url,{headers});
   if(!r.ok)throw new Error('BRAPI_V2_'+r.status);
   const j=await r.json();
-  const out=new Map();
-  for(const item of (j.results||[])){
-    const ticker=String(item.symbol||item.requestedSymbol||'').toUpperCase();
-    const data=item.data||{};
-    if(ticker)out.set(ticker,data.historicalDataPrice||[]);
+  const item=(j.results||[])[0]||{};
+  const data=item.data||{};
+  return data.historicalDataPrice||[];
+}
+async function fetchAuthenticatedFree(tickers,key){
+  const histories=new Map(),errors=new Map();
+  const concurrency=4;
+  let cursor=0;
+  async function worker(){
+    while(cursor<tickers.length){
+      const i=cursor++,ticker=tickers[i];
+      try{histories.set(ticker,await fetchV2One(ticker,key))}
+      catch(err){errors.set(ticker,String(err?.message||err))}
+    }
   }
-  return out;
+  await Promise.all(Array.from({length:Math.min(concurrency,tickers.length)},()=>worker()));
+  return {histories,errors};
 }
 async function fetchLegacyDemo(ticker){
   const url='https://brapi.dev/api/quote/'+encodeURIComponent(ticker)+'?range=3mo&interval=1d';
@@ -119,21 +129,18 @@ module.exports=async function handler(req,res){
 
   const key=process.env.BRAPI_API_KEY||'';
   const histories=new Map(),errors=new Map();
-  try{
-    const m=await fetchV2(tickers,key);
-    for(const [k,v] of m)histories.set(k,v);
-  }catch(err){
-    if(key){
-      for(const t of tickers)errors.set(t,'Não foi possível consultar o histórico na fonte.');
-    }else{
-      for(const t of tickers){
-        if(!DEMO.has(t)){
-          errors.set(t,'Histórico amplo requer uma chave gratuita da brapi no ambiente.');
-          continue;
-        }
-        try{histories.set(t,await fetchLegacyDemo(t))}
-        catch(_){errors.set(t,'Histórico público de demonstração indisponível para este ativo.')}
+  if(key){
+    const batch=await fetchAuthenticatedFree(tickers,key);
+    for(const [k,v] of batch.histories)histories.set(k,v);
+    for(const [k,v] of batch.errors)errors.set(k,v);
+  }else{
+    for(const t of tickers){
+      if(!DEMO.has(t)){
+        errors.set(t,'Histórico amplo requer uma chave gratuita da brapi no ambiente.');
+        continue;
       }
+      try{histories.set(t,await fetchLegacyDemo(t))}
+      catch(_){errors.set(t,'Histórico público de demonstração indisponível para este ativo.')}
     }
   }
 
