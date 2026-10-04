@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Empresa 360 IA | Cockpit empresarial</title>
+  <meta name="description" content="Cockpit para priorização de empresas e acesso aos motores especializados do Empresa 360 IA.">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div class="devbar">AMBIENTE ESPELHO | PRODUÇÃO NÃO ALTERADA</div>
+
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="Empresa 360 IA">
+      <span class="brand-mark">360</span>
+      <span class="brand-copy">
+        <strong>EMPRESA 360 IA</strong>
+        <small>Cockpit de inteligência empresarial</small>
+      </span>
+    </a>
+    <div class="top-actions"><a class="portal-link" href="../360/">Plataforma 360</a><span class="version">V0.3 COCKPIT</span></div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <p class="eyebrow">CARTEIRA EMPRESARIAL</p>
+        <h1>Não analise empresas ao acaso. <em>Descubra quem merece atenção primeiro.</em></h1>
+        <p class="lead">O Empresa 360 organiza a carteira, faz uma triagem inicial pelos dados do CNPJ e encaminha cada empresa para o motor especializado adequado. O Reforma 360 já nasce conectado ao simulador que temos.</p>
+      </div>
+      <aside class="hero-note">
+        <span>Princípio do produto</span>
+        <strong>O Empresa 360 não substitui os motores. Ele organiza, prioriza e distribui as análises.</strong>
+        <small>Motores conectados: Reforma 360 e Bolsa 360. A Plataforma 360 organiza o ecossistema.</small>
+      </aside>
+    </section>
+
+    <section class="toolbar panel">
+      <div class="toolbar-copy">
+        <p class="eyebrow">ADICIONAR EMPRESAS</p>
+        <h2>Monte a carteira de análise</h2>
+        <p>Inclua um CNPJ ou importe uma lista CSV/TXT. Os dados ficam somente neste ambiente de desenvolvimento.</p>
+      </div>
+
+      <form id="cnpjForm" class="add-form" novalidate>
+        <label for="cnpj">CNPJ</label>
+        <div class="add-row">
+          <input id="cnpj" inputmode="numeric" autocomplete="off" placeholder="00.000.000/0000-00" maxlength="18">
+          <button id="addBtn" type="submit">Adicionar à carteira</button>
+        </div>
+        <p id="status" class="status" role="status" aria-live="polite"></p>
+      </form>
+
+      <div class="import-box">
+        <input id="portfolioFile" type="file" accept=".csv,.txt,text/csv,text/plain" hidden>
+        <button id="importBtn" type="button" class="secondary">Importar lista de CNPJs</button>
+        <small>O arquivo pode conter uma coluna de CNPJ ou CNPJs misturados ao texto.</small>
+      </div>
+    </section>
+
+    <section id="dashboard" class="dashboard">
+      <div class="summary-grid">
+        <article class="metric-card dark">
+          <span>Empresas na carteira</span>
+          <strong id="metricTotal">0</strong>
+          <small>Base atual deste navegador</small>
+        </article>
+        <article class="metric-card">
+          <span>Prioridade alta para Reforma 360</span>
+          <strong id="metricHigh">0</strong>
+          <small>Triagem cadastral preliminar</small>
+        </article>
+        <article class="metric-card">
+          <span>Regime precisa de confirmação</span>
+          <strong id="metricRegime">0</strong>
+          <small>Dado ausente ou anterior a 2026</small>
+        </article>
+        <article class="metric-card">
+          <span>Diagnóstico RT ainda não iniciado</span>
+          <strong id="metricPending">0</strong>
+          <small>Empresas ainda sem abertura do Reforma 360</small>
+        </article>
+      </div>
+
+      <div class="cockpit-grid">
+        <article class="panel portfolio-panel">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">PRIORIZAÇÃO</p>
+              <h2>Quem analisar primeiro</h2>
+            </div>
+            <div class="panel-actions">
+              <input id="portfolioSearch" type="search" placeholder="Buscar empresa ou CNPJ">
+              <select id="portfolioFilter">
+                <option value="all">Todas</option>
+                <option value="high">Prioridade alta</option>
+                <option value="regime">Regime a confirmar</option>
+                <option value="pending">Ainda não iniciadas</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="emptyState" class="empty-state">
+            <span>360</span>
+            <h3>Sua carteira ainda está vazia</h3>
+            <p>Adicione um CNPJ acima. Com várias empresas, o diferencial do cockpit começa a aparecer.</p>
+          </div>
+
+          <div id="portfolioWrap" class="table-wrap hidden">
+            <table>
+              <thead>
+                <tr>
+                  <th>Empresa</th>
+                  <th>Setor</th>
+                  <th>Regime disponível</th>
+                  <th>Triagem RT</th>
+                  <th>Status</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="portfolioBody"></tbody>
+            </table>
+          </div>
+        </article>
+
+        <aside id="companyDrawer" class="panel drawer">
+          <div id="drawerEmpty" class="drawer-empty">
+            <p class="eyebrow">DOSSIÊ DA EMPRESA</p>
+            <h2>Selecione uma empresa</h2>
+            <p>O dossiê mostrará por que ela foi priorizada, qual motor usar e qual é a próxima ação.</p>
+          </div>
+
+          <div id="drawerContent" class="hidden">
+            <div class="drawer-head">
+              <div>
+                <p class="eyebrow">DOSSIÊ DA EMPRESA</p>
+                <h2 id="drawerName">Empresa</h2>
+                <p id="drawerSubtitle" class="muted"></p>
+              </div>
+              <button id="removeCompany" type="button" class="text-danger">Remover</button>
+            </div>
+
+            <div class="triage-block">
+              <div>
+                <span>Prioridade atual</span>
+                <strong id="drawerPriority">Alta</strong>
+              </div>
+              <div>
+                <span>Índice de triagem RT</span>
+                <strong id="drawerScore">0/100</strong>
+              </div>
+            </div>
+
+            <div id="drawerReasons" class="reason-list"></div>
+
+            <div class="motor-card active">
+              <div class="motor-head">
+                <div>
+                  <span class="motor-state">MOTOR DISPONÍVEL</span>
+                  <h3>Reforma 360</h3>
+                </div>
+                <b>ATIVO</b>
+              </div>
+              <p>Simula regimes, IBS/CBS, créditos, preço, margem, split payment, caixa e dados financeiros usando o simulador já desenvolvido.</p>
+              <a id="openReforma" href="../simulador/guiado/" class="primary-link">Abrir Reforma 360</a>
+            </div>
+
+            <div class="motor-card active" style="margin-top:14px">
+              <div class="motor-head">
+                <div>
+                  <span class="motor-state">MOTOR DISPONÍVEL</span>
+                  <h3>Bolsa 360</h3>
+                </div>
+                <b>ATIVO</b>
+              </div>
+              <p>Screener fundamentalista para companhias listadas, com seleção por setor, fechamento do último pregão e ranking relativo.</p>
+              <a href="../bolsa-360/" class="primary-link">Abrir Bolsa 360</a>
+            </div>
+
+            <div class="next-engines">
+              <p class="eyebrow">PRÓXIMOS MOTORES</p>
+              <div class="engine-row"><span>Crédito 360</span><small>capacidade financeira, endividamento e financiamento</small></div>
+              <div class="engine-row"><span>Valor 360</span><small>valuation indicativo e gatilhos para avaliação completa</small></div>
+              <div class="engine-row"><span>Fiscal 360</span><small>oportunidades tributárias fora do escopo da Reforma do Consumo</small></div>
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      <section class="panel opportunities">
+        <div class="panel-head">
+          <div>
+            <p class="eyebrow">VISÃO DA CARTEIRA</p>
+            <h2>Oportunidades que o cockpit já consegue separar</h2>
+          </div>
+        </div>
+        <div class="opportunity-grid">
+          <article>
+            <span id="oppIndustry">0</span>
+            <b>Empresas com cadeias intensivas em compras</b>
+            <small>Indústria, atacado, construção, transporte e atividades semelhantes.</small>
+          </article>
+          <article>
+            <span id="oppServices">0</span>
+            <b>Serviços com atenção a preço e créditos</b>
+            <small>Empresas em que folha, poucos créditos e poder de repasse podem ser relevantes.</small>
+          </article>
+          <article>
+            <span id="oppSimple">0</span>
+            <b>Optantes do Simples identificados</b>
+            <small>Casos que merecem simular a posição durante a transição e a relação B2B.</small>
+          </article>
+          <article>
+            <span id="oppOldRegime">0</span>
+            <b>Regimes públicos desatualizados</b>
+            <small>Empresas que precisam confirmar o enquadramento atual antes do diagnóstico.</small>
+          </article>
+        </div>
+      </section>
+
+      <section class="architecture panel">
+        <div>
+          <p class="eyebrow">ARQUITETURA</p>
+          <h2>Um cockpit. Vários motores.</h2>
+          <p>O Empresa 360 mantém a visão da empresa e da carteira. Cada motor faz o trabalho técnico especializado e devolve o resultado ao dossiê.</p>
+        </div>
+        <div class="flow">
+          <span>Carteira</span><i>→</i><span>Triagem</span><i>→</i><b>Reforma 360</b><i>+</i><span>Crédito 360</span><i>+</i><span>Valor 360</span><i>+</i><span>Fiscal 360</span><i>→</i><b>Dossiê 360</b>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <footer>
+    <span>Empresa 360 IA | Homo Fictor</span>
+    <span>Ambiente de desenvolvimento. A triagem cadastral não substitui análise profissional.</span>
+  </footer>
+
+  <script src="./app.js"></script>
+  <script src="../360/auth.js"></script>\n</body>
+</html>

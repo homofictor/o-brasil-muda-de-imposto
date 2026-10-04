@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 270" role="img" aria-labelledby="title desc">
+<title id="title">Variação ilustrativa de um ativo</title>
+<desc id="desc">Gráfico financeiro ilustrativo com linha, área e volumes. Não representa um ativo real.</desc>
+<defs>
+  <linearGradient id="area" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#94f0b8" stop-opacity=".42"/>
+    <stop offset="1" stop-color="#94f0b8" stop-opacity="0"/>
+  </linearGradient>
+  <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+    <feGaussianBlur stdDeviation="4" result="b"/>
+    <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+</defs>
+<g opacity=".18" stroke="#d8f2e2" stroke-width="1">
+  <path d="M42 28H406M42 73H406M42 118H406M42 163H406M42 208H406"/>
+  <path d="M42 28V222M103 28V222M164 28V222M225 28V222M286 28V222M347 28V222M406 28V222"/>
+</g>
+<g fill="#c7dfcf" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="10" opacity=".8">
+  <text x="12" y="212">50</text><text x="7" y="167">100</text><text x="7" y="122">150</text><text x="7" y="77">200</text>
+  <text x="37" y="246">Jan</text><text x="98" y="246">Fev</text><text x="159" y="246">Mar</text><text x="220" y="246">Abr</text><text x="281" y="246">Mai</text><text x="342" y="246">Jun</text>
+  <text x="42" y="17" font-size="8" letter-spacing="1.6" font-weight="800">SÉRIE ILUSTRATIVA</text>
+</g>
+<g fill="#64bd84" opacity=".38">
+  <rect x="45" y="202" width="8" height="20" rx="1"/><rect x="58" y="198" width="8" height="24" rx="1"/>
+  <rect x="71" y="200" width="8" height="22" rx="1"/><rect x="84" y="194" width="8" height="28" rx="1"/>
+  <rect x="97" y="196" width="8" height="26" rx="1"/><rect x="110" y="190" width="8" height="32" rx="1"/>
+  <rect x="123" y="192" width="8" height="30" rx="1"/><rect x="136" y="186" width="8" height="36" rx="1"/>
+  <rect x="149" y="190" width="8" height="32" rx="1"/><rect x="162" y="184" width="8" height="38" rx="1"/>
+  <rect x="175" y="188" width="8" height="34" rx="1"/><rect x="188" y="181" width="8" height="41" rx="1"/>
+  <rect x="201" y="185" width="8" height="37" rx="1"/><rect x="214" y="178" width="8" height="44" rx="1"/>
+  <rect x="227" y="181" width="8" height="41" rx="1"/><rect x="240" y="173" width="8" height="49" rx="1"/>
+  <rect x="253" y="169" width="8" height="53" rx="1"/><rect x="266" y="158" width="8" height="64" rx="1"/>
+  <rect x="279" y="145" width="8" height="77" rx="1"/><rect x="292" y="165" width="8" height="57" rx="1"/>
+  <rect x="305" y="172" width="8" height="50" rx="1"/><rect x="318" y="164" width="8" height="58" rx="1"/>
+  <rect x="331" y="159" width="8" height="63" rx="1"/><rect x="344" y="150" width="8" height="72" rx="1"/>
+  <rect x="357" y="143" width="8" height="79" rx="1"/><rect x="370" y="130" width="8" height="92" rx="1"/>
+  <rect x="383" y="117" width="8" height="105" rx="1"/>
+</g>
+<path d="M42 190L57 181L70 185L83 169L96 157L109 151L122 157L135 173L148 179L161 168L174 164L187 149L200 136L213 144L226 126L239 136L252 121L265 105L278 96L291 115L304 127L317 104L330 82L343 95L356 76L369 70L382 48L397 37L397 222L42 222Z" fill="url(#area)"/>
+<path d="M42 190L57 181L70 185L83 169L96 157L109 151L122 157L135 173L148 179L161 168L174 164L187 149L200 136L213 144L226 126L239 136L252 121L265 105L278 96L291 115L304 127L317 104L330 82L343 95L356 76L369 70L382 48L397 37" fill="none" stroke="#b9f6cf" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/>
+<g fill="#e7fff0" stroke="#73d99b" stroke-width="2" filter="url(#glow)">
+  <circle cx="42" cy="190" r="4"/><circle cx="161" cy="168" r="4"/><circle cx="278" cy="96" r="4"/><circle cx="397" cy="37" r="6"/>
+</g>
+</svg>

@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Bolsa 360 | Screener fundamentalista</title>
+  <meta name="description" content="Screener setorial de ações brasileiras com comparação fundamentalista e valuation relativo.">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div class="devbar">BOLSA 360 | MVP EM AMBIENTE ESPELHO | NÃO É RECOMENDAÇÃO DE INVESTIMENTO</div>
+
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="Bolsa 360">
+      <span class="brand-identity">
+        <img class="brand-logo" src="./assets/bolsa360-logo.svg" alt="Bolsa 360">
+        <small>Análise fundamentalista e construção de universo de investimento</small>
+      </span>
+    </a>
+    <div class="top-actions"><div id="p360Account" class="p360-account"></div><a class="back-link" href="../360/">Plataforma 360</a><a class="back-link beginner-link" href="./iniciante/">Modo iniciante</a><a class="back-link manual-link" href="./manual/" target="_blank" rel="noopener">Manual e Metodologia</a><a class="back-link" href="../empresa-360/">Empresa 360</a></div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">SCREENER SETORIAL</p>
+        <h1>Escolha os setores. Avalie fundamentos. <em>Identifique oportunidades.</em></h1>
+        <p class="lead">O Bolsa 360 separa preço de ação de valuation. Empresas são comparadas com pares do mesmo setor, usando múltiplos e indicadores adequados ao perfil econômico.</p>
+        <div class="hero-flags">
+          <span>Preço do último pregão</span>
+          <span>Ranking por setor</span>
+          <span>Valuation relativo</span>
+          <span>Qualidade</span>
+          <span>Crescimento 360</span>
+          <span>Tendência 360</span>
+          <span>Valor Justo 360</span>
+          <span>Valor Intrínseco 360</span>
+          <span>Fundamentos CVM + TTM</span>
+        </div>
+      </div>
+      <aside class="method-card">
+        <div class="method-visual">
+          <img src="./assets/hero-chart.svg" alt="Gráfico ilustrativo de variação de preço, sem representar um ativo real">
+        </div>
+        <div class="method-copy">
+          <p class="eyebrow light">PRINCÍPIO</p>
+          <h2>Preço nominal não determina atratividade.</h2>
+          <p>O ranking fundamentalista utiliza múltiplos, fluxo de caixa, rentabilidade e estrutura financeira. O preço nominal da ação aparece apenas como referência de mercado.</p>
+        </div>
+      </aside>
+    </section>
+
+    <section class="panel selector-panel">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">1. UNIVERSO</p>
+          <h2>Quais setores devem compor sua busca?</h2>
+          <p id="universeStatus" class="muted">Carregando universo de ações da B3...</p>
+        </div>
+        <div class="selection-actions">
+          <button id="clearSectors" type="button" class="secondary">Limpar</button>
+          <button id="runScreen" type="button" disabled>Analisar setores selecionados</button>
+        </div>
+      </div>
+      <div class="individual-asset-box">
+        <div>
+          <p class="eyebrow">BUSCA DIRETA</p>
+          <h3>Quer analisar uma empresa específica?</h3>
+          <p class="muted">Digite o ticker ou o nome da companhia. O Bolsa 360 localizará o grupo de comparação adequado automaticamente.</p>
+        </div>
+        <div class="individual-asset-form">
+          <input id="individualAssetInput" autocomplete="off" placeholder="Ex.: CYRE3, CURY3, Vale">
+          <button id="individualAssetAdd" type="button">Analisar empresa</button>
+          <small id="individualAssetStatus"></small>
+        </div>
+      </div>
+      <div id="sectorGrid" class="sector-grid"></div>
+      <div class="assumptions-box">
+        <div>
+          <p class="eyebrow">PREMISSAS DO VALOR INTRÍNSECO 360</p>
+          <h3>Premissas explícitas e editáveis</h3>
+          <p class="muted">São parâmetros-base do modelo, não taxas de mercado. O motor aplica ajustes transparentes por família de negócio; alterações recalculam os valuations sem refazer a consulta à CVM.</p>
+        </div>
+        <div class="assumption-grid">
+          <label>WACC base operacional
+            <span><input id="dcfWacc" type="number" step="0.1" min="7" max="30" value="12.0">%</span>
+          </label>
+          <label>Crescimento terminal
+            <span><input id="terminalGrowth" type="number" step="0.1" min="0" max="8" value="3.5">%</span>
+          </label>
+          <label>Alíquota de imposto
+            <span><input id="taxRate" type="number" step="0.5" min="0" max="50" value="34">%</span>
+          </label>
+          <label>Custo de capital bancário
+            <span><input id="bankCostEquity" type="number" step="0.1" min="8" max="30" value="14.0">%</span>
+          </label>
+          <label>Payout bancário DDM
+            <span><input id="bankPayout" type="number" step="1" min="10" max="90" value="50">%</span>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <section id="resultsSection" class="results hidden">
+      <div class="summary-grid">
+        <article class="summary-card dark">
+          <span>Setores analisados</span>
+          <strong id="summarySectors">0</strong>
+          <small>Comparações sempre dentro do próprio setor</small>
+        </article>
+        <article class="summary-card">
+          <span>Ações no universo</span>
+          <strong id="summaryStocks">0</strong>
+          <small>Ordenadas inicialmente por liquidez</small>
+        </article>
+        <article class="summary-card">
+          <span>Com fundamentos</span>
+          <strong id="summaryCoverage">0</strong>
+          <small id="coverageNote">Cobertura disponível no provedor</small>
+        </article>
+        <article class="summary-card">
+          <span>Base contábil</span>
+          <strong id="summaryDate">—</strong>
+          <small>Referência mais recente do ITR</small>
+        </article>
+      </div>
+
+      <section class="panel ranking-panel">
+        <div class="section-head ranking-head">
+          <div>
+            <p class="eyebrow">2. RANKING</p>
+            <h2>Valuation mais atrativo → valuation mais exigente</h2>
+            <p class="muted">Valuation 360 é um índice comparativo de 0 a 100. Quanto maior, mais atrativo é o valuation do ativo em relação aos pares com dados disponíveis.</p>
+          </div>
+          <div class="sort-wrap">
+            <label for="sortBy">Ordenar por</label>
+            <select id="sortBy">
+              <option value="valuation">Valuation 360</option>
+              <option value="trend">Tendência 360</option>
+              <option value="quality">Qualidade</option>
+              <option value="priceAsc">Preço da ação</option>
+              <option value="solidity">Solidez</option>
+              <option value="growth">Crescimento 360</option>
+              <option value="fairDistance">Distância ao valor justo</option>
+              <option value="intrinsicDistance">Distância ao valor intrínseco</option>
+              <option value="roe">ROE</option>
+              <option value="evEbit">EV/EBIT</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="dataWarning" class="data-warning hidden"></div>
+        <div id="sectorResults" class="sector-results"></div>
+      </section>
+
+      <section class="panel methodology">
+        <div>
+          <p class="eyebrow">3. COMO LER</p>
+          <h2>Valuation atrativo não substitui qualidade.</h2>
+          <p>O Bolsa 360 mantém notas separadas para valuation, qualidade, solidez e crescimento. O Valor Justo 360 compara pares. O Valor Intrínseco 360 usa DCF para empresas operacionais e lucro residual/dividendos para bancos, com premissas visíveis. Uma companhia pode negociar com múltiplos baixos porque seus fundamentos deterioraram. O objetivo do screener é reduzir o universo para análise aprofundada, preservando a origem dos dados e dos cálculos.</p>
+        </div>
+        <div class="quadrants">
+          <div><b>Valuation exigente + alta qualidade</b><small>empresa sólida, mas negociando com prêmio relativo</small></div>
+          <div class="accent"><b>Valuation atrativo + alta qualidade</b><small>múltiplos e fundamentos favoráveis frente aos pares</small></div>
+          <div><b>Valuation exigente + baixa qualidade</b><small>prêmio relativo sem suporte equivalente nos fundamentos</small></div>
+          <div><b>Valuation atrativo + baixa qualidade</b><small>desconto relativo acompanhado de fundamentos mais frágeis</small></div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <div id="drawerBackdrop" class="drawer-backdrop hidden"></div>
+  <aside id="assetDrawer" class="asset-drawer" aria-hidden="true">
+    <button id="closeDrawer" class="drawer-close" type="button">×</button>
+    <div id="drawerBody"></div>
+  </aside>
+
+  <footer>
+    <span>Bolsa 360 | Homo Fictor</span>
+    <span>Ferramenta analítica. Não constitui recomendação, oferta ou aconselhamento de investimento.</span>
+  </footer>
+
+  <script src="../360/auth.js"></script>\n  <script src="./app.js"></script>
+  <script src="./valuation-v2.js"></script>
+</body>
+</html>

@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Manual e Metodologia | Bolsa 360</title>
+  <meta name="description" content="Manual do usuário e nota metodológica do Bolsa 360. Fontes, tratamento de dados, indicadores, valuation, limitações e confiabilidade.">
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    .manual-hero{padding:42px 0 20px}.manual-hero h1{max-width:900px}.manual-lead{max-width:880px;font-size:18px;color:var(--muted)}
+    .manual-nav{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0}.manual-nav a{border:1px solid var(--line);border-radius:999px;padding:8px 11px;font-size:10px;font-weight:850;color:var(--green);text-decoration:none;background:#fff}
+    .manual-section{margin-top:18px}.manual-section h2{font-size:28px;margin-bottom:10px}.manual-section h3{font-size:18px;margin:22px 0 8px;color:var(--green2)}
+    .manual-section p,.manual-section li{color:#405047;line-height:1.65}.manual-section ul,.manual-section ol{padding-left:22px}
+    .manual-callout{border:1px solid #cfdcd3;background:#eef5f0;border-radius:16px;padding:16px 18px;margin:16px 0}
+    .manual-callout.warn{background:#fff5df;border-color:#ead5a6}.manual-callout.dark{background:var(--green);color:#fff}.manual-callout.dark p,.manual-callout.dark b{color:#fff}
+    .manual-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.manual-card{border:1px solid var(--line);border-radius:15px;padding:15px;background:#fafbfa}
+    .manual-card b{display:block;color:var(--green);margin-bottom:5px}.formula{border:1px solid var(--line);border-radius:13px;padding:13px 15px;background:#f8faf8;margin:10px 0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+    .reliability{width:100%;border-collapse:collapse;margin-top:12px}.reliability th,.reliability td{padding:11px;border:1px solid var(--line);text-align:left;vertical-align:top;font-size:11px}.reliability th{background:var(--green);color:#fff}
+    .source-list a{word-break:break-all}.manual-version{display:inline-block;padding:7px 10px;border-radius:999px;background:#f2eee5;color:#745b2c;font-size:10px;font-weight:900}
+    .manual-print{cursor:pointer}
+    @media(max-width:760px){.manual-grid{grid-template-columns:1fr}.reliability{display:block;overflow:auto}.manual-hero{padding-top:20px}}
+    @media print{
+      .devbar,.topbar,.manual-nav{display:none!important}
+      body{background:#fff}
+      main{max-width:none;padding:0}
+      .panel{box-shadow:none;break-inside:avoid}
+      .manual-section{border:0;border-bottom:1px solid #ddd;border-radius:0}
+      a{color:#000;text-decoration:none}
+    }
+  </style>
+</head>
+<body>
+  <div class="devbar">BOLSA 360 | MANUAL DO USUÁRIO E NOTA METODOLÓGICA | MVP</div>
+  <header class="topbar">
+    <a class="brand" href="../" aria-label="Bolsa 360">
+      <span class="brand-identity">
+        <img class="brand-logo" src="../assets/bolsa360-logo.svg" alt="Bolsa 360">
+        <small>Manual e metodologia</small>
+      </span>
+    </a>
+    <div class="top-actions"><a class="back-link" href="../../360/">Plataforma 360</a>
+      <a class="back-link" href="../">Análise completa</a>
+      <a class="back-link" href="../iniciante/">Modo iniciante</a>
+      <button class="back-link manual-print" type="button" onclick="window.print()">Imprimir / salvar em PDF</button>
+    </div>
+  </header>
+  <main>
+    <section class="manual-hero">
+      <span class="manual-version">v1.0 · Outubro de 2026</span>
+      <p class="eyebrow">MANUAL DO USUÁRIO E NOTA METODOLÓGICA</p>
+      <h1>Entenda de onde vêm os dados, como são tratados e <em>o que cada resultado realmente significa.</em></h1>
+      <p class="manual-lead">O Bolsa 360 combina dados de mercado, demonstrações financeiras oficiais, cálculos próprios e modelos de valuation. Este manual separa essas camadas para que o usuário consiga avaliar a utilidade, a qualidade e os limites de cada informação.</p>
+      <div class="manual-nav">
+        <a href="#fontes">Fontes</a><a href="#tratamento">Tratamento</a><a href="#indicadores">Indicadores</a><a href="#scores">Scores</a><a href="#justo">Valor Justo</a><a href="#intrinseco">Valor Intrínseco</a><a href="#confiabilidade">Confiabilidade</a><a href="#iniciante">Modo Iniciante</a>
+      </div>
+    </section>
+
+    <section class="panel manual-section">
+      <h2>1. O que é o Bolsa 360</h2>
+      <p>O Bolsa 360 é uma ferramenta de triagem, análise fundamentalista e valuation para ações brasileiras. Ele organiza dados, calcula indicadores e compara empresas em grupos de pares. Não executa ordens, não conhece o perfil individual do usuário e não garante retorno futuro.</p>
+      <div class="manual-grid">
+        <div class="manual-card"><b>O sistema informa</b>Preço de referência, fundamentos, indicadores, scores, histórico e modelos de valuation.</div>
+        <div class="manual-card"><b>O usuário decide</b>O resultado não constitui recomendação de compra, venda, oferta ou aconselhamento de investimento.</div>
+      </div>
+    </section>
+
+    <section id="fontes" class="panel manual-section">
+      <h2>2. Fontes de dados</h2>
+      <h3>Mercado: brapi</h3>
+      <p>A fonte operacional atual de mercado é a brapi. Ela é utilizada para ticker, nome, fechamento, variação, volume, valor de mercado, setor e subsetor quando disponíveis. Essa camada serve ao screening e não é uma cotação garantida de execução em tempo real.</p>
+      <h3>Demonstrações financeiras: CVM</h3>
+      <p>A fonte contábil principal é o Portal de Dados Abertos da Comissão de Valores Mobiliários. O motor consulta DFP e ITR consolidados e o cadastro de companhias abertas. A CVM informa que esses conjuntos incluem Balanço Patrimonial, DRE, DFC e outras demonstrações e podem receber reapresentações.</p>
+      <div class="manual-callout warn"><b>Origem oficial não significa infalibilidade.</b><p>Os dados contábeis refletem informações entregues pelos emissores e podem ser reapresentados. Eventos posteriores à data-base podem ainda não estar refletidos.</p></div>
+    </section>
+
+    <section id="tratamento" class="panel manual-section">
+      <h2>3. Como os dados são tratados</h2>
+      <h3>Universo</h3>
+      <p>O motor solicita inicialmente até 160 ações ordenadas por volume. Em seguida vincula cada ticker a uma companhia ativa na CVM, elimina duplicidade por emissor e mantém a classe mais líquida como representante. O universo fundamentalista atual é limitado às 100 companhias de maior volume que passaram pelo vínculo com a CVM.</p>
+      <h3>Ticker e emissor</h3>
+      <p>O vínculo usa normalização de nomes, comparação textual e aliases conhecidos. CNPJ e código CVM são preservados para auditoria. Como a associação é automatizada, o usuário deve conferir esses identificadores em análises críticas.</p>
+      <h3>Versão e reapresentação</h3>
+      <p>Para cada companhia é escolhida a data de referência mais recente e, para a mesma data, a maior versão disponível. Assim, reapresentações presentes nos arquivos da CVM podem substituir versões anteriores.</p>
+      <h3>DFC</h3>
+      <p>O sistema dá preferência à Demonstração dos Fluxos de Caixa pelo método indireto. Se ela não estiver disponível, utiliza o método direto. Isso evita duplicar contas quando ambos coexistem.</p>
+      <h3>TTM</h3>
+      <div class="formula">TTM = DFP anual anterior + acumulado corrente do ITR - acumulado comparável do ano anterior</div>
+      <p>O balanço utiliza a posição mais recente do ITR. Quando algum componente necessário ao TTM não está disponível, o anual é mantido como fallback.</p>
+      <div class="manual-callout dark"><b>Filosofia do N/D</b><p>Se um dado estiver ausente ou um cálculo for economicamente enganoso, o sistema prefere mostrar N/D. P/L com prejuízo, P/VP com patrimônio negativo e dívida líquida/EBIT com EBIT não positivo são exemplos.</p></div>
+    </section>
+
+    <section id="indicadores" class="panel manual-section">
+      <h2>4. Indicadores</h2>
+      <div class="manual-grid">
+        <div class="manual-card"><b>P/L e P/VP</b>Valor de mercado sobre lucro e patrimônio, somente com denominadores economicamente válidos.</div>
+        <div class="manual-card"><b>EV/EBIT</b>Valor da firma sobre EBIT, somente com EBIT positivo.</div>
+        <div class="manual-card"><b>CFO e FCF Yield</b>Geração de caixa em relação ao valor de mercado. FCF depende da identificação de CAPEX.</div>
+        <div class="manual-card"><b>ROE e ROA</b>Retornos sobre patrimônio e ativos, com denominadores positivos.</div>
+        <div class="manual-card"><b>Margens</b>Bruta, EBIT e líquida sobre receita.</div>
+        <div class="manual-card"><b>Endividamento</b>Dívida/PL, dívida líquida/EBIT, caixa/dívida e liquidez corrente.</div>
+      </div>
+    </section>
+
+    <section id="scores" class="panel manual-section">
+      <h2>5. Scores 360</h2>
+      <p>Os scores são relativos ao grupo comparável. Cada indicador é convertido em percentil dentro dos pares e depois combinado com pesos. Nota 80 não significa “80% de qualidade”; significa bom posicionamento relativo na amostra válida.</p>
+      <h3>Valuation 360</h3>
+      <p>Não financeiras: P/L 30%, P/VP 15%, EV/EBIT 30%, CFO Yield 25%. Bancos: P/L 55% e P/VP 45%.</p>
+      <h3>Qualidade 360</h3>
+      <p>Não financeiras: ROE 30%, ROA 15%, margem EBIT 30%, margem líquida 25%. Bancos: ROE 75% e margem líquida 25%.</p>
+      <h3>Solidez 360</h3>
+      <p>Não financeiras: dívida/PL 40%, dívida líquida/EBIT 40%, liquidez corrente 20%. Bancos ainda não recebem uma fórmula industrial de Solidez 360.</p>
+      <h3>Crescimento 360</h3>
+      <p>Usa DFP anuais de 2021 a 2025 e o TTM mais recente. CAGRs com base inicial ou final negativa não são calculados; a ausência é reponderada.</p>
+    </section>
+
+    <section id="justo" class="panel manual-section">
+      <h2>6. Valor Justo 360</h2>
+      <p>É um valuation relativo por múltiplos. A pergunta é: quanto a classe negociada valeria se seus múltiplos convergissem para referências observadas em empresas comparáveis?</p>
+      <div class="formula">Preço relativo = preço atual × (múltiplo de referência / múltiplo atual)</div>
+      <p>Empresas não financeiras podem usar P/L, P/VP, EV/EBIT e CFO Yield. Bancos usam P/L e P/VP. Quartis dos pares constroem a faixa e a mediana forma o centro. A própria companhia é excluída dos comparáveis.</p>
+      <p>São exigidos pelo menos dois pares adequados. Amostras pequenas recebem confiança baixa; mais pares, mais modelos válidos e menor dispersão podem elevar a confiança.</p>
+    </section>
+
+    <section id="intrinseco" class="panel manual-section">
+      <h2>7. Valor Intrínseco 360</h2>
+      <p>É um valuation econômico da própria companhia, separado do Valor Justo. A versão 2 deixa de aplicar um único DCF a todo o universo e escolhe uma família metodológica conforme o tipo de negócio.</p>
+      <h3>Empresas operacionais: DCF por FCFF</h3>
+      <div class="formula">NOPAT = EBIT-base × (1 - imposto)<br>ROIC ≈ NOPAT / (patrimônio + dívida líquida)<br>Reinvestimento ≈ crescimento / ROIC<br>FCFF = NOPAT × (1 - reinvestimento)</div>
+      <p>O crescimento histórico converge para o crescimento terminal. O horizonte explícito varia conforme o perfil e pode ser maior em companhias com ROIC e crescimento elevados. A dívida líquida é deduzida do valor da firma.</p>
+      <h3>Setores cíclicos e commodities</h3>
+      <p>O EBIT-base pode ser normalizado pela mediana histórica da margem EBIT de 2021 a 2025 e combinado ao TTM. Isso reduz a dependência de um único ponto do ciclo.</p>
+      <h3>Bancos e seguradoras</h3>
+      <p>Usam modelos de patrimônio, com lucro residual e Dividend Discount Model. Quando ambos são válidos, o valor central combina 70% lucro residual e 30% DDM. Seguradoras recebem ajuste próprio no custo de capital.</p>
+      <h3>Holdings</h3>
+      <p>O DCF operacional genérico é desativado para holdings de participações identificadas. Nesses casos o sistema informa que o método adequado é Soma das Partes (SOTP), que exige valorar as investidas e a dívida da holding.</p>
+      <h3>Perfis metodológicos</h3>
+      <p>Utilities, telecomunicações, infraestrutura, varejo, tecnologia, saúde, imobiliário, locação de ativos e serviços financeiros recebem ajustes transparentes sobre WACC-base, crescimento terminal e horizonte explícito. Esses ajustes são regras do modelo e ainda não representam calibração automática por taxas de mercado.</p>
+      <h3>Premissas-base iniciais</h3>
+      <p>WACC-base operacional 12,0%; crescimento terminal-base 3,5%; imposto 34%; custo de capital bancário 14,0%; payout bancário 50%. São parâmetros editáveis do modelo, não taxas observadas nem recomendações.</p>
+      <h3>Checagem por caixa reportado</h3>
+      <p>Quando CFO e CAPEX passam por filtros de plausibilidade, o sistema apresenta uma segunda leitura baseada no caixa reportado. Ela é um controle de consistência e não compõe o Valor Intrínseco central, pois CFO menos CAPEX não é automaticamente equivalente a FCFF padronizado.</p>
+      <h3>Quando aparece “Não calculado”</h3>
+      <p>Não calculado não significa necessariamente ausência de demonstrações. O sistema passa a informar a causa: preço ou valor de mercado indisponível, EBIT não positivo, patrimônio não positivo, dívida líquida não identificada, modelo inadequado ao tipo de empresa ou valor operacional estimado insuficiente para cobrir a dívida líquida sob as premissas centrais.</p>
+      <div class="formula">Distância intrínseca = Valor Intrínseco central / preço de fechamento - 1</div>
+    </section>
+
+    <section id="consenso" class="panel manual-section">
+      <h2>7A. Consenso de mercado e preço-alvo</h2>
+      <p>O Bolsa 360 pode apresentar uma terceira referência independente dos seus próprios modelos: o consenso agregado de analistas de mercado.</p>
+      <p>Quando disponível na fonte, são exibidos preço-alvo médio, preço-alvo mediano, faixa mínima/máxima, número de opiniões e recomendação agregada em três categorias: <b>Compra</b>, <b>Neutro</b> ou <b>Venda</b>.</p>
+      <div class="formula">Distância ao preço-alvo = preço-alvo médio / preço de fechamento - 1</div>
+      <p>Essa informação não altera o Valor Justo 360, o Valor Intrínseco 360 nem os Scores 360. É uma referência externa para comparação.</p>
+      <div class="manual-callout"><b>Limitação de cobertura</b><p>A documentação da brapi prevê os campos de consenso, mas a disponibilidade varia por ativo e plano. O sistema preserva valores nulos e mostra N/D quando não há cobertura. A data individual de cada relatório de analista não é fornecida no campo agregado.</p></div>
+    </section>
+
+    <section id="tendencia" class="panel manual-section">
+      <h2>7B. Tendência 360</h2>
+      <p>O Tendência 360 é uma leitura técnica quantitativa calculada pelo próprio sistema a partir do histórico diário de preços ajustados. Ele é independente de Valor Justo, Valor Intrínseco e consenso de analistas.</p>
+      <h3>Componentes atuais</h3>
+      <p>O motor combina posição do preço em relação à média móvel de 20 pregões, relação entre médias móveis de 20 e 50 pregões, inclinação da média de 20, momentum de 20 e 60 pregões, RSI de 14 períodos e MACD.</p>
+      <div class="formula">Score técnico = soma dos sinais positivos, neutros e negativos dos indicadores</div>
+      <p>O resultado é apresentado como <b>Alta forte</b>, <b>Alta moderada</b>, <b>Lateral</b>, <b>Baixa moderada</b> ou <b>Baixa forte</b>, acompanhado de nível de confiança.</p>
+      <p>A volatilidade anualizada dos últimos 20 pregões é exibida como informação adicional de risco. O indicador usa fechamento ajustado sempre que a fonte o fornece.</p>
+      <div class="manual-callout"><b>Não é recomendação</b><p>Tendência descreve comportamento recente de preço. Não estima valor econômico e não deve ser interpretada isoladamente como indicação de compra ou venda.</p></div>
+      <div class="manual-callout"><b>Cobertura gratuita</b><p>A fonte brapi permite histórico de até três meses no plano gratuito. Para cobertura ampla dos ativos é necessária uma chave gratuita da brapi configurada no ambiente. Sem chave, a fonte pública de demonstração cobre apenas símbolos específicos.</p></div>
+    </section>
+
+    <section id="confiabilidade" class="panel manual-section">
+      <h2>8. Qualidade e confiabilidade</h2>
+      <table class="reliability">
+        <thead><tr><th>Camada</th><th>Confiabilidade esperada</th><th>Principal limitação</th></tr></thead>
+        <tbody>
+          <tr><td>DFP/ITR</td><td>Alta quanto à origem</td><td>Podem ser reapresentados; dependem da qualidade do emissor.</td></tr>
+          <tr><td>Preço/volume/market cap</td><td>Adequada para screening</td><td>Fonte operacional, cache e possível atraso.</td></tr>
+          <tr><td>Indicadores</td><td>Alta quando inputs são válidos</td><td>Definições contábeis e estruturas societárias afetam comparabilidade.</td></tr>
+          <tr><td>Scores</td><td>Boa para triagem</td><td>Dependem da amostra; não são notas absolutas.</td></tr>
+          <tr><td>Valor Justo</td><td>Moderada a boa com bons pares</td><td>Amostras pequenas e setores heterogêneos.</td></tr>
+          <tr><td>Valor Intrínseco</td><td>Model-dependent</td><td>Sensível a WACC, crescimento, ROIC e payout.</td></tr>
+        </tbody>
+      </table>
+      <h3>Limitações atuais</h3>
+      <ul>
+        <li>Universo atual restrito às 100 companhias líquidas vinculadas à CVM no processo.</li>
+        <li>Classificação setorial oficial B3 ainda não é a camada definitiva.</li>
+        <li>Solidez específica para bancos ainda está em desenvolvimento.</li>
+        <li>Holdings, conglomerados, empresas em recuperação e negócios muito particulares exigem leitura adicional.</li>
+        <li>CAPEX pode não ser identificável uniformemente; FCF pode ficar N/D.</li>
+        <li>O motor não incorpora automaticamente guidance, consenso, fatos relevantes posteriores ou eventos ainda não refletidos nas demonstrações.</li>
+        <li>O ambiente usa cache e não deve ser tratado como terminal intraday.</li>
+      </ul>
+      <div class="manual-callout"><b>Como auditar</b><p>Confira data contábil, CNPJ, código CVM e a demonstração original. Para decisões relevantes, confronte o preço e os números com uma fonte independente.</p></div>
+    </section>
+
+    <section id="iniciante" class="panel manual-section">
+      <h2>9. Bolsa 360 Iniciante</h2>
+      <p>A seleção, os pesos e a carteira simulada são armazenados localmente no navegador por localStorage. No MVP atual, não são enviados a uma corretora nem persistidos em servidor. Limpar os dados do navegador ou trocar de dispositivo pode apagar a carteira.</p>
+      <p>Já existem seleção tipo carrinho, capital fictício, pesos, divisão igualitária, normalização para 100%, quantidades inteiras, valor aplicado, caixa remanescente e preço de entrada. O acompanhamento temporal contra Ibovespa e Selic ainda é uma próxima camada.</p>
+    </section>
+
+    <section class="panel manual-section">
+      <h2>10. Fontes e referências</h2>
+      <div class="source-list">
+        <p><b>CVM - DFP:</b> <a href="https://dados.cvm.gov.br/dataset/cia_aberta-doc-dfp" target="_blank" rel="noopener">dados.cvm.gov.br/dataset/cia_aberta-doc-dfp</a></p>
+        <p><b>CVM - ITR:</b> <a href="https://dados.cvm.gov.br/dataset/cia_aberta-doc-itr" target="_blank" rel="noopener">dados.cvm.gov.br/dataset/cia_aberta-doc-itr</a></p>
+        <p><b>Cadastro CVM:</b> <a href="https://dados.cvm.gov.br/dados/CIA_ABERTA/CAD/DADOS/cad_cia_aberta.csv" target="_blank" rel="noopener">cad_cia_aberta.csv</a></p>
+        <p><b>brapi:</b> <a href="https://brapi.dev/docs/acoes" target="_blank" rel="noopener">brapi.dev/docs/acoes</a></p>
+        <p><b>B3 - Empresas Listadas:</b> <a href="https://sistemaswebb3-listados.b3.com.br/listedCompaniesPage/?language=pt-br" target="_blank" rel="noopener">Empresas Listadas B3</a></p>
+      </div>
+      <div class="manual-callout dark"><b>Responsabilidade de uso</b><p>O Bolsa 360 informa, calcula e compara. A decisão de investimento pertence ao usuário.</p></div>
+    </section>
+  </main>
+  <footer><span>Bolsa 360 | Homo Fictor</span><span>Manual v1.0 | Outubro de 2026</span></footer>
+</body>
+</html>
