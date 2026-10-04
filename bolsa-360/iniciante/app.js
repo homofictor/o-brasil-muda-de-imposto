@@ -73,8 +73,15 @@ function formatDate(v){
 }
 
 function persistSelection(){
-  localStorage.setItem(STORAGE_SELECTION,JSON.stringify([...state.selection.values()]));
+  const selection=[...state.selection.values()];
+  localStorage.setItem(STORAGE_SELECTION,JSON.stringify(selection));
   localStorage.setItem(STORAGE_WEIGHTS,JSON.stringify(state.weights));
+  if(window.P360Auth){
+    P360Auth.ready.then(()=>Promise.all([
+      P360Auth.saveState(STORAGE_SELECTION,selection),
+      P360Auth.saveState(STORAGE_WEIGHTS,state.weights)
+    ])).catch(()=>{});
+  }
 }
 function loadLocalState(){
   try{
@@ -85,6 +92,31 @@ function loadLocalState(){
   }catch(_){
     state.selection=new Map();state.weights={};state.savedPortfolio=null;
   }
+}
+async function hydrateAccountState(){
+  if(!window.P360Auth)return;
+  try{
+    await P360Auth.ready;
+    if(!P360Auth.session)return;
+    const [selection,weights,portfolio]=await Promise.all([
+      P360Auth.loadState(STORAGE_SELECTION),
+      P360Auth.loadState(STORAGE_WEIGHTS),
+      P360Auth.loadState(STORAGE_PORTFOLIO)
+    ]);
+    if(Array.isArray(selection)){
+      state.selection=new Map(selection.filter(x=>x&&x.ticker).map(x=>[x.ticker,x]));
+      localStorage.setItem(STORAGE_SELECTION,JSON.stringify(selection));
+    }
+    if(weights&&typeof weights==='object'){
+      state.weights=weights;
+      localStorage.setItem(STORAGE_WEIGHTS,JSON.stringify(weights));
+    }
+    if(portfolio&&typeof portfolio==='object'){
+      state.savedPortfolio=portfolio;
+      localStorage.setItem(STORAGE_PORTFOLIO,JSON.stringify(portfolio));
+    }
+    updateSelectionDock();renderSavedPortfolio();renderPortfolioBuilder();
+  }catch(err){console.warn('Falha ao sincronizar carteira 360:',err)}
 }
 function setViewMode(mode){
   state.viewMode=mode==='advanced'?'advanced':'simple';
@@ -221,6 +253,7 @@ function saveSimulatedPortfolio(){
     }))
   };
   localStorage.setItem(STORAGE_PORTFOLIO,JSON.stringify(state.savedPortfolio));
+  if(window.P360Auth)P360Auth.ready.then(()=>P360Auth.saveState(STORAGE_PORTFOLIO,state.savedPortfolio)).catch(()=>{});
   renderSavedPortfolio();
   closePortfolioDrawer();
   $('savedPortfolioSection')?.scrollIntoView({behavior:'smooth',block:'start'});
@@ -921,4 +954,4 @@ setViewMode('simple');
 updateSelectionDock();
 renderSavedPortfolio();
 renderPortfolioBuilder();
-loadUniverse();
+loadUniverse();\nhydrateAccountState();
