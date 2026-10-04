@@ -208,6 +208,18 @@ function saveTrend360Cache(){
     localStorage.setItem(TREND360_CACHE_KEY,JSON.stringify({savedAt:Date.now(),results}));
   }catch(_){}
 }
+const bolsa360SortRowsBase=sortRows;
+sortRows=function(rows){
+  if($('sortBy')?.value==='trend'){
+    return [...rows].sort((a,b)=>{
+      const ta=state.trendMap.get(a.ticker),tb=state.trendMap.get(b.ticker);
+      const sa=ta?.available?n(ta.score):-Infinity,sb=tb?.available?n(tb.score):-Infinity;
+      return (sb??-Infinity)-(sa??-Infinity);
+    });
+  }
+  return bolsa360SortRowsBase(rows);
+};
+
 function trendClass(t){
   if(!t?.available)return 'na';
   return t.direction==='Alta'?'up':t.direction==='Baixa'?'down':'neutral';
