@@ -335,3 +335,35 @@ body.beginner-mode .adv-col{display:none}
 /* Tabela compacta do modo iniciante */
 body.beginner-mode table{min-width:820px}
 .overall-score-cell .score{min-width:50px;font-size:12px;padding:6px 10px}
+
+
+/* Bolsa 360: recursos de retenção e comparação */
+.favorite360-btn{margin-top:12px;min-height:38px;padding:0 13px;border:1px solid #c9d4cd;border-radius:10px;background:#fff;color:var(--green);font-size:11px;font-weight:900}
+.favorite360-btn.active{background:#edf4ef;border-color:#9fbea9;color:var(--green)}
+.peer360-box,.check360-box{margin:24px 0;border:1px solid var(--line);border-radius:18px;padding:18px;background:#fbfcfb}
+.peer360-head,.check360-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
+.peer360-head h3,.check360-head h3{font-size:20px;margin-top:3px}
+.peer360-head>small,.check360-head>div>small{color:var(--muted);font-size:10px}
+.peer360-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:14px}
+.peer360-item{border:1px solid var(--line);border-radius:13px;padding:12px;background:#fff}
+.peer360-item span,.peer360-item small,.peer360-item b{display:block}
+.peer360-item span{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:900}
+.peer360-item strong{display:block;font-size:17px;margin:5px 0}
+.peer360-item small{font-size:9px;color:var(--muted)}
+.peer360-item b{font-size:9px;margin-top:6px}
+.peer360-item b.good{color:#21633f}.peer360-item b.bad{color:#8a443d}.peer360-item b.mid{color:#80652f}.peer360-item b.na{color:var(--muted)}
+.check360-score{min-width:112px;text-align:right}
+.check360-score span,.check360-score small{display:block;color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.08em;font-weight:900}
+.check360-score strong{display:block;font-size:30px;color:var(--green);line-height:1;margin:5px 0}
+.check360-list{display:grid;gap:7px;margin-top:14px}
+.check360-row{display:grid;grid-template-columns:24px 1fr auto;gap:8px;align-items:center;border:1px solid var(--line);border-radius:11px;padding:10px 11px;background:#fff;font-size:10px}
+.check360-row span{font-size:16px;font-weight:900;text-align:center}
+.check360-row b{font-size:10px}
+.check360-row small{color:var(--muted)}
+.check360-row.ok span{color:#21633f}.check360-row.fail span{color:#8a443d}.check360-row.na span{color:#9aa29d}
+@media(max-width:700px){
+  .peer360-head,.check360-head{display:block}
+  .peer360-head>small{display:block;margin-top:6px}
+  .peer360-grid{grid-template-columns:1fr}
+  .check360-score{text-align:left;margin-top:12px}
+}
