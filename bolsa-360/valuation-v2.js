@@ -223,3 +223,33 @@ openDrawer=function(a){
     if(price)price.insertAdjacentHTML('afterend',box);
   }
 };
+
+(function plataforma360TickerDeepLink(){
+  if(location.pathname.includes('/iniciante/'))return;
+  const ticker=String(new URLSearchParams(location.search).get('ticker')||'').toUpperCase().trim();
+  if(!ticker)return;
+  let tries=0;
+  const waitUniverse=setInterval(()=>{
+    tries++;
+    const stocks=state?.universe?.stocks||[];
+    const stock=stocks.find(x=>String(x.ticker).toUpperCase()===ticker);
+    if(stock){
+      clearInterval(waitUniverse);
+      const input=[...document.querySelectorAll('#sectorGrid input[type="checkbox"]')].find(x=>x.value===stock.sector);
+      if(input&&!input.checked){input.checked=true;state.selected.add(stock.sector)}
+      $('runScreen').disabled=false;
+      $('universeStatus').textContent='Ativo '+ticker+' identificado. Analisando o setor '+sectorPt(stock.sector)+'...';
+      $('runScreen').click();
+      let drawTries=0;
+      const waitAsset=setInterval(()=>{
+        drawTries++;
+        const asset=state.assetMap.get(ticker);
+        if(asset){clearInterval(waitAsset);openDrawer(asset)}
+        else if(drawTries>60)clearInterval(waitAsset);
+      },350);
+    }else if(tries>50){
+      clearInterval(waitUniverse);
+      $('universeStatus').textContent='O ticker '+ticker+' não foi encontrado no universo atual.';
+    }
+  },180);
+})();
