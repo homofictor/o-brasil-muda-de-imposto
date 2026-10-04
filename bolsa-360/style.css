@@ -230,3 +230,23 @@ footer{max-width:1280px;margin:auto;padding:0 28px 44px;display:flex;justify-con
 .analyst-rec.sell{background:#f6e8e6;color:#8a3f36}
 .analyst-rec.na{background:#eef1ef;color:#6a746d}
 @media(max-width:700px){.analyst-head{display:block}.analyst-call{text-align:left;justify-items:start;margin-top:12px}}
+
+/* Tendência 360 */
+.trend-badge{display:inline-flex;align-items:center;justify-content:center;min-width:88px;padding:7px 9px;border-radius:999px;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.035em;white-space:nowrap}
+.trend-badge.up{background:#e2f2e7;color:#145d3b}
+.trend-badge.neutral{background:#f2efe7;color:#765c27}
+.trend-badge.down{background:#f6e7e5;color:#8c4138}
+.trend-badge.na{background:#edf0ee;color:#68736c}
+.trend-box{margin-top:14px;border:1px solid #d5e1d9;border-radius:18px;padding:18px;background:linear-gradient(155deg,#fbfdfb,#f1f7f3)}
+.trend-box.unavailable{background:#f7f8f7}
+.trend-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;margin-bottom:14px}
+.trend-head h3{font-size:28px;margin:4px 0}
+.trend-head small{color:var(--muted);font-size:10px}
+.trend-score{display:grid;justify-items:end;gap:2px}
+.trend-score span{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:850}
+.trend-score strong{font-size:25px}
+.trend-score.up strong{color:#17633f}.trend-score.down strong{color:#93473e}.trend-score.neutral strong{color:#776027}
+.trend-signals{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}
+.trend-signal{border-radius:999px;padding:5px 8px;font-size:9px;font-weight:800;background:#eef1ef;color:#657069}
+.trend-signal.pos{background:#e5f3e9;color:#17613e}.trend-signal.neg{background:#f5e7e5;color:#8a4038}.trend-signal.flat{background:#f2efe7;color:#715b2b}
+@media(max-width:700px){.trend-head{display:block}.trend-score{justify-items:start;margin-top:12px}}
