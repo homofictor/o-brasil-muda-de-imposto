@@ -79,8 +79,9 @@
       $('authStatus').textContent='';
     }
     $('modeLogin').onclick=()=>setMode(false);$('modeSignup').onclick=()=>setMode(true);
-    $('googleLogin').onclick=()=>P360Auth.signInWithGoogle().catch(showErr);
-    $('facebookLogin').onclick=()=>P360Auth.signInWithFacebook().catch(showErr);
+    function nextPath(){const q=new URLSearchParams(location.search);return q.get('next')||'/360/';}
+    $('googleLogin').onclick=()=>P360Auth.signInWithGoogle(nextPath()).catch(showErr);
+    $('facebookLogin').onclick=()=>P360Auth.signInWithFacebook(nextPath()).catch(showErr);
     function showErr(e){$('authStatus').textContent=e.message||'Não foi possível autenticar.';$('authStatus').className='auth-status error';}
     P360Auth.ready.then(({configured,session})=>{
       if(!configured){$('authStatus').textContent='Estrutura de login pronta. Falta conectar o banco de autenticação ao ambiente de preview.';$('authStatus').className='auth-status error';return;}
@@ -90,7 +91,7 @@
       e.preventDefault();$('authStatus').textContent='Processando...';$('authStatus').className='auth-status';
       try{
         const email=$('email').value.trim(),password=$('password').value;
-        const result=signup?await P360Auth.signUp(email,password,$('fullName').value.trim(),$('consent').checked):await P360Auth.signInWithPassword(email,password);
+        const result=signup?await P360Auth.signUp(email,password,$('fullName').value.trim(),$('consent').checked,nextPath()):await P360Auth.signInWithPassword(email,password);
         if(result.error)throw result.error;
         if(signup&&!result.data.session){$('authStatus').textContent='Conta criada. Verifique seu e-mail para confirmar o acesso.';$('authStatus').className='auth-status ok';return;}
         const q=new URLSearchParams(location.search),next=q.get('next')||'/360/';location.replace(next);
