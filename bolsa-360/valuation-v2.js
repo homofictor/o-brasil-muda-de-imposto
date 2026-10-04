@@ -422,12 +422,20 @@ function renderOpportunities360(){
   const byIntrinsic=[...rows].filter(r=>r.intrinsicValue?.available===true&&n(r.intrinsicValue.distance)!==null).sort((a,b)=>n(b.intrinsicValue.distance)-n(a.intrinsicValue.distance)).slice(0,5);
   const byQuality=[...rows].filter(r=>n(r.qualityScore)!==null).sort((a,b)=>n(b.qualityScore)-n(a.qualityScore)).slice(0,5);
   const byGrowth=[...rows].filter(r=>n(r.growthScore)!==null).sort((a,b)=>n(b.growthScore)-n(a.growthScore)).slice(0,5);
+  const byRevenue=[...rows].filter(r=>n(r.fundamentals?.revenue)>0).sort((a,b)=>n(b.fundamentals.revenue)-n(a.fundamentals.revenue)).slice(0,5);
+  const byMarketCap=[...rows].filter(r=>n(r.marketCap)>0).sort((a,b)=>n(b.marketCap)-n(a.marketCap)).slice(0,5);
+  const byRoe=[...rows].filter(r=>n(r.fundamentals?.returnOnEquity)!==null).sort((a,b)=>n(b.fundamentals.returnOnEquity)-n(a.fundamentals.returnOnEquity)).slice(0,5);
+  const byPE=[...rows].filter(r=>n(r.fundamentals?.trailingPE)>0).sort((a,b)=>n(a.fundamentals.trailingPE)-n(b.fundamentals.trailingPE)).slice(0,5);
   const grid=document.getElementById('opp360Grid');if(!grid)return;
   grid.innerHTML=
     opportunityCard360('Maior Nota 360',byOverall,r=>bolsa360CompositeScore(r)+'/100')+
     opportunityCard360('Maior upside intrínseco',byIntrinsic,r=>pct(r.intrinsicValue.distance))+
     opportunityCard360('Maior qualidade',byQuality,r=>Math.round(n(r.qualityScore))+'/100')+
-    opportunityCard360('Maior crescimento',byGrowth,r=>Math.round(n(r.growthScore))+'/100');
+    opportunityCard360('Maior crescimento',byGrowth,r=>Math.round(n(r.growthScore))+'/100')+
+    opportunityCard360('Maiores receitas TTM',byRevenue,r=>compactMoney(r.fundamentals.revenue))+
+    opportunityCard360('Maior valor de mercado',byMarketCap,r=>compactMoney(r.marketCap))+
+    opportunityCard360('Maior ROE',byRoe,r=>pct(r.fundamentals.returnOnEquity))+
+    opportunityCard360('Menor P/L positivo',byPE,r=>mult(r.fundamentals.trailingPE));
 }
 
 function saveCompare360(){try{localStorage.setItem(BOLSA360_COMPARE_KEY,JSON.stringify([...state.compare360]))}catch(_){}}
