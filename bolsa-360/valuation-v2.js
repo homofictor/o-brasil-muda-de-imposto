@@ -190,6 +190,91 @@ function renderAnalystConsensus(consensus,close){
 }
 
 
+
+const BOLSA360_FAVORITES_KEY='bolsa360.favorites.v01';
+function bolsa360FavoriteSet(){
+  try{
+    const raw=JSON.parse(localStorage.getItem(BOLSA360_FAVORITES_KEY)||'[]');
+    return new Set(Array.isArray(raw)?raw.map(x=>String(x).toUpperCase()):[]);
+  }catch(_){return new Set()}
+}
+function bolsa360IsFavorite(ticker){return bolsa360FavoriteSet().has(String(ticker||'').toUpperCase())}
+function bolsa360ToggleFavorite(ticker){
+  const t=String(ticker||'').toUpperCase(); if(!t)return false;
+  const set=bolsa360FavoriteSet();
+  if(set.has(t))set.delete(t);else set.add(t);
+  try{localStorage.setItem(BOLSA360_FAVORITES_KEY,JSON.stringify([...set]))}catch(_){}
+  return set.has(t);
+}
+function bolsa360CompositeScore(row){
+  const vals=[row?.valuationScore,row?.qualityScore,row?.solidityScore,row?.growthScore].map(n).filter(v=>v!==null);
+  return vals.length>=2?Math.round(vals.reduce((s,v)=>s+v,0)/vals.length):null;
+}
+function bolsa360Median(values){
+  const a=values.map(n).filter(v=>v!==null).sort((x,y)=>x-y);
+  if(!a.length)return null;
+  const m=Math.floor(a.length/2);
+  return a.length%2?a[m]:(a[m-1]+a[m])/2;
+}
+function bolsa360PeerRows(asset){
+  const blocks=state.sectorData||[];
+  const block=blocks.find(b=>(asset?.peerLabel&&b.label===asset.peerLabel)||(asset?.sector&&b.sector===asset.sector));
+  return block?.scored||block?.stocks||[];
+}
+function bolsa360MetricStatus(value,median,direction){
+  const v=n(value),m=n(median); if(v===null||m===null)return {label:'N/D',cls:'na'};
+  const diff=m===0?v-m:(v-m)/Math.abs(m);
+  const favorable=direction==='lower'?diff<=-.05:diff>=.05;
+  const unfavorable=direction==='lower'?diff>=.05:diff<=-.05;
+  return favorable?{label:'Melhor que pares',cls:'good'}:unfavorable?{label:'Abaixo dos pares',cls:'bad'}:{label:'Em linha',cls:'mid'};
+}
+function renderPeerBenchmark360(a){
+  const peers=bolsa360PeerRows(a).filter(x=>x?.ticker!==a?.ticker);
+  if(!peers.length)return '';
+  const defs=[
+    {label:'P/L',get:r=>r?.fundamentals?.trailingPE,fmt:mult,dir:'lower'},
+    {label:'P/VP',get:r=>r?.fundamentals?.priceToBook,fmt:mult,dir:'lower'},
+    {label:'ROE',get:r=>r?.fundamentals?.returnOnEquity,fmt:pct,dir:'higher'},
+    {label:'Margem EBIT',get:r=>r?.fundamentals?.ebitMargin,fmt:pct,dir:'higher'},
+    {label:'Dívida líquida / EBIT',get:r=>r?.fundamentals?.netDebtToEbit,fmt:mult,dir:'lower'},
+    {label:'Cresc. receita 3a',get:r=>r?.growth?.revenueCagr3,fmt:pct,dir:'higher'}
+  ];
+  const cards=defs.map(d=>{
+    const av=d.get(a),med=bolsa360Median(peers.map(d.get));
+    if(n(av)===null||n(med)===null)return '';
+    const st=bolsa360MetricStatus(av,med,d.dir);
+    return '<div class="peer360-item"><span>'+esc(d.label)+'</span><strong>'+d.fmt(av)+'</strong><small>Mediana dos pares '+d.fmt(med)+'</small><b class="'+st.cls+'">'+st.label+'</b></div>';
+  }).filter(Boolean).join('');
+  if(!cards)return '';
+  return '<section class="peer360-box"><div class="peer360-head"><div><p class="eyebrow">PARES 360</p><h3>Como este ativo se posiciona no próprio grupo?</h3></div><small>'+peers.length+' pares comparáveis</small></div><div class="peer360-grid">'+cards+'</div></section>';
+}
+function renderChecklist360(a){
+  const f=a?.fundamentals||{},g=a?.growth||{};
+  const tests=[
+    {label:'Valuation relativo atrativo',value:n(a?.valuationScore),ok:v=>v>=60,show:v=>v+'/100'},
+    {label:'Qualidade dos fundamentos',value:n(a?.qualityScore),ok:v=>v>=60,show:v=>v+'/100'},
+    {label:'Solidez financeira',value:n(a?.solidityScore),ok:v=>v>=60,show:v=>v+'/100'},
+    {label:'Crescimento consistente',value:n(a?.growthScore),ok:v=>v>=55,show:v=>v+'/100'},
+    {label:'ROE positivo e relevante',value:n(f.returnOnEquity),ok:v=>v>=.10,show:pct},
+    {label:'Dívida líquida / EBIT controlada',value:n(f.netDebtToEbit),ok:v=>v<=3,show:mult},
+    {label:'Receita crescendo em 3 anos',value:n(g.revenueCagr3),ok:v=>v>0,show:pct},
+    {label:'Lucro crescendo em 3 anos',value:n(g.profitCagr3),ok:v=>v>0,show:pct}
+  ];
+  const available=tests.filter(t=>t.value!==null);
+  const passed=available.filter(t=>t.ok(t.value)).length;
+  const rows=tests.map(t=>{
+    if(t.value===null)return '<div class="check360-row na"><span>○</span><b>'+esc(t.label)+'</b><small>N/D</small></div>';
+    const ok=t.ok(t.value);
+    return '<div class="check360-row '+(ok?'ok':'fail')+'"><span>'+(ok?'✓':'×')+'</span><b>'+esc(t.label)+'</b><small>'+esc(t.show(t.value))+'</small></div>';
+  }).join('');
+  const composite=bolsa360CompositeScore(a);
+  return '<section class="check360-box"><div class="check360-head"><div><p class="eyebrow">CHECKLIST 360</p><h3>'+passed+' de '+available.length+' critérios atendidos</h3><small>Leitura objetiva dos fundamentos disponíveis</small></div><div class="check360-score"><span>Nota 360</span><strong>'+(composite===null?'N/D':composite)+'</strong><small>'+(composite===null?'dados insuficientes':'média das quatro dimensões')+'</small></div></div><div class="check360-list">'+rows+'</div><p class="drawer-note">O Checklist 360 é um filtro analítico. Critérios não disponíveis não entram no total e nenhum resultado constitui recomendação de investimento.</p></section>';
+}
+function renderFavorite360(a){
+  const fav=bolsa360IsFavorite(a?.ticker);
+  return '<button id="bolsa360FavoriteBtn" class="favorite360-btn '+(fav?'active':'')+'" type="button" aria-pressed="'+(fav?'true':'false')+'">'+(fav?'★ Favorito':'☆ Adicionar aos favoritos')+'</button>';
+}
+
 const TREND360_CACHE_KEY='bolsa360.trend.v01';
 state.trendMap=state.trendMap||new Map();
 state.trendAttempted=state.trendAttempted||new Set();
@@ -292,6 +377,18 @@ const bolsa360OpenDrawerBase=openDrawer;
 openDrawer=function(a){
   state.activeDrawerTicker=a?.ticker||null;
   bolsa360OpenDrawerBase(a);
+  const title=document.querySelector('#drawerBody .drawer-title');
+  if(title){
+    title.insertAdjacentHTML('beforeend',renderFavorite360(a));
+    const favBtn=document.getElementById('bolsa360FavoriteBtn');
+    if(favBtn)favBtn.addEventListener('click',()=>{
+      const active=bolsa360ToggleFavorite(a.ticker);
+      favBtn.classList.toggle('active',active);
+      favBtn.setAttribute('aria-pressed',active?'true':'false');
+      favBtn.textContent=active?'★ Favorito':'☆ Adicionar aos favoritos';
+    });
+  }
+
   const trendBox=renderTrend360(state.trendMap.get(a.ticker)||null);
   const price=document.querySelector('#drawerBody .drawer-price');
   if(price)price.insertAdjacentHTML('afterend',trendBox);
@@ -300,6 +397,12 @@ openDrawer=function(a){
   const intrinsic=document.querySelector('#drawerBody .intrinsic-box');
   if(intrinsic)intrinsic.insertAdjacentHTML('afterend',analystBox);
   else if(price)price.insertAdjacentHTML('afterend',analystBox);
+
+  const history=document.querySelector('#drawerBody .history-box');
+  const insertBefore=history||document.querySelector('#drawerBody .drawer-note');
+  const extra=renderPeerBenchmark360(a)+renderChecklist360(a);
+  if(insertBefore)insertBefore.insertAdjacentHTML('beforebegin',extra);
+  else document.querySelector('#drawerBody')?.insertAdjacentHTML('beforeend',extra);
 };
 
 const bolsa360RenderResultsBase=renderResults;
