@@ -276,6 +276,199 @@ function renderFavorite360(a){
 }
 
 
+
+const quick360State={ticker:null,history:[],period:'6m',market:null,cvm:null,request:0};
+
+function quickTicker360(raw){
+  const q=String(raw||'').trim();
+  const exact=q.toUpperCase().replace(/\s/g,'');
+  if(/^[A-Z]{4}\d{1,2}$/.test(exact))return exact;
+  const found=typeof findIndividualStock==='function'?findIndividualStock(q):null;
+  return found?.ticker?String(found.ticker).toUpperCase():null;
+}
+function ensureQuick360(){
+  if(document.getElementById('quick360Modal'))return;
+  document.body.insertAdjacentHTML('beforeend',
+    '<div id="quick360Backdrop" class="quick360-backdrop hidden"></div>'+
+    '<section id="quick360Modal" class="quick360-modal" aria-hidden="true" aria-label="Consulta Rápida 360">'+
+      '<button id="quick360Close" class="quick360-close" type="button" aria-label="Fechar">×</button>'+
+      '<div id="quick360Body"></div>'+
+    '</section>');
+  const close=closeQuick360;
+  document.getElementById('quick360Close')?.addEventListener('click',close);
+  document.getElementById('quick360Backdrop')?.addEventListener('click',close);
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElementById('quick360Modal')?.classList.contains('open'))close()});
+}
+function closeQuick360(){
+  document.getElementById('quick360Backdrop')?.classList.add('hidden');
+  document.getElementById('quick360Modal')?.classList.remove('open');
+  document.getElementById('quick360Modal')?.setAttribute('aria-hidden','true');
+}
+function quick360Skeleton(ticker,stock){
+  const name=stock?.name||ticker;
+  const close=n(stock?.close);
+  const change=n(stock?.change);
+  return '<div class="quick360-head">'+
+    '<div><p class="eyebrow">CONSULTA RÁPIDA 360</p><div class="quick360-title"><h2>'+esc(ticker)+'</h2><span>'+esc(name)+'</span></div></div>'+
+    '<div class="quick360-quote"><strong>'+money(close)+'</strong><b class="'+(change===null?'flat':change>=0?'up':'down')+'">'+(change===null?'':(change>=0?'+':'')+change.toFixed(2)+'%')+'</b></div>'+
+    '</div>'+
+    '<div class="quick360-loading"><i></i><span>Carregando gráfico e fundamentos...</span></div>'+
+    '<div id="quick360ChartBox" class="quick360-chartbox"></div>'+
+    '<div id="quick360Info" class="quick360-info"></div>'+
+    '<div id="quick360Actions" class="quick360-actions"></div>';
+}
+function quick360PeriodPoints(points,period){
+  if(!Array.isArray(points)||!points.length)return [];
+  const sorted=[...points].filter(p=>n(p.t)&&n(p.close)!==null).sort((a,b)=>n(a.t)-n(b.t));
+  if(!sorted.length)return [];
+  const last=n(sorted.at(-1).t),days={ '1m':31,'3m':93,'6m':186,'1y':370 }[period]||186;
+  const cutoff=last-days*86400;
+  return sorted.filter(p=>n(p.t)>=cutoff);
+}
+function quick360ChartSvg(points){
+  if(points.length<2)return '<div class="quick360-emptychart">Histórico de preço ainda não disponível para este ativo.</div>';
+  const W=900,H=280,P=24;
+  const vals=points.map(p=>n(p.close)).filter(v=>v!==null);
+  let lo=Math.min(...vals),hi=Math.max(...vals);
+  if(hi===lo){hi+=1;lo-=1}
+  const x=i=>P+(W-2*P)*(i/(points.length-1));
+  const y=v=>H-P-(H-2*P)*((v-lo)/(hi-lo));
+  const path=points.map((p,i)=>(i?'L':'M')+x(i).toFixed(1)+' '+y(n(p.close)).toFixed(1)).join(' ');
+  const first=n(points[0].close),last=n(points.at(-1).close),chg=first&&last?(last/first-1):null;
+  const area=path+' L '+x(points.length-1).toFixed(1)+' '+(H-P)+' L '+P+' '+(H-P)+' Z';
+  return '<div class="quick360-chartmeta"><span>Mín. '+money(lo)+'</span><b class="'+(chg===null?'flat':chg>=0?'up':'down')+'">'+(chg===null?'':(chg>=0?'+':'')+pct(chg))+'</b><span>Máx. '+money(hi)+'</span></div>'+
+    '<svg class="quick360-chart" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Histórico de preço">'+
+      '<path class="quick360-area" d="'+area+'"></path><path class="quick360-line" d="'+path+'"></path>'+
+    '</svg>'+
+    '<div class="quick360-chartdates"><span>'+new Date(n(points[0].t)*1000).toLocaleDateString('pt-BR')+'</span><span>'+new Date(n(points.at(-1).t)*1000).toLocaleDateString('pt-BR')+'</span></div>';
+}
+function renderQuick360Chart(){
+  const box=document.getElementById('quick360ChartBox');if(!box)return;
+  const periods=[['1m','1M'],['3m','3M'],['6m','6M'],['1y','1A']];
+  const pts=quick360PeriodPoints(quick360State.history,quick360State.period);
+  box.innerHTML='<div class="quick360-charthead"><div><p class="eyebrow">PREÇO</p><h3>Histórico de negociação</h3></div><div class="quick360-periods">'+periods.map(p=>'<button type="button" data-quick-period="'+p[0]+'" class="'+(quick360State.period===p[0]?'active':'')+'">'+p[1]+'</button>').join('')+'</div></div>'+quick360ChartSvg(pts);
+  box.querySelectorAll('[data-quick-period]').forEach(btn=>btn.addEventListener('click',()=>{quick360State.period=btn.dataset.quickPeriod;renderQuick360Chart()}));
+}
+function quick360Metric(label,value,sub){
+  return '<div class="quick360-metric"><span>'+esc(label)+'</span><strong>'+esc(value)+'</strong>'+(sub?'<small>'+esc(sub)+'</small>':'')+'</div>';
+}
+function renderQuick360Info(){
+  const box=document.getElementById('quick360Info');if(!box)return;
+  const m=quick360State.market||{},cvm=quick360State.cvm||{},f=cvm.fundamentals||{},ac=cvm.analystConsensus||null;
+  const full=state.assetMap?.get(quick360State.ticker)||null;
+  const target=n(ac?.targetMeanPrice)??n(ac?.targetMedianPrice);
+  const targetUpside=target!==null&&n(m.close)>0?target/n(m.close)-1:null;
+  const metrics=[
+    quick360Metric('Valor de mercado',compactMoney(m.marketCap)),
+    quick360Metric('Volume',compactMoney(m.volume)),
+    quick360Metric('Setor',sectorPt(cvm.sector||m.sector)),
+    quick360Metric('Subsetor',cvm.subsector||m.subsector||'N/D'),
+    quick360Metric('P/L',mult(f.trailingPE)),
+    quick360Metric('P/VP',mult(f.priceToBook)),
+    quick360Metric('ROE',pct(f.returnOnEquity)),
+    quick360Metric('Margem EBIT',pct(f.ebitMargin)),
+    quick360Metric('Dív. líquida / EBIT',mult(f.netDebtToEbit)),
+    quick360Metric('Liquidez corrente',mult(f.currentRatio)),
+    quick360Metric('Receita TTM',compactMoney(f.revenue)),
+    quick360Metric('Lucro TTM',compactMoney(f.netIncome))
+  ].join('');
+  let extras='';
+  if(ac){
+    extras+='<section class="quick360-consensus"><div><p class="eyebrow">CONSENSO DE MERCADO</p><h3>'+esc(ac.recommendation||'N/D')+'</h3></div><div>'+quick360Metric('Preço-alvo',money(target),targetUpside===null?'':pct(targetUpside)+' vs. fechamento')+'</div></section>';
+  }
+  if(full){
+    extras+='<section class="quick360-fullscores"><p class="eyebrow">ANÁLISE 360 JÁ DISPONÍVEL</p><div>'+
+      quick360Metric('Nota 360',(bolsa360CompositeScore(full)??'N/D')+(bolsa360CompositeScore(full)!==null?'/100':''))+
+      quick360Metric('Valor justo',money(full.fairValue?.central))+
+      quick360Metric('Valor intrínseco',money(full.intrinsicValue?.central),full.intrinsicValue?.available?pct(full.intrinsicValue.distance)+' vs. preço':'')+
+      '</div></section>';
+  }
+  box.innerHTML='<section class="quick360-fund"><div class="quick360-sectiontitle"><p class="eyebrow">FUNDAMENTOS</p><h3>Visão imediata</h3><small>'+(f.source?esc(f.source):'Base CVM em carregamento')+'</small></div><div class="quick360-metrics">'+metrics+'</div></section>'+extras;
+}
+function renderQuick360Actions(){
+  const box=document.getElementById('quick360Actions');if(!box)return;
+  const ticker=quick360State.ticker,fav=bolsa360IsFavorite(ticker);
+  box.innerHTML='<button id="quick360Favorite" type="button" class="secondary">'+(fav?'★ Favorito':'☆ Favoritar')+'</button>'+
+    '<button id="quick360Full" type="button">Análise Completa 360</button>';
+  document.getElementById('quick360Favorite')?.addEventListener('click',()=>{
+    const active=bolsa360ToggleFavorite(ticker);
+    document.getElementById('quick360Favorite').textContent=active?'★ Favorito':'☆ Favoritar';
+    refreshMarket360();
+  });
+  document.getElementById('quick360Full')?.addEventListener('click',()=>{
+    const input=document.getElementById('individualAssetInput');if(input)input.value=ticker;
+    closeQuick360();
+    if(typeof analyzeIndividualAsset==='function')analyzeIndividualAsset();
+  });
+}
+async function openQuickAsset360(raw){
+  ensureQuick360();
+  let ticker=quickTicker360(raw);
+  if(!ticker&&state.universe?.stocks?.length){
+    const s=typeof findIndividualStock==='function'?findIndividualStock(raw):null;
+    ticker=s?.ticker?String(s.ticker).toUpperCase():null;
+  }
+  if(!ticker){
+    const status=document.getElementById('individualAssetStatus');
+    if(status)status.textContent='Ticker ou empresa não encontrado.';
+    return;
+  }
+  const local=state.universe?.stocks?.find(s=>String(s.ticker||'').toUpperCase()===ticker)||null;
+  quick360State.ticker=ticker;quick360State.period='6m';quick360State.history=[];quick360State.market=local;quick360State.cvm=null;
+  const request=++quick360State.request;
+  const modal=document.getElementById('quick360Modal'),backdrop=document.getElementById('quick360Backdrop'),body=document.getElementById('quick360Body');
+  body.innerHTML=quick360Skeleton(ticker,local);
+  backdrop.classList.remove('hidden');modal.classList.add('open');modal.setAttribute('aria-hidden','false');
+
+  const quickPromise=fetch('/api/bolsa360-quick?ticker='+encodeURIComponent(ticker),{headers:{Accept:'application/json'}}).then(async r=>{const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||'Falha ao carregar ativo.');return j});
+  const cvmPromise=state.cvmBase?Promise.resolve(state.cvmBase):fetch('/api/bolsa360-cvm',{headers:{Accept:'application/json'}}).then(r=>r.ok?r.json():null).catch(()=>null);
+
+  try{
+    const q=await quickPromise;if(request!==quick360State.request)return;
+    quick360State.market=q.stock||local;quick360State.history=q.history||[];
+    body.querySelector('.quick360-head')?.remove();
+    body.insertAdjacentHTML('afterbegin',quick360Skeleton(ticker,quick360State.market).match(/<div class="quick360-head">[\s\S]*?<\/div><div class="quick360-loading">/)[0].replace('<div class="quick360-loading">',''));
+    body.querySelector('.quick360-loading')?.remove();
+    renderQuick360Chart();
+  }catch(err){
+    if(request!==quick360State.request)return;
+    const loading=body.querySelector('.quick360-loading');
+    if(loading)loading.innerHTML='<span>'+esc(err.message||'Não foi possível carregar a cotação.')+'</span>';
+  }
+
+  const base=await cvmPromise;if(request!==quick360State.request)return;
+  if(base&&!state.cvmBase)state.cvmBase=base;
+  quick360State.cvm=(base?.companies||[]).find(s=>String(s.ticker||'').toUpperCase()===ticker)||null;
+  renderQuick360Info();renderQuick360Actions();
+}
+function initQuick360Search(){
+  ensureQuick360();
+  const btn=document.getElementById('individualAssetAdd'),input=document.getElementById('individualAssetInput');
+  if(btn&&!btn.dataset.quick360){
+    btn.dataset.quick360='1';
+    btn.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();openQuickAsset360(input?.value||'')},true);
+  }
+  if(input&&!input.dataset.quick360){
+    input.dataset.quick360='1';
+    input.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();e.stopImmediatePropagation();openQuickAsset360(input.value)}},true);
+    const form=input.closest('.individual-asset-form');
+    if(form&&!document.getElementById('quick360Suggest'))form.insertAdjacentHTML('beforeend','<div id="quick360Suggest" class="quick360-suggest hidden"></div>');
+    input.addEventListener('input',()=>{
+      const box=document.getElementById('quick360Suggest');if(!box)return;
+      const q=String(input.value||'').trim().toLowerCase();
+      if(!q||!state.universe?.stocks?.length){box.classList.add('hidden');box.innerHTML='';return}
+      const norm=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+      const nq=norm(q);
+      const rows=(state.universe.stocks||[]).filter(s=>norm(s.ticker).includes(nq)||norm(s.name).includes(nq)).slice(0,6);
+      if(!rows.length){box.classList.add('hidden');box.innerHTML='';return}
+      box.innerHTML=rows.map(s=>'<button type="button" data-quick-suggest="'+esc(s.ticker)+'"><b>'+esc(s.ticker)+'</b><span>'+esc(s.name||'')+'</span><strong>'+money(s.close)+'</strong></button>').join('');
+      box.classList.remove('hidden');
+      box.querySelectorAll('[data-quick-suggest]').forEach(b=>b.addEventListener('click',()=>{input.value=b.dataset.quickSuggest;box.classList.add('hidden');openQuickAsset360(b.dataset.quickSuggest)}));
+    });
+  }
+}
+setTimeout(initQuick360Search,0);
+
 const BOLSA360_FILTERS_KEY='bolsa360.filters.v01';
 const BOLSA360_COMPARE_KEY='bolsa360.compare.v01';
 
