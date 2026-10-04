@@ -398,3 +398,72 @@ footer{max-width:1280px;margin:auto;padding:0 28px 44px;display:flex;justify-con
   .market-ticker360-item{padding:6px 11px}
   .market-ticker360-track.running{animation-duration:42s}
 }
+
+
+/* Consulta Rápida 360 */
+.quick360-backdrop{position:fixed;inset:0;background:rgba(7,14,10,.58);backdrop-filter:blur(4px);z-index:70}
+.quick360-modal{position:fixed;left:50%;top:50%;width:min(1080px,94vw);max-height:90vh;transform:translate(-50%,-46%) scale(.985);opacity:0;pointer-events:none;background:#fff;border:1px solid rgba(18,63,44,.16);border-radius:24px;box-shadow:0 28px 90px rgba(0,0,0,.28);z-index:75;overflow:auto;padding:26px;transition:opacity .14s ease,transform .14s ease}
+.quick360-modal.open{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
+.quick360-close{position:absolute;right:16px;top:14px;width:40px;height:40px;min-height:0;padding:0;border-radius:50%;background:#eef2ef;color:var(--ink);font-size:24px;z-index:2}
+.quick360-head{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;padding-right:46px}
+.quick360-title{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.quick360-title h2{font-size:42px;line-height:1;margin:3px 0 0;color:var(--green)}
+.quick360-title span{color:var(--muted);font-size:13px}
+.quick360-quote{text-align:right}
+.quick360-quote strong{display:block;font-size:32px;line-height:1.05}
+.quick360-quote b{display:block;margin-top:7px;font-size:14px}
+.quick360-quote .up,.quick360-chartmeta .up{color:#17865a}
+.quick360-quote .down,.quick360-chartmeta .down{color:#b94c43}
+.quick360-quote .flat,.quick360-chartmeta .flat{color:var(--muted)}
+.quick360-loading{display:flex;align-items:center;gap:9px;margin:22px 0;padding:14px;border:1px solid var(--line);border-radius:14px;background:#f8faf8;color:var(--muted);font-size:11px}
+.quick360-loading i{width:14px;height:14px;border:2px solid #cdd8d1;border-top-color:var(--green);border-radius:50%;animation:quick360spin .8s linear infinite}
+@keyframes quick360spin{to{transform:rotate(360deg)}}
+.quick360-chartbox{margin-top:18px;border:1px solid var(--line);border-radius:18px;padding:16px;background:linear-gradient(180deg,#fbfdfb,#f5f8f6)}
+.quick360-charthead{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.quick360-charthead h3,.quick360-sectiontitle h3,.quick360-consensus h3{font-size:18px;margin-top:2px}
+.quick360-periods{display:flex;gap:5px}
+.quick360-periods button{min-height:32px;padding:0 10px;border-radius:9px;background:#fff;color:var(--muted);border:1px solid var(--line);font-size:10px}
+.quick360-periods button.active{background:var(--green);color:#fff;border-color:var(--green)}
+.quick360-chart{width:100%;height:auto;display:block;margin-top:4px}
+.quick360-line{fill:none;stroke:var(--green);stroke-width:3;vector-effect:non-scaling-stroke}
+.quick360-area{fill:rgba(26,102,70,.08);stroke:none}
+.quick360-chartmeta,.quick360-chartdates{display:flex;justify-content:space-between;align-items:center;gap:10px;color:var(--muted);font-size:10px}
+.quick360-chartmeta b{font-size:12px}
+.quick360-chartdates{margin-top:-4px}
+.quick360-emptychart{min-height:180px;display:grid;place-items:center;color:var(--muted);font-size:11px}
+.quick360-info{margin-top:18px}
+.quick360-sectiontitle{display:flex;align-items:end;gap:10px;flex-wrap:wrap}
+.quick360-sectiontitle small{color:var(--muted);font-size:9px;margin-left:auto}
+.quick360-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+.quick360-metric{border:1px solid var(--line);border-radius:13px;background:#fbfcfb;padding:11px;min-width:0}
+.quick360-metric span{display:block;font-size:8px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:900}
+.quick360-metric strong{display:block;font-size:15px;margin-top:4px;white-space:normal;overflow-wrap:anywhere}
+.quick360-metric small{display:block;font-size:9px;color:var(--muted);margin-top:3px}
+.quick360-consensus,.quick360-fullscores{margin-top:14px;border:1px solid #bdd0c4;border-radius:16px;padding:14px;background:#f5faf6}
+.quick360-consensus{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:center}
+.quick360-fullscores>div{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+.quick360-actions{position:sticky;bottom:-26px;margin:20px -26px -26px;padding:14px 26px;background:rgba(255,255,255,.96);backdrop-filter:blur(8px);border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:8px}
+.quick360-actions button{min-height:42px}
+.quick360-suggest{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:65;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 45px rgba(0,0,0,.16);padding:5px;max-height:310px;overflow:auto}
+.individual-asset-form{position:relative}
+.quick360-suggest button{width:100%;display:grid;grid-template-columns:70px 1fr auto;gap:8px;align-items:center;min-height:42px;border:0;background:transparent;color:var(--ink);text-align:left;padding:7px 9px;border-radius:9px}
+.quick360-suggest button:hover{background:#f2f6f3}
+.quick360-suggest b{font-size:11px;color:var(--green)}
+.quick360-suggest span{font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.quick360-suggest strong{font-size:10px;white-space:nowrap}
+@media(max-width:800px){
+  .quick360-modal{width:96vw;max-height:92vh;padding:19px;border-radius:18px}
+  .quick360-head{display:block;padding-right:40px}
+  .quick360-quote{text-align:left;margin-top:12px}
+  .quick360-title h2{font-size:34px}
+  .quick360-metrics{grid-template-columns:1fr 1fr}
+  .quick360-consensus,.quick360-fullscores>div{grid-template-columns:1fr}
+  .quick360-actions{bottom:-19px;margin:16px -19px -19px;padding:12px 19px}
+}
+@media(max-width:480px){
+  .quick360-charthead{display:block}
+  .quick360-periods{margin-top:8px}
+  .quick360-metrics{grid-template-columns:1fr}
+  .quick360-actions{justify-content:stretch}
+  .quick360-actions button{flex:1}
+}
