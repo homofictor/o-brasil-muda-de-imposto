@@ -448,3 +448,32 @@ body.beginner-mode table{min-width:820px}
   .portfolio-health-head{grid-template-columns:1fr 1fr}
   .portfolio-health-head>div:first-child{grid-column:1/3}
 }
+
+
+/* Faixa contínua Mercado 360 */
+.market-ticker360{position:relative;display:flex;align-items:stretch;background:#111821;color:#fff;border-top:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.08);overflow:hidden;min-height:42px}
+.market-ticker360-label{flex:0 0 auto;display:flex;align-items:center;padding:0 16px;background:#0b3324;color:#fff;font-size:10px;font-weight:950;text-transform:uppercase;letter-spacing:.09em;z-index:2}
+.market-ticker360-viewport{min-width:0;overflow:hidden;flex:1}
+.market-ticker360-track{display:flex;width:max-content;min-width:100%;align-items:stretch}
+.market-ticker360-track.running{animation:marketTicker360Move 52s linear infinite}
+.market-ticker360:hover .market-ticker360-track.running{animation-play-state:paused}
+.market-ticker360-set{display:flex;align-items:stretch;flex:0 0 auto}
+.market-ticker360-item{display:grid;grid-template-columns:auto auto auto;grid-template-areas:"ticker price change" "name name name";align-items:center;column-gap:7px;row-gap:0;border:0;border-right:1px solid rgba(255,255,255,.08);border-radius:0;background:transparent;color:#fff;padding:6px 16px;min-height:42px;white-space:nowrap;text-align:left}
+.market-ticker360-item:disabled{cursor:default;opacity:1}
+.market-ticker360-item[data-strip-ticker]{cursor:pointer}
+.market-ticker360-item[data-strip-ticker]:hover{background:rgba(255,255,255,.06)}
+.market-ticker360-item b{grid-area:ticker;font-size:11px;letter-spacing:.02em}
+.market-ticker360-item span{grid-area:price;font-size:11px;color:#eef3ef}
+.market-ticker360-item strong{grid-area:change;font-size:11px}
+.market-ticker360-item.up strong{color:#22c58b}
+.market-ticker360-item.down strong{color:#ff7169}
+.market-ticker360-item.flat strong{color:#c2cbc5}
+.market-ticker360-item small{grid-area:name;font-size:8px;color:#8fa198;max-width:150px;overflow:hidden;text-overflow:ellipsis}
+.market-ticker360-loading{display:flex;align-items:center;padding:0 18px;font-size:10px;color:#b8c5bd}
+@keyframes marketTicker360Move{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media(prefers-reduced-motion:reduce){.market-ticker360-track.running{animation:none}.market-ticker360-viewport{overflow-x:auto}}
+@media(max-width:700px){
+  .market-ticker360-label{padding:0 10px;font-size:8px}
+  .market-ticker360-item{padding:6px 11px}
+  .market-ticker360-track.running{animation-duration:42s}
+}
