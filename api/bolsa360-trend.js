@@ -99,7 +99,7 @@ async function fetchV2One(ticker,key){
 }
 async function fetchAuthenticatedFree(tickers,key){
   const histories=new Map(),errors=new Map();
-  const concurrency=4;
+  const concurrency=1;
   let cursor=0;
   async function worker(){
     while(cursor<tickers.length){
