@@ -325,3 +325,8 @@ body.beginner-mode .adv-col{display:none}
 .trend-signal{border-radius:999px;padding:5px 8px;font-size:9px;font-weight:800;background:#eef1ef;color:#657069}
 .trend-signal.pos{background:#e5f3e9;color:#17613e}.trend-signal.neg{background:#f5e7e5;color:#8a4038}.trend-signal.flat{background:#f2efe7;color:#715b2b}
 @media(max-width:700px){.trend-head{display:block}.trend-score{justify-items:start;margin-top:12px}}
+\n.individual-asset-box{display:grid;grid-template-columns:1fr minmax(310px,.7fr);gap:20px;align-items:end;margin:18px 0 22px;padding:20px;border:1px solid var(--line);border-radius:17px;background:#f8faf8}
+.individual-asset-box h3{margin:0 0 6px}.individual-asset-box p{margin:0}.individual-asset-form{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
+.individual-asset-form input{height:46px;border:1px solid #c8d2cb;border-radius:11px;padding:0 13px;outline:none}.individual-asset-form button{height:46px;border:0;border-radius:11px;background:var(--green);color:#fff;font-weight:850;padding:0 16px;cursor:pointer}
+.individual-asset-form small{grid-column:1/-1;color:var(--muted);min-height:16px}.p360-account{display:flex;align-items:center;gap:8px}.p360-account .p360-user{font-size:10px;font-weight:800;color:var(--muted);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.p360-account button{border:1px solid #d3ddd6;background:#fff;border-radius:999px;padding:8px 11px;font-size:10px;font-weight:850;color:#365147;cursor:pointer}
+@media(max-width:760px){.individual-asset-box{grid-template-columns:1fr}.individual-asset-form{grid-template-columns:1fr}.individual-asset-form small{grid-column:auto}.p360-account .p360-user{display:none}}\n
