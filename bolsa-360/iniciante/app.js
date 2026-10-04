@@ -152,6 +152,7 @@ function toggleAssetSelection(asset){
       valuationScore:asset.valuationScore??null,
       qualityScore:asset.qualityScore??null,
       growthScore:asset.growthScore??null,
+      overallScore:overallScore(asset),
       fairValue:asset.fairValue?.central??null,
       intrinsicValue:asset.intrinsicValue?.central??null
     });
@@ -662,10 +663,16 @@ function scoreSector(block){
     growthScore:growth.get(r.ticker)??null
   })),isBank),isBank);
 }
+function overallScore(row){
+  const values=[row.valuationScore,row.qualityScore,row.solidityScore,row.growthScore].map(n).filter(v=>v!==null);
+  if(values.length<2)return null;
+  return Math.round(values.reduce((sum,v)=>sum+v,0)/values.length);
+}
 function sortRows(rows){
   const mode=$('sortBy').value;
   const copy=[...rows];
   const v=(r,key)=>n(r[key])??-Infinity;
+  if(mode==='overall')return copy.sort((a,b)=>(overallScore(b)??-Infinity)-(overallScore(a)??-Infinity));
   if(mode==='valuation')return copy.sort((a,b)=>v(b,'valuationScore')-v(a,'valuationScore'));
   if(mode==='quality')return copy.sort((a,b)=>v(b,'qualityScore')-v(a,'qualityScore'));
   if(mode==='solidity')return copy.sort((a,b)=>v(b,'solidityScore')-v(a,'solidityScore'));
@@ -692,8 +699,7 @@ function renderSector(block){
       <div class="table-wrap">
         <table>
           <thead><tr>
-            <th>Ativo</th><th>Fechamento</th><th>Valor justo</th><th>V. intrínseco</th><th>Dist. intrínseca</th><th class="adv-col">P/L</th><th class="adv-col">P/VP</th><th class="adv-col">EV/EBIT</th><th class="adv-col">ROE</th><th>Valuation 360</th><th>Qualidade</th><th>Solidez</th><th>Crescimento</th>
-          </tr></thead>
+            <th>Ativo</th><th>Fechamento</th><th>Valor justo</th><th>V. intrínseco</th><th>Dist. intrínseca</th><th>Nota 360</th><th class="adv-col">P/L</th><th class="adv-col">P/VP</th><th class="adv-col">EV/EBIT</th><th class="adv-col">ROE</th></tr></thead>
           <tbody>
             ${rows.map(r=>{
               const f=r.fundamentals||{};
@@ -709,14 +715,11 @@ function renderSector(block){
                 <td><strong>${money(r.fairValue?.central)}</strong><small>${r.fairValue?money(r.fairValue.low)+' a '+money(r.fairValue.high):'N/D'}</small></td>
                 <td><strong>${money(r.intrinsicValue?.central)}</strong><small>${r.intrinsicValue?money(r.intrinsicValue.low)+' a '+money(r.intrinsicValue.high):'N/D'}</small></td>
                 <td>${r.intrinsicValue?pct(r.intrinsicValue.distance):'<span class="na">N/D</span>'}</td>
+                <td class="overall-score-cell">${scoreBadge(overallScore(r))}</td>
                 <td class="adv-col">${mult(f.trailingPE)}</td>
                 <td class="adv-col">${mult(f.priceToBook)}</td>
                 <td class="adv-col">${mult(f.enterpriseToEbit)}</td>
                 <td class="adv-col">${pct(f.returnOnEquity)}</td>
-                <td>${scoreBadge(r.valuationScore)}</td>
-                <td>${scoreBadge(r.qualityScore)}</td>
-                <td>${scoreBadge(r.solidityScore)}</td>
-                <td>${scoreBadge(r.growthScore)}</td>
               </tr>`;
             }).join('')}
           </tbody>
@@ -894,6 +897,7 @@ function openDrawer(a){
     ${renderFairValue(a.fairValue)}
     ${renderIntrinsicValue(a.intrinsicValue)}
     <div class="drawer-grid">
+      ${drawerMetric('Nota 360',overallScore(a)===null?'N/D':overallScore(a)+'/100')}
       ${drawerMetric('Valuation 360',a.valuationScore===null?'N/D':a.valuationScore+'/100')}
       ${drawerMetric('Valor Justo 360',a.fairValue?money(a.fairValue.central):'N/D')}
       ${drawerMetric('Valor Intrínseco 360',a.intrinsicValue?money(a.intrinsicValue.central):'N/D')}
