@@ -528,8 +528,52 @@ function renderSummary360(a){
     '<div><span>Tendência</span><strong>'+esc(trend?.available?(trend.strength||trend.direction):'N/D')+'</strong></div></section>';
 }
 
+
+function marketTicker360Format(x){
+  const v=n(x?.price);
+  if(v===null)return 'N/D';
+  if(x.unit==='pts')return Math.round(v).toLocaleString('pt-BR');
+  if(x.unit==='% a.a.')return v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'%';
+  return v.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function marketTicker360Item(x){
+  const change=n(x?.change),cls=change===null?'flat':change>0?'up':change<0?'down':'flat';
+  const changeText=change===null?'':(change>0?'+':'')+change.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'%';
+  const clickable=x.kind==='stock';
+  return '<button class="market-ticker360-item '+cls+'" type="button" '+(clickable?'data-strip-ticker="'+esc(x.symbol)+'"':'disabled')+'>'+
+    '<b>'+esc(x.symbol)+'</b><span>'+esc(marketTicker360Format(x))+'</span>'+(changeText?'<strong>'+esc(changeText)+'</strong>':'')+
+    '<small>'+esc(x.label||'')+'</small></button>';
+}
+function createMarketTicker360(){
+  if(document.getElementById('marketTicker360'))return;
+  const topbar=document.querySelector('.topbar');
+  if(!topbar)return;
+  topbar.insertAdjacentHTML('afterend','<section id="marketTicker360" class="market-ticker360" aria-label="Indicadores e principais ações do mercado"><div class="market-ticker360-label">Mercado 360</div><div class="market-ticker360-viewport"><div id="marketTicker360Track" class="market-ticker360-track"><span class="market-ticker360-loading">Atualizando mercado...</span></div></div></section>');
+  document.getElementById('marketTicker360')?.addEventListener('click',e=>{
+    const btn=e.target.closest('[data-strip-ticker]');if(!btn)return;
+    const input=document.getElementById('individualAssetInput');
+    if(input){input.value=btn.dataset.stripTicker;document.getElementById('individualAssetAdd')?.click()}
+  });
+  loadMarketTicker360();
+}
+async function loadMarketTicker360(){
+  const track=document.getElementById('marketTicker360Track');if(!track)return;
+  try{
+    const r=await fetch('/api/bolsa360-market',{headers:{Accept:'application/json'}});
+    const j=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error(j.error||'Falha ao consultar o mercado.');
+    const rows=[...(j.indicators||[]),...(j.stocks||[])].filter(x=>x&&x.symbol);
+    if(!rows.length)throw new Error('Sem dados de mercado.');
+    const once=rows.map(marketTicker360Item).join('');
+    track.innerHTML='<div class="market-ticker360-set">'+once+'</div><div class="market-ticker360-set" aria-hidden="true">'+once+'</div>';
+    track.classList.add('running');
+  }catch(err){
+    track.classList.remove('running');
+    track.innerHTML='<span class="market-ticker360-loading">Mercado 360 temporariamente indisponível.</span>';
+  }
+}
 function initBenchmarkFeatures360(){
-  createMarket360();createScreener360();ensureCompareModal360();renderCompareDock360();waitMarket360();
+  createMarketTicker360();createMarket360();createScreener360();ensureCompareModal360();renderCompareDock360();waitMarket360();
   if(state?.selection instanceof Map&&typeof renderPortfolioSummary==='function'&&!renderPortfolioSummary.__health360){
     const base=renderPortfolioSummary;
     const wrapped=function(){base();renderPortfolioHealth360()};
