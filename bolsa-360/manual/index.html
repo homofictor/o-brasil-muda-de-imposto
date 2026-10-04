@@ -155,6 +155,18 @@
       <div class="manual-callout"><b>Limitação de cobertura</b><p>A documentação da brapi prevê os campos de consenso, mas a disponibilidade varia por ativo e plano. O sistema preserva valores nulos e mostra N/D quando não há cobertura. A data individual de cada relatório de analista não é fornecida no campo agregado.</p></div>
     </section>
 
+    <section id="tendencia" class="panel manual-section">
+      <h2>7B. Tendência 360</h2>
+      <p>O Tendência 360 é uma leitura técnica quantitativa calculada pelo próprio sistema a partir do histórico diário de preços ajustados. Ele é independente de Valor Justo, Valor Intrínseco e consenso de analistas.</p>
+      <h3>Componentes atuais</h3>
+      <p>O motor combina posição do preço em relação à média móvel de 20 pregões, relação entre médias móveis de 20 e 50 pregões, inclinação da média de 20, momentum de 20 e 60 pregões, RSI de 14 períodos e MACD.</p>
+      <div class="formula">Score técnico = soma dos sinais positivos, neutros e negativos dos indicadores</div>
+      <p>O resultado é apresentado como <b>Alta forte</b>, <b>Alta moderada</b>, <b>Lateral</b>, <b>Baixa moderada</b> ou <b>Baixa forte</b>, acompanhado de nível de confiança.</p>
+      <p>A volatilidade anualizada dos últimos 20 pregões é exibida como informação adicional de risco. O indicador usa fechamento ajustado sempre que a fonte o fornece.</p>
+      <div class="manual-callout"><b>Não é recomendação</b><p>Tendência descreve comportamento recente de preço. Não estima valor econômico e não deve ser interpretada isoladamente como indicação de compra ou venda.</p></div>
+      <div class="manual-callout"><b>Cobertura gratuita</b><p>A fonte brapi permite histórico de até três meses no plano gratuito. Para cobertura ampla dos ativos é necessária uma chave gratuita da brapi configurada no ambiente. Sem chave, a fonte pública de demonstração cobre apenas símbolos específicos.</p></div>
+    </section>
+
     <section id="confiabilidade" class="panel manual-section">
       <h2>8. Qualidade e confiabilidade</h2>
       <table class="reliability">
