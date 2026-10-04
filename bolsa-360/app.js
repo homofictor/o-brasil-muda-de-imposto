@@ -45,6 +45,7 @@ function pct(v,scale=100){
 function scoreClass(v){return v>=70?'high':v>=45?'mid':'low'}
 function sectorPt(s){return sectorNames[s]||s||'Não classificado'}
 function isRealEstateStock(s){
+  if(s?.sector==='Real Estate')return true;
   const sub=String(s?.subsector||'').toLowerCase();
   return s?.sector==='Finance'&&(sub.includes('incorpora')||sub.includes('imóve')||sub.includes('imove')||sub.includes('shopping')||sub.includes('exploração de imóveis')||sub.includes('exploracao de imoveis'));
 }
