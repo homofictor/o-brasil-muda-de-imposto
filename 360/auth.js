@@ -83,7 +83,7 @@
   }
   function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
   async function signInWithPassword(email,password){if(!client)throw new Error('Autenticação ainda não configurada.');return client.auth.signInWithPassword({email,password});}
-  async function signUp(email,password,fullName,acceptedPolicy){
+  async function signUp(email,password,fullName,acceptedPolicy,redirectPath){
     if(!client)throw new Error('Autenticação ainda não configurada.');
     if(!acceptedPolicy)throw new Error('É necessário aceitar a Política de Privacidade e os Termos de Uso.');
     return client.auth.signUp({
@@ -94,17 +94,17 @@
           policy_version:'2026-10-03',
           policy_accepted_at:new Date().toISOString()
         },
-        emailRedirectTo:location.origin+'/360/'
+        emailRedirectTo:location.origin+(redirectPath||'/360/')
       }
     });
   }
-  async function signInWithGoogle(){
+  async function signInWithGoogle(redirectPath){
     if(!client)throw new Error('Autenticação ainda não configurada.');
-    return client.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+'/360/'}});
+    return client.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+(redirectPath||'/360/')}});
   }
-  async function signInWithFacebook(){
+  async function signInWithFacebook(redirectPath){
     if(!client)throw new Error('Autenticação ainda não configurada.');
-    return client.auth.signInWithOAuth({provider:'facebook',options:{redirectTo:location.origin+'/360/'}});
+    return client.auth.signInWithOAuth({provider:'facebook',options:{redirectTo:location.origin+(redirectPath||'/360/')}});
   }
   async function signOut(){if(client)await client.auth.signOut();location.replace(LOGIN_PATH);}
   async function saveState(key,value){
