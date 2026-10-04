@@ -480,6 +480,15 @@ async function openQuickAsset360(raw){
 }
 function initQuick360Search(){
   ensureQuick360();
+  if(!document.documentElement.dataset.quick360TickerCapture){
+    document.documentElement.dataset.quick360TickerCapture='1';
+    document.addEventListener('click',e=>{
+      const btn=e.target.closest('.asset-btn[data-ticker]');
+      if(!btn)return;
+      e.preventDefault();e.stopImmediatePropagation();
+      openQuickAsset360(btn.dataset.ticker);
+    },true);
+  }
   const btn=document.getElementById('individualAssetAdd'),input=document.getElementById('individualAssetInput');
   if(btn&&!btn.dataset.quick360){
     btn.dataset.quick360='1';
@@ -828,7 +837,7 @@ function renderOpportunities360(){
     box=document.getElementById('opportunities360');
     box?.addEventListener('click',e=>{
       const btn=e.target.closest('[data-opp-ticker]');if(!btn)return;
-      const a=state.assetMap.get(btn.dataset.oppTicker);if(a)openDrawer(a);
+      openQuickAsset360(btn.dataset.oppTicker);
     });
   }
   const rows=[...state.assetMap.values()];
@@ -941,13 +950,16 @@ function renderPortfolioHealth360(){
 }
 
 function renderSummary360(a){
-  const overall=bolsa360CompositeScore(a),iv=a?.intrinsicValue,ac=a?.analystConsensus||{},target=analystTarget(a),trend=state.trendMap?.get(a?.ticker);
-  const targetUpside=n(target)!==null&&n(a?.close)>0?target/n(a.close)-1:null;
-  return '<section class="summary360-box"><div><span>Nota 360</span><strong>'+(overall===null?'N/D':overall+'/100')+'</strong></div>'+
-    '<div><span>Upside intrínseco</span><strong>'+(iv?.available===true?pct(iv.distance):'N/D')+'</strong></div>'+
-    '<div><span>Consenso</span><strong>'+esc(ac.recommendation||'N/D')+'</strong></div>'+
-    '<div><span>Upside analistas</span><strong>'+(targetUpside===null?'N/D':pct(targetUpside))+'</strong></div>'+
-    '<div><span>Tendência</span><strong>'+esc(trend?.available?(trend.strength||trend.direction):'N/D')+'</strong></div></section>';
+  const x=analysis360(a),t=x.target,i=x.indication,c=x.convergence,ac=a?.analystConsensus||{},analyst=analystTarget(a);
+  const analystUpside=n(analyst)!==null&&n(a?.close)>0?analyst/n(a.close)-1:null;
+  return '<section class="summary360-box">'+
+    '<div><span>Indicação 360</span><strong class="'+i.className+'">'+esc(i.label)+'</strong></div>'+
+    '<div><span>Preço-Alvo 360</span><strong>'+(t.available?money(t.central):'N/D')+'</strong><small>'+(t.available?pct(t.upside)+' · 12 meses':'')+'</small></div>'+
+    '<div><span>Nota 360</span><strong>'+(bolsa360CompositeScore(a)===null?'N/D':bolsa360CompositeScore(a)+'/100')+'</strong></div>'+
+    '<div><span>Convergência</span><strong>'+esc(c.label)+'</strong></div>'+
+    '<div><span>Valor Intrínseco</span><strong>'+money(a?.intrinsicValue?.central)+'</strong></div>'+
+    '<div><span>Analistas</span><strong>'+esc(ac.recommendation||'N/D')+'</strong><small>'+(analystUpside===null?'':pct(analystUpside)+' de upside')+'</small></div>'+
+    '</section>';
 }
 
 
@@ -1082,39 +1094,28 @@ async function loadTrend360ForVisible(){
 
 function renderSector(block){
   const allRows=sortRows(block.scored||[]),rows=apply360Filters(allRows),coverage=block.fundamentalsCoverage||0;
-  const beginner=state?.selection instanceof Map;
   const countText=rows.length===allRows.length?block.total+' ativos':rows.length+' exibidos de '+allRows.length;
-  if(beginner){
-    return '<section class="sector-block"><div class="sector-block-head"><div><h3>'+esc(block.label||sectorPt(block.sector))+'</h3><small>'+countText+' · '+coverage+' com fundamentos · TTM até '+formatDate(state.cvmBase?.latestItrReference)+'</small></div><small>Mercado/histórico: brapi · fundamentos: CVM</small></div><div class="table-wrap"><table class="beginner360-table"><thead><tr><th>Ativo</th><th>Fechamento</th><th>Nota 360</th><th>Tendência</th><th>V. intrínseco</th><th>Preço-alvo</th><th>Consenso</th></tr></thead><tbody>'+
-      rows.map(r=>{
-        const iv=r.intrinsicValue,available=iv?.available===true,ac=r.analystConsensus||null,target=analystTarget(r),trend=state.trendMap.get(r.ticker)||null;
-        const assetCell='<div class="asset-actions"><button class="asset-btn" data-ticker="'+esc(r.ticker)+'">'+esc(r.ticker)+'</button><button class="add-asset-btn '+(state.selection.has(r.ticker)?'selected':'')+'" data-add-ticker="'+esc(r.ticker)+'" type="button">'+(state.selection.has(r.ticker)?'Selecionado':'Adicionar +')+'</button></div><small>Vol. '+compactMoney(r.volume)+'</small>';
-        return '<tr><td>'+assetCell+'</td>'+
-          '<td><strong>'+money(r.close)+'</strong><small>'+(n(r.change)!==null?(n(r.change)>=0?'+':'')+n(r.change).toFixed(2)+'%':'N/D')+'</small></td>'+
-          '<td>'+scoreBadge(bolsa360CompositeScore(r))+'</td>'+
-          '<td>'+trendBadge(trend)+'</td>'+
-          '<td><strong>'+money(iv?.central)+'</strong><small>'+(available?pct(iv.distance)+' vs. preço':'N/D')+'</small></td>'+
-          '<td><strong>'+money(target)+'</strong><small>'+(target!==null&&n(r.close)>0?pct(target/n(r.close)-1)+' vs. preço':'N/D')+'</small></td>'+
-          '<td>'+analystRecommendationBadge(ac?.recommendation)+'</td></tr>';
-      }).join('')+'</tbody></table></div></section>';
-  }
-  return '<section class="sector-block"><div class="sector-block-head"><div><h3>'+esc(block.label||sectorPt(block.sector))+'</h3><small>'+countText+' · '+coverage+' com fundamentos · TTM até '+formatDate(state.cvmBase?.latestItrReference)+'</small></div><small>Mercado/histórico: brapi · fundamentos: CVM</small></div><div class="table-wrap"><table><thead><tr><th>Ativo</th><th>Fechamento</th><th>Tendência 360</th><th>Valor justo</th><th>V. intrínseco</th><th>Preço-alvo</th><th>Consenso</th><th>Dist. intrínseca</th><th>P/L</th><th>P/VP</th><th>EV/EBIT</th><th>ROE</th><th>Nota 360</th><th>Valuation</th><th>Qualidade</th><th>Solidez</th><th>Crescimento</th></tr></thead><tbody>'+
-  rows.map(r=>{
-    const f=r.fundamentals||{},iv=r.intrinsicValue,available=iv?.available===true,ac=r.analystConsensus||null,target=analystTarget(r),trend=state.trendMap.get(r.ticker)||null;
-    const intrinsicSub=available?money(iv.low)+' a '+money(iv.high):esc(iv?.reason||'N/D');
-    const opinions=n(ac?.numberOfAnalystOpinions);
-    const assetCell='<button class="asset-btn" data-ticker="'+esc(r.ticker)+'">'+esc(r.ticker)+'</button><small>Vol. '+compactMoney(r.volume)+'</small>';
-    return '<tr><td>'+assetCell+'</td>'+
-      '<td><strong>'+money(r.close)+'</strong><small>'+(n(r.change)!==null?(n(r.change)>=0?'+':'')+n(r.change).toFixed(2)+'%':'N/D')+'</small></td>'+
-      '<td>'+trendBadge(trend)+'<small>'+(trend?.available?'20d '+pct(trend.momentum20)+' · RSI '+(n(trend.rsi14)!==null?n(trend.rsi14).toFixed(0):'N/D'):(trend?.reason?'Histórico N/D':'Carregando...'))+'</small></td>'+
-      '<td><strong>'+money(r.fairValue?.central)+'</strong><small>'+(r.fairValue?money(r.fairValue.low)+' a '+money(r.fairValue.high):'N/D')+'</small></td>'+
-      '<td><strong>'+money(iv?.central)+'</strong><small>'+intrinsicSub+'</small></td>'+
-      '<td><strong>'+money(target)+'</strong><small>'+(target!==null&&n(r.close)>0?pct(target/n(r.close)-1)+' vs. fechamento':'Consenso externo')+'</small></td>'+
-      '<td>'+analystRecommendationBadge(ac?.recommendation)+'<small>'+(opinions!==null?opinions+' analista'+(opinions===1?'':'s'):'Cobertura N/D')+'</small></td>'+
-      '<td>'+(available?pct(iv.distance):'<span class="na">N/D</span>')+'</td>'+
-      '<td>'+mult(f.trailingPE)+'</td><td>'+mult(f.priceToBook)+'</td><td>'+mult(f.enterpriseToEbit)+'</td><td>'+pct(f.returnOnEquity)+'</td>'+
-      '<td>'+scoreBadge(bolsa360CompositeScore(r))+'</td><td>'+scoreBadge(r.valuationScore)+'</td><td>'+scoreBadge(r.qualityScore)+'</td><td>'+scoreBadge(r.solidityScore)+'</td><td>'+scoreBadge(r.growthScore)+'</td></tr>';
-  }).join('')+'</tbody></table></div></section>';
+  return '<section class="sector-block"><div class="sector-block-head"><div><h3>'+esc(block.label||sectorPt(block.sector))+'</h3><small>'+countText+' · '+coverage+' com fundamentos · TTM até '+formatDate(state.cvmBase?.latestItrReference)+'</small></div><small>Clique no ticker para abrir a Análise 360</small></div><div class="table-wrap"><table class="unified360-table"><thead><tr>'+
+    '<th>Ativo</th><th>Preço</th><th>Indicação 360</th><th>Preço-Alvo 360</th><th>Potencial 12m</th><th>Nota 360</th><th>Convergência</th><th>Tendência</th><th>Valor intrínseco</th><th>Valor por pares</th><th>Analistas</th><th>P/L</th><th>ROE</th>'+
+    '</tr></thead><tbody>'+
+    rows.map(r=>{
+      const f=r.fundamentals||{},ac=r.analystConsensus||{},trend=state.trendMap.get(r.ticker)||null;
+      const x=analysis360(r),t=x.target,i=x.indication,conv=x.convergence;
+      return '<tr>'+
+        '<td><button class="asset-btn" data-ticker="'+esc(r.ticker)+'">'+esc(r.ticker)+'</button><small>'+esc(r.cvmName||r.name||'')+'</small></td>'+
+        '<td><strong>'+money(r.close)+'</strong><small>'+(n(r.change)!==null?(n(r.change)>=0?'+':'')+n(r.change).toFixed(2)+'%':'N/D')+'</small></td>'+
+        '<td><span class="indication360-badge '+i.className+'">'+esc(i.label)+'</span></td>'+
+        '<td><strong>'+(t.available?money(t.central):'N/D')+'</strong><small>'+(t.available?'Confiança '+esc(t.confidence):'')+'</small></td>'+
+        '<td><strong class="'+(t.available&&t.upside>=0?'positive':'negative')+'">'+(t.available?pct(t.upside):'N/D')+'</strong></td>'+
+        '<td>'+scoreBadge(bolsa360CompositeScore(r))+'</td>'+
+        '<td><span class="convergence360-badge '+conv.className+'">'+esc(conv.label)+'</span></td>'+
+        '<td>'+trendBadge(trend)+'</td>'+
+        '<td><strong>'+money(r.intrinsicValue?.central)+'</strong><small>'+(r.intrinsicValue?.available?pct(r.intrinsicValue.distance)+' vs. preço':'')+'</small></td>'+
+        '<td><strong>'+money(r.fairValue?.central)+'</strong><small>'+(r.fairValue?pct(r.fairValue.distance)+' vs. preço':'')+'</small></td>'+
+        '<td>'+analystRecommendationBadge(ac.recommendation)+'</td>'+
+        '<td>'+mult(f.trailingPE)+'</td><td>'+pct(f.returnOnEquity)+'</td>'+
+      '</tr>';
+    }).join('')+'</tbody></table></div></section>';
 }
 
 const bolsa360OpenDrawerBase=openDrawer;
