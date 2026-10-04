@@ -310,3 +310,18 @@ $('portfolioFile').addEventListener('change',async e=>{
 
 load();
 renderAll();
+
+async function empresa360BootstrapQuery(){
+  const cnpj=onlyDigits(new URLSearchParams(location.search).get('cnpj')||'');
+  if(!cnpj||!validCnpj(cnpj))return;
+  input.value=maskCnpj(cnpj);
+  const existing=state.portfolio.find(x=>x.cnpj===cnpj);
+  if(existing){selectCompany(cnpj);showStatus('Empresa carregada a partir da Plataforma 360.','success');return}
+  addBtn.disabled=true;addBtn.textContent='Consultando...';showStatus('Consultando empresa enviada pela Plataforma 360...');
+  try{
+    await addCompany(cnpj);
+    showStatus('Empresa adicionada e aberta a partir da Plataforma 360.','success');
+  }catch(err){showStatus(err.message||'Não foi possível carregar a empresa.','error')}
+  finally{addBtn.disabled=false;addBtn.textContent='Adicionar à carteira'}
+}
+empresa360BootstrapQuery();
