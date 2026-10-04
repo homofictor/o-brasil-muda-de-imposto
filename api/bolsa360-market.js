@@ -50,8 +50,12 @@ async function loadUsd(){
 }
 async function loadSelic(){
   try{
-    const j=await json('https://api.bcb.gov.br/dados/serie/bcdata.sgs.432/dados/ultimos/1?formato=json');
-    const x=Array.isArray(j)?j[0]:null,rate=n(x?.valor);
+    const end=new Date(),start=new Date(Date.now()-12*86400000);
+    const br=d=>String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();
+    const url='https://api.bcb.gov.br/dados/serie/bcdata.sgs.432/dados?formato=json&dataInicial='+encodeURIComponent(br(start))+'&dataFinal='+encodeURIComponent(br(end));
+    const j=await json(url);
+    const rows=Array.isArray(j)?j:[];
+    const x=rows.at(-1)||null,rate=n(String(x?.valor||'').replace(',','.'));
     return rate===null?null:{kind:'rate',symbol:'SELIC',label:'Selic Meta',price:rate,change:null,unit:'% a.a.',source:'BCB/SGS',referenceDate:x?.data||null};
   }catch(_){return null}
 }
@@ -62,8 +66,14 @@ module.exports=async function handler(req,res){
   if(req.method!=='GET')return res.status(405).json({error:'Método não permitido.'});
   try{
     const [stocks,ibov,ifix,usd,selic]=await Promise.all([loadStocks(),loadIbov(),loadIfix(),loadUsd(),loadSelic()]);
-    const indicators=[ibov,ifix,usd,selic].filter(Boolean);
-    return res.status(200).json({requestedAt:new Date().toISOString(),indicators,stocks,sources:['brapi','Banco Central do Brasil']});
+    const capRows=stocks.filter(x=>n(x.change)!==null&&n(x.marketCap)>0);
+    const capTotal=capRows.reduce((s,x)=>s+n(x.marketCap),0);
+    const blueChange=capTotal>0?capRows.reduce((s,x)=>s+n(x.change)*n(x.marketCap),0)/capTotal:null;
+    const advancers=stocks.filter(x=>n(x.change)>0).length;
+    const blue=blueChange===null?null:{kind:'synthetic',symbol:'BLUE10',label:'Blue Chips 360',price:blueChange,change:null,unit:'%',source:'cálculo Bolsa 360'};
+    const breadth=stocks.length?{kind:'synthetic',symbol:'ALTAS',label:'Blue chips em alta',price:advancers/stocks.length*100,change:null,unit:'%',source:'cálculo Bolsa 360'}:null;
+    const indicators=[ibov,ifix,usd,selic,blue,breadth].filter(Boolean);
+    return res.status(200).json({requestedAt:new Date().toISOString(),indicators,stocks,sources:['brapi','Banco Central do Brasil','cálculos Bolsa 360']});
   }catch(err){
     return res.status(502).json({error:'Não foi possível montar a faixa de mercado.',detail:err.message});
   }
