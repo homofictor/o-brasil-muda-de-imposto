@@ -331,3 +331,7 @@ body.beginner-mode .adv-col{display:none}
 .individual-asset-form input{height:46px;border:1px solid #c8d2cb;border-radius:11px;padding:0 13px;outline:none}.individual-asset-form button{height:46px;border:0;border-radius:11px;background:var(--green);color:#fff;font-weight:850;padding:0 16px;cursor:pointer}
 .individual-asset-form small{grid-column:1/-1;color:var(--muted);min-height:16px}.p360-account{display:flex;align-items:center;gap:8px}.p360-account .p360-user{font-size:10px;font-weight:800;color:var(--muted);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.p360-account button{border:1px solid #d3ddd6;background:#fff;border-radius:999px;padding:8px 11px;font-size:10px;font-weight:850;color:#365147;cursor:pointer}
 @media(max-width:760px){.individual-asset-box{grid-template-columns:1fr}.individual-asset-form{grid-template-columns:1fr}.individual-asset-form small{grid-column:auto}.p360-account .p360-user{display:none}}
+
+/* Tabela compacta do modo iniciante */
+body.beginner-mode table{min-width:820px}
+.overall-score-cell .score{min-width:50px;font-size:12px;padding:6px 10px}
