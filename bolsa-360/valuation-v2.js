@@ -567,8 +567,7 @@ function createMarket360(){
   hero.insertAdjacentHTML('afterend','<section id="market360" class="market360 panel"><div class="section-head"><div><p class="eyebrow">RADAR 360</p><h2>O que está se destacando no mercado?</h2><p class="muted">Descoberta rápida por movimento, tamanho e favoritos, usando o universo já carregado pelo Bolsa 360.</p></div></div><div id="market360Grid" class="market360-grid"><p class="muted">Carregando radar...</p></div></section>');
   document.getElementById('market360')?.addEventListener('click',e=>{
     const btn=e.target.closest('[data-market-ticker]'); if(!btn)return;
-    const input=document.getElementById('individualAssetInput');
-    if(input){input.value=btn.dataset.marketTicker;document.getElementById('individualAssetAdd')?.click()}
+    openQuickAsset360(btn.dataset.marketTicker);
   });
 }
 function refreshMarket360(){
@@ -756,8 +755,7 @@ function createMarketTicker360(){
   topbar.insertAdjacentHTML('afterend','<section id="marketTicker360" class="market-ticker360" aria-label="Indicadores e principais ações do mercado"><div class="market-ticker360-label">Mercado 360</div><div class="market-ticker360-viewport"><div id="marketTicker360Track" class="market-ticker360-track"><span class="market-ticker360-loading">Atualizando mercado...</span></div></div></section>');
   document.getElementById('marketTicker360')?.addEventListener('click',e=>{
     const btn=e.target.closest('[data-strip-ticker]');if(!btn)return;
-    const input=document.getElementById('individualAssetInput');
-    if(input){input.value=btn.dataset.stripTicker;document.getElementById('individualAssetAdd')?.click()}
+    openQuickAsset360(btn.dataset.stripTicker);
   });
   loadMarketTicker360();
 }
