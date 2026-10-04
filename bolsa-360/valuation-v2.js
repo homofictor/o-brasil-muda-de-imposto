@@ -304,14 +304,17 @@ function closeQuick360(){
   document.getElementById('quick360Modal')?.classList.remove('open');
   document.getElementById('quick360Modal')?.setAttribute('aria-hidden','true');
 }
-function quick360Skeleton(ticker,stock){
+function quick360HeadHtml(ticker,stock){
   const name=stock?.name||ticker;
   const close=n(stock?.close);
   const change=n(stock?.change);
   return '<div class="quick360-head">'+
     '<div><p class="eyebrow">CONSULTA RÁPIDA 360</p><div class="quick360-title"><h2>'+esc(ticker)+'</h2><span>'+esc(name)+'</span></div></div>'+
     '<div class="quick360-quote"><strong>'+money(close)+'</strong><b class="'+(change===null?'flat':change>=0?'up':'down')+'">'+(change===null?'':(change>=0?'+':'')+change.toFixed(2)+'%')+'</b></div>'+
-    '</div>'+
+    '</div>';
+}
+function quick360Skeleton(ticker,stock){
+  return quick360HeadHtml(ticker,stock)+
     '<div class="quick360-loading"><i></i><span>Carregando gráfico e fundamentos...</span></div>'+
     '<div id="quick360ChartBox" class="quick360-chartbox"></div>'+
     '<div id="quick360Info" class="quick360-info"></div>'+
@@ -426,8 +429,8 @@ async function openQuickAsset360(raw){
   try{
     const q=await quickPromise;if(request!==quick360State.request)return;
     quick360State.market=q.stock||local;quick360State.history=q.history||[];
-    body.querySelector('.quick360-head')?.remove();
-    body.insertAdjacentHTML('afterbegin',quick360Skeleton(ticker,quick360State.market).match(/<div class="quick360-head">[\s\S]*?<\/div><div class="quick360-loading">/)[0].replace('<div class="quick360-loading">',''));
+    const head=body.querySelector('.quick360-head');
+    if(head)head.outerHTML=quick360HeadHtml(ticker,quick360State.market);
     body.querySelector('.quick360-loading')?.remove();
     renderQuick360Chart();
   }catch(err){
