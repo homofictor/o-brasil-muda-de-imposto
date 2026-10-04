@@ -546,3 +546,53 @@ body.beginner-mode table{min-width:820px}
   .quick360-actions{justify-content:stretch}
   .quick360-actions button{flex:1}
 }
+
+
+/* Decisão 360 unificada */
+.decision360{margin:18px 0;border:1px solid #bfd0c5;border-radius:20px;padding:17px;background:linear-gradient(155deg,#fbfdfb,#eef6f1)}
+.decision360.buy{border-color:#9fc8ad;background:linear-gradient(155deg,#fbfdfb,#eaf6ee)}
+.decision360.sell{border-color:#d6b1ab;background:linear-gradient(155deg,#fffdfc,#f8ece9)}
+.decision360.neutral{border-color:#d3c8aa;background:linear-gradient(155deg,#fffefa,#f6f1e6)}
+.decision360.loading,.decision360.unavailable{background:#fafbfa;border-color:var(--line)}
+.decision360-main{display:flex;justify-content:space-between;gap:18px;align-items:flex-start}
+.decision360-main h2{font-size:34px;line-height:1;margin:4px 0}
+.decision360.buy h2,.summary360-box strong.buy{color:#176943}
+.decision360.sell h2,.summary360-box strong.sell{color:#9c453e}
+.decision360.neutral h2,.summary360-box strong.neutral{color:#80642f}
+.decision360-main small{color:var(--muted);font-size:9px}
+.decision360-target{text-align:right}
+.decision360-target span{display:block;font-size:8px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:900}
+.decision360-target strong{display:block;font-size:30px;line-height:1.05;margin-top:5px}
+.decision360-target b{display:block;margin-top:6px;font-size:13px}
+.decision360-target b.up{color:#17865a}.decision360-target b.down{color:#b94c43}
+.decision360-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
+.decision360-reason{margin:13px 0 0;padding:12px;border-radius:12px;background:rgba(255,255,255,.72);font-size:10px;line-height:1.5;color:#47544c}
+.decision360-method{margin-top:10px;border-top:1px solid rgba(18,63,44,.12);padding-top:9px}
+.decision360-method summary{cursor:pointer;font-size:9px;font-weight:900;color:var(--green)}
+.decision360-method p{font-size:9px;color:var(--muted);line-height:1.5;margin:8px 0}
+.decision360-method>div{display:flex;gap:6px;flex-wrap:wrap}
+.decision360-method>div span{font-size:8px;background:#fff;border:1px solid var(--line);border-radius:99px;padding:5px 8px;color:var(--muted)}
+.decision360-loading{display:flex;align-items:center;gap:12px}
+.decision360-loading i{width:18px;height:18px;border:2px solid #ccd7d0;border-top-color:var(--green);border-radius:50%;animation:quick360spin .8s linear infinite}
+.decision360-loading h3{font-size:16px;margin:2px 0}
+.decision360-loading small{font-size:9px;color:var(--muted)}
+.quick360-position{margin-top:14px;border:1px solid var(--line);border-radius:16px;padding:14px;background:#fbfcfb}
+.quick360-position>div{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px}
+.quick360-auto-status{margin-right:auto;color:var(--muted);font-size:9px;align-self:center}
+.indication360-badge,.convergence360-badge{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:5px 9px;font-size:9px;font-weight:950;white-space:nowrap}
+.indication360-badge.buy{background:#dff1e6;color:#176943}
+.indication360-badge.sell{background:#f5e4e1;color:#9c453e}
+.indication360-badge.neutral{background:#f3ead7;color:#80642f}
+.convergence360-badge.strong-positive,.convergence360-badge.positive{background:#e1f0e6;color:#21633f}
+.convergence360-badge.strong-negative,.convergence360-badge.negative{background:#f3e3df;color:#87473e}
+.convergence360-badge.mixed{background:#f2ecdf;color:#80652f}
+.convergence360-badge.na{background:#eef1ef;color:var(--muted)}
+.unified360-table{min-width:1280px}
+.unified360-table .positive{color:#17865a}
+.unified360-table .negative{color:#b94c43}
+@media(max-width:800px){
+  .decision360-main{display:block}
+  .decision360-target{text-align:left;margin-top:14px}
+  .decision360-grid,.quick360-position>div{grid-template-columns:1fr 1fr}
+  .quick360-auto-status{width:100%;order:3}
+}
