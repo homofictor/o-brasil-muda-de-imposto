@@ -111,7 +111,7 @@ async function fetchLegacyDemo(ticker){
 
 module.exports=async function handler(req,res){
   res.setHeader('X-Robots-Tag','noindex');
-  res.setHeader('Cache-Control','s-maxage=1800, stale-while-revalidate=3600');
+  res.setHeader('Cache-Control','s-maxage=21600, stale-while-revalidate=43200');
   if(req.method!=='GET')return res.status(405).json({error:'Método não permitido.'});
   const raw=String(req.query?.tickers||'');
   const tickers=[...new Set(raw.split(',').map(x=>x.trim().toUpperCase()).filter(x=>/^[A-Z]{4}\d{1,2}$/.test(x)))].slice(0,20);
@@ -119,21 +119,29 @@ module.exports=async function handler(req,res){
 
   const key=process.env.BRAPI_API_KEY||'';
   const histories=new Map(),errors=new Map();
-  try{
-    const m=await fetchV2(tickers,key);
-    for(const [k,v] of m)histories.set(k,v);
-  }catch(err){
-    if(key){
-      for(const t of tickers)errors.set(t,'Não foi possível consultar o histórico na fonte.');
-    }else{
-      for(const t of tickers){
-        if(!DEMO.has(t)){
-          errors.set(t,'Histórico amplo requer uma chave gratuita da brapi no ambiente.');
-          continue;
-        }
-        try{histories.set(t,await fetchLegacyDemo(t))}
-        catch(_){errors.set(t,'Histórico público de demonstração indisponível para este ativo.')}
+
+  if(key){
+    // O plano gratuito da brapi aceita 1 ticker por requisição. Consultamos
+    // individualmente e deixamos a Vercel fazer cache por 6 horas.
+    const tasks=tickers.map(async ticker=>{
+      try{
+        const m=await fetchV2([ticker],key);
+        const rows=m.get(ticker);
+        if(rows?.length)histories.set(ticker,rows);
+        else errors.set(ticker,'Histórico não retornado pela fonte.');
+      }catch(_){
+        errors.set(ticker,'Não foi possível consultar o histórico na fonte.');
       }
+    });
+    await Promise.all(tasks);
+  }else{
+    for(const t of tickers){
+      if(!DEMO.has(t)){
+        errors.set(t,'Histórico amplo requer uma chave gratuita da brapi no ambiente.');
+        continue;
+      }
+      try{histories.set(t,await fetchLegacyDemo(t))}
+      catch(_){errors.set(t,'Histórico público de demonstração indisponível para este ativo.')}
     }
   }
 
@@ -146,7 +154,8 @@ module.exports=async function handler(req,res){
   });
   return res.status(200).json({
     requestedAt:new Date().toISOString(),
-    sourceMode:key?'BRAPI_API_KEY':'public-demo',
+    sourceMode:key?'BRAPI_FREE_KEY':'public-demo',
+    keyConfigured:Boolean(key),
     range:'3mo',interval:'1d',
     methodology:'Tendência 360 V1',
     results
