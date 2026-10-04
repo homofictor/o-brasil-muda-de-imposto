@@ -359,8 +359,8 @@ function renderQuick360Info(){
   const box=document.getElementById('quick360Info');if(!box)return;
   const m=quick360State.market||{},cvm=quick360State.cvm||{},f=cvm.fundamentals||{},ac=cvm.analystConsensus||null;
   const full=state.assetMap?.get(quick360State.ticker)||null;
-  const target=n(ac?.targetMeanPrice)??n(ac?.targetMedianPrice);
-  const targetUpside=target!==null&&n(m.close)>0?target/n(m.close)-1:null;
+  const analystTargetValue=n(ac?.targetMeanPrice)??n(ac?.targetMedianPrice);
+  const analystUpside=analystTargetValue!==null&&n(m.close)>0?analystTargetValue/n(m.close)-1:null;
   const metrics=[
     quick360Metric('Valor de mercado',compactMoney(m.marketCap)),
     quick360Metric('Volume',compactMoney(m.volume)),
@@ -375,33 +375,52 @@ function renderQuick360Info(){
     quick360Metric('Receita TTM',compactMoney(f.revenue)),
     quick360Metric('Lucro TTM',compactMoney(f.netIncome))
   ].join('');
-  let extras='';
+
+  let top='';
+  if(full)top=renderDecision360(full);
+  else top='<section class="decision360 loading"><div class="decision360-loading"><i></i><div><p class="eyebrow">ANÁLISE 360</p><h3>Calculando Preço-Alvo e Indicação 360...</h3><small>A janela permanece utilizável enquanto o motor compara pares e processa os modelos.</small></div></div></section>';
+
+  let consensus='';
   if(ac){
-    extras+='<section class="quick360-consensus"><div><p class="eyebrow">CONSENSO DE MERCADO</p><h3>'+esc(ac.recommendation||'N/D')+'</h3></div><div>'+quick360Metric('Preço-alvo',money(target),targetUpside===null?'':pct(targetUpside)+' vs. fechamento')+'</div></section>';
+    consensus='<section class="quick360-consensus"><div><p class="eyebrow">CONSENSO EXTERNO</p><h3>'+esc(ac.recommendation||'N/D')+'</h3><small>Referência independente dos analistas de mercado</small></div><div>'+quick360Metric('Preço-alvo dos analistas',money(analystTargetValue),analystUpside===null?'':pct(analystUpside)+' vs. fechamento')+'</div></section>';
   }
+  let fullMetrics='';
   if(full){
-    extras+='<section class="quick360-fullscores"><p class="eyebrow">ANÁLISE 360 JÁ DISPONÍVEL</p><div>'+
-      quick360Metric('Nota 360',(bolsa360CompositeScore(full)??'N/D')+(bolsa360CompositeScore(full)!==null?'/100':''))+
-      quick360Metric('Valor justo',money(full.fairValue?.central))+
-      quick360Metric('Valor intrínseco',money(full.intrinsicValue?.central),full.intrinsicValue?.available?pct(full.intrinsicValue.distance)+' vs. preço':'')+
+    const x=analysis360(full);
+    fullMetrics='<section class="quick360-fullscores"><p class="eyebrow">VALOR E QUALIDADE</p><div>'+
+      quick360Metric('Valor Justo por Pares',money(full.fairValue?.central),full.fairValue?pct(full.fairValue.distance)+' vs. preço':'')+
+      quick360Metric('Valor Intrínseco 360',money(full.intrinsicValue?.central),full.intrinsicValue?.available?pct(full.intrinsicValue.distance)+' vs. preço':'')+
+      quick360Metric('Valuation 360',n(full.valuationScore)===null?'N/D':Math.round(n(full.valuationScore))+'/100')+
+      quick360Metric('Qualidade',n(full.qualityScore)===null?'N/D':Math.round(n(full.qualityScore))+'/100')+
+      quick360Metric('Solidez',n(full.solidityScore)===null?'N/D':Math.round(n(full.solidityScore))+'/100')+
+      quick360Metric('Crescimento',n(full.growthScore)===null?'N/D':Math.round(n(full.growthScore))+'/100')+
+      '</div></section>'+
+      '<section class="quick360-position"><p class="eyebrow">REFERÊNCIAS DE VALOR</p><div>'+
+      quick360Metric('Preço atual',money(full.close))+
+      quick360Metric('Preço-Alvo 360',x.target?.available?money(x.target.central):'N/D',x.target?.available?'12 meses · '+pct(x.target.upside):'')+
+      quick360Metric('Valor intrínseco',money(full.intrinsicValue?.central))+
+      quick360Metric('Alvo dos analistas',money(analystTargetValue))+
       '</div></section>';
   }
-  box.innerHTML='<section class="quick360-fund"><div class="quick360-sectiontitle"><p class="eyebrow">FUNDAMENTOS</p><h3>Visão imediata</h3><small>'+(f.source?esc(f.source):'Base CVM em carregamento')+'</small></div><div class="quick360-metrics">'+metrics+'</div></section>'+extras;
+
+  box.innerHTML=top+
+    '<section class="quick360-fund"><div class="quick360-sectiontitle"><p class="eyebrow">FUNDAMENTOS</p><h3>Visão imediata</h3><small>'+(f.source?esc(f.source):'Base CVM em carregamento')+'</small></div><div class="quick360-metrics">'+metrics+'</div></section>'+
+    fullMetrics+consensus;
 }
 function renderQuick360Actions(){
   const box=document.getElementById('quick360Actions');if(!box)return;
-  const ticker=quick360State.ticker,fav=bolsa360IsFavorite(ticker);
-  box.innerHTML='<button id="quick360Favorite" type="button" class="secondary">'+(fav?'★ Favorito':'☆ Favoritar')+'</button>'+
-    '<button id="quick360Full" type="button">Análise Completa 360</button>';
+  const ticker=quick360State.ticker,fav=bolsa360IsFavorite(ticker),full=state.assetMap?.get(ticker)||null;
+  box.innerHTML='<span class="quick360-auto-status">'+(full?'Análise 360 concluída':'Análise 360 sendo refinada em segundo plano')+'</span>'+
+    '<button id="quick360Favorite" type="button" class="secondary">'+(fav?'★ Favorito':'☆ Favoritar')+'</button>'+
+    (full?'<button id="quick360Compare" type="button" class="secondary">'+(state.compare360?.has(ticker)?'✓ No comparador':'＋ Comparar')+'</button>':'');
   document.getElementById('quick360Favorite')?.addEventListener('click',()=>{
     const active=bolsa360ToggleFavorite(ticker);
     document.getElementById('quick360Favorite').textContent=active?'★ Favorito':'☆ Favoritar';
     refreshMarket360();
   });
-  document.getElementById('quick360Full')?.addEventListener('click',()=>{
-    const input=document.getElementById('individualAssetInput');if(input)input.value=ticker;
-    closeQuick360();
-    if(typeof analyzeIndividualAsset==='function')analyzeIndividualAsset();
+  document.getElementById('quick360Compare')?.addEventListener('click',()=>{
+    addCompare360(ticker);
+    document.getElementById('quick360Compare').textContent=state.compare360.has(ticker)?'✓ No comparador':'＋ Comparar';
   });
 }
 async function openQuickAsset360(raw){
@@ -423,6 +442,9 @@ async function openQuickAsset360(raw){
   body.innerHTML=quick360Skeleton(ticker,local);
   backdrop.classList.remove('hidden');modal.classList.add('open');modal.setAttribute('aria-hidden','false');
 
+  const status=document.getElementById('individualAssetStatus');
+  if(status)status.textContent='Abrindo '+ticker+' e calculando a Análise 360...';
+
   const quickPromise=fetch('/api/bolsa360-quick?ticker='+encodeURIComponent(ticker),{headers:{Accept:'application/json'}}).then(async r=>{const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||'Falha ao carregar ativo.');return j});
   const cvmPromise=state.cvmBase?Promise.resolve(state.cvmBase):fetch('/api/bolsa360-cvm',{headers:{Accept:'application/json'}}).then(r=>r.ok?r.json():null).catch(()=>null);
 
@@ -443,6 +465,18 @@ async function openQuickAsset360(raw){
   if(base&&!state.cvmBase)state.cvmBase=base;
   quick360State.cvm=(base?.companies||[]).find(s=>String(s.ticker||'').toUpperCase()===ticker)||null;
   renderQuick360Info();renderQuick360Actions();
+
+  const fullPromise=ensureFullAsset360(ticker,request);
+  const trendPromise=ensureTrendTicker360(ticker);
+  const [full]=await Promise.all([fullPromise,trendPromise]);
+  if(request!==quick360State.request)return;
+  if(full){
+    renderQuick360Info();
+    renderQuick360Actions();
+    if(status)status.textContent=ticker+' analisado. Preço-Alvo e Indicação 360 atualizados.';
+  }else{
+    if(status)status.textContent=ticker+' aberto. Parte da análise avançada está indisponível para este ativo.';
+  }
 }
 function initQuick360Search(){
   ensureQuick360();
