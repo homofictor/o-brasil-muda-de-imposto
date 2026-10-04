@@ -275,6 +275,271 @@ function renderFavorite360(a){
   return '<button id="bolsa360FavoriteBtn" class="favorite360-btn '+(fav?'active':'')+'" type="button" aria-pressed="'+(fav?'true':'false')+'">'+(fav?'★ Favorito':'☆ Adicionar aos favoritos')+'</button>';
 }
 
+
+const BOLSA360_FILTERS_KEY='bolsa360.filters.v01';
+const BOLSA360_COMPARE_KEY='bolsa360.compare.v01';
+
+state.filter360=state.filter360||{};
+state.compare360=state.compare360||new Set();
+try{
+  const savedFilter=JSON.parse(localStorage.getItem(BOLSA360_FILTERS_KEY)||'{}');
+  if(savedFilter&&typeof savedFilter==='object')state.filter360=savedFilter;
+  const savedCompare=JSON.parse(localStorage.getItem(BOLSA360_COMPARE_KEY)||'[]');
+  if(Array.isArray(savedCompare))state.compare360=new Set(savedCompare.map(x=>String(x).toUpperCase()).slice(0,5));
+}catch(_){}
+
+function filterNumber360(id,scale=1){
+  const el=document.getElementById(id); if(!el||el.value==='')return null;
+  const v=Number(el.value); return Number.isFinite(v)?v*scale:null;
+}
+function apply360Filters(rows){
+  const f=state.filter360||{};
+  return (rows||[]).filter(r=>{
+    const overall=bolsa360CompositeScore(r),fund=r.fundamentals||{},iv=r.intrinsicValue,ac=r.analystConsensus||{},trend=state.trendMap?.get(r.ticker);
+    if(n(f.minOverall)!==null&&(overall===null||overall<n(f.minOverall)))return false;
+    if(n(f.minValuation)!==null&&(n(r.valuationScore)===null||n(r.valuationScore)<n(f.minValuation)))return false;
+    if(n(f.minQuality)!==null&&(n(r.qualityScore)===null||n(r.qualityScore)<n(f.minQuality)))return false;
+    if(n(f.minGrowth)!==null&&(n(r.growthScore)===null||n(r.growthScore)<n(f.minGrowth)))return false;
+    if(n(f.maxPE)!==null&&(n(fund.trailingPE)===null||n(fund.trailingPE)>n(f.maxPE)))return false;
+    if(n(f.maxDebtEbit)!==null&&(n(fund.netDebtToEbit)===null||n(fund.netDebtToEbit)>n(f.maxDebtEbit)))return false;
+    if(n(f.minIntrinsicUpside)!==null&&(iv?.available!==true||n(iv.distance)===null||n(iv.distance)<n(f.minIntrinsicUpside)))return false;
+    if(f.recommendation&&f.recommendation!=='all'&&String(ac.recommendation||'').toLowerCase()!==f.recommendation)return false;
+    if(f.trend&&f.trend!=='all'&&String(trend?.direction||'').toLowerCase()!==f.trend)return false;
+    return true;
+  });
+}
+function saveFilters360(){
+  try{localStorage.setItem(BOLSA360_FILTERS_KEY,JSON.stringify(state.filter360||{}))}catch(_){}
+}
+function readFilters360(){
+  state.filter360={
+    minOverall:filterNumber360('f360Overall'),
+    minValuation:filterNumber360('f360Valuation'),
+    minQuality:filterNumber360('f360Quality'),
+    minGrowth:filterNumber360('f360Growth'),
+    maxPE:filterNumber360('f360PE'),
+    maxDebtEbit:filterNumber360('f360Debt'),
+    minIntrinsicUpside:filterNumber360('f360Upside',.01),
+    recommendation:document.getElementById('f360Recommendation')?.value||'all',
+    trend:document.getElementById('f360Trend')?.value||'all'
+  };
+  saveFilters360();
+  renderResults();
+}
+function clearFilters360(){
+  state.filter360={};saveFilters360();
+  for(const id of ['f360Overall','f360Valuation','f360Quality','f360Growth','f360PE','f360Debt','f360Upside']){
+    const el=document.getElementById(id);if(el)el.value='';
+  }
+  const rec=document.getElementById('f360Recommendation');if(rec)rec.value='all';
+  const tr=document.getElementById('f360Trend');if(tr)tr.value='all';
+  renderResults();
+}
+function createScreener360(){
+  if(document.getElementById('screener360'))return;
+  const selector=document.querySelector('.selector-panel');
+  if(!selector)return;
+  const f=state.filter360||{};
+  const html='<details id="screener360" class="screener360"><summary><b>Screener 360</b><span>Filtros avançados e salvos neste navegador</span></summary>'+
+    '<div class="screener360-grid">'+
+    '<label>Nota 360 mínima<input id="f360Overall" type="number" min="0" max="100" value="'+esc(f.minOverall??'')+'" placeholder="Ex.: 60"></label>'+
+    '<label>Valuation mínimo<input id="f360Valuation" type="number" min="0" max="100" value="'+esc(f.minValuation??'')+'" placeholder="Ex.: 60"></label>'+
+    '<label>Qualidade mínima<input id="f360Quality" type="number" min="0" max="100" value="'+esc(f.minQuality??'')+'" placeholder="Ex.: 60"></label>'+
+    '<label>Crescimento mínimo<input id="f360Growth" type="number" min="0" max="100" value="'+esc(f.minGrowth??'')+'" placeholder="Ex.: 50"></label>'+
+    '<label>P/L máximo<input id="f360PE" type="number" step="0.1" value="'+esc(f.maxPE??'')+'" placeholder="Ex.: 12"></label>'+
+    '<label>Dív. líquida / EBIT máx.<input id="f360Debt" type="number" step="0.1" value="'+esc(f.maxDebtEbit??'')+'" placeholder="Ex.: 3"></label>'+
+    '<label>Upside intrínseco mín. (%)<input id="f360Upside" type="number" step="1" value="'+esc(n(f.minIntrinsicUpside)!==null?Math.round(n(f.minIntrinsicUpside)*100):'')+'" placeholder="Ex.: 15"></label>'+
+    '<label>Consenso<select id="f360Recommendation"><option value="all">Todos</option><option value="compra">Compra</option><option value="neutro">Neutro</option><option value="venda">Venda</option></select></label>'+
+    '<label>Tendência<select id="f360Trend"><option value="all">Todas</option><option value="alta">Alta</option><option value="neutra">Neutra</option><option value="baixa">Baixa</option></select></label>'+
+    '</div><div class="screener360-actions"><button id="apply360Filters" type="button">Aplicar filtros</button><button id="clear360Filters" class="secondary" type="button">Limpar</button><small>Os filtros ficam salvos automaticamente neste dispositivo.</small></div></details>';
+  selector.insertAdjacentHTML('afterend',html);
+  const rec=document.getElementById('f360Recommendation');if(rec)rec.value=f.recommendation||'all';
+  const tr=document.getElementById('f360Trend');if(tr)tr.value=f.trend||'all';
+  document.getElementById('apply360Filters')?.addEventListener('click',readFilters360);
+  document.getElementById('clear360Filters')?.addEventListener('click',clearFilters360);
+}
+
+function marketCard360(title,items,valueFn){
+  return '<section class="market360-card"><h3>'+esc(title)+'</h3><div class="market360-list">'+items.map((x,i)=>
+    '<button type="button" data-market-ticker="'+esc(x.ticker)+'"><span><b>'+(i+1)+'. '+esc(x.ticker)+'</b><small>'+esc(x.name||x.ticker)+'</small></span><strong>'+esc(valueFn(x))+'</strong></button>'
+  ).join('')+'</div></section>';
+}
+function createMarket360(){
+  if(document.getElementById('market360'))return;
+  const hero=document.querySelector('.hero');
+  if(!hero)return;
+  hero.insertAdjacentHTML('afterend','<section id="market360" class="market360 panel"><div class="section-head"><div><p class="eyebrow">RADAR 360</p><h2>O que está se destacando no mercado?</h2><p class="muted">Descoberta rápida por movimento, tamanho e favoritos, usando o universo já carregado pelo Bolsa 360.</p></div></div><div id="market360Grid" class="market360-grid"><p class="muted">Carregando radar...</p></div></section>');
+  document.getElementById('market360')?.addEventListener('click',e=>{
+    const btn=e.target.closest('[data-market-ticker]'); if(!btn)return;
+    const input=document.getElementById('individualAssetInput');
+    if(input){input.value=btn.dataset.marketTicker;document.getElementById('individualAssetAdd')?.click()}
+  });
+}
+function refreshMarket360(){
+  const grid=document.getElementById('market360Grid'); if(!grid)return;
+  const stocks=(state.universe?.stocks||[]).filter(x=>x?.ticker&&n(x.close)!==null);
+  if(!stocks.length){grid.innerHTML='<p class="muted">Radar aguardando o universo de ações.</p>';return}
+  const liquid=stocks.filter(x=>n(x.volume)!==null&&n(x.volume)>0);
+  const gainers=[...stocks].filter(x=>n(x.change)!==null).sort((a,b)=>n(b.change)-n(a.change)).slice(0,5);
+  const losers=[...stocks].filter(x=>n(x.change)!==null).sort((a,b)=>n(a.change)-n(b.change)).slice(0,5);
+  const caps=[...stocks].filter(x=>n(x.marketCap)!==null).sort((a,b)=>n(b.marketCap)-n(a.marketCap)).slice(0,5);
+  const volumes=[...liquid].sort((a,b)=>n(b.volume)-n(a.volume)).slice(0,5);
+  const favs=bolsa360FavoriteSet();
+  const favRows=stocks.filter(x=>favs.has(String(x.ticker).toUpperCase())).slice(0,5);
+  grid.innerHTML=
+    marketCard360('Maiores altas',gainers,x=>(n(x.change)>=0?'+':'')+n(x.change).toFixed(2)+'%')+
+    marketCard360('Maiores baixas',losers,x=>n(x.change).toFixed(2)+'%')+
+    marketCard360('Maior valor de mercado',caps,x=>compactMoney(x.marketCap))+
+    marketCard360('Maior volume',volumes,x=>compactMoney(x.volume))+
+    (favRows.length?marketCard360('Meus favoritos',favRows,x=>money(x.close)):'');
+}
+function waitMarket360(){
+  let tries=0;
+  const timer=setInterval(()=>{
+    tries++;refreshMarket360();
+    if(state.universe?.stocks?.length||tries>30)clearInterval(timer);
+  },250);
+}
+
+function opportunityCard360(title,items,metric){
+  return '<div class="opp360-card"><h4>'+esc(title)+'</h4>'+items.map((r,i)=>
+    '<button type="button" data-opp-ticker="'+esc(r.ticker)+'"><span><b>'+(i+1)+'. '+esc(r.ticker)+'</b><small>'+esc(r.cvmName||r.name||'')+'</small></span><strong>'+esc(metric(r))+'</strong></button>'
+  ).join('')+'</div>';
+}
+function renderOpportunities360(){
+  const sec=document.getElementById('resultsSection');if(!sec)return;
+  let box=document.getElementById('opportunities360');
+  if(!box){
+    sec.insertAdjacentHTML('afterbegin','<section id="opportunities360" class="panel opportunities360"><div class="section-head"><div><p class="eyebrow">OPORTUNIDADES 360</p><h2>Destaques dentro do universo analisado</h2><p class="muted">Rankings transparentes por Nota 360, valor intrínseco, qualidade e crescimento.</p></div></div><div id="opp360Grid" class="opp360-grid"></div></section>');
+    box=document.getElementById('opportunities360');
+    box?.addEventListener('click',e=>{
+      const btn=e.target.closest('[data-opp-ticker]');if(!btn)return;
+      const a=state.assetMap.get(btn.dataset.oppTicker);if(a)openDrawer(a);
+    });
+  }
+  const rows=[...state.assetMap.values()];
+  const byOverall=[...rows].filter(r=>bolsa360CompositeScore(r)!==null).sort((a,b)=>bolsa360CompositeScore(b)-bolsa360CompositeScore(a)).slice(0,5);
+  const byIntrinsic=[...rows].filter(r=>r.intrinsicValue?.available===true&&n(r.intrinsicValue.distance)!==null).sort((a,b)=>n(b.intrinsicValue.distance)-n(a.intrinsicValue.distance)).slice(0,5);
+  const byQuality=[...rows].filter(r=>n(r.qualityScore)!==null).sort((a,b)=>n(b.qualityScore)-n(a.qualityScore)).slice(0,5);
+  const byGrowth=[...rows].filter(r=>n(r.growthScore)!==null).sort((a,b)=>n(b.growthScore)-n(a.growthScore)).slice(0,5);
+  const grid=document.getElementById('opp360Grid');if(!grid)return;
+  grid.innerHTML=
+    opportunityCard360('Maior Nota 360',byOverall,r=>bolsa360CompositeScore(r)+'/100')+
+    opportunityCard360('Maior upside intrínseco',byIntrinsic,r=>pct(r.intrinsicValue.distance))+
+    opportunityCard360('Maior qualidade',byQuality,r=>Math.round(n(r.qualityScore))+'/100')+
+    opportunityCard360('Maior crescimento',byGrowth,r=>Math.round(n(r.growthScore))+'/100');
+}
+
+function saveCompare360(){try{localStorage.setItem(BOLSA360_COMPARE_KEY,JSON.stringify([...state.compare360]))}catch(_){}}
+function addCompare360(ticker){
+  const t=String(ticker||'').toUpperCase();if(!t)return;
+  if(state.compare360.has(t))state.compare360.delete(t);
+  else{
+    if(state.compare360.size>=5)return;
+    state.compare360.add(t);
+  }
+  saveCompare360();renderCompareDock360();
+}
+function compareMetric360(label,get,fmt,rows){
+  return '<tr><th>'+esc(label)+'</th>'+rows.map(r=>'<td>'+esc(fmt(get(r)))+'</td>').join('')+'</tr>';
+}
+function renderCompare360(){
+  const tickers=[...state.compare360];
+  const rows=tickers.map(t=>state.assetMap.get(t)).filter(Boolean);
+  const body=document.getElementById('compare360Body');if(!body)return;
+  if(rows.length<2){body.innerHTML='<p class="muted">Selecione pelo menos dois ativos já analisados para comparar.</p>';return}
+  const trendLabel=r=>{const t=state.trendMap?.get(r.ticker);return t?.available?(t.strength||t.direction):'N/D'};
+  const target=r=>analystTarget(r);
+  const fmtScore=v=>n(v)===null?'N/D':Math.round(n(v))+'/100';
+  body.innerHTML='<div class="compare360-table-wrap"><table class="compare360-table"><thead><tr><th>Indicador</th>'+rows.map(r=>'<th>'+esc(r.ticker)+'</th>').join('')+'</tr></thead><tbody>'+
+    compareMetric360('Preço',r=>r.close,money,rows)+
+    compareMetric360('Nota 360',bolsa360CompositeScore,fmtScore,rows)+
+    compareMetric360('Tendência',trendLabel,x=>x,rows)+
+    compareMetric360('Valor justo',r=>r.fairValue?.central,money,rows)+
+    compareMetric360('Valor intrínseco',r=>r.intrinsicValue?.central,money,rows)+
+    compareMetric360('Upside intrínseco',r=>r.intrinsicValue?.distance,pct,rows)+
+    compareMetric360('Preço-alvo',target,money,rows)+
+    compareMetric360('P/L',r=>r.fundamentals?.trailingPE,mult,rows)+
+    compareMetric360('P/VP',r=>r.fundamentals?.priceToBook,mult,rows)+
+    compareMetric360('ROE',r=>r.fundamentals?.returnOnEquity,pct,rows)+
+    compareMetric360('Margem EBIT',r=>r.fundamentals?.ebitMargin,pct,rows)+
+    compareMetric360('Dív. líquida / EBIT',r=>r.fundamentals?.netDebtToEbit,mult,rows)+
+    compareMetric360('Cresc. receita 3a',r=>r.growth?.revenueCagr3,pct,rows)+
+    compareMetric360('Cresc. lucro 3a',r=>r.growth?.profitCagr3,pct,rows)+
+    '</tbody></table></div>';
+}
+function ensureCompareModal360(){
+  if(document.getElementById('compare360Modal'))return;
+  document.body.insertAdjacentHTML('beforeend','<div id="compare360Backdrop" class="drawer-backdrop hidden"></div><aside id="compare360Modal" class="compare360-modal" aria-hidden="true"><button id="closeCompare360" class="drawer-close" type="button">×</button><p class="eyebrow">COMPARADOR 360</p><h2>Compare até 5 ativos lado a lado.</h2><p class="muted">Fundamentos, valuation, tendência, preço-alvo e crescimento em uma única visão.</p><div id="compare360Body"></div></aside><div id="compare360Dock" class="compare360-dock hidden"></div>');
+  const close=()=>{document.getElementById('compare360Backdrop')?.classList.add('hidden');document.getElementById('compare360Modal')?.classList.remove('open');document.getElementById('compare360Modal')?.setAttribute('aria-hidden','true')};
+  document.getElementById('closeCompare360')?.addEventListener('click',close);
+  document.getElementById('compare360Backdrop')?.addEventListener('click',close);
+}
+function openCompare360(){
+  ensureCompareModal360();renderCompare360();
+  document.getElementById('compare360Backdrop')?.classList.remove('hidden');
+  document.getElementById('compare360Modal')?.classList.add('open');
+  document.getElementById('compare360Modal')?.setAttribute('aria-hidden','false');
+}
+function renderCompareDock360(){
+  ensureCompareModal360();
+  const d=document.getElementById('compare360Dock');if(!d)return;
+  const nsel=state.compare360.size;
+  d.classList.toggle('hidden',nsel===0);
+  d.innerHTML='<span><b>Comparador 360</b><small>'+nsel+'/5 ativos</small></span><button id="openCompare360" type="button" '+(nsel<2?'disabled':'')+'>Comparar</button>';
+  document.getElementById('openCompare360')?.addEventListener('click',openCompare360);
+}
+
+function renderPortfolioHealth360(){
+  if(!(state?.selection instanceof Map)||typeof allocationRows!=='function')return;
+  const summary=document.getElementById('portfolioSummary');if(!summary)return;
+  let box=document.getElementById('portfolioHealth360');
+  if(!box){summary.insertAdjacentHTML('afterend','<div id="portfolioHealth360" class="portfolio-health360"></div>');box=document.getElementById('portfolioHealth360')}
+  const x=allocationRows();if(!x.rows.length){box.innerHTML='';return}
+  const sectorWeights=new Map();
+  let weightedScore=0,scoreWeight=0;
+  for(const r of x.rows){
+    const w=n(r.weight)||0,sector=sectorPt(r.sector||'Outros');
+    sectorWeights.set(sector,(sectorWeights.get(sector)||0)+w);
+    const asset=state.assetMap.get(r.ticker)||state.selection.get(r.ticker)||r;
+    const s=bolsa360CompositeScore(asset);
+    if(s!==null){weightedScore+=s*w;scoreWeight+=w}
+  }
+  const sectors=[...sectorWeights.entries()].sort((a,b)=>b[1]-a[1]);
+  const alerts=[];
+  const top=x.rows.slice().sort((a,b)=>b.weight-a.weight)[0];
+  if(top?.weight>35)alerts.push('Concentração elevada em '+top.ticker+' ('+top.weight.toFixed(1)+'%).');
+  if(sectors[0]?.[1]>50)alerts.push('Mais de metade da carteira está em '+sectors[0][0]+'.');
+  if(x.rows.length<4)alerts.push('Carteira com poucos ativos para diversificação ampla.');
+  const score=scoreWeight?Math.round(weightedScore/scoreWeight):null;
+  if(score!==null&&score<50)alerts.push('Nota 360 ponderada da carteira está abaixo de 50.');
+  box.innerHTML='<div class="portfolio-health-head"><div><p class="eyebrow">SAÚDE DA CARTEIRA 360</p><h3>'+(score===null?'N/D':score+'/100')+'</h3><small>Nota 360 ponderada pelos pesos</small></div><div><b>'+x.rows.length+'</b><span>ativos</span></div><div><b>'+sectors.length+'</b><span>setores</span></div></div>'+
+    '<div class="portfolio-sector-bars">'+sectors.map(([s,w])=>'<div><span>'+esc(s)+'</span><b>'+w.toFixed(1)+'%</b><i style="--w:'+Math.min(100,w)+'%"></i></div>').join('')+'</div>'+
+    '<div class="portfolio-alerts360">'+(alerts.length?alerts.map(a=>'<p>• '+esc(a)+'</p>').join(''):'<p>Sem alertas simples de concentração nas regras atuais.</p>')+'</div>';
+}
+
+function renderSummary360(a){
+  const overall=bolsa360CompositeScore(a),iv=a?.intrinsicValue,ac=a?.analystConsensus||{},target=analystTarget(a),trend=state.trendMap?.get(a?.ticker);
+  const targetUpside=n(target)!==null&&n(a?.close)>0?target/n(a.close)-1:null;
+  return '<section class="summary360-box"><div><span>Nota 360</span><strong>'+(overall===null?'N/D':overall+'/100')+'</strong></div>'+
+    '<div><span>Upside intrínseco</span><strong>'+(iv?.available===true?pct(iv.distance):'N/D')+'</strong></div>'+
+    '<div><span>Consenso</span><strong>'+esc(ac.recommendation||'N/D')+'</strong></div>'+
+    '<div><span>Upside analistas</span><strong>'+(targetUpside===null?'N/D':pct(targetUpside))+'</strong></div>'+
+    '<div><span>Tendência</span><strong>'+esc(trend?.available?(trend.strength||trend.direction):'N/D')+'</strong></div></section>';
+}
+
+function initBenchmarkFeatures360(){
+  createMarket360();createScreener360();ensureCompareModal360();renderCompareDock360();waitMarket360();
+  if(state?.selection instanceof Map&&typeof renderPortfolioSummary==='function'&&!renderPortfolioSummary.__health360){
+    const base=renderPortfolioSummary;
+    const wrapped=function(){base();renderPortfolioHealth360()};
+    wrapped.__health360=true;
+    renderPortfolioSummary=wrapped;
+    renderPortfolioHealth360();
+  }
+}
+setTimeout(initBenchmarkFeatures360,0);
+
 const TREND360_CACHE_KEY='bolsa360.trend.v01';
 state.trendMap=state.trendMap||new Map();
 state.trendAttempted=state.trendAttempted||new Set();
@@ -350,16 +615,29 @@ async function loadTrend360ForVisible(){
 }
 
 function renderSector(block){
-  const rows=sortRows(block.scored||[]),coverage=block.fundamentalsCoverage||0;
+  const allRows=sortRows(block.scored||[]),rows=apply360Filters(allRows),coverage=block.fundamentalsCoverage||0;
   const beginner=state?.selection instanceof Map;
-  return '<section class="sector-block"><div class="sector-block-head"><div><h3>'+esc(block.label||sectorPt(block.sector))+'</h3><small>'+block.total+' ativos · '+coverage+' com fundamentos · TTM até '+formatDate(state.cvmBase?.latestItrReference)+'</small></div><small>Mercado/histórico: brapi · fundamentos: CVM</small></div><div class="table-wrap"><table><thead><tr><th>Ativo</th><th>Fechamento</th><th>Tendência 360</th><th>Valor justo</th><th>V. intrínseco</th><th>Preço-alvo</th><th>Consenso</th><th>Dist. intrínseca</th><th class="adv-col">P/L</th><th class="adv-col">P/VP</th><th class="adv-col">EV/EBIT</th><th class="adv-col">ROE</th><th>Valuation 360</th><th>Qualidade</th><th>Solidez</th><th>Crescimento</th></tr></thead><tbody>'+
+  const countText=rows.length===allRows.length?block.total+' ativos':rows.length+' exibidos de '+allRows.length;
+  if(beginner){
+    return '<section class="sector-block"><div class="sector-block-head"><div><h3>'+esc(block.label||sectorPt(block.sector))+'</h3><small>'+countText+' · '+coverage+' com fundamentos · TTM até '+formatDate(state.cvmBase?.latestItrReference)+'</small></div><small>Mercado/histórico: brapi · fundamentos: CVM</small></div><div class="table-wrap"><table class="beginner360-table"><thead><tr><th>Ativo</th><th>Fechamento</th><th>Nota 360</th><th>Tendência</th><th>V. intrínseco</th><th>Preço-alvo</th><th>Consenso</th></tr></thead><tbody>'+
+      rows.map(r=>{
+        const iv=r.intrinsicValue,available=iv?.available===true,ac=r.analystConsensus||null,target=analystTarget(r),trend=state.trendMap.get(r.ticker)||null;
+        const assetCell='<div class="asset-actions"><button class="asset-btn" data-ticker="'+esc(r.ticker)+'">'+esc(r.ticker)+'</button><button class="add-asset-btn '+(state.selection.has(r.ticker)?'selected':'')+'" data-add-ticker="'+esc(r.ticker)+'" type="button">'+(state.selection.has(r.ticker)?'Selecionado':'Adicionar +')+'</button></div><small>Vol. '+compactMoney(r.volume)+'</small>';
+        return '<tr><td>'+assetCell+'</td>'+
+          '<td><strong>'+money(r.close)+'</strong><small>'+(n(r.change)!==null?(n(r.change)>=0?'+':'')+n(r.change).toFixed(2)+'%':'N/D')+'</small></td>'+
+          '<td>'+scoreBadge(bolsa360CompositeScore(r))+'</td>'+
+          '<td>'+trendBadge(trend)+'</td>'+
+          '<td><strong>'+money(iv?.central)+'</strong><small>'+(available?pct(iv.distance)+' vs. preço':'N/D')+'</small></td>'+
+          '<td><strong>'+money(target)+'</strong><small>'+(target!==null&&n(r.close)>0?pct(target/n(r.close)-1)+' vs. preço':'N/D')+'</small></td>'+
+          '<td>'+analystRecommendationBadge(ac?.recommendation)+'</td></tr>';
+      }).join('')+'</tbody></table></div></section>';
+  }
+  return '<section class="sector-block"><div class="sector-block-head"><div><h3>'+esc(block.label||sectorPt(block.sector))+'</h3><small>'+countText+' · '+coverage+' com fundamentos · TTM até '+formatDate(state.cvmBase?.latestItrReference)+'</small></div><small>Mercado/histórico: brapi · fundamentos: CVM</small></div><div class="table-wrap"><table><thead><tr><th>Ativo</th><th>Fechamento</th><th>Tendência 360</th><th>Valor justo</th><th>V. intrínseco</th><th>Preço-alvo</th><th>Consenso</th><th>Dist. intrínseca</th><th>P/L</th><th>P/VP</th><th>EV/EBIT</th><th>ROE</th><th>Nota 360</th><th>Valuation</th><th>Qualidade</th><th>Solidez</th><th>Crescimento</th></tr></thead><tbody>'+
   rows.map(r=>{
     const f=r.fundamentals||{},iv=r.intrinsicValue,available=iv?.available===true,ac=r.analystConsensus||null,target=analystTarget(r),trend=state.trendMap.get(r.ticker)||null;
     const intrinsicSub=available?money(iv.low)+' a '+money(iv.high):esc(iv?.reason||'N/D');
     const opinions=n(ac?.numberOfAnalystOpinions);
-    const assetCell=beginner
-      ?'<div class="asset-actions"><button class="asset-btn" data-ticker="'+esc(r.ticker)+'">'+esc(r.ticker)+'</button><button class="add-asset-btn '+(state.selection.has(r.ticker)?'selected':'')+'" data-add-ticker="'+esc(r.ticker)+'" type="button">'+(state.selection.has(r.ticker)?'Selecionado':'Adicionar +')+'</button></div><small>Vol. '+compactMoney(r.volume)+'</small>'
-      :'<button class="asset-btn" data-ticker="'+esc(r.ticker)+'">'+esc(r.ticker)+'</button><small>Vol. '+compactMoney(r.volume)+'</small>';
+    const assetCell='<button class="asset-btn" data-ticker="'+esc(r.ticker)+'">'+esc(r.ticker)+'</button><small>Vol. '+compactMoney(r.volume)+'</small>';
     return '<tr><td>'+assetCell+'</td>'+
       '<td><strong>'+money(r.close)+'</strong><small>'+(n(r.change)!==null?(n(r.change)>=0?'+':'')+n(r.change).toFixed(2)+'%':'N/D')+'</small></td>'+
       '<td>'+trendBadge(trend)+'<small>'+(trend?.available?'20d '+pct(trend.momentum20)+' · RSI '+(n(trend.rsi14)!==null?n(trend.rsi14).toFixed(0):'N/D'):(trend?.reason?'Histórico N/D':'Carregando...'))+'</small></td>'+
@@ -368,8 +646,8 @@ function renderSector(block){
       '<td><strong>'+money(target)+'</strong><small>'+(target!==null&&n(r.close)>0?pct(target/n(r.close)-1)+' vs. fechamento':'Consenso externo')+'</small></td>'+
       '<td>'+analystRecommendationBadge(ac?.recommendation)+'<small>'+(opinions!==null?opinions+' analista'+(opinions===1?'':'s'):'Cobertura N/D')+'</small></td>'+
       '<td>'+(available?pct(iv.distance):'<span class="na">N/D</span>')+'</td>'+
-      '<td class="adv-col">'+mult(f.trailingPE)+'</td><td class="adv-col">'+mult(f.priceToBook)+'</td><td class="adv-col">'+mult(f.enterpriseToEbit)+'</td><td class="adv-col">'+pct(f.returnOnEquity)+'</td>'+
-      '<td>'+scoreBadge(r.valuationScore)+'</td><td>'+scoreBadge(r.qualityScore)+'</td><td>'+scoreBadge(r.solidityScore)+'</td><td>'+scoreBadge(r.growthScore)+'</td></tr>';
+      '<td>'+mult(f.trailingPE)+'</td><td>'+mult(f.priceToBook)+'</td><td>'+mult(f.enterpriseToEbit)+'</td><td>'+pct(f.returnOnEquity)+'</td>'+
+      '<td>'+scoreBadge(bolsa360CompositeScore(r))+'</td><td>'+scoreBadge(r.valuationScore)+'</td><td>'+scoreBadge(r.qualityScore)+'</td><td>'+scoreBadge(r.solidityScore)+'</td><td>'+scoreBadge(r.growthScore)+'</td></tr>';
   }).join('')+'</tbody></table></div></section>';
 }
 
@@ -379,19 +657,29 @@ openDrawer=function(a){
   bolsa360OpenDrawerBase(a);
   const title=document.querySelector('#drawerBody .drawer-title');
   if(title){
-    title.insertAdjacentHTML('beforeend',renderFavorite360(a));
+    title.insertAdjacentHTML('beforeend','<div class="drawer360-actions">'+renderFavorite360(a)+'<button id="bolsa360CompareBtn" class="compare360-add" type="button">'+(state.compare360.has(a.ticker)?'✓ No comparador':'＋ Comparar')+'</button></div>');
     const favBtn=document.getElementById('bolsa360FavoriteBtn');
     if(favBtn)favBtn.addEventListener('click',()=>{
       const active=bolsa360ToggleFavorite(a.ticker);
       favBtn.classList.toggle('active',active);
       favBtn.setAttribute('aria-pressed',active?'true':'false');
       favBtn.textContent=active?'★ Favorito':'☆ Adicionar aos favoritos';
+      refreshMarket360();
+    });
+    const cmp=document.getElementById('bolsa360CompareBtn');
+    if(cmp)cmp.addEventListener('click',()=>{
+      addCompare360(a.ticker);
+      cmp.textContent=state.compare360.has(a.ticker)?'✓ No comparador':'＋ Comparar';
     });
   }
 
-  const trendBox=renderTrend360(state.trendMap.get(a.ticker)||null);
   const price=document.querySelector('#drawerBody .drawer-price');
-  if(price)price.insertAdjacentHTML('afterend',trendBox);
+  if(price)price.insertAdjacentHTML('afterend',renderSummary360(a));
+
+  const trendBox=renderTrend360(state.trendMap.get(a.ticker)||null);
+  const summary=document.querySelector('#drawerBody .summary360-box');
+  if(summary)summary.insertAdjacentHTML('afterend',trendBox);
+  else if(price)price.insertAdjacentHTML('afterend',trendBox);
 
   const analystBox=renderAnalystConsensus(a.analystConsensus,a.close);
   const intrinsic=document.querySelector('#drawerBody .intrinsic-box');
@@ -408,6 +696,7 @@ openDrawer=function(a){
 const bolsa360RenderResultsBase=renderResults;
 renderResults=function(){
   bolsa360RenderResultsBase();
+  renderOpportunities360();
   setTimeout(loadTrend360ForVisible,0);
 };
 
