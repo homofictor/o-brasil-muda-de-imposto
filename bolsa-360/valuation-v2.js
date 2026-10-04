@@ -541,6 +541,7 @@ function marketTicker360Format(x){
   const v=n(x?.price);
   if(v===null)return 'N/D';
   if(x.unit==='pts')return Math.round(v).toLocaleString('pt-BR');
+  if(x.unit==='%')return (v>0?'+':'')+v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'%';
   if(x.unit==='% a.a.')return v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'%';
   return v.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:2,maximumFractionDigits:2});
 }
