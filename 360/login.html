@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Acessar Plataforma 360</title>
+  <link rel="stylesheet" href="./style.css">
+  <style>
+    body{min-height:100vh;display:grid;place-items:center;padding:28px;background:#eef2ef}
+    .login-shell{width:min(980px,100%);display:grid;grid-template-columns:.9fr 1.1fr;background:#fff;border:1px solid #d9e1dc;border-radius:28px;overflow:hidden;box-shadow:0 24px 70px rgba(16,47,31,.12)}
+    .login-brand{background:linear-gradient(155deg,#123f2c,#0d2d20);color:#fff;padding:46px;display:flex;flex-direction:column;justify-content:space-between;min-height:610px}
+    .login-brand img{width:250px;max-width:100%}.login-brand p{color:#c9d6ce}.login-card{padding:46px}
+    .login-card h1{font-size:42px;line-height:1;margin:0 0 12px;letter-spacing:-.04em}.login-card>p{color:#6b786f}
+    .socials{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:26px 0}.socials button,.login-form button{height:48px;border-radius:12px;border:1px solid #cad4cd;background:#fff;font-weight:800;cursor:pointer}
+    .socials button.primary,.login-form button{background:#123f2c;color:#fff;border-color:#123f2c}.divider{text-align:center;color:#879289;font-size:12px;margin:18px 0}
+    .login-form{display:grid;gap:12px}.login-form label{font-size:11px;font-weight:800;color:#536159}.login-form input{width:100%;height:48px;border:1px solid #c8d2cb;border-radius:12px;padding:0 13px;margin-top:5px}
+    .mode-row{display:flex;gap:8px;margin:0 0 18px}.mode-row button{border:0;background:transparent;font-weight:900;color:#6b786f;cursor:pointer;padding:7px 0;margin-right:16px}.mode-row button.active{color:#123f2c;border-bottom:2px solid #123f2c}
+    .auth-status{min-height:22px;font-size:12px;color:#6b786f;margin-top:10px}.auth-status.error{color:#9a463e}.auth-status.ok{color:#1f6d49}
+    .privacy-note{font-size:10px;color:#7a857e;margin-top:18px;line-height:1.5}
+    @media(max-width:760px){.login-shell{grid-template-columns:1fr}.login-brand{min-height:auto;padding:28px}.login-card{padding:28px}.socials{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <main class="login-shell">
+    <section class="login-brand">
+      <img src="./assets/360-logo.svg" alt="Plataforma 360">
+      <div>
+        <h2>Uma conta para todo o ecossistema 360.</h2>
+        <p>Salve empresas, ativos, carteiras e análises para continuar de qualquer dispositivo.</p>
+      </div>
+    </section>
+    <section class="login-card">
+      <p class="eyebrow">ACESSO 360</p>
+      <h1>Entre ou crie sua conta.</h1>
+      <p>O cadastro identifica suas análises e permite manter sua carteira vinculada ao seu usuário.</p>
+      <div class="socials">
+        <button id="googleLogin" class="primary" type="button">Continuar com Google</button>
+        <button id="facebookLogin" type="button">Continuar com Facebook</button>
+      </div>
+      <div class="divider">ou use e-mail e senha</div>
+      <div class="mode-row">
+        <button id="modeLogin" class="active" type="button">Entrar</button>
+        <button id="modeSignup" type="button">Criar conta</button>
+      </div>
+      <form id="authForm" class="login-form">
+        <label id="nameLabel" class="hidden">Nome
+          <input id="fullName" autocomplete="name">
+        </label>
+        <label>E-mail
+          <input id="email" type="email" autocomplete="email" required>
+        </label>
+        <label>Senha
+          <input id="password" type="password" minlength="8" autocomplete="current-password" required>
+        </label>
+        <button id="submitAuth" type="submit">Entrar</button>
+      </form>
+      <p id="authStatus" class="auth-status"></p>
+      <p class="privacy-note">A Plataforma 360 deve armazenar apenas os dados necessários para autenticação, personalização e histórico das análises. O usuário poderá solicitar exclusão de seus dados e de sua conta.</p>
+    </section>
+  </main>
+  <script src="./auth.js"></script>
+  <script>
+    let signup=false;
+    const $=id=>document.getElementById(id);
+    function setMode(v){signup=v;$('modeLogin').classList.toggle('active',!v);$('modeSignup').classList.toggle('active',v);$('nameLabel').classList.toggle('hidden',!v);$('submitAuth').textContent=v?'Criar conta':'Entrar';$('password').autocomplete=v?'new-password':'current-password';$('authStatus').textContent='';}
+    $('modeLogin').onclick=()=>setMode(false);$('modeSignup').onclick=()=>setMode(true);
+    $('googleLogin').onclick=()=>P360Auth.signInWithGoogle().catch(showErr);
+    $('facebookLogin').onclick=()=>P360Auth.signInWithFacebook().catch(showErr);
+    function showErr(e){$('authStatus').textContent=e.message||'Não foi possível autenticar.';$('authStatus').className='auth-status error';}
+    P360Auth.ready.then(({configured,session})=>{
+      if(!configured){$('authStatus').textContent='Estrutura de login pronta. Falta conectar o banco de autenticação ao ambiente de preview.';$('authStatus').className='auth-status error';return;}
+      if(session){const q=new URLSearchParams(location.search),next=q.get('next')||'/360/';location.replace(next);}
+    });
+    $('authForm').addEventListener('submit',async e=>{
+      e.preventDefault();$('authStatus').textContent='Processando...';$('authStatus').className='auth-status';
+      try{
+        const email=$('email').value.trim(),password=$('password').value;
+        const result=signup?await P360Auth.signUp(email,password,$('fullName').value.trim()):await P360Auth.signInWithPassword(email,password);
+        if(result.error)throw result.error;
+        if(signup&&!result.data.session){$('authStatus').textContent='Conta criada. Verifique seu e-mail para confirmar o acesso.';$('authStatus').className='auth-status ok';return;}
+        const q=new URLSearchParams(location.search),next=q.get('next')||'/360/';location.replace(next);
+      }catch(err){showErr(err)}
+    });
+  </script>
+</body>
+</html>
