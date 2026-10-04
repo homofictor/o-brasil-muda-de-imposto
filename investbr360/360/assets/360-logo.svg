@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 96" role="img" aria-labelledby="title desc">
+  <title id="title">Plataforma 360</title>
+  <desc id="desc">Plataforma 360, inteligência empresarial e financeira.</desc>
+  <defs>
+    <linearGradient id="ring" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#0f3f2c"/>
+      <stop offset="1" stop-color="#2c7a55"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#d7b56f"/>
+      <stop offset="1" stop-color="#b9873e"/>
+    </linearGradient>
+  </defs>
+
+  <g transform="translate(4 4)">
+    <circle cx="44" cy="44" r="34" fill="#f8fbf9" stroke="#dbe6df" stroke-width="1.5"/>
+    <path d="M20 42a24 24 0 0 1 39-18" fill="none" stroke="url(#ring)" stroke-width="7" stroke-linecap="round"/>
+    <path d="M66 27a24 24 0 0 1-37 35" fill="none" stroke="url(#accent)" stroke-width="7" stroke-linecap="round"/>
+    <circle cx="44" cy="44" r="6" fill="#164f37"/>
+    <circle cx="25" cy="31" r="3.5" fill="#164f37"/>
+    <circle cx="63" cy="27" r="3.5" fill="#c39a55"/>
+    <circle cx="62" cy="61" r="3.5" fill="#164f37"/>
+    <path d="M29 33L39 40M49 40L59 31M49 49L59 58" stroke="#164f37" stroke-width="2.4" stroke-linecap="round" opacity=".9"/>
+  </g>
+
+  <g transform="translate(104 17)">
+    <text x="0" y="29" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="31" font-weight="800" letter-spacing=".3" fill="#12251b">PLATAFORMA</text>
+    <text x="242" y="29" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="31" font-weight="900" letter-spacing=".2" fill="#176044">360</text>
+    <rect x="0" y="42" width="300" height="1.5" rx=".75" fill="#d9e3dd"/>
+    <text x="0" y="61" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="10.5" font-weight="700" letter-spacing="1.45" fill="#6f7d75">INTELIGÊNCIA EMPRESARIAL E FINANCEIRA</text>
+  </g>
+</svg>

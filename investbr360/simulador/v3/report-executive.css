@@ -1,0 +1,417 @@
+/* V3.2 - diagramação do relatório executivo */
+.reportTabs{display:flex;gap:8px;padding:14px 18px 0;max-width:1440px;margin:0 auto}.reportTab{border:1px solid #cfd8e3;background:#fff;color:#425466;border-radius:999px;padding:8px 13px;font-size:11px;font-weight:850;cursor:pointer}.reportTab.active{background:#102640;color:#fff;border-color:#102640}.reportView[hidden]{display:none!important}
+.executiveReport{max-width:1260px;margin:0 auto;padding:16px 18px 24px}.execHero{display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:end;background:#fff;border:1px solid #dce4ec;border-radius:18px;padding:26px 28px;box-shadow:0 8px 26px rgba(16,38,64,.05)}.execHeroMain .kicker{display:inline-flex;align-items:center;background:#fff3cf;color:#8a5a00;border:1px solid #e4ad35;border-radius:999px;padding:6px 10px;font-size:10px;font-weight:950;letter-spacing:.08em;text-transform:uppercase}.execHeroMain h2{font-size:34px;line-height:1.08;margin:6px 0 9px;color:#102640}.execHeroMain p{max-width:850px;margin:0;color:#59697a;font-size:13px;line-height:1.55}.execYearPicker{margin:0}.execScoreboard{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0}.execScore{background:#fff;border:1px solid #dce4ec;border-radius:14px;padding:15px 16px;min-height:116px}.execScore.primary{border:2px solid #15855e;background:#123f63;box-shadow:0 5px 14px rgba(16,38,64,.12)}.execScore.primary span{color:#bfead7}.execScore.primary strong{color:#fff}.execScore.primary small{color:#d8e9f4}.execScore span,.execScore small{display:block}.execScore span{font-size:9px;text-transform:uppercase;letter-spacing:.07em;font-weight:900;color:#718096}.execScore strong{display:block;font-size:20px;line-height:1.2;color:#102640;margin:8px 0 5px}.execScore small{font-size:10px;line-height:1.4;color:#667585}.execSection{background:#fff;border:1px solid #dce4ec;border-radius:16px;padding:20px 22px;margin-top:14px;box-shadow:0 5px 18px rgba(16,38,64,.035)}.execSectionHead{display:grid;grid-template-columns:minmax(260px,.8fr) 1.2fr;gap:18px;align-items:start;margin-bottom:14px}.execSectionHead>div{display:flex;align-items:flex-start;gap:10px}.execSectionHead>div>span{width:25px;height:25px;flex:0 0 25px;border-radius:7px;background:#102640;color:#e6b13c;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900}.execSectionHead h2{font-size:21px;line-height:1.2;margin:0;color:#102640}.execSectionHead p{margin:1px 0 0;color:#667585;font-size:11px;line-height:1.5}.execRankingWrap{overflow:auto}.execRanking{width:100%;border-collapse:collapse;min-width:720px}.execRanking th,.execRanking td{padding:11px 12px;border-bottom:1px solid #e2e8ef;text-align:right;font-size:11px}.execRanking th{font-size:9px;text-transform:uppercase;letter-spacing:.04em;color:#7b8794;background:#f7f9fb}.execRanking th:nth-child(1),.execRanking td:nth-child(1),.execRanking th:nth-child(2),.execRanking td:nth-child(2){text-align:left}.execRanking td strong,.execRanking td small{display:block}.execRanking td strong{font-size:12px;color:#102640}.execRanking td small{font-size:9px;color:#15855e;margin-top:2px}.execRanking tr.winner{background:#f7fcf9}.rankPill{display:inline-flex;min-width:30px;height:24px;padding:0 7px;align-items:center;justify-content:center;border-radius:999px;background:#edf3f8;color:#315f8c;font-weight:900}.winner .rankPill{background:#15855e;color:#fff}.execPending{margin-top:12px;border-left:4px solid #d79a2b;background:#fff8e9;border-radius:0 10px 10px 0;padding:12px 14px}.execPending>strong{font-size:11px;color:#74521a}.execPending>div{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.execPending span{display:block;font-size:10px;line-height:1.45;color:#765b2c}.execPending b{display:block;color:#4e3c1c}.execTransitionCards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.execTransitionCards article{border:1px solid #dfe6ed;border-radius:13px;padding:14px 15px;background:#fbfcfd}.execTransitionCards article.focus{border-color:#8bb8e6;background:#f0f6fb}.execTransitionCards span,.execTransitionCards small{display:block}.execTransitionCards span{font-size:10px;font-weight:900;color:#315f8c}.execTransitionCards strong{display:block;font-size:19px;color:#102640;margin:5px 0}.execTransitionCards small{font-size:9px;line-height:1.45;color:#667585}.execTransitionYears{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:10px}.execTransitionYears div{background:#f7f9fb;border-radius:9px;padding:8px;text-align:center;border:1px solid #edf1f5}.execTransitionYears div.selected{border-color:#315f8c;background:#eef4fa}.execTransitionYears span,.execTransitionYears b{display:block}.execTransitionYears span{font-size:9px;color:#718096}.execTransitionYears b{font-size:10px;color:#102640;margin-top:2px}.execImpactGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.execImpact{border:1px solid #dfe6ed;border-radius:14px;padding:16px}.execImpact.commercial{background:#fcf7f7}.execImpact.financial{background:#f7fafc}.execImpactTop{display:flex;justify-content:space-between;align-items:center;gap:10px}.execImpactTop span{font-size:11px;font-weight:900;color:#102640}.execImpactTop strong{font-size:11px;padding:5px 8px;border-radius:999px;background:#fff;border:1px solid #dfe6ed}.execMetricRow{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:12px}.execMetricRow div{background:#fff;border:1px solid #e3e8ee;border-radius:10px;padding:10px}.execMetricRow span,.execMetricRow b{display:block}.execMetricRow span{font-size:8px;color:#718096;line-height:1.3}.execMetricRow b{font-size:15px;color:#102640;margin-top:4px}.execImpact p{font-size:10px;line-height:1.55;color:#566575;margin:12px 0 0}.execConclusion{display:grid;gap:8px}.execConclusion p{margin:0;border-left:4px solid #315f8c;background:#f8fafc;border-radius:0 9px 9px 0;padding:11px 13px;font-size:11px;line-height:1.55;color:#314152}.execConclusion strong{color:#102640}.execActionsTitle{font-size:13px;margin:17px 0 9px;color:#102640}.execActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;counter-reset:execaction;list-style:none;padding:0;margin:0}.execActions li{counter-increment:execaction;position:relative;border:1px solid #e0e6ed;background:#fff;border-radius:10px;padding:11px 12px 11px 38px;font-size:10px;line-height:1.45;color:#425466}.execActions li:before{content:counter(execaction);position:absolute;left:10px;top:10px;width:20px;height:20px;border-radius:6px;background:#102640;color:#e6b13c;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900}.execFooterNote{margin:14px 0 0;padding:11px 14px;border-radius:10px;background:#eef4fa;color:#526274;font-size:10px;line-height:1.5}.technicalReport{padding-top:6px}
+@media(max-width:900px){.reportTabs{padding:10px}.executiveReport{padding:10px}.execHero{grid-template-columns:1fr;padding:20px}.execHeroMain h2{font-size:28px}.execScoreboard{grid-template-columns:1fr 1fr}.execSectionHead{grid-template-columns:1fr}.execTransitionCards{grid-template-columns:1fr}.execTransitionYears{grid-template-columns:repeat(4,1fr)}.execImpactGrid{grid-template-columns:1fr}.execActions{grid-template-columns:1fr}.execPending>div{grid-template-columns:1fr}}
+@media(max-width:520px){.execScoreboard{grid-template-columns:1fr}.execMetricRow{grid-template-columns:1fr}.reportTabs{overflow:auto}.reportTab{white-space:nowrap}}
+@media print{
+ .reportTabs{display:none!important}.executiveReport:not(.printTarget){display:none!important}.technicalReport:not(.printTarget){display:none!important}.executiveReport.printTarget,.technicalReport.printTarget{display:block!important;max-width:none!important;padding:0!important}.execHero,.execSection,.execScore,.execImpact,.execTransitionCards article,.execConclusion p,.execActions li{box-shadow:none!important;break-inside:avoid}.execHero{padding:10mm 9mm 6mm!important;border:0!important;border-bottom:1px solid #dce4ec!important;border-radius:0!important;grid-template-columns:1fr 42mm}.execHeroMain h2{font-size:24pt}.execHeroMain p{font-size:9pt}.execYearPicker>*{display:none!important}.execYearPicker:after{content:"Ano analisado: " attr(data-year);display:block;font-size:10pt;font-weight:800;color:#102640;text-align:right}.execScoreboard{gap:3mm;margin:4mm 0}.execScore{min-height:0;padding:4mm}.execScore span{font-size:7pt}.execScore strong{font-size:13pt}.execScore small{font-size:7.5pt}.execSection{margin-top:4mm;padding:5mm;border-radius:8px}.execSectionHead{margin-bottom:3mm}.execSectionHead h2{font-size:15pt}.execSectionHead p{font-size:8pt}.execRanking th,.execRanking td{font-size:8pt;padding:2.5mm 2.8mm}.execRanking th{font-size:6.8pt}.execTransitionCards strong{font-size:12pt}.execTransitionCards small,.execImpact p,.execConclusion p,.execActions li,.execFooterNote{font-size:8pt}.execTransitionYears b{font-size:7.5pt}.execImpactGrid{gap:3mm}.execMetricRow b{font-size:10pt}.execPending{font-size:8pt}.execFooterNote{margin-top:4mm}.execImpactSection,.execDecisionSection{break-inside:avoid-page}.resetSim{display:none!important}.reportModal #resultsMount{padding:0!important}.reportShell{background:#fff!important}
+}
+
+/* Relatório técnico - impressão profissional */
+.technicalPrintCover{display:none}
+@media print{
+ @page{size:A4 portrait;margin:9mm 9mm 10mm}
+ html,body{background:#fff!important}
+ .technicalReport.printTarget{font-family:Arial,Helvetica,sans-serif!important;color:#172033!important}
+ .technicalReport.printTarget .technicalPrintCover{
+  display:flex!important;min-height:255mm;box-sizing:border-box;flex-direction:column;
+  padding:13mm 12mm 10mm;border:1px solid #d8e2eb;border-radius:5mm;background:#fff;
+  break-after:page;page-break-after:always
+ }
+ .technicalPrintBrand{display:flex;align-items:center;gap:5mm;padding-bottom:6mm;border-bottom:1px solid #dce4ec}
+ .technicalPrintBrand img{width:26mm;height:17mm;object-fit:contain;border:1px solid #e1e6eb;border-radius:2mm;padding:1mm;background:#fff}
+ .technicalPrintBrand strong,.technicalPrintBrand span{display:block}
+ .technicalPrintBrand strong{font-size:13pt;color:#102640}
+ .technicalPrintBrand span{margin-top:1.5mm;font-size:8pt;color:#697789}
+ .technicalPrintEyebrow{margin-top:22mm;color:#a56d08;font-size:8pt;font-weight:900;letter-spacing:.14em}
+ .technicalPrintCover h1{margin:3mm 0 2.5mm;font-size:25pt;line-height:1.08;color:#102640;letter-spacing:-.02em}
+ .technicalPrintIntro{max-width:145mm;margin:0;color:#59697a;font-size:10pt;line-height:1.55}
+ .technicalPrintMeta{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:3mm;margin-top:15mm}
+ .technicalPrintMeta div{padding:4mm;border:1px solid #dce4ec;border-radius:2.5mm;background:#f8fafc}
+ .technicalPrintMeta span,.technicalPrintMeta strong{display:block}
+ .technicalPrintMeta span{font-size:6.8pt;text-transform:uppercase;letter-spacing:.07em;color:#7a8795;font-weight:800}
+ .technicalPrintMeta strong{margin-top:1.5mm;font-size:9.2pt;color:#102640}
+ .technicalPrintDecision{margin-top:10mm;padding:7mm;border-left:2mm solid #15855e;border-radius:0 3mm 3mm 0;background:#eef8f3}
+ .technicalPrintDecision>span{display:block;color:#217051;font-size:7pt;font-weight:900;text-transform:uppercase;letter-spacing:.08em}
+ .technicalPrintDecision>strong{display:block;margin-top:2mm;color:#102640;font-size:20pt;line-height:1.1}
+ .technicalPrintDecision p{margin:2mm 0 0;color:#476255;font-size:9pt;line-height:1.5}
+ .technicalPrintScope{margin-top:auto;padding:5mm;border:1px solid #e3d19c;border-radius:3mm;background:#fffaf0}
+ .technicalPrintScope strong{display:block;color:#755314;font-size:9pt}
+ .technicalPrintScope p{margin:2mm 0 0;color:#6b604c;font-size:8pt;line-height:1.5}
+ .technicalPrintCoverFooter{display:flex;justify-content:space-between;gap:8mm;margin-top:7mm;padding-top:4mm;border-top:1px solid #e1e7ed;color:#6d7986;font-size:7.5pt}
+
+ .technicalReport.printTarget>.resultSection,
+ .technicalReport.printTarget>.methodology{
+  break-inside:auto!important;page-break-inside:auto!important;
+  margin:0 0 5mm!important;padding:5mm 5.5mm!important;
+  border:1px solid #d8e2eb!important;border-radius:3mm!important;background:#fff!important;box-shadow:none!important
+ }
+ .technicalReport.printTarget>.resultSection:first-of-type{margin-top:0!important}
+ .technicalReport.printTarget .sectionTitle.compact{
+  display:grid!important;grid-template-columns:minmax(0,1fr) minmax(55mm,.9fr);gap:5mm;align-items:start;
+  margin:0 0 4mm!important;padding:0 0 3.5mm!important;border-bottom:1px solid #dce4ec!important;
+  break-after:avoid;page-break-after:avoid
+ }
+ .technicalReport.printTarget .sectionTitle.compact>div{display:flex;align-items:flex-start;gap:3mm;margin:0!important}
+ .technicalReport.printTarget .sectionTitle.compact>div>span{
+  display:flex!important;align-items:center;justify-content:center;flex:0 0 8mm;width:8mm;height:8mm;
+  border-radius:2mm;background:#102640!important;color:#e6b13c!important;font-size:7.5pt!important;font-weight:900
+ }
+ .technicalReport.printTarget .sectionTitle.compact h2{margin:.3mm 0 0!important;color:#102640!important;font-size:14.5pt!important;line-height:1.12!important}
+ .technicalReport.printTarget .sectionTitle.compact p{margin:0!important;color:#657384!important;font-size:7.8pt!important;line-height:1.45!important}
+
+ .technicalReport.printTarget .compareWrap,
+ .technicalReport.printTarget .timelineWrap{overflow:visible!important;border-color:#dce4ec!important;box-shadow:none!important}
+ .technicalReport.printTarget .compareTable,
+ .technicalReport.printTarget .timeline{width:100%!important;min-width:0!important;table-layout:fixed!important;border-collapse:collapse!important}
+ .technicalReport.printTarget .compareTable th,
+ .technicalReport.printTarget .compareTable td{
+  position:static!important;min-width:0!important;padding:2.2mm 2mm!important;
+  font-size:7.3pt!important;line-height:1.3!important;white-space:normal!important;overflow-wrap:anywhere!important
+ }
+ .technicalReport.printTarget .compareTable th{font-size:6.5pt!important}
+ .technicalReport.printTarget .compareTable th:first-child,
+ .technicalReport.printTarget .compareTable td:first-child{width:31%!important;background:#fff!important}
+ .technicalReport.printTarget .timeline th,
+ .technicalReport.printTarget .timeline td{
+  padding:1.7mm 1mm!important;font-size:6.1pt!important;line-height:1.25!important;white-space:normal!important;overflow-wrap:anywhere!important
+ }
+ .technicalReport.printTarget .timeline th{font-size:5.8pt!important}
+ .technicalReport.printTarget .explainBox{margin:3mm 0!important;padding:3mm 3.5mm!important;border-radius:0 2mm 2mm 0!important}
+ .technicalReport.printTarget .explainBox strong{font-size:8pt!important}
+ .technicalReport.printTarget .explainBox p{font-size:7.3pt!important;line-height:1.45!important}
+ .technicalReport.printTarget .vatSummary{gap:2.5mm!important}
+ .technicalReport.printTarget .vatSummary>div{padding:3mm!important;break-inside:avoid!important}
+ .technicalReport.printTarget .vatSummary span{font-size:6.7pt!important}
+ .technicalReport.printTarget .vatSummary strong{font-size:12pt!important}
+ .technicalReport.printTarget .vatSummary small{font-size:6.8pt!important;line-height:1.4!important}
+
+ .technicalReport.printTarget .models{grid-template-columns:1fr 1fr!important;gap:4mm!important}
+ .technicalReport.printTarget .modelCard{padding:4.5mm!important;border-radius:3mm!important;break-inside:avoid!important;box-shadow:none!important}
+ .technicalReport.printTarget .modelCard h3{font-size:15pt!important;margin:2mm 0!important}
+ .technicalReport.printTarget .modelCard>.sub,
+ .technicalReport.printTarget .scenarioTag,
+ .technicalReport.printTarget .labelMoney,
+ .technicalReport.printTarget .eff{font-size:7.5pt!important;min-height:0!important}
+ .technicalReport.printTarget .bigMoney{font-size:20pt!important;margin:1mm 0!important}
+ .technicalReport.printTarget .modelRows{margin-top:3mm!important;padding:1.5mm 2.5mm!important}
+ .technicalReport.printTarget .modelRows div{padding:1.7mm 0!important;font-size:7.2pt!important}
+ .technicalReport.printTarget .creditBlock{padding:3mm 0!important}
+ .technicalReport.printTarget .creditBlock span,
+ .technicalReport.printTarget .creditBlock small{font-size:7pt!important}
+ .technicalReport.printTarget .creditBlock strong{font-size:16pt!important;margin:1mm 0!important}
+ .technicalReport.printTarget .prosBox,
+ .technicalReport.printTarget .consBox{padding:3mm!important;margin-top:2mm!important;break-inside:avoid!important}
+ .technicalReport.printTarget .prosBox strong,
+ .technicalReport.printTarget .consBox strong{font-size:7.8pt!important}
+ .technicalReport.printTarget .prosBox ul,
+ .technicalReport.printTarget .consBox ul{margin:1.5mm 0 0!important;padding-left:4mm!important;font-size:7pt!important;line-height:1.35!important}
+
+ .technicalReport.printTarget .compGrid{grid-template-columns:.78fr 1.22fr!important;gap:3mm!important}
+ .technicalReport.printTarget .riskCard{padding:4mm!important;border-radius:3mm!important;break-inside:avoid!important}
+ .technicalReport.printTarget .riskTop{font-size:8pt!important}
+ .technicalReport.printTarget .riskTop strong{font-size:9pt!important}
+ .technicalReport.printTarget .riskNumber{font-size:22pt!important;margin-top:2mm!important}
+ .technicalReport.printTarget .riskAdvice{margin:2mm 0!important;padding:2.5mm 3mm!important;font-size:7.2pt!important}
+ .technicalReport.printTarget .riskCard ul{font-size:7pt!important;line-height:1.35!important}
+ .technicalReport.printTarget .metricCards{gap:2.5mm!important}
+ .technicalReport.printTarget .metricCards div{padding:3mm!important;break-inside:avoid!important}
+ .technicalReport.printTarget .metricCards span{font-size:6.8pt!important}
+ .technicalReport.printTarget .metricCards strong{font-size:12pt!important;margin-top:1mm!important}
+ .technicalReport.printTarget .insight{margin-top:3mm!important;padding:3mm 3.5mm!important;font-size:7.7pt!important;line-height:1.45!important}
+
+ .technicalReport.printTarget .cashGrid{grid-template-columns:.72fr 1.28fr!important;gap:3mm!important}
+ .technicalReport.printTarget .cashHero{padding:5mm!important;border-radius:3mm!important;break-inside:avoid!important}
+ .technicalReport.printTarget .cashHero span{font-size:7.5pt!important}
+ .technicalReport.printTarget .cashHero strong{font-size:22pt!important;margin:2mm 0!important}
+ .technicalReport.printTarget .cashHero small{font-size:7pt!important;line-height:1.4!important}
+ .technicalReport.printTarget .cashMetrics{gap:2.5mm!important}
+ .technicalReport.printTarget .cashMetrics div{padding:3mm!important}
+ .technicalReport.printTarget .cashMetrics span{font-size:6.7pt!important}
+ .technicalReport.printTarget .cashMetrics b{font-size:11pt!important;margin-top:1mm!important}
+
+ .technicalReport.printTarget .economicDetailGrid{grid-template-columns:1fr 1fr!important;gap:2.5mm!important}
+ .technicalReport.printTarget .economicDetailGrid>div{padding:3mm!important;break-inside:avoid!important}
+ .technicalReport.printTarget .economicDetailGrid span{font-size:6.8pt!important}
+ .technicalReport.printTarget .economicDetailGrid strong{font-size:10.5pt!important;margin-top:1mm!important}
+ .technicalReport.printTarget .economicFormula{margin-top:3mm!important;padding:3mm 3.5mm!important;font-size:7.8pt!important;line-height:1.4!important}
+
+ .technicalReport.printTarget .actionList{grid-template-columns:1fr 1fr!important;gap:2.5mm!important}
+ .technicalReport.printTarget .actionList li{padding:3mm 3mm 3mm 10mm!important;border-radius:2.5mm!important;font-size:7.5pt!important;line-height:1.4!important;break-inside:avoid!important}
+ .technicalReport.printTarget .actionList li:before{left:2.5mm!important;top:2.5mm!important;width:6mm!important;height:6mm!important;font-size:6.5pt!important}
+
+ .technicalReport.printTarget .narrativeText{gap:2.5mm!important}
+ .technicalReport.printTarget .narrativeText p{padding:3mm 3.5mm!important;border-radius:0 2mm 2mm 0!important;font-size:7.8pt!important;line-height:1.5!important;break-inside:avoid!important}
+ .technicalReport.printTarget>.methodology{display:grid!important;grid-template-columns:1fr 1fr!important;gap:3mm!important}
+ .technicalReport.printTarget .methodCard,
+ .technicalReport.printTarget .sources{padding:4mm!important;border-radius:3mm!important;break-inside:avoid!important}
+ .technicalReport.printTarget .methodology h3{font-size:9.5pt!important;margin:0 0 2mm!important}
+ .technicalReport.printTarget .methodology p,
+ .technicalReport.printTarget .methodology a{font-size:7.2pt!important;line-height:1.45!important}
+ .technicalReport.printTarget .sources{grid-column:1/-1!important}
+ .technicalReport.printTarget .sources a{display:inline-block!important;margin:1.5mm 5mm 0 0!important}
+
+ .technicalReport.printTarget .competition,
+ .technicalReport.printTarget .cash,
+ .technicalReport.printTarget .economicTechnical,
+ .technicalReport.printTarget .actionsSection,
+ .technicalReport.printTarget .narrativeSection{break-before:auto!important;page-break-before:auto!important}
+}
+
+
+/* Visão executiva dos sócios */
+.shareholderBrief{background:#fff}
+.shareholderKpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.shareholderKpis>div{border:1px solid #dce4ec;border-radius:12px;padding:13px 14px;background:#f9fbfd;min-height:96px}
+.shareholderKpis span,.shareholderKpis small{display:block}.shareholderKpis span{font-size:9px;text-transform:uppercase;letter-spacing:.045em;font-weight:900;color:#728093}.shareholderKpis strong{display:block;margin:7px 0 5px;color:#102640;font-size:17px;line-height:1.18}.shareholderKpis small{font-size:9px;line-height:1.4;color:#667585}
+.shareholderDecisionGrid{display:grid;grid-template-columns:1.08fr .92fr;gap:10px;margin-top:11px}.shareholderDecisionGrid article{border:1px solid #dce4ec;border-radius:12px;padding:14px 15px}.shareholderDecisionGrid h3,.shareholderEvidence h3{margin:0 0 7px;color:#102640;font-size:12px}.shareholderWhy{background:#f3f8fc}.shareholderWhy p{margin:0;color:#405268;font-size:10px;line-height:1.55}.shareholderPending{background:#fffaf0;border-color:#ead6a1!important}.shareholderPending ul{margin:0;padding-left:18px;color:#5f5138;font-size:9.5px;line-height:1.5}.shareholderPending li+li{margin-top:4px}
+.shareholderEvidence{margin-top:11px;padding-top:11px;border-top:1px solid #e1e7ed}.shareholderEvidence>div{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.shareholderEvidence>div>div{border:1px solid #e1e7ed;border-radius:10px;padding:10px 11px;background:#fff}.shareholderEvidence span,.shareholderEvidence small{display:block}.shareholderEvidence span{font-size:8.5px;color:#6f7d8d}.shareholderEvidence strong{display:block;margin:4px 0;color:#102640;font-size:12px}.shareholderEvidence small{font-size:8px;color:#7a8795}
+.shareholderQuestion{display:flex;gap:8px;margin-top:11px;padding:11px 13px;border-left:4px solid #15855e;border-radius:0 9px 9px 0;background:#eef8f3;color:#315a49;font-size:10px;line-height:1.45}.shareholderQuestion strong{color:#174c39;white-space:nowrap}
+@media(max-width:900px){.shareholderKpis{grid-template-columns:1fr 1fr}.shareholderDecisionGrid{grid-template-columns:1fr}.shareholderEvidence>div{grid-template-columns:1fr 1fr}.shareholderQuestion{display:block}.shareholderQuestion strong{display:block;margin-bottom:4px}}
+@media(max-width:520px){.shareholderKpis,.shareholderEvidence>div{grid-template-columns:1fr}}
+@media print{
+ .technicalReport.printTarget .shareholderBrief{break-after:page;page-break-after:always;margin-top:0!important;padding:7mm!important;border:1px solid #d8e2eb!important}
+ .technicalReport.printTarget .shareholderKpis{grid-template-columns:repeat(4,1fr)!important;gap:2.5mm!important}
+ .technicalReport.printTarget .shareholderKpis>div{min-height:0!important;padding:3.2mm!important;border-radius:2.5mm!important;break-inside:avoid!important}
+ .technicalReport.printTarget .shareholderKpis span{font-size:6.4pt!important}.technicalReport.printTarget .shareholderKpis strong{font-size:11.5pt!important;margin:1.5mm 0 1mm!important}.technicalReport.printTarget .shareholderKpis small{font-size:6.7pt!important}
+ .technicalReport.printTarget .shareholderDecisionGrid{grid-template-columns:1.08fr .92fr!important;gap:3mm!important;margin-top:3mm!important}.technicalReport.printTarget .shareholderDecisionGrid article{padding:3.5mm!important;border-radius:2.5mm!important;break-inside:avoid!important}
+ .technicalReport.printTarget .shareholderDecisionGrid h3,.technicalReport.printTarget .shareholderEvidence h3{font-size:8.5pt!important;margin-bottom:1.5mm!important}.technicalReport.printTarget .shareholderWhy p,.technicalReport.printTarget .shareholderPending ul{font-size:7.2pt!important;line-height:1.45!important}
+ .technicalReport.printTarget .shareholderEvidence{margin-top:3mm!important;padding-top:3mm!important}.technicalReport.printTarget .shareholderEvidence>div{grid-template-columns:repeat(3,1fr)!important;gap:2mm!important}.technicalReport.printTarget .shareholderEvidence>div>div{padding:2.5mm!important;break-inside:avoid!important}.technicalReport.printTarget .shareholderEvidence span{font-size:6.2pt!important}.technicalReport.printTarget .shareholderEvidence strong{font-size:8.5pt!important;margin:1mm 0!important}.technicalReport.printTarget .shareholderEvidence small{font-size:6pt!important}
+ .technicalReport.printTarget .shareholderQuestion{margin-top:3mm!important;padding:2.8mm 3mm!important;font-size:7.2pt!important;break-inside:avoid!important}
+}
+
+
+/* Governança de confiança e paginação técnica */
+.economicConfidenceNote{display:flex;gap:10px;align-items:flex-start;margin:0 0 12px;padding:11px 13px;border-radius:10px;border:1px solid #d7e1ea;background:#f6f9fc;color:#405268;font-size:10px;line-height:1.45}
+.economicConfidenceNote[hidden]{display:none!important}
+.economicConfidenceNote strong{flex:0 0 auto;color:#102640;font-size:9px;text-transform:uppercase;letter-spacing:.05em}
+.economicConfidenceNote.low{background:#fff7e8;border-color:#e9c77d;color:#6b5529}
+.economicConfidenceNote.low strong{color:#8a5a00}
+.economicConfidenceNote.medium{background:#f3f7fb;border-color:#bfd0e1;color:#456078}
+.economicConfidenceNote.medium strong{color:#315a7d}
+.timelineTitle{margin:12px 0 7px;color:#102640;font-size:12px}
+.sourcesNote{margin:9px 0 0;color:#6a7683;font-size:9px;line-height:1.45}
+
+@media print{
+ .technicalReport.printTarget .economicConfidenceNote{display:flex!important;margin:0 0 3mm!important;padding:2.8mm 3mm!important;border-radius:2mm!important;font-size:7pt!important;break-inside:avoid!important}
+ .technicalReport.printTarget .economicConfidenceNote[hidden]{display:none!important}
+ .technicalReport.printTarget .economicConfidenceNote strong{font-size:6.5pt!important}
+ .technicalReport.printTarget .timelineTitle{margin:2.5mm 0 1.5mm!important;font-size:8pt!important;break-after:avoid!important;page-break-after:avoid!important}
+ .technicalReport.printTarget .transitionSection{padding:4mm 4.5mm!important}
+ .technicalReport.printTarget .transitionSection .sectionTitle.compact{margin-bottom:2.5mm!important;padding-bottom:2.5mm!important}
+ .technicalReport.printTarget .transitionSection .explainBox{margin:2mm 0!important;padding:2.2mm 2.8mm!important}
+ .technicalReport.printTarget .transitionSection .compareTable th,
+ .technicalReport.printTarget .transitionSection .compareTable td{padding:1.35mm 1.4mm!important;font-size:6.6pt!important;line-height:1.2!important}
+ .technicalReport.printTarget .transitionSection .compareTable th{font-size:5.9pt!important}
+ .technicalReport.printTarget .transitionSection .vatSummary{gap:1.7mm!important;margin-top:2mm!important}
+ .technicalReport.printTarget .transitionSection .vatSummary>div{padding:2.1mm!important}
+ .technicalReport.printTarget .transitionSection .vatSummary span{font-size:5.9pt!important}
+ .technicalReport.printTarget .transitionSection .vatSummary strong{font-size:10.2pt!important}
+ .technicalReport.printTarget .transitionSection .vatSummary small{font-size:5.9pt!important;line-height:1.3!important}
+ .technicalReport.printTarget .transitionSection .timelineWrap{break-inside:avoid!important;page-break-inside:avoid!important;margin-top:0!important}
+ .technicalReport.printTarget .transitionSection .timeline th,
+ .technicalReport.printTarget .transitionSection .timeline td{padding:.95mm .75mm!important;font-size:5.35pt!important;line-height:1.15!important}
+ .technicalReport.printTarget .transitionSection .timeline th{font-size:5pt!important}
+ .technicalReport.printTarget .sourcesNote{font-size:6.5pt!important;margin-top:2mm!important}
+}
+
+
+/* Sensibilidade da lucratividade Real x Presumido */
+.profitProjectionGrid{margin-top:12px}
+.projectionDisabled{opacity:.68}
+.profitSensitivityAlert{margin:0 0 12px;padding:12px 14px;border:1px solid #bfd0e1;border-radius:10px;background:#f3f7fb;color:#3e5870;font-size:10px;line-height:1.5}
+.profitSensitivityAlert.warning{border-color:#e4c36e;background:#fff8e8;color:#6e5724}
+.profitSensitivityAlert strong{display:block;margin-bottom:3px;color:#102640}
+.profitSensitivityKpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.profitSensitivityKpis>div{padding:12px 13px;border:1px solid #dce4ec;border-radius:11px;background:#f9fbfd}
+.profitSensitivityKpis span,.profitSensitivityKpis small{display:block}
+.profitSensitivityKpis span{font-size:8.5px;font-weight:900;text-transform:uppercase;letter-spacing:.045em;color:#728093}
+.profitSensitivityKpis strong{display:block;margin:6px 0 4px;font-size:15px;line-height:1.2;color:#102640}
+.profitSensitivityKpis small{font-size:8.5px;line-height:1.4;color:#667585}
+.profitSensitivityTableWrap{margin-top:12px;overflow:auto;border:1px solid #dce4ec;border-radius:11px}
+.profitSensitivityTable{width:100%;border-collapse:collapse;min-width:660px}
+.profitSensitivityTable th,.profitSensitivityTable td{padding:9px 10px;border-bottom:1px solid #e5ebf0;text-align:left;font-size:9px}
+.profitSensitivityTable th{background:#f3f6f9;color:#6f7e8f;font-size:8px;text-transform:uppercase;letter-spacing:.04em}
+.profitSensitivityTable td strong,.profitSensitivityTable td small{display:block}.profitSensitivityTable td small{margin-top:2px;color:#778392}
+.profitSensitivityTable td.real{color:#13734f;font-weight:900}.profitSensitivityTable td.presumed{color:#8a5a00;font-weight:900}.profitSensitivityTable td.equal{color:#315a7d;font-weight:900}
+.profitSensitivityFoot{margin-top:9px;padding:9px 11px;border-left:3px solid #315a7d;background:#f6f9fc;color:#59697a;font-size:9px;line-height:1.45}
+@media(max-width:900px){.profitSensitivityKpis{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.profitSensitivityKpis{grid-template-columns:1fr}}
+@media print{
+ .technicalReport.printTarget .profitSensitivitySection{break-inside:auto!important}
+ .technicalReport.printTarget .profitSensitivityAlert{margin:0 0 3mm!important;padding:2.8mm 3mm!important;font-size:7.1pt!important;break-inside:avoid!important}
+ .technicalReport.printTarget .profitSensitivityKpis{grid-template-columns:repeat(4,1fr)!important;gap:2.2mm!important}
+ .technicalReport.printTarget .profitSensitivityKpis>div{padding:2.7mm!important;border-radius:2mm!important;break-inside:avoid!important}
+ .technicalReport.printTarget .profitSensitivityKpis span{font-size:5.8pt!important}.technicalReport.printTarget .profitSensitivityKpis strong{font-size:10pt!important;margin:1.2mm 0!important}.technicalReport.printTarget .profitSensitivityKpis small{font-size:6.2pt!important}
+ .technicalReport.printTarget .profitSensitivityTableWrap{margin-top:3mm!important;overflow:visible!important;border-radius:2mm!important;break-inside:avoid!important}
+ .technicalReport.printTarget .profitSensitivityTable{min-width:0!important;table-layout:fixed!important}
+ .technicalReport.printTarget .profitSensitivityTable th,.technicalReport.printTarget .profitSensitivityTable td{padding:1.8mm 1.5mm!important;font-size:6.3pt!important;line-height:1.3!important}
+ .technicalReport.printTarget .profitSensitivityTable th{font-size:5.7pt!important}
+ .technicalReport.printTarget .profitSensitivityFoot{margin-top:2.5mm!important;padding:2.3mm 2.8mm!important;font-size:6.6pt!important;break-inside:avoid!important}
+}
+
+
+/* Revisão cirúrgica da impressão · 2026-09-24 */
+@media print{
+  /* margem zero impede o cabeçalho/rodapé automático do Chromium;
+     as margens passam a ser controladas pelo próprio relatório */
+  @page{size:A4 portrait;margin:0!important}
+  html,body{margin:0!important;padding:0!important}
+  .technicalReport.printTarget{margin:0!important;padding:0!important;background:#fff!important}
+
+  /* capa com área segura própria */
+  .technicalReport.printTarget .technicalPrintCover{
+    width:192mm!important;height:279mm!important;min-height:279mm!important;
+    margin:9mm!important;padding:11mm 11mm 9mm!important;
+    border-radius:4mm!important;box-sizing:border-box!important
+  }
+  .technicalReport.printTarget .technicalPrintBrand{gap:4mm!important;padding-bottom:5mm!important;overflow:visible!important}
+  .technicalReport.printTarget .technicalPrintBrand img{
+    display:block!important;width:29mm!important;height:auto!important;max-height:22mm!important;
+    object-fit:contain!important;object-position:center!important;padding:0!important;
+    border:0!important;border-radius:0!important;background:transparent!important;
+    overflow:visible!important;clip-path:none!important
+  }
+  .technicalReport.printTarget .technicalPrintEyebrow{margin-top:18mm!important}
+  .technicalReport.printTarget .technicalPrintMeta{margin-top:12mm!important}
+  .technicalReport.printTarget .technicalPrintDecision{margin-top:8mm!important}
+
+  /* margem editorial dos blocos internos */
+  .technicalReport.printTarget>.resultSection,
+  .technicalReport.printTarget>.methodology{
+    width:192mm!important;box-sizing:border-box!important;
+    margin-left:9mm!important;margin-right:9mm!important;
+  }
+  .technicalReport.printTarget>.resultSection{margin-top:5mm!important;margin-bottom:4mm!important}
+  .technicalReport.printTarget>.technicalPrintCover + .resultSection{margin-top:9mm!important}
+
+  /* a página executiva deve caber inteira */
+  .technicalReport.printTarget .shareholderBrief{
+    padding:5mm!important;margin-bottom:0!important;
+    break-after:page!important;page-break-after:always!important
+  }
+  .technicalReport.printTarget .shareholderKpis{gap:1.8mm!important}
+  .technicalReport.printTarget .shareholderKpis>div{padding:2.6mm!important}
+  .technicalReport.printTarget .shareholderDecisionGrid{gap:2.2mm!important;margin-top:2.2mm!important}
+  .technicalReport.printTarget .shareholderDecisionGrid article{padding:2.8mm!important}
+  .technicalReport.printTarget .shareholderEvidence{margin-top:2.2mm!important;padding-top:2.2mm!important}
+  .technicalReport.printTarget .shareholderEvidence>div{gap:1.6mm!important}
+  .technicalReport.printTarget .shareholderEvidence>div>div{padding:2.1mm!important}
+  .technicalReport.printTarget .shareholderQuestion{margin-top:2.2mm!important;padding:2.3mm 2.7mm!important}
+
+  /* evita páginas quase vazias no fechamento do relatório */
+  .technicalReport.printTarget .actionsSection{padding:4mm 4.5mm!important;margin-bottom:3mm!important}
+  .technicalReport.printTarget .actionList{gap:1.8mm!important}
+  .technicalReport.printTarget .actionList li{padding:2.2mm 2.4mm 2.2mm 9mm!important;font-size:7.1pt!important;line-height:1.34!important}
+  .technicalReport.printTarget .actionList li:before{left:2.2mm!important;top:2mm!important;width:5.5mm!important;height:5.5mm!important}
+  .technicalReport.printTarget .narrativeSection{padding:4mm 4.5mm!important;margin-bottom:2.5mm!important}
+  .technicalReport.printTarget .narrativeText{gap:1.5mm!important}
+  .technicalReport.printTarget .narrativeText p{padding:2.2mm 2.8mm!important;font-size:7.35pt!important;line-height:1.38!important}
+  .technicalReport.printTarget>.methodology{
+    display:grid!important;grid-template-columns:1fr 1fr!important;gap:2mm!important;
+    margin-top:2.5mm!important;margin-bottom:7mm!important;padding:3mm 3.5mm!important;
+    break-inside:avoid-page!important;page-break-inside:avoid!important
+  }
+  .technicalReport.printTarget .methodCard,
+  .technicalReport.printTarget .sources{padding:3mm!important}
+  .technicalReport.printTarget .methodology h3{font-size:8.8pt!important;margin-bottom:1.4mm!important}
+  .technicalReport.printTarget .methodology p,
+  .technicalReport.printTarget .methodology a{font-size:6.8pt!important;line-height:1.35!important}
+  .technicalReport.printTarget .sources a{margin:1mm 4mm 0 0!important}
+  .technicalReport.printTarget .sourcesNote{margin-top:1.4mm!important}
+
+  /* alerta fiscal: separar visualmente a segunda mensagem */
+  .technicalReport.printTarget .profitSensitivityAlert span{display:block!important;margin-top:1.5mm!important}
+
+  /* rodapé próprio do relatório, substitui o rodapé do navegador */
+  .technicalReport.printTarget .technicalPrintRunningFooter{display:none!important}
+  .technicalReport.printTarget .technicalPrintCover .technicalPrintCoverFooter{margin-bottom:2mm!important}
+}
+.technicalPrintRunningFooter{display:none}
+
+
+@media print{
+ .technicalReport.printTarget .technicalPrintBrand{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:7mm!important}
+ .technicalReport.printTarget .technicalPrintPublisherBrand{display:flex!important;align-items:center!important;gap:2.8mm!important;flex:0 0 auto!important}
+ .technicalReport.printTarget .technicalPrintLogoMark{
+   display:block!important;width:18mm!important;height:14mm!important;overflow:hidden!important;flex:0 0 18mm!important
+ }
+ .technicalReport.printTarget .technicalPrintLogoMark img{
+   display:block!important;width:27mm!important;height:auto!important;max-height:none!important;max-width:none!important;
+   margin:0!important;padding:0!important;border:0!important;object-fit:initial!important;
+   transform:translateX(-4.5mm)!important
+ }
+ .technicalReport.printTarget .technicalPrintPublisherWordmark{display:block!important;line-height:1.05!important}
+ .technicalReport.printTarget .technicalPrintPublisherWordmark b{
+   display:block!important;color:#7f0d0d!important;font-size:9.2pt!important;letter-spacing:.08em!important
+ }
+ .technicalReport.printTarget .technicalPrintPublisherWordmark small{
+   display:block!important;margin-top:1.1mm!important;color:#667585!important;font-size:5.8pt!important;letter-spacing:.08em!important
+ }
+ .technicalReport.printTarget .technicalPrintBookBrand{
+   display:block!important;min-width:0!important;padding-left:6mm!important;border-left:1px solid #dce4ec!important;flex:1 1 auto!important
+ }
+ .technicalReport.printTarget .technicalPrintBookBrand strong{display:block!important;font-size:13pt!important;color:#102640!important}
+ .technicalReport.printTarget .technicalPrintBookBrand span{display:block!important;margin-top:1.5mm!important;font-size:8pt!important;color:#697789!important}
+}
+
+
+/* Entenda o seu diagnóstico */
+.diagnosisExplainLead{margin:0 0 12px;padding:12px 14px;border-left:4px solid #1b5f92;background:#f3f8fc;border-radius:0 10px 10px 0;color:#405268;font-size:10px;line-height:1.5}
+.diagnosisExplainGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.diagnosisExplainGrid article{border:1px solid #dce4ec;border-radius:12px;padding:13px 14px;background:#fff;break-inside:avoid}
+.diagnosisExplainGrid h3{margin:0 0 7px;color:#102640;font-size:11px}
+.diagnosisExplainGrid p{margin:0;color:#46586c;font-size:9.5px;line-height:1.5}
+.explainFormula{margin-top:9px;padding:8px 9px;border-radius:8px;background:#f5f8fb;color:#315a7d;font-size:8.8px;font-weight:800;line-height:1.4}
+.diagnosisExplainCaveat{margin-top:11px;padding:10px 12px;border:1px solid #ead6a1;border-radius:10px;background:#fffaf0;color:#67583b;font-size:9px;line-height:1.48}
+@media(max-width:760px){.diagnosisExplainGrid{grid-template-columns:1fr}}
+@media print{
+ .technicalReport.printTarget .diagnosisExplainSection{padding:4.5mm!important;break-inside:auto!important}
+ .technicalReport.printTarget .diagnosisExplainLead{margin:0 0 2.5mm!important;padding:2.6mm 3mm!important;font-size:7pt!important;line-height:1.38!important}
+ .technicalReport.printTarget .diagnosisExplainGrid{grid-template-columns:1fr 1fr!important;gap:2.2mm!important}
+ .technicalReport.printTarget .diagnosisExplainGrid article{padding:2.8mm 3mm!important;border-radius:2.2mm!important;break-inside:avoid!important}
+ .technicalReport.printTarget .diagnosisExplainGrid h3{font-size:7.8pt!important;margin-bottom:1.4mm!important}
+ .technicalReport.printTarget .diagnosisExplainGrid p{font-size:6.8pt!important;line-height:1.38!important}
+ .technicalReport.printTarget .explainFormula{margin-top:1.6mm!important;padding:1.8mm 2mm!important;font-size:6.3pt!important}
+ .technicalReport.printTarget .diagnosisExplainCaveat{margin-top:2.4mm!important;padding:2.3mm 2.6mm!important;font-size:6.5pt!important;line-height:1.35!important}
+}
+
+
+/* Ponte da variação tributária */
+.taxBridgeHeadline{padding:12px 14px;border-left:4px solid #a97713;background:#fff8e8;border-radius:0 10px 10px 0;color:#5e4e2d;font-size:10px;font-weight:800;line-height:1.45}
+.taxBridgeFlow{display:grid;grid-template-columns:1.15fr auto 1fr 1fr 1fr auto 1.15fr 1fr;gap:8px;align-items:stretch;margin-top:12px}
+.taxBridgeFlow>div{padding:11px 10px;border:1px solid #dce4ec;border-radius:10px;background:#fff}
+.taxBridgeFlow>i{align-self:center;font-style:normal;color:#8a98a8;font-weight:900}
+.taxBridgeFlow span{display:block;font-size:8px;text-transform:uppercase;letter-spacing:.035em;color:#718093;font-weight:900}
+.taxBridgeFlow strong{display:block;margin-top:5px;color:#102640;font-size:12px}
+.taxBridgeFlow .taxBridgeDelta{background:#f2f7fb;border-color:#c8d8e8}
+.taxBridgeDrivers{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.taxBridgeDrivers article{padding:12px 13px;border:1px solid #dce4ec;border-radius:11px;background:#fafcfe}
+.taxBridgeDrivers span{font-size:8px;text-transform:uppercase;letter-spacing:.04em;color:#708092;font-weight:900}
+.taxBridgeDrivers strong{display:block;margin:5px 0;color:#102640;font-size:12px}
+.taxBridgeDrivers p{margin:0;color:#556779;font-size:9px;line-height:1.45}
+.taxBridgeContributionWrap{margin-top:11px;overflow:auto;border:1px solid #dce4ec;border-radius:10px}
+.taxBridgeTable{width:100%;border-collapse:collapse;min-width:700px}
+.taxBridgeTable th,.taxBridgeTable td{padding:9px 10px;border-bottom:1px solid #e5ebf0;text-align:left;font-size:9px}
+.taxBridgeTable th{background:#f3f6f9;color:#6f7e8f;font-size:8px;text-transform:uppercase;letter-spacing:.035em}
+.taxBridgeTable td.up{color:#9b4d00;font-weight:900}.taxBridgeTable td.down{color:#13734f;font-weight:900}.taxBridgeTable td.flat{color:#536579;font-weight:900}
+.taxBridgeTable tfoot th{background:#f8fafc;color:#102640}
+.taxBridgeNote{margin-top:10px;padding:9px 11px;border-left:3px solid #315a7d;background:#f6f9fc;color:#59697a;font-size:9px;line-height:1.45}
+@media(max-width:980px){.taxBridgeFlow{grid-template-columns:1fr 1fr 1fr}.taxBridgeFlow>i{display:none}}
+@media(max-width:700px){.taxBridgeFlow,.taxBridgeDrivers{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.taxBridgeFlow,.taxBridgeDrivers{grid-template-columns:1fr}}
+@media print{
+ .technicalReport.printTarget .taxBridgeSection{padding:4.5mm!important;break-inside:auto!important}
+ .technicalReport.printTarget .taxBridgeHeadline{padding:2.5mm 3mm!important;font-size:6.9pt!important}
+ .technicalReport.printTarget .taxBridgeFlow{grid-template-columns:1.05fr auto .9fr .9fr .95fr auto 1.05fr .9fr!important;gap:1.5mm!important;margin-top:2.5mm!important}
+ .technicalReport.printTarget .taxBridgeFlow>div{padding:2.1mm!important;border-radius:1.8mm!important}
+ .technicalReport.printTarget .taxBridgeFlow span{font-size:5.4pt!important}.technicalReport.printTarget .taxBridgeFlow strong{font-size:7.4pt!important;margin-top:1mm!important}
+ .technicalReport.printTarget .taxBridgeDrivers{gap:2mm!important;margin-top:2mm!important}
+ .technicalReport.printTarget .taxBridgeDrivers article{padding:2.4mm!important;border-radius:2mm!important;break-inside:avoid!important}
+ .technicalReport.printTarget .taxBridgeDrivers span{font-size:5.5pt!important}.technicalReport.printTarget .taxBridgeDrivers strong{font-size:7.8pt!important;margin:1mm 0!important}.technicalReport.printTarget .taxBridgeDrivers p{font-size:6.2pt!important}
+ .technicalReport.printTarget .taxBridgeContributionWrap{margin-top:2.3mm!important;overflow:visible!important;break-inside:avoid!important}
+ .technicalReport.printTarget .taxBridgeTable{min-width:0!important;table-layout:fixed!important}
+ .technicalReport.printTarget .taxBridgeTable th,.technicalReport.printTarget .taxBridgeTable td{padding:1.7mm 1.5mm!important;font-size:6pt!important}
+ .technicalReport.printTarget .taxBridgeTable th{font-size:5.4pt!important}
+ .technicalReport.printTarget .taxBridgeNote{margin-top:2mm!important;padding:2mm 2.4mm!important;font-size:6.2pt!important}
+}

@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Plataforma 360 | Inteligência empresarial e financeira</title>
+  <meta name="description" content="Portal unificado para Empresa 360, Bolsa 360, Reforma 360, valuation, carteira e futuros motores especializados.">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div class="devbar">PLATAFORMA 360 | ECOSSISTEMA DE INTELIGÊNCIA EMPRESARIAL E FINANCEIRA</div>
+
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="Plataforma 360">
+      <img src="./assets/360-logo.svg" alt="Plataforma 360">
+    </a>
+    <nav class="main-nav" aria-label="Módulos">
+      <a href="../empresa-360/">Empresa</a>
+      <a href="../bolsa-360/">Bolsa</a>
+      <a href="../simulador/guiado/">Reforma</a>
+      <a href="#motores">Todos os motores</a>
+    </nav>
+    <div id="p360Account" class="p360-account"></div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">ECOSSISTEMA 360</p>
+        <h1>Um só ambiente. <em>Vários motores de análise.</em></h1>
+        <p class="lead">Pesquise uma empresa ou um ativo e acesse, no mesmo ecossistema, cadastro empresarial, fundamentos, mercado, valuation, Reforma Tributária, carteira e os próximos motores especializados.</p>
+
+        <form id="globalSearch" class="global-search">
+          <label for="searchInput">Busca 360</label>
+          <div class="search-row">
+            <input id="searchInput" autocomplete="off" placeholder="CNPJ, ticker ou nome de companhia listada">
+            <button type="submit">Analisar</button>
+          </div>
+          <p id="searchStatus" class="search-status">Exemplos: 33.000.167/0001-01 · PETR4 · Vale</p>
+          <div id="searchResults" class="search-results hidden"></div>
+        </form>
+
+        <div class="hero-pills">
+          <span>CNPJ e triagem</span>
+          <span>Fundamentos CVM</span>
+          <span>Valor Justo</span>
+          <span>Valor Intrínseco</span>
+          <span>Consenso de mercado</span>
+          <span>Reforma Tributária</span>
+          <span>Carteira simulada</span>
+        </div>
+      </div>
+
+      <aside class="control-panel">
+        <p class="eyebrow light">VISÃO UNIFICADA</p>
+        <h2>Da identificação ao diagnóstico.</h2>
+        <div class="flow">
+          <span>Empresa ou ativo</span><b>01</b>
+          <span>Dados e evidências</span><b>02</b>
+          <span>Motores especializados</span><b>03</b>
+          <span>Dossiê e acompanhamento</span><b>04</b>
+        </div>
+        <p class="control-note">Cada motor preserva sua metodologia. O portal organiza o acesso e permite compartilhar dados sem misturar conceitos diferentes.</p>
+      </aside>
+    </section>
+
+    <section class="snapshot">
+      <article><span>Empresas salvas</span><strong id="companyCount">0</strong><small>Empresa 360 neste navegador</small></article>
+      <article><span>Ativos selecionados</span><strong id="selectionCount">0</strong><small>Bolsa 360 Iniciante</small></article>
+      <article><span>Carteira simulada</span><strong id="portfolioStatus">Não</strong><small>Registro local do navegador</small></article>
+      <article class="dark"><span>Motores ativos</span><strong>5</strong><small>Incluindo funções integradas de Valor e Carteira</small></article>
+    </section>
+
+    <section id="motores" class="section">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">MOTORES 360</p>
+          <h2>Escolha a análise pela decisão que você precisa tomar.</h2>
+        </div>
+        <p>Empresa 360, Bolsa 360 e Reforma 360 já funcionam como motores próprios. Valor 360 e Carteira 360 já possuem funcionalidades operacionais dentro do Bolsa 360 e passam a ser apresentados como módulos do ecossistema.</p>
+      </div>
+
+      <div class="module-grid">
+        <a class="module-card active featured" href="../empresa-360/">
+          <div class="module-top"><span>EMPRESA</span><b>ATIVO</b></div>
+          <h3>Empresa 360</h3>
+          <p>CNPJ, carteira empresarial, triagem, priorização e encaminhamento para motores especializados.</p>
+          <div class="module-tags"><span>CNPJ</span><span>Carteira</span><span>Dossiê</span></div>
+          <strong class="module-link">Abrir Empresa 360 →</strong>
+        </a>
+
+        <a class="module-card active" href="../bolsa-360/">
+          <div class="module-top"><span>MERCADO</span><b>ATIVO</b></div>
+          <h3>Bolsa 360</h3>
+          <p>Fundamentos, rankings, Tendência 360, Valor Justo, Valor Intrínseco, histórico e consenso externo de analistas.</p>
+          <div class="module-tags"><span>CVM + TTM</span><span>Tendência</span><span>Valuation</span><span>Analistas</span></div>
+          <strong class="module-link">Abrir Bolsa 360 →</strong>
+        </a>
+
+        <a class="module-card active" href="../simulador/guiado/">
+          <div class="module-top"><span>TRIBUTÁRIO</span><b>ATIVO</b></div>
+          <h3>Reforma 360</h3>
+          <p>Simulação dos impactos de IBS/CBS sobre preço, margem, créditos, split payment e caixa.</p>
+          <div class="module-tags"><span>IBS/CBS</span><span>Caixa</span><span>Margem</span></div>
+          <strong class="module-link">Abrir Reforma 360 →</strong>
+        </a>
+
+        <a class="module-card active" href="../bolsa-360/">
+          <div class="module-top"><span>VALUATION</span><b>INTEGRADO</b></div>
+          <h3>Valor 360</h3>
+          <p>Camada de avaliação econômica. Hoje inclui múltiplos, Valor Justo, DCF, lucro residual, DDM e cenários dentro do Bolsa 360.</p>
+          <div class="module-tags"><span>Múltiplos</span><span>DCF</span><span>Cenários</span></div>
+          <strong class="module-link">Usar valuation no Bolsa 360 →</strong>
+        </a>
+
+        <a class="module-card active" href="../bolsa-360/iniciante/">
+          <div class="module-top"><span>PORTFÓLIO</span><b>INTEGRADO</b></div>
+          <h3>Carteira 360</h3>
+          <p>Seleção de ativos, capital fictício, pesos, quantidades e carteira simulada. Evoluirá para acompanhamento temporal e benchmarks.</p>
+          <div class="module-tags"><span>Pesos</span><span>Simulação</span><span>Aportes</span></div>
+          <strong class="module-link">Abrir carteira simulada →</strong>
+        </a>
+
+        <article class="module-card future">
+          <div class="module-top"><span>CRÉDITO</span><b>EM DESENVOLVIMENTO</b></div>
+          <h3>Crédito 360</h3>
+          <p>Capacidade de pagamento, endividamento, cobertura do serviço da dívida, risco e parecer estruturado.</p>
+          <div class="module-tags"><span>DSCR</span><span>Rating</span><span>Risco</span></div>
+          <strong class="module-link muted-link">Próxima integração</strong>
+        </article>
+
+        <article class="module-card future">
+          <div class="module-top"><span>DOCUMENTOS</span><b>PLANEJADO</b></div>
+          <h3>Documentos 360</h3>
+          <p>Entrada única para balanços, DRE, balancetes e relatórios, com reaproveitamento dos dados pelos demais motores.</p>
+          <div class="module-tags"><span>BP</span><span>DRE</span><span>Balancete</span></div>
+          <strong class="module-link muted-link">Camada compartilhada futura</strong>
+        </article>
+      </div>
+    </section>
+
+    <section class="section architecture">
+      <div>
+        <p class="eyebrow">ARQUITETURA DE PRODUTO</p>
+        <h2>Uma camada de dados. Motores independentes.</h2>
+        <p>O portal não transforma tudo em uma única nota. Cadastro, demonstrações, mercado e documentos formam a base comum; cada motor aplica metodologia própria e devolve sua conclusão ao ambiente 360.</p>
+      </div>
+      <div class="architecture-flow">
+        <div><span>ENTRADAS</span><b>CNPJ · Ticker · Documentos</b></div>
+        <i>→</i>
+        <div><span>DADOS</span><b>CVM · Mercado · Cadastro</b></div>
+        <i>→</i>
+        <div class="core"><span>MOTORES</span><b>Empresa · Bolsa · Reforma · Valor · Crédito</b></div>
+        <i>→</i>
+        <div><span>SAÍDAS</span><b>Dossiê · Carteira · Relatório</b></div>
+      </div>
+    </section>
+
+    <section class="section next">
+      <div class="next-copy">
+        <p class="eyebrow">PRÓXIMA CAMADA</p>
+        <h2>Do portal para um verdadeiro workspace 360.</h2>
+        <p>A evolução natural é compartilhar uma entidade única entre os módulos: uma empresa pesquisada uma vez passa a carregar CNPJ, ticker, demonstrações, resultados de valuation, simulações e histórico no mesmo dossiê.</p>
+      </div>
+      <div class="next-list">
+        <div><b>01</b><span>Identidade única de empresa/emissor</span></div>
+        <div><b>02</b><span>Dossiê 360 compartilhado</span></div>
+        <div><b>03</b><span>Histórico de análises e premissas</span></div>
+        <div><b>04</b><span>Camada PRO e permissões por módulo</span></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span>Plataforma 360 | Homo Fictor</span>
+    <span>Os motores mantêm metodologias próprias e compartilham dados dentro do ecossistema 360.</span>
+  </footer>
+
+  <script src="./auth.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
