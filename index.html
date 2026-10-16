@@ -353,14 +353,49 @@ button,input{font:inherit}
   .footer-grid>div:first-child{grid-column:1/-1}
 }
 @media(max-width:860px){
-  .menu-btn{display:block}
+  .site-header{isolation:isolate}
+  .menu-btn{
+    display:block;position:relative;z-index:3;flex:0 0 42px;
+    border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04)
+  }
   .main-nav{
-    display:none;position:fixed;left:0;right:0;top:72px;bottom:0;background:#07182b;
-    padding:24px;flex-direction:column;align-items:stretch;gap:0
+    display:none;
+    position:absolute;
+    z-index:2;
+    left:0;right:0;top:100%;
+    height:calc(100dvh - 72px);
+    max-height:calc(100vh - 72px);
+    padding:18px 20px 28px;
+    flex-direction:column;
+    align-items:stretch;
+    gap:0;
+    overflow-y:auto;
+    overscroll-behavior:contain;
+    background:linear-gradient(180deg,#07182b 0%,#0a2038 100%);
+    border-top:1px solid rgba(255,255,255,.08);
+    box-shadow:0 22px 48px rgba(0,0,0,.38)
   }
   body.nav-open .main-nav{display:flex}
-  .main-nav a{padding:14px 4px;border-bottom:1px solid rgba(255,255,255,.08)}
-  .main-nav .cta{text-align:center;margin-top:14px;border-bottom:0}
+  body.nav-open .site-header{background:#07182b}
+  body.nav-open .menu-btn:before{transform:translateY(3.5px) rotate(45deg)}
+  body.nav-open .menu-btn:after{transform:translateY(-3.5px) rotate(-45deg)}
+  .menu-btn:before,.menu-btn:after{transition:transform .18s ease}
+  .main-nav a{
+    display:flex;align-items:center;
+    min-height:52px;
+    padding:13px 8px;
+    border-bottom:1px solid rgba(255,255,255,.10);
+    font-size:16px;
+    color:#f1f5f9
+  }
+  .main-nav .platform360-link{
+    margin-top:8px;padding:13px 14px;border:1px solid rgba(230,171,69,.35);
+    background:rgba(230,171,69,.08)
+  }
+  .main-nav .cta{
+    justify-content:center;text-align:center;margin-top:16px;
+    min-height:54px;padding:14px 18px;border-bottom:0;font-size:15px
+  }
   .signal-grid{grid-template-columns:1fr 1fr}
   .signal-main{grid-column:1/-1;border-right:0;border-bottom:1px solid #eadab8}
   .learning-grid,.press-grid{grid-template-columns:1fr 1fr}
@@ -370,7 +405,7 @@ button,input{font:inherit}
 @media(max-width:620px){
   .wrap{width:min(100% - 28px,1180px)}
   .header-row{min-height:64px}
-  .main-nav{top:64px}
+  .main-nav{height:calc(100dvh - 64px);max-height:calc(100vh - 64px)}
   .brand-copy b{font-size:12px}
   .hero-grid{padding:52px 0 46px;gap:28px}
   .hero h1{font-size:clamp(3rem,15vw,4.4rem)}
