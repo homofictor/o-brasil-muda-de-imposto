@@ -272,10 +272,16 @@
   box.innerHTML=`<div class="guidedNeedsHead"><div><span>O SIMULADOR PRECISA DE VOCÊ</span><strong>${needed.length?`${needed.length} ${needed.length===1?'item importante':'itens importantes'} para completar a análise`:'Nenhum item obrigatório pendente'}</strong></div>${optional.length?`<small>+${optional.length} opciona${optional.length>1?'is':'l'} para aumentar a precisão</small>`:''}</div><div class="guidedNeedsList">${needed.slice(0,5).map(x=>`<button type="button" data-focus-field="${x.field}" data-focus-step="${x.step}"><span>${x.level==='required'?'Necessário':'Melhora a análise'}</span><b>${x.title}</b><small>${x.why}</small><i>Preencher →</i></button>`).join('')}</div>`;
  }
 
+ function refreshDeadline(){
+  const banner=byId('deadlineBanner');if(!banner)return;
+  const now=new Date(),end=new Date('2026-10-30T23:59:59-03:00');
+  banner.hidden=now>end;
+ }
  function refreshAutomation(){
   const card=byId('companyCard'),box=byId('guidedAutomation'),context=byId('erpCompanyContext');
   if(box)box.hidden=true;
-  if(!card||card.hidden){if(context)context.textContent='Novo diagnóstico';if(byId('deadlineBanner'))byId('deadlineBanner').hidden=true;return}
+  refreshDeadline();
+  if(!card||card.hidden){if(context)context.textContent='Novo diagnóstico';return}
   if(context)context.textContent=byId('companyName')?.textContent||value('activity')||'Empresa identificada';
  }
  function refreshFinance(){
