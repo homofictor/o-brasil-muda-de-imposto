@@ -68,9 +68,12 @@ function renderNarrative(r,rec,structural,srec){
 function deadline(r){
  const banner=$('deadlineBanner');if(!banner)return;
  if(r&&!r.simpleEligible){banner.hidden=true;return}
- const now=new Date();const end=new Date('2026-09-30T23:59:59-03:00');const start=new Date('2026-09-01T00:00:00-03:00');
- if(now>=start&&now<=end){const days=Math.ceil((end-now)/86400000);banner.hidden=false;banner.querySelector('div').innerHTML=`<strong>Decisão para 2027 em andamento.</strong> Restam aproximadamente ${days} dia${days===1?'':'s'} para o prazo de 30/09/2026 para opção pelo regime regular de IBS/CBS no primeiro semestre de 2027.`}
- else banner.hidden=true;
+ const now=new Date(),start=new Date('2026-10-16T00:00:00-03:00'),end=new Date('2026-10-30T23:59:59-03:00');
+ if(now>=start&&now<=end){
+  const days=Math.max(0,Math.ceil((end-now)/86400000));
+  banner.hidden=false;
+  banner.querySelector('div').innerHTML=`<strong>O prazo de ingresso ou retorno ao Simples encerrou em 15/10.</strong> Restam aproximadamente ${days} dia${days===1?'':'s'} até 30/10 para regularizar pendências de pedidos já apresentados e, quando aplicável, optar pelo regime regular de IBS/CBS.`;
+ } else banner.hidden=true;
 }
 function calculate(){
  if(companyData&&!sectorSuggestion){historicalSimpleReported=companyData.opcao_pelo_simples===true;sectorSuggestion=sectorProfile(companyData.cnae_fiscal,companyData.cnae_fiscal_descricao);applySectorProfile(sectorSuggestion);}
