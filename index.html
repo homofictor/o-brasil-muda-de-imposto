@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#07182b">
-<title>O Brasil muda de imposto | Livro, simulador e atualizações da Reforma Tributária</title>
-<meta name="description" content="Site oficial de O Brasil muda de imposto, de Wagner Rubim Rangel. Livro, simulador empresarial gratuito, guias e atualizações permanentes sobre IBS, CBS, split payment, Simples Nacional, preços, margens e capital de giro.">
+<title>O Brasil muda de imposto | Reforma Tributária: análise, atualizações e simulador</title>
+<meta name="description" content="Plataforma técnica de acompanhamento da Reforma Tributária do Consumo, com atualizações normativas, notícias, biblioteca técnica e simulador empresarial sobre IBS, CBS, Imposto Seletivo, Simples Nacional e transição.">
 <meta name="robots" content="index,follow,max-image-preview:large">
 <meta name="author" content="Wagner Rubim Rangel">
 <link rel="canonical" href="https://www.obrasilmudadeimposto.com.br/">
@@ -13,7 +13,7 @@
 <meta property="og:type" content="book">
 <meta property="og:locale" content="pt_BR">
 <meta property="og:title" content="O Brasil muda de imposto">
-<meta property="og:description" content="Livro, simulador gratuito e acompanhamento permanente da Reforma Tributária.">
+<meta property="og:description" content="Análise, atualizações normativas, notícias e simulador empresarial sobre a Reforma Tributária do Consumo.">
 <meta property="og:url" content="https://www.obrasilmudadeimposto.com.br/">
 <meta property="og:image" content="https://raw.githubusercontent.com/homofictor/o-brasil-muda-de-imposto/simulador-v3-2/assets/book-mockup.webp">
 <meta name="twitter:card" content="summary_large_image">
@@ -448,6 +448,137 @@ button,input{font:inherit}
 }
 @media print{.feedback-fab,.site-header,.rt-modal{display:none!important}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn,.value-card,.learning-card,.press-card{transition:none}}
+
+/* Retrofit técnico-profissional 2026-10-19 */
+:root{
+  --navy:#0b1f33;
+  --navy-2:#102a44;
+  --navy-3:#193b5a;
+  --ink:#162536;
+  --muted:#657386;
+  --paper:#f4f6f8;
+  --paper-2:#eef1f4;
+  --line:#d6dde5;
+  --gold:#c99032;
+  --gold-2:#d8b165;
+  --blue:#245b86;
+  --shadow:0 8px 24px rgba(11,31,51,.06);
+  --shadow-soft:0 6px 18px rgba(11,31,51,.05);
+  --radius:10px;
+}
+body{background:#f4f6f8;line-height:1.55}
+.wrap{width:min(1240px,calc(100% - 48px))}
+.display{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;letter-spacing:-.025em}
+.site-header{background:#0b1f33;backdrop-filter:none}
+.header-row{min-height:64px}
+.brand-mark{border-radius:8px;background:#c99032;box-shadow:none}
+.brand-copy b{font-size:13px}
+.main-nav{gap:18px}
+.main-nav a{font-size:12px;font-weight:650}
+.main-nav .platform360-link{border-radius:6px;padding:8px 10px;background:transparent}
+.main-nav .cta{border-radius:6px;background:#f2f4f6;color:#162536;box-shadow:none}
+.hero{
+  background:#f7f8fa;
+  color:var(--ink);
+  border-bottom:1px solid var(--line);
+}
+.hero:after{display:none}
+.hero-grid{grid-template-columns:minmax(0,1.45fr) minmax(320px,.7fr);gap:44px;padding:54px 0 48px;align-items:start}
+.kicker{color:#52657a;font-size:10px;letter-spacing:.1em}
+.kicker:before{background:#8c9aaa;width:20px}
+.hero h1{margin:12px 0 18px;font-size:clamp(2.3rem,4.4vw,4.1rem);line-height:1.01;max-width:900px;color:#102438}
+.hero h1 span{color:inherit}
+.hero .lead{font-size:16px;color:#536477;max-width:820px;line-height:1.65}
+.hero-actions{margin-top:24px;gap:8px}
+.btn{min-height:42px;padding:10px 14px;border-radius:6px;font-size:12px;font-weight:750;box-shadow:none!important}
+.btn:hover{transform:none}
+.btn.primary{background:#173f63;color:#fff;border-color:#173f63}
+.btn.secondary{background:#fff;color:#24394e;border-color:#cbd4de}
+.btn.secondary.dark-alt{background:transparent;color:#dbe5ee;border-color:rgba(255,255,255,.25)}
+.hero-meta{margin-top:18px;color:#6d7b8b;font-size:10px}
+.update-chip{margin-top:13px;border-radius:6px;border-color:#d0d9e2;background:#fff;color:#536477;padding:7px 9px}
+.update-chip:before{box-shadow:none;width:6px;height:6px}
+.update-chip strong{color:#173f63}
+.status-panel{background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;box-shadow:none}
+.status-panel-head{padding:15px 17px;border-bottom:1px solid var(--line);background:#f0f3f6}
+.status-panel-head span{display:block;font-size:9px;color:#68788a;text-transform:uppercase;letter-spacing:.1em;font-weight:800}
+.status-panel-head strong{display:block;margin-top:3px;font-size:14px;color:#19324a}
+.status-panel dl{margin:0}
+.status-panel dl div{display:grid;grid-template-columns:1fr auto;gap:16px;padding:12px 17px;border-bottom:1px solid #e5e9ee}
+.status-panel dt{font-size:11px;color:#66758a}
+.status-panel dd{margin:0;font-size:11px;font-weight:750;color:#1b3248;text-align:right}
+.status-panel>a{display:block;padding:13px 17px;text-decoration:none;color:#245b86;font-size:11px;font-weight:800;background:#fbfcfd}
+.signal{background:#fff}
+.signal-grid{grid-template-columns:repeat(4,1fr)}
+.signal-main,.signal-item{padding:16px 18px;border-right:1px solid var(--line);background:#fff}
+.signal-main b,.signal-item b{font-size:11px;color:#35495e;text-transform:uppercase;letter-spacing:.05em}
+.signal-main span,.signal-item span{font-size:11px;margin-top:4px}
+.section{padding:58px 0}
+.section.white{background:#fff}
+.section.soft{background:#f3f5f7}
+.section.dark{background:#10283f}
+.section-head{max-width:880px;margin-bottom:24px}
+.section-head .eyebrow{font-size:9px;letter-spacing:.11em;color:#56728d}
+.section-head h2{font-size:clamp(1.85rem,3.5vw,2.9rem);line-height:1.08;margin:7px 0 10px}
+.section-head p{font-size:14px;line-height:1.6}
+.value-grid{gap:10px}
+.value-card{border-radius:8px;padding:18px;min-height:175px;transition:none}
+.value-card:hover{transform:none;box-shadow:none;border-color:var(--line)}
+.value-card:after{display:none}
+.value-no{font-size:9px;color:#667f98}
+.value-card h3{font-size:17px;margin:18px 0 7px}
+.value-card p{font-size:12px}
+.sim-grid{gap:38px}
+.sim-copy h2{font-size:clamp(2rem,3.8vw,3.2rem);line-height:1.06;margin:7px 0 14px}
+.sim-copy p{font-size:14px;color:#c2ced8}
+.sim-points{gap:8px;margin-top:18px}
+.sim-point{grid-template-columns:28px 1fr;gap:10px;padding:8px 0;border-top:1px solid rgba(255,255,255,.09)}
+.sim-icon{width:28px;height:28px;border-radius:5px;font-size:10px;background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.15);color:#d7e0e8}
+.sim-point b{font-size:12px}.sim-point span{font-size:11px}
+.dashboard{border-radius:9px;padding:14px;box-shadow:none;border:1px solid #cdd6df}
+.dash-status{border-radius:5px}
+.metric,.chart{border-radius:7px}
+.chart-bars{height:125px}
+.updates-top,.news-home-top{align-items:center;margin-bottom:20px}
+.update-date{border-radius:5px;background:#fff;color:#476178;border-color:#cad4dd;font-size:10px}
+.update-date:before{background:#5d839f}
+.update-grid,.news-home-grid,.learning-grid,.press-grid{gap:10px}
+.update-card,.news-home-card,.learning-card,.press-card{border-radius:8px;box-shadow:none;transition:none}
+.update-card:hover,.news-home-card:hover,.learning-card:hover,.press-card:hover{transform:none;box-shadow:none}
+.update-card{min-height:215px;padding:18px}
+.update-card.featured{background:#fff;color:var(--ink);border-color:#9fb2c3;border-left:4px solid #245b86}
+.update-card.featured .tag,.update-card.featured a{color:#245b86}
+.update-card.featured p{color:var(--muted)}
+.update-card h3,.news-home-card h3,.learning-card h3{font-size:18px}
+.news-home-card{min-height:230px;padding:18px}
+.news-home-pill{border-radius:4px}
+.news-home-more{font-size:11px}
+.learning-card{min-height:215px;padding:18px}
+.press-card{min-height:170px;padding:18px}
+.author-grid{gap:34px;align-items:start}
+.author-photo{border-radius:9px;padding:6px;box-shadow:none}
+.author-photo img{border-radius:6px}
+.author-copy h2{font-size:clamp(1.9rem,3.4vw,2.8rem);line-height:1.08}
+.credential{border-radius:7px;padding:11px}
+.feedback-panel,.buy-panel{border-radius:9px;padding:26px;box-shadow:none}
+.feedback-panel{background:#fff}
+.feedback-panel h2,.buy-panel h2{font-size:clamp(1.8rem,3vw,2.5rem);line-height:1.08}
+.buy-panel{background:#10283f}
+.feedback-fab{display:none!important}
+.rt-dialog{border-radius:10px}
+.rt-close{border-radius:6px}
+@media(max-width:1040px){.hero-grid{grid-template-columns:1fr}.status-panel{max-width:720px}.signal-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:620px){
+  .wrap{width:min(100% - 28px,1240px)}
+  .hero-grid{padding:38px 0 34px}
+  .hero h1{font-size:2.25rem}
+  .hero-actions .btn{width:100%}
+  .signal-grid{grid-template-columns:1fr}
+  .signal-main,.signal-item{border-right:0;border-bottom:1px solid var(--line)}
+  .section{padding:44px 0}
+  .section-head h2{font-size:2rem}
+}
+
 </style>
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"Book","name":"O Brasil muda de imposto","author":{"@type":"Person","name":"Wagner Rubim Rangel"},"publisher":{"@type":"Organization","name":"Homo Fictor Edições Independentes"},"datePublished":"2026","inLanguage":"pt-BR","isbn":"9786502327494","numberOfPages":191,"description":"A Reforma Tributária explicada para quem precisa entender, decidir e se preparar.","url":"https://www.obrasilmudadeimposto.com.br/","image":"https://raw.githubusercontent.com/homofictor/o-brasil-muda-de-imposto/simulador-v3-2/assets/book-mockup.webp"}
@@ -464,61 +595,66 @@ button,input{font:inherit}
     </a>
     <button class="menu-btn" type="button" aria-label="Abrir menu" aria-expanded="false"></button>
     <nav class="main-nav" aria-label="Navegação principal">
-      <a href="#livro">O livro</a>
+      <a href="#visao-geral">Visão geral</a>
       <a href="#simulador">Simulador</a>
       <a href="#atualizacoes">Atualizações</a>
       <a href="#noticias">Notícias</a>
-      <a href="#conteudo-gratuito">Conteúdo</a>
-      <a href="#autor">Autor</a>\n      <a class="platform360-link" href="/360/">Plataforma 360</a>
+      <a href="#conteudo-gratuito">Biblioteca</a>
+      <a href="#autor">Autor</a>
+      <a class="platform360-link" href="/360/">Plataforma 360</a>
       <a href="/feedback.html?origem=site">Feedback</a>
-      <a class="cta" href="/simulador/">Usar simulador grátis</a>
+      <a class="cta" href="/simulador/">Abrir simulador</a>
     </nav>
   </div>
 </header>
 
 <main id="conteudo">
-<section class="hero" id="livro">
+<section class="hero" id="visao-geral">
   <div class="wrap hero-grid">
-    <div>
-      <div class="kicker">Livro + site + ferramenta empresarial</div>
-      <h1 class="display">A reforma muda o imposto. <span>Você precisa mudar a decisão.</span></h1>
-      <p class="lead">Entenda IBS, CBS, split payment, créditos e transição sem perder de vista o que realmente importa para a empresa: preço, margem, contratos, caixa e competitividade.</p>
+    <div class="hero-copy">
+      <div class="kicker">Plataforma de acompanhamento e análise</div>
+      <h1 class="display">Reforma Tributária do Consumo: análise, atualização e simulação empresarial.</h1>
+      <p class="lead">Ambiente técnico para acompanhar IBS, CBS, Imposto Seletivo, Simples Nacional, split payment e a transição até 2033, com foco nos efeitos sobre carga tributária, créditos, preços, margens, contratos, caixa e capital de giro.</p>
       <div class="hero-actions">
-        <a class="btn gold" href="/simulador/">Experimentar o simulador gratuito</a>
-        <a class="btn light" href="https://www.amazon.com.br/dp/B0HGQPMV6Y" target="_blank" rel="noopener">Conhecer o livro na Amazon</a>
-        <a class="btn ghost" href="#atualizacoes">Ver o que mudou agora</a>
+        <a class="btn primary" href="/simulador/">Abrir simulador empresarial</a>
+        <a class="btn secondary" href="/atualizacoes-reforma.html">Atualizações normativas</a>
+        <a class="btn secondary" href="/noticias-reforma.html">Radar de notícias</a>
       </div>
       <div class="hero-meta">
-        <span>1ª edição · 2026</span>
-        <span>191 páginas</span>
-        <span>ISBN 978-65-02-32749-4</span>
+        <span>Escopo: IBS, CBS, IS e Simples Nacional</span>
+        <span>Horizonte de transição: 2026 a 2033</span>
       </div>
-      <a class="update-chip" href="/atualizacoes-reforma.html"><span>Livro publicado em 2026</span><strong>Conteúdo digital atualizado em 16/10/2026</strong></a>
+      <a class="update-chip" href="/atualizacoes-reforma.html"><span>Status editorial</span><strong>Conteúdo digital revisado em 16/10/2026</strong></a>
     </div>
 
-    <div class="hero-visual" aria-label="Apresentação do livro">
-      <div class="book-stage">
-        <img src="/assets/book-mockup.webp?v=4" onerror="this.onerror=null;this.src='https://raw.githubusercontent.com/homofictor/o-brasil-muda-de-imposto/simulador-v3-2/assets/book-mockup.webp'" alt="Livro O Brasil muda de imposto" width="1600" height="1067" fetchpriority="high" decoding="async">
-      </div>
-    </div>
+    <aside class="status-panel" aria-label="Situação do acompanhamento da reforma">
+      <div class="status-panel-head"><span>Situação de acompanhamento</span><strong>Reforma Tributária do Consumo</strong></div>
+      <dl>
+        <div><dt>Última revisão editorial</dt><dd>16/10/2026</dd></div>
+        <div><dt>Próximo marco operacional</dt><dd>30/10/2026</dd></div>
+        <div><dt>Horizonte monitorado</dt><dd>2026 a 2033</dd></div>
+        <div><dt>Critério de atualização</dt><dd>Fontes oficiais e atos confirmados</dd></div>
+      </dl>
+      <a href="/atualizacoes-reforma.html">Consultar cronograma, mudanças e fontes oficiais →</a>
+    </aside>
   </div>
 </section>
 
 <div class="signal">
   <div class="wrap signal-grid">
-    <div class="signal-main"><b>A Reforma Tributária não é apenas uma troca de impostos.</b><span>Ela altera a lógica econômica de decisões que empresas já tomam todos os dias.</span></div>
-    <div class="signal-item"><b>IBS + CBS</b><span>Crédito, custo líquido e cadeia de fornecedores.</span></div>
-    <div class="signal-item"><b>Split payment</b><span>Liquidez, recebimento e capital de giro.</span></div>
-    <div class="signal-item"><b>2026 → 2033</b><span>Uma transição longa que exige planejamento contínuo.</span></div>
+    <div class="signal-main"><b>Escopo analítico</b><span>Tributação sobre consumo e efeitos empresariais.</span></div>
+    <div class="signal-item"><b>Tributos</b><span>IBS, CBS e Imposto Seletivo.</span></div>
+    <div class="signal-item"><b>Implementação</b><span>Simples, documentos fiscais e split payment.</span></div>
+    <div class="signal-item"><b>Transição</b><span>Acompanhamento dos marcos de 2026 a 2033.</span></div>
   </div>
 </div>
 
 <section class="section white">
   <div class="wrap">
     <div class="section-head">
-      <div class="eyebrow">O que realmente muda</div>
-      <h2 class="display">A reforma chega ao negócio antes de chegar ao balanço.</h2>
-      <p>O impacto não fica restrito à apuração tributária. Ele atravessa decisões comerciais, financeiras e operacionais.</p>
+      <div class="eyebrow">Eixos de análise empresarial</div>
+      <h2 class="display">Dimensões econômicas e operacionais afetadas pela reforma.</h2>
+      <p>A análise considera os efeitos tributários em conjunto com repercussões comerciais, financeiras, contratuais e operacionais.</p>
     </div>
     <div class="value-grid">
       <article class="value-card"><div class="value-no">01 · PREÇO</div><h3>Preço e margem</h3><p>Crédito, fornecedores e perfil dos clientes passam a influenciar o custo líquido e a capacidade de repasse.</p></article>
@@ -532,17 +668,17 @@ button,input{font:inherit}
 <section class="section dark" id="simulador">
   <div class="wrap sim-grid">
     <div class="sim-copy">
-      <div class="kicker">Ferramenta empresarial gratuita</div>
-      <h2 class="display">Transforme a reforma em números que façam sentido.</h2>
-      <p>Informe o CNPJ e complemente os dados manualmente ou com demonstrações contábeis. O simulador organiza as informações e cria uma leitura executiva dos possíveis efeitos da reforma.</p>
+      <div class="kicker">Módulo de simulação empresarial</div>
+      <h2 class="display">Comparação de cenários tributários e financeiros.</h2>
+      <p>O simulador utiliza CNPJ, CNAE, informações operacionais e dados contábeis para estruturar cenários comparativos. O objetivo é estimar efeitos sobre carga tributária, créditos, preço, margem e necessidade de capital de giro.</p>
       <div class="sim-points">
-        <div class="sim-point"><div class="sim-icon">01</div><div><b>Carga tributária estimada</b><span>Compare cenários sem olhar apenas para a alíquota nominal.</span></div></div>
-        <div class="sim-point"><div class="sim-icon">02</div><div><b>Créditos e competitividade</b><span>Veja como o crédito pode alterar custo líquido e relação B2B.</span></div></div>
-        <div class="sim-point"><div class="sim-icon">03</div><div><b>Preço, margem e caixa</b><span>Separe efeito tributário de efeito financeiro e necessidade de capital de giro.</span></div></div>
+        <div class="sim-point"><div class="sim-icon">01</div><div><b>Carga tributária estimada</b><span>Compara cenários considerando base, regime e carga efetiva estimada.</span></div></div>
+        <div class="sim-point"><div class="sim-icon">02</div><div><b>Créditos e competitividade</b><span>Avalia o efeito potencial dos créditos e da composição B2B ou B2C.</span></div></div>
+        <div class="sim-point"><div class="sim-icon">03</div><div><b>Preço, margem e caixa</b><span>Separa impacto tributário, efeito comercial e necessidade financeira.</span></div></div>
       </div>
       <div class="hero-actions">
-        <a class="btn gold" href="/simulador/">Abrir simulador</a>
-        <a class="btn ghost" href="/simulador/v3/manual.html">Ver manual</a>
+        <a class="btn primary" href="/simulador/">Abrir simulador</a>
+        <a class="btn secondary dark-alt" href="/simulador/v3/manual.html">Manual e metodologia</a>
       </div>
       <p style="font-size:10px;color:#8ea2b7;margin-top:14px">Ferramenta orientativa. A decisão final depende dos dados reais da empresa e das regras vigentes.</p>
     </div>
@@ -571,18 +707,18 @@ button,input{font:inherit}
   <div class="wrap">
     <div class="updates-top">
       <div class="section-head" style="margin:0">
-        <div class="eyebrow">Acompanhamento permanente</div>
-        <h2 class="display">O que mudou agora</h2>
-        <p>O livro permanece como base. O site acompanha as mudanças posteriores à publicação.</p>
+        <div class="eyebrow">Atualizações normativas e operacionais</div>
+        <h2 class="display">Situação atual da implementação.</h2>
+        <p>Registro das alterações confirmadas em regras, prazos, obrigações e cronogramas com referência às fontes oficiais.</p>
       </div>
       <span class="update-date">Revisado em 16/10/2026</span>
     </div>
     <div class="update-grid">
       <article class="update-card featured">
-        <div class="tag">Panorama atual</div>
-        <h3>A Reforma Tributária foi adiada?</h3>
-        <p>Não houve adiamento geral. O cronograma segue, mas houve flexibilizações operacionais, prorrogações e pontos que ainda dependem de definição.</p>
-        <a href="/atualizacoes-reforma.html">Ver atualização completa e fontes oficiais →</a>
+        <div class="tag">Cronograma geral</div>
+        <h3>Situação do cronograma de implementação</h3>
+        <p>Não houve adiamento geral da reforma. Permanecem vigentes o cronograma de transição e as etapas de implantação, com prorrogações e ajustes operacionais específicos.</p>
+        <a href="/atualizacoes-reforma.html">Consultar atualização e fontes oficiais →</a>
       </article>
       <article class="update-card">
         <div class="tag">Simples Nacional 2027</div>
@@ -605,8 +741,8 @@ button,input{font:inherit}
     <div class="news-home-top">
       <div class="section-head" style="margin:0">
         <div class="eyebrow">Radar da Reforma</div>
-        <h2 class="display">Notícias para acompanhar a transição.</h2>
-        <p>Fontes oficiais e imprensa selecionada, com foco em mudanças que afetam empresas, profissionais e gestores.</p>
+        <h2 class="display">Monitoramento de notícias e implementação.</h2>
+        <p>Seleção de informações sobre regulamentação, implementação, capacitação institucional e impactos setoriais, com distinção entre notícia e norma vigente.</p>
       </div>
       <a class="news-home-more" href="/noticias-reforma.html">Ver todas as notícias →</a>
     </div>
@@ -618,17 +754,17 @@ button,input{font:inherit}
 <section class="section white" id="conteudo-gratuito">
   <div class="wrap">
     <div class="section-head">
-      <div class="eyebrow">Conteúdo gratuito</div>
-      <h2 class="display">Aprenda por decisão, não por jargão.</h2>
-      <p>Escolha o assunto que mais afeta seu negócio e vá direto ao ponto.</p>
+      <div class="eyebrow">Biblioteca técnica</div>
+      <h2 class="display">Guias de referência por tema.</h2>
+      <p>Conteúdo organizado para consulta sobre fundamentos, transição, crédito, capital de giro e enquadramento tributário.</p>
     </div>
     <div class="learning-grid">
       <a class="learning-card" href="/reforma-tributaria-2026.html"><div class="label">Comece aqui · 8 min</div><h3>Reforma Tributária em 2026</h3><p>O que muda primeiro e como organizar documentos fiscais, sistemas, contratos e cadastros.</p><span class="read">Abrir guia →</span></a>
-      <a class="learning-card" href="/ibs-cbs.html"><div class="label">Fundamentos · 10 min</div><h3>IBS e CBS sem tributês</h3><p>Débito, crédito, custo líquido e a nova importância econômica dos fornecedores.</p><span class="read">Abrir guia →</span></a>
+      <a class="learning-card" href="/ibs-cbs.html"><div class="label">Fundamentos · 10 min</div><h3>IBS e CBS: fundamentos e mecanismo de crédito</h3><p>Débito, crédito, custo líquido e a nova importância econômica dos fornecedores.</p><span class="read">Abrir guia →</span></a>
       <a class="learning-card" href="/split-payment-capital-de-giro.html"><div class="label">Caixa · 9 min</div><h3>Split payment e capital de giro</h3><p>Veja como a segregação do tributo pode alterar o dinheiro disponível na operação.</p><span class="read">Abrir guia →</span></a>
       <a class="learning-card" href="/simples-nacional-reforma-tributaria.html"><div class="label">Decisão · 9 min</div><h3>Simples Nacional e competitividade</h3><p>Compare carga própria, crédito ao cliente e perfil B2B ou B2C antes de decidir.</p><span class="read">Abrir guia →</span></a>
       <a class="learning-card" href="/transicao-reforma-tributaria-2033.html"><div class="label">Planejamento · 7 min</div><h3>Transição de 2026 a 2033</h3><p>Transforme cada etapa da reforma em tarefas de sistemas, preços, contratos e caixa.</p><span class="read">Abrir guia →</span></a>
-      <a class="learning-card" href="/simulador/"><div class="label">Aplicação · Ferramenta</div><h3>Leve a leitura para os números</h3><p>Use o simulador empresarial para comparar cenários com os dados da sua empresa.</p><span class="read">Abrir simulador →</span></a>
+      <a class="learning-card" href="/simulador/"><div class="label">Aplicação · Ferramenta</div><h3>Aplicação prática no simulador empresarial</h3><p>Use o simulador empresarial para comparar cenários com os dados da sua empresa.</p><span class="read">Abrir simulador →</span></a>
     </div>
   </div>
 </section>
@@ -636,9 +772,9 @@ button,input{font:inherit}
 <section class="section soft" id="imprensa">
   <div class="wrap">
     <div class="section-head">
-      <div class="eyebrow">Na imprensa</div>
-      <h2 class="display">Uma abordagem prática para uma mudança complexa.</h2>
-      <p>O lançamento do livro ganhou cobertura destacando impactos sobre caixa, preços, contratos e planejamento empresarial.</p>
+      <div class="eyebrow">Referências externas</div>
+      <h2 class="display">Cobertura do livro e do projeto.</h2>
+      <p>Registros jornalísticos sobre a publicação e sua abordagem dos impactos econômicos e empresariais da reforma.</p>
     </div>
     <div class="press-grid">
       <a class="press-card" href="https://folhadoes.com/autor-capixaba-lanca-livro-sobre-impactos-da-reforma-tributaria/" target="_blank" rel="noopener"><div class="press-source">Folha do ES</div><h3>Impactos da Reforma Tributária nas decisões empresariais</h3><p>Matéria de lançamento com destaque para IBS, CBS, Imposto Seletivo e fluxo de caixa.</p><span>Ler matéria ↗</span></a>
@@ -656,7 +792,7 @@ button,input{font:inherit}
     </figure>
     <div class="author-copy">
       <div class="eyebrow" style="font-size:10px;text-transform:uppercase;letter-spacing:.13em;font-weight:950;color:var(--blue)">Sobre o autor</div>
-      <h2 class="display">Experiência contábil, financeira e empresarial.</h2>
+      <h2 class="display">Responsabilidade técnica e autoria.</h2>
       <p><strong>Wagner Rubim Rangel</strong> é contador, possui MBA em Controladoria e Finanças pela Fucape e atua como analista-contador do Banco de Desenvolvimento do Espírito Santo. Esteve por seis anos à frente da área de Participações e Investimentos e foi professor por cerca de duas décadas em contabilidade, custos, finanças, avaliação de empresas e auditoria.</p>
       <p>Também é autor de <em>Contabilidade na Nuvem, Estratégica e Digital</em>, publicado pela Editora Juruá em 2025.</p>
       <div class="credential-row">
@@ -673,11 +809,11 @@ button,input{font:inherit}
   <div class="wrap">
     <div class="feedback-panel">
       <div>
-        <div class="eyebrow" style="font-size:10px;text-transform:uppercase;letter-spacing:.13em;font-weight:950;color:var(--blue)">Projeto em evolução</div>
-        <h2 class="display">Ajude a melhorar o simulador.</h2>
-        <p>Envie um testemunho, crítica, sugestão ou relato de erro. Como agradecimento, você receberá gratuitamente o Guia Prático da Reforma Tributária em PDF.</p>
+        <div class="eyebrow" style="font-size:10px;text-transform:uppercase;letter-spacing:.13em;font-weight:950;color:var(--blue)">Validação e melhoria contínua</div>
+        <h2 class="display">Revisão colaborativa da ferramenta.</h2>
+        <p>Relatos de inconsistências, sugestões metodológicas e observações de uso são utilizados para revisar a experiência, os cálculos e a clareza dos relatórios.</p>
       </div>
-      <a class="btn gold" href="/feedback.html?origem=site">Enviar feedback e receber o guia</a>
+      <a class="btn gold" href="/feedback.html?origem=site">Enviar feedback técnico</a>
     </div>
   </div>
 </section>
@@ -686,8 +822,8 @@ button,input{font:inherit}
   <div class="wrap">
     <div class="buy-panel">
       <div>
-        <h2 class="display">O livro explica. O site acompanha. O simulador ajuda a decidir.</h2>
-        <p>Escolha a versão do livro e mantenha o site como referência durante a transição até 2033.</p>
+        <h2 class="display">Publicação de referência do projeto.</h2>
+        <p><em>O Brasil muda de imposto</em> apresenta a estrutura conceitual da reforma. A plataforma mantém o acompanhamento de atualizações posteriores à publicação.</p>
       </div>
       <div class="buy-actions">
         <a class="btn gold" href="https://www.amazon.com.br/dp/B0HGQPMV6Y" target="_blank" rel="noopener">Kindle na Amazon</a>
@@ -719,8 +855,6 @@ button,input{font:inherit}
     </div>
   </div>
 </div>
-
-<a class="feedback-fab" href="/feedback.html?origem=site" aria-label="Enviar feedback">Dar feedback</a>
 
 <footer class="footer">
   <div class="wrap footer-grid">
