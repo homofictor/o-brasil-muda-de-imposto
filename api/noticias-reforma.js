@@ -36,7 +36,19 @@ function isOfficialSource(source=""){
 function regionFor(item){
   const n=normalize((item.title||"")+" "+(item.summary||"")+" "+(item.source||""));
   if(/espirito santo|capixab|sefaz es|sebrae es|vitoria/.test(n)) return "Espírito Santo";
+  if(/sao paulo|rio de janeiro|minas gerais|parana|bahia|pernambuco|ceara|goias|santa catarina|rio grande do sul/.test(n)) return "Regional";
   return "Brasil";
+}
+function topicFor(item){
+  const n=normalize((item.title||"")+" "+(item.summary||""));
+  if(/simples nacional|mei\b|microempresa|empresa de pequeno porte/.test(n)) return "simples";
+  if(/split payment|pagamento fracionado/.test(n)) return "split-payment";
+  if(/documento fiscal|nota fiscal|nf e|nfs e|escrituracao|obrigacao acessoria/.test(n)) return "documentos-fiscais";
+  if(/imposto seletivo|\bis\b/.test(n)) return "imposto-seletivo";
+  if(/credito tributario|creditos tributarios|nao cumulatividade/.test(n)) return "creditos";
+  if(/municipio|estado|sefaz|sebrae|capacitacao|setor|construcao|saude|agronegocio|varejo|industria|servicos/.test(n)) return "setorial";
+  if(/\bibs\b|\bcbs\b|iva dual/.test(n)) return "ibs-cbs";
+  return "geral";
 }
 function key(item){
   return normalize(item.title).replace(/\b(reforma tributaria|tributaria)\b/g,"").trim().slice(0,160);
@@ -60,7 +72,7 @@ async function googleNews(query){
       const rawDescription=tag(block,"description");
       const publishedAt=tag(block,"pubDate")||null;
       const url=tag(block,"link");
-      return {
+      const item={
         id:"rss-"+normalize(title).replace(/\s+/g,"-").slice(0,110),
         date: publishedAt && !Number.isNaN(Date.parse(publishedAt)) ? new Date(publishedAt).toISOString().slice(0,10) : new Date().toISOString().slice(0,10),
         publishedAt,
@@ -72,7 +84,8 @@ async function googleNews(query){
         url,
         provider:"Google News RSS"
       };
-    }).filter(x=>x.title&&x.url&&isRelevant(x)).map(x=>({...x,region:regionFor(x)}));
+      return {...item,region:regionFor(item),topic:topicFor(item)};
+    }).filter(x=>x.title&&x.url&&isRelevant(x));
   }catch(_){
     return [];
   }finally{
@@ -80,11 +93,10 @@ async function googleNews(query){
   }
 }
 function curatedItems(){
-  return (curated.items||[]).map(x=>({
-    ...x,
-    publishedAt:x.date?x.date+"T12:00:00-03:00":null,
-    provider:"Curadoria editorial"
-  }));
+  return (curated.items||[]).map(x=>{
+    const base={...x,publishedAt:x.date?x.date+"T12:00:00-03:00":null,provider:"Curadoria editorial"};
+    return {...base,region:x.region||regionFor(base),topic:x.topic||topicFor(base)};
+  });
 }
 module.exports=async function handler(req,res){
   if(req.method!=="GET"){
@@ -123,6 +135,16 @@ module.exports=async function handler(req,res){
     updated_at:new Date().toISOString(),
     automatic:true,
     criteria:"Notícias filtradas por relevância para a Reforma Tributária do Consumo. Mudanças legais só devem ser tratadas como regra vigente quando confirmadas por fonte oficial.",
+    topics:[
+      {key:"geral",label:"Geral"},
+      {key:"ibs-cbs",label:"IBS e CBS"},
+      {key:"simples",label:"Simples Nacional"},
+      {key:"split-payment",label:"Split payment"},
+      {key:"imposto-seletivo",label:"Imposto Seletivo"},
+      {key:"documentos-fiscais",label:"Documentos fiscais"},
+      {key:"creditos",label:"Créditos"},
+      {key:"setorial",label:"Setorial e regional"}
+    ],
     items
   });
 };
