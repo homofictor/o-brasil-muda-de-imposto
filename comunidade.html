@@ -50,6 +50,14 @@
           <button class="filter" type="button" data-category="setorial">Setorial</button>
         </div>
       </div>
+      <div class="community-tools">
+        <input id="topicSearch" type="search" placeholder="Pesquisar discussões, temas ou participantes">
+        <select id="topicSort" aria-label="Ordenar discussões">
+          <option value="activity">Atividade recente</option>
+          <option value="recent">Publicação mais recente</option>
+          <option value="replies">Mais respondidas</option>
+        </select>
+      </div>
       <div id="topics" class="topic-list"><div class="empty">Carregando discussões...</div></div>
       <p id="communityStatus" class="status"></p>
     </section>
@@ -86,6 +94,16 @@
           <button class="button" type="submit">Publicar discussão</button>
           <p id="topicStatus" class="status"></p>
         </form>
+      </section>
+
+      <section class="panel">
+        <h3>Sugestões de discussão</h3>
+        <div class="starter-topics">
+          <button type="button" data-topic-suggestion data-category="simples" data-title="Quando a opção pelo regime regular de IBS e CBS tende a fazer sentido no Simples?">Simples: regime regular de IBS e CBS</button>
+          <button type="button" data-topic-suggestion data-category="split-payment" data-title="Quais impactos do split payment devem ser considerados no capital de giro?">Split payment e capital de giro</button>
+          <button type="button" data-topic-suggestion data-category="credito" data-title="Como avaliar a qualidade dos créditos tributários na escolha de fornecedores?">Créditos e fornecedores</button>
+          <button type="button" data-topic-suggestion data-category="setorial" data-title="Quais impactos específicos da reforma já aparecem no seu setor?">Impactos por setor</button>
+        </div>
       </section>
 
       <section class="panel">
