@@ -1,0 +1,32 @@
+name: Simples Decisão 360 | Motor tributário
+on:
+  push:
+    paths:
+      - 'simples-decisao/**'
+      - '.github/workflows/simples-decisao-tests.yml'
+  pull_request:
+    paths:
+      - 'simples-decisao/**'
+      - '.github/workflows/simples-decisao-tests.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validar-motor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Revisar código do repositório
+        uses: actions/checkout@11bd71901bbe5c1630ceea73d27597364c9e4fbd # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Conferir interpretador JavaScript
+        run: |
+          node --version
+          node --check simples-decisao/das-2027.js
+      - name: Testes de regressão tributária
+        run: node --test simples-decisao/tests/das-2027.test.cjs
+      - name: Conferir HTML e referências
+        run: |
+          test -f simples-decisao/index.html
+          grep -q 'das-2027.js' simples-decisao/index.html
