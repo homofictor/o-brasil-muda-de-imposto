@@ -52,7 +52,7 @@
   async function loadTopics(){
     $("communityStatus").textContent="Atualizando discussões...";
     const {data,error}=await client.from("community_topics")
-      .select("id,user_id,category,title,body,created_at,last_activity_at,community_profiles(display_name)")
+      .select("id,user_id,category,title,body,source_url,created_at,last_activity_at,community_profiles(display_name)")
       .eq("status","published").order("last_activity_at",{ascending:false}).limit(50);
     if(error)throw error;
     topics=data||[];
@@ -80,6 +80,8 @@
     $("dialogTitle").textContent=topic.title;
     $("dialogAuthor").textContent=(topic.community_profiles?.display_name||"Participante")+" · "+fmt(topic.created_at);
     $("dialogBodyText").textContent=topic.body;
+    const sourceWrap=$("dialogSourceWrap"),sourceLink=$("dialogSource");
+    if(topic.source_url){sourceLink.href=topic.source_url;sourceWrap.hidden=false}else{sourceLink.removeAttribute("href");sourceWrap.hidden=true}
     $("replyBox").value="";
     $("replyStatus").textContent="";
     const {data,error}=await client.from("community_replies")
@@ -95,12 +97,13 @@
     e.preventDefault();const status=$("topicStatus");status.textContent="Publicando...";
     try{
       await ensureProfile();
-      const title=$("topicTitle").value.trim(),body=$("topicBody").value.trim(),category=$("topicCategory").value;
+      const title=$("topicTitle").value.trim(),body=$("topicBody").value.trim(),category=$("topicCategory").value,sourceUrl=$("topicSource").value.trim();
       if(title.length<8)throw new Error("O título precisa ter pelo menos 8 caracteres.");
       if(body.length<20)throw new Error("Descreva a questão com um pouco mais de contexto.");
-      const {error}=await client.from("community_topics").insert({user_id:session.user.id,title,body,category,status:"published"});
+      if(sourceUrl&&!/^https?:\/\//i.test(sourceUrl))throw new Error("A fonte deve começar com http:// ou https://.");
+      const {error}=await client.from("community_topics").insert({user_id:session.user.id,title,body,category,source_url:sourceUrl||null,status:"published"});
       if(error)throw error;
-      $("topicTitle").value="";$("topicBody").value="";status.textContent="Discussão publicada.";
+      $("topicTitle").value="";$("topicBody").value="";$("topicSource").value="";status.textContent="Discussão publicada.";
       await loadTopics();
     }catch(err){status.textContent=err.message||"Não foi possível publicar."}
   }
