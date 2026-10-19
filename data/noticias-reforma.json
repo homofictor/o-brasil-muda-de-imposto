@@ -1,0 +1,46 @@
+{
+  "updated_at": "2026-10-19T09:20:00-03:00",
+  "criteria": "Seleção editorial de notícias relevantes sobre a Reforma Tributária do Consumo. Mudanças legais só são tratadas como regra vigente quando confirmadas por fonte oficial.",
+  "items": [
+    {
+      "id": "folha-vitoria-municipios-es-2026-10-17",
+      "date": "2026-10-17",
+      "source": "Folha Vitória",
+      "type": "Imprensa",
+      "region": "Espírito Santo",
+      "title": "78 municípios do ES terão preparação para as novas regras da Reforma Tributária",
+      "summary": "Sefaz-ES e Sebrae-ES firmaram cooperação para capacitar gestores e pequenos negócios, modernizar a gestão tributária e apoiar a adaptação à transição até 2033.",
+      "url": "https://www.folhavitoria.com.br/economia/reforma-tributaria-78-municipios-do-es-terao-preparacao-para-novas-regras/"
+    },
+    {
+      "id": "rfb-simples-encerramento-2026-10-16",
+      "date": "2026-10-16",
+      "source": "Receita Federal",
+      "type": "Fonte oficial",
+      "region": "Brasil",
+      "title": "Prazo do Simples encerrou em 15/10; opção pelo regime regular de IBS e CBS segue até 30/10",
+      "summary": "A Receita confirmou o encerramento do prazo para ingresso ou retorno ao Simples Nacional em 2027 e manteve abertas, até 30/10, providências específicas previstas nas regras aplicáveis.",
+      "url": "https://www.gov.br/receitafederal/pt-br/assuntos/noticias/2026/outubro/a-receita-federal-divulga-a-atualizacao-dos-numeros-referentes-as-solicitacoes-de-opcao-pelo-simples-nacional-e-pelo-regime-regular-do-ibs-e-da-cbs"
+    },
+    {
+      "id": "agencia-brasil-split-payment-2026-10-14",
+      "date": "2026-10-14",
+      "source": "Agência Brasil",
+      "type": "Imprensa pública",
+      "region": "Brasil",
+      "title": "Split payment volta ao centro do debate sobre fiscalização e fluxo de caixa",
+      "summary": "A reportagem aborda a visão da Receita Federal sobre o mecanismo e registra a preocupação empresarial com seus efeitos sobre o caixa durante a transição.",
+      "url": "https://agenciabrasil.ebc.com.br/radioagencia-nacional/economia/audio/2026-10/reforma-tributaria-split-payment-combate-fraudes-diz-receita-federal"
+    },
+    {
+      "id": "rfb-cbs-documentos-2026-10-09",
+      "date": "2026-10-09",
+      "source": "Receita Federal",
+      "type": "Fonte oficial",
+      "region": "Brasil",
+      "title": "86% dos documentos fiscais de empresas obrigadas já trazem destaque da CBS",
+      "summary": "Dados divulgados pela Receita indicam avanço da adaptação operacional das empresas à nova Contribuição sobre Bens e Serviços.",
+      "url": "https://www.gov.br/receitafederal/pt-br/assuntos/noticias/2026/outubro/reforma-tributaria-86-dos-documentos-fiscais-de-empresas-obrigadas-ja-trazem-destaque-da-cbs"
+    }
+  ]
+}
