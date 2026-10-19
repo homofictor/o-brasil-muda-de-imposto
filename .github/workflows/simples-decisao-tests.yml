@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Revisar código do repositório
-        uses: actions/checkout@11bd71901bbe5c1630ceea73d27597364c9e4fbd # v4.2.2
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9e4fbd # v4.2.2
         with:
           persist-credentials: false
       - name: Conferir interpretador JavaScript
