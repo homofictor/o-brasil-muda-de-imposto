@@ -99,13 +99,19 @@
       }
     });
   }
+  function safeNext(value,fallback='/360/'){
+    const v=String(value||'').trim();
+    if(!v.startsWith('/')||v.startsWith('//')||v.includes('\\'))return fallback;
+    try{
+      const u=new URL(v,'https://obrasilmudadeimposto.invalid');
+      return u.origin==='https://obrasilmudadeimposto.invalid'?(u.pathname+u.search+u.hash):fallback;
+    }catch(_){return fallback}
+  }
   async function signInWithGoogle(redirectPath){
     if(!client)throw new Error('Autenticação ainda não configurada.');
-    return client.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+(redirectPath||'/360/')}});
-  }
-  async function signInWithFacebook(redirectPath){
-    if(!client)throw new Error('Autenticação ainda não configurada.');
-    return client.auth.signInWithOAuth({provider:'facebook',options:{redirectTo:location.origin+(redirectPath||'/360/')}});
+    const next=safeNext(redirectPath,'/360/');
+    const redirectTo=location.origin+'/auth/confirm.html?next='+encodeURIComponent(next);
+    return client.auth.signInWithOAuth({provider:'google',options:{redirectTo}});
   }
   async function signOut(){if(client)await client.auth.signOut();location.replace(LOGIN_PATH);}
   async function saveState(key,value){
@@ -118,6 +124,6 @@
     const {data,error}=await client.from(STATE_TABLE).select('state_value').eq('user_id',session.user.id).eq('state_key',key).maybeSingle();
     if(error)throw error;return data?.state_value??null;
   }
-  window.P360Auth={init,signInWithPassword,signUp,signInWithGoogle,signInWithFacebook,signOut,saveState,loadState,get client(){return client},get session(){return session},get profile(){return profile},get configured(){return configured}};
+  window.P360Auth={init,signInWithPassword,signUp,signInWithGoogle,signOut,saveState,loadState,get client(){return client},get session(){return session},get profile(){return profile},get configured(){return configured}};
   window.P360Auth.ready=init();
 })();
