@@ -120,5 +120,21 @@
       ]
     };
   }
-  return Object.freeze({calcular:calcDAS,versao:'2026-10-19-res190',limites:LIMITES});
+  // LC 214/2025: créditos de CBS não compensam IBS, e vice-versa.
+  function apurarRegular(raw){
+    const d=raw||{};
+    const names=['receita','taxaCbs','taxaIbs','creditoCbs','creditoIbs'];
+    if(names.some(k=>!Number.isFinite(Number(d[k]))||Number(d[k])<0))
+      throw new Error('Débitos e créditos devem ser valores numéricos não negativos.');
+    const debitoCbs=cents(d.receita*d.taxaCbs/100);
+    const debitoIbs=cents(d.receita*d.taxaIbs/100);
+    const cbsPagar=cents(Math.max(0,debitoCbs-d.creditoCbs));
+    const ibsPagar=cents(Math.max(0,debitoIbs-d.creditoIbs));
+    const saldoCbs=cents(Math.max(0,d.creditoCbs-debitoCbs));
+    const saldoIbs=cents(Math.max(0,d.creditoIbs-debitoIbs));
+    return {debitoCbs,debitoIbs,cbsPagar,ibsPagar,
+      recolhimentoRegular:cents(cbsPagar+ibsPagar),saldoCbs,saldoIbs,
+      saldoCredor:cents(saldoCbs+saldoIbs)};
+  }
+  return Object.freeze({calcular:calcDAS,apurarRegular,versao:'2026-10-19-res190',limites:LIMITES});
 });
