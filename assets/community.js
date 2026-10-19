@@ -7,7 +7,7 @@
   const $=id=>document.getElementById(id);
   const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
   const fmt=d=>{try{return new Date(d).toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"})}catch{return ""}};
-  let client=null,session=null,currentCategory="todos",topics=[],replyCounts={},currentTopic=null;
+  let client=null,session=null,currentCategory="todos",topics=[],replyCounts={},currentTopic=null,currentSearch="",currentSort="activity";
 
   async function loadSdk(){
     if(window.supabase)return;
@@ -66,7 +66,14 @@
     $("communityStatus").textContent=topics.length+" discuss"+(topics.length===1?"ão":"ões")+" publicadas.";
   }
   function renderTopics(){
-    const list=currentCategory==="todos"?topics:topics.filter(t=>t.category===currentCategory);
+    let list=currentCategory==="todos"?[...topics]:topics.filter(t=>t.category===currentCategory);
+    const q=currentSearch.trim().toLowerCase();
+    if(q)list=list.filter(t=>[
+      t.title,t.body,t.community_profiles?.display_name,CATS[t.category]||t.category
+    ].join(" ").toLowerCase().includes(q));
+    if(currentSort==="recent")list.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+    else if(currentSort==="replies")list.sort((a,b)=>(replyCounts[b.id]||0)-(replyCounts[a.id]||0)||new Date(b.last_activity_at)-new Date(a.last_activity_at));
+    else list.sort((a,b)=>new Date(b.last_activity_at)-new Date(a.last_activity_at));
     $("topics").innerHTML=list.length?list.map(t=>{
       const author=t.community_profiles?.display_name||"Participante";
       return '<button class="topic" type="button" data-topic="'+esc(t.id)+'"><div class="topic-top"><div><span class="topic-cat">'+esc(CATS[t.category]||t.category)+'</span><h3>'+esc(t.title)+'</h3></div></div><p>'+esc(t.body)+'</p><div class="topic-meta"><span>'+esc(author)+'</span><span>'+fmt(t.created_at)+'</span><span>'+(replyCounts[t.id]||0)+' resposta'+((replyCounts[t.id]||0)===1?"":"s")+'</span></div></button>';
@@ -126,9 +133,18 @@
     const {error}=await client.from("community_reports").insert({reporter_user_id:session.user.id,topic_id:currentTopic.id,reason:reason.trim().slice(0,500)});
     alert(error?"Não foi possível registrar o reporte.":"Reporte registrado para revisão.");
   }
-  document.querySelectorAll("[data-category]").forEach(b=>b.addEventListener("click",()=>{
-    document.querySelectorAll("[data-category]").forEach(x=>x.classList.remove("active"));
+  document.querySelectorAll(".filters [data-category]").forEach(b=>b.addEventListener("click",()=>{
+    document.querySelectorAll(".filters [data-category]").forEach(x=>x.classList.remove("active"));
     b.classList.add("active");currentCategory=b.dataset.category;renderTopics();
+  }));
+  $("topicSearch").addEventListener("input",e=>{currentSearch=e.target.value||"";renderTopics()});
+  $("topicSort").addEventListener("change",e=>{currentSort=e.target.value||"activity";renderTopics()});
+  document.querySelectorAll("[data-topic-suggestion]").forEach(b=>b.addEventListener("click",()=>{
+    if(!session?.user){location.href="/360/login.html?next=/comunidade.html";return}
+    $("topicCategory").value=b.dataset.category||"geral";
+    $("topicTitle").value=b.dataset.title||"";
+    $("topicBody").focus();
+    $("newTopicPanel").scrollIntoView({behavior:"smooth",block:"start"});
   }));
   $("topicForm").addEventListener("submit",createTopic);
   $("replyForm").addEventListener("submit",createReply);
