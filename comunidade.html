@@ -81,6 +81,8 @@
           <input id="topicTitle" maxlength="180" placeholder="Ex.: impacto do crédito no varejo B2B" required>
           <label for="topicBody">Contexto ou questão</label>
           <textarea id="topicBody" maxlength="6000" placeholder="Descreva o caso, a dúvida ou a interpretação. Se estiver citando uma regra, indique a fonte quando possível." required></textarea>
+          <label for="topicSource">Fonte ou referência (opcional)</label>
+          <input id="topicSource" type="url" maxlength="500" placeholder="https://...">
           <button class="button" type="submit">Publicar discussão</button>
           <p id="topicStatus" class="status"></p>
         </form>
@@ -110,6 +112,7 @@
       <h2 id="dialogTitle"></h2>
       <div id="dialogAuthor" class="topic-meta"></div>
       <p id="dialogBodyText"></p>
+      <p id="dialogSourceWrap" hidden><a id="dialogSource" target="_blank" rel="noopener">Consultar fonte indicada pelo participante ↗</a></p>
     </article>
     <section>
       <div class="toolbar" style="margin:16px 0 8px"><h2 style="font-size:16px">Respostas</h2></div>
