@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0b1f33">
+<title>Confirmando acesso | O Brasil muda de imposto</title>
+<style>
+:root{--navy:#0b1f33;--ink:#162536;--muted:#657386;--line:#d6dde5}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f4f6f8;color:var(--ink);font-family:Inter,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;padding:20px}
+.card{width:min(520px,100%);background:#fff;border:1px solid var(--line);border-radius:10px;padding:28px;box-shadow:0 18px 50px rgba(11,31,51,.08)}
+.kicker{font-size:9px;font-weight:850;letter-spacing:.1em;text-transform:uppercase;color:#60768d}.card h1{font-size:26px;line-height:1.08;margin:7px 0 10px}.card p{font-size:12px;color:var(--muted);line-height:1.6}.status.error{color:#9a463e}.status.ok{color:#1f6d49}.back{display:inline-block;margin-top:12px;color:#245b86;font-size:11px;font-weight:800;text-decoration:none}
+</style>
+</head>
+<body>
+<main class="card">
+<div class="kicker">Acesso identificado</div>
+<h1>Confirmando seu acesso.</h1>
+<p id="status" class="status">Aguarde enquanto concluímos a autenticação.</p>
+<a id="back" class="back" href="/360/login.html" hidden>Voltar para a tela de acesso</a>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(async function(){
+  const status=document.getElementById('status'),back=document.getElementById('back');
+  const params=new URLSearchParams(location.search);
+  const rawNext=params.get('next')||'/360/';
+  const next=rawNext.startsWith('/')&&!rawNext.startsWith('//')&&!rawNext.includes('\\')?rawNext:'/360/';
+  try{
+    const cfg=await fetch('/api/360-config',{headers:{Accept:'application/json'},cache:'no-store'}).then(r=>r.json());
+    if(!cfg.configured)throw new Error('Autenticação não configurada.');
+    const client=window.supabase.createClient(cfg.url,cfg.anonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+    const {data,error}=await client.auth.getSession();
+    if(error)throw error;
+    if(!data.session){
+      await new Promise(resolve=>setTimeout(resolve,450));
+      const retry=await client.auth.getSession();
+      if(retry.error)throw retry.error;
+      if(!retry.data.session)throw new Error('A sessão não foi confirmada.');
+    }
+    status.textContent='Acesso confirmado. Redirecionando...';
+    status.className='status ok';
+    history.replaceState(null,'',location.pathname+'?next='+encodeURIComponent(next));
+    location.replace(next);
+  }catch(err){
+    status.textContent='Não foi possível concluir o acesso. Volte e use e-mail e senha enquanto o acesso social é revisado.';
+    status.className='status error';
+    back.href='/360/login.html?next='+encodeURIComponent(next);
+    back.hidden=false;
+  }
+})();
+</script>
+</body>
+</html>
