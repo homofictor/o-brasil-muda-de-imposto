@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b1f33">
+<title>Comunidade da Reforma Tributária | O Brasil muda de imposto</title>
+<meta name="description" content="Comunidade para discussão técnica dos impactos empresariais da Reforma Tributária do Consumo, com tópicos sobre IBS, CBS, Simples Nacional, split payment, créditos, preços e capital de giro.">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://www.obrasilmudadeimposto.com.br/comunidade.html">
+<link rel="stylesheet" href="/assets/community.css?v=20261019-1">
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="/">O BRASIL MUDA DE IMPOSTO</a>
+    <div class="top-actions">
+      <a href="/noticias-reforma.html">Notícias</a>
+      <a href="/atualizacoes-reforma.html">Atualizações</a>
+      <button id="logoutCommunity" type="button" hidden>Sair</button>
+      <button id="loginCommunity" class="primary" type="button">Entrar para participar</button>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <div class="eyebrow">Discussão técnica aberta</div>
+    <h1>Comunidade da Reforma Tributária.</h1>
+    <p>Espaço para empresários, contadores, consultores, professores, estudantes e demais profissionais discutirem efeitos práticos da Reforma Tributária do Consumo. A leitura é pública. Para publicar ou responder, é necessário identificar-se.</p>
+    <div class="hero-note"><strong>Objetivo:</strong> trocar experiências, hipóteses e interpretações de forma responsável. Afirmações sobre regra vigente devem, sempre que possível, indicar a fonte. O conteúdo publicado por participantes não representa orientação fiscal, contábil ou jurídica da plataforma.</div>
+  </div>
+</section>
+
+<main class="main">
+  <div class="wrap community-layout">
+    <section>
+      <div class="toolbar">
+        <div>
+          <div class="eyebrow">Discussões</div>
+          <h2>Tópicos recentes</h2>
+        </div>
+        <div class="filters" aria-label="Filtrar por tema">
+          <button class="filter active" type="button" data-category="todos">Todos</button>
+          <button class="filter" type="button" data-category="ibs-cbs">IBS e CBS</button>
+          <button class="filter" type="button" data-category="simples">Simples</button>
+          <button class="filter" type="button" data-category="split-payment">Split payment</button>
+          <button class="filter" type="button" data-category="credito">Créditos</button>
+          <button class="filter" type="button" data-category="capital-de-giro">Capital de giro</button>
+          <button class="filter" type="button" data-category="setorial">Setorial</button>
+        </div>
+      </div>
+      <div id="topics" class="topic-list"><div class="empty">Carregando discussões...</div></div>
+      <p id="communityStatus" class="status"></p>
+    </section>
+
+    <aside class="side">
+      <section class="panel">
+        <div class="eyebrow">Sua participação</div>
+        <div id="account" class="account"><strong>Leitura aberta</strong>Entre para publicar ou responder.</div>
+      </section>
+
+      <section class="panel" id="newTopicPanel" hidden>
+        <h3>Nova discussão</h3>
+        <form id="topicForm">
+          <label for="displayName">Nome público</label>
+          <input id="displayName" maxlength="60" autocomplete="name" required>
+          <label for="topicCategory">Tema</label>
+          <select id="topicCategory" required>
+            <option value="geral">Discussão geral</option>
+            <option value="ibs-cbs">IBS e CBS</option>
+            <option value="simples">Simples Nacional</option>
+            <option value="split-payment">Split payment</option>
+            <option value="credito">Créditos</option>
+            <option value="precos-margens">Preços e margens</option>
+            <option value="capital-de-giro">Capital de giro</option>
+            <option value="documentos-fiscais">Documentos fiscais</option>
+            <option value="setorial">Impactos setoriais</option>
+          </select>
+          <label for="topicTitle">Título</label>
+          <input id="topicTitle" maxlength="180" placeholder="Ex.: impacto do crédito no varejo B2B" required>
+          <label for="topicBody">Contexto ou questão</label>
+          <textarea id="topicBody" maxlength="6000" placeholder="Descreva o caso, a dúvida ou a interpretação. Se estiver citando uma regra, indique a fonte quando possível." required></textarea>
+          <button class="button" type="submit">Publicar discussão</button>
+          <p id="topicStatus" class="status"></p>
+        </form>
+      </section>
+
+      <section class="panel">
+        <h3>Regras básicas</h3>
+        <ul>
+          <li>Debata ideias e casos, não pessoas.</li>
+          <li>Não publique dados fiscais, financeiros ou pessoais confidenciais.</li>
+          <li>Diferencie hipótese, experiência e regra vigente.</li>
+          <li>Evite publicidade, captação comercial e spam.</li>
+          <li>Conteúdo pode ser ocultado para revisão quando reportado.</li>
+        </ul>
+      </section>
+    </aside>
+  </div>
+</main>
+
+<dialog id="topicDialog">
+  <div class="dialog-head">
+    <div><div class="eyebrow" id="dialogCategory">Discussão</div></div>
+    <button id="closeDialog" type="button" aria-label="Fechar">Fechar</button>
+  </div>
+  <div class="dialog-body">
+    <article class="original">
+      <h2 id="dialogTitle"></h2>
+      <div id="dialogAuthor" class="topic-meta"></div>
+      <p id="dialogBodyText"></p>
+    </article>
+    <section>
+      <div class="toolbar" style="margin:16px 0 8px"><h2 style="font-size:16px">Respostas</h2></div>
+      <div id="replies" class="replies"></div>
+      <form id="replyForm" class="reply-form" hidden>
+        <textarea id="replyBox" maxlength="4000" placeholder="Contribua com análise, experiência ou fonte relevante."></textarea>
+        <div class="reply-actions">
+          <button id="reportTopic" class="report" type="button">Reportar tópico</button>
+          <button class="send" type="submit">Publicar resposta</button>
+        </div>
+        <p id="replyStatus" class="status"></p>
+      </form>
+      <div id="replyLogin" class="reply-form">
+        <button class="button" type="button">Entrar para responder</button>
+      </div>
+    </section>
+  </div>
+</dialog>
+
+<footer class="footer"><div class="wrap">Comunidade da Reforma Tributária · O Brasil muda de imposto · Wagner Rubim Rangel · Homo Fictor Edições Independentes</div></footer>
+<script src="/assets/community.js?v=20261019-1"></script>
+<script defer src="/assets/usage.js?v=20260922-metrics1"></script>
+</body>
+</html>
