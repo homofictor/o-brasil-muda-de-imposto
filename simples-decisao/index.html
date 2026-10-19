@@ -91,15 +91,7 @@ function calc(){
    markBlocked('DAS integral inconsistente','O total do DAS não pode ser inferior às parcelas de IBS e CBS incluídas nele.',['Confira a memória de cálculo do PGDAS-D.']);return;
  }
  if(Object.values(d).some(v=>!Number.isFinite(v)||v<0)||d.receita<=0||d.taxaCbs>40||d.taxaIbs>40||d.credSimples>40||[d.b2b,d.elegiveis,d.capture].some(v=>v>100)||d.creditoCbs>d.receita*2||d.creditoIbs>d.receita*2){markBlocked('Revise os valores','Um ou mais campos estão fora da faixa válida. Alíquotas até 40%, percentuais até 100% e valores não negativos.',['Confirme as bases e a unidade monetária.','Créditos excessivos exigem revisão de documentos e de período.']);return;}
- const debitoCbs=d.receita*d.taxaCbs/100;
- const debitoIbs=d.receita*d.taxaIbs/100;
- // Apuração separada: LC 214/2025, arts. 45 e 47. Nunca compensa CBS com IBS.
- const cbsPagar=Math.max(0,debitoCbs-d.creditoCbs);
- const ibsPagar=Math.max(0,debitoIbs-d.creditoIbs);
- const recolhimentoRegular=cbsPagar+ibsPagar;
- const saldoCbs=Math.max(0,d.creditoCbs-debitoCbs);
- const saldoIbs=Math.max(0,d.creditoIbs-debitoIbs);
- const saldoCredor=saldoCbs+saldoIbs;
+ const {debitoCbs,debitoIbs,cbsPagar,ibsPagar,recolhimentoRegular,saldoCbs,saldoIbs,saldoCredor}=window.SimplesDAS2027.apurarRegular(d);
  const proprio=d.das-recolhimentoRegular-d.admin;
  const b2bElegivel=d.receita*d.b2b/100*d.elegiveis/100;
  const creditoTrad=b2bElegivel*d.credSimples/100;
@@ -115,7 +107,7 @@ function calc(){
  if(!allValidated)cautions.push('Somente '+checklist+' de '+flags.length+' verificações documentais marcadas. A conclusão é preliminar.');
  if(auto)cautions.push('Memória automática válida para operação homogênea padrão. Não contempla receita segregada, tributação monofásica, substituição tributária ou benefícios específicos.');
  if($('anexo').value==='IV' || (apuracaoDas && apuracaoDas.anexo==='IV')){
-   if(extras===null)cautions.push('Anexo IV: CPP patronal é paga fora do DAS e não foi informada. Compare o custo total apenas após conciliar a folha.');
+   if(extras===null || extras===0)cautions.push('Anexo IV: CPP patronal é paga fora do DAS. Valor externo zero ou ausente exige justificativa documental antes de apresentar o custo total como validado.');
    else cautions.push('Anexo IV: confira se o valor externo informado inclui a CPP patronal correta.');
  }
  if(totalDAS===null)cautions.push('DAS integral não informado. O efeito próprio de IBS/CBS pode ser comparado, mas o custo tributário total permanece incompleto.');
@@ -133,7 +125,7 @@ function calc(){
  else if(proprio>0){message='Regime regular apresenta vantagem própria';desc='No cenário informado, recolher IBS e CBS fora do DAS melhora o resultado da empresa, antes de qualquer renegociação com compradores.';}
  else{message='Simples tradicional apresenta vantagem própria';desc='No cenário informado, permanecer com IBS e CBS no DAS preserva maior resultado próprio, antes de eventual negociação com compradores.';}
  if(!allValidated)desc+=' Verificações pendentes impedem conclusão definitiva.';
- $('status').textContent=(allValidated && (totalDAS!==null) && !(($('anexo').value==='IV'||apuracaoDas?.anexo==='IV')&&extras===null))?'Verificações declaradas':'Simulação preliminar';
+ $('status').textContent=(allValidated && (totalDAS!==null) && !(($('anexo').value==='IV'||apuracaoDas?.anexo==='IV')&&(!extras)))?'Verificações declaradas':'Simulação preliminar';
  $('headline').textContent=message;
  $('interpretacao').textContent=desc;
  $('confianca').textContent='Verificações declaradas: '+checklist+'/5. A memória das tabelas não valida individualmente o CNAE, as notas e as alíquotas. Não utilize isoladamente para formalizar a opção.';
@@ -158,7 +150,7 @@ function calc(){
  if(margem!==null&&Number.isFinite(margem))$('marginDelta').textContent=pct(margem+proprio/d.receita*100);
  const creditoEquilibrio=(debitoCbs+debitoIbs)+d.admin-d.das;
  $('breakEven').textContent='Ponto de equilíbrio de referência: créditos utilizados de até '+showMoney(Math.max(0,creditoEquilibrio))+' nos dois tributos somados, desde que cada crédito caiba no débito do respectivo tributo. Saldo excedente de CBS não abate IBS e vice-versa. O valor é indicativo e não considera prazo de caixa.';
- const stressed=m=>d.das-Math.max(0,debitoCbs-d.creditoCbs*m)-Math.max(0,debitoIbs-d.creditoIbs*m)-d.admin;
+ const stressed=m=>d.das-window.SimplesDAS2027.apurarRegular({...d,creditoCbs:d.creditoCbs*m,creditoIbs:d.creditoIbs*m}).recolhimentoRegular-d.admin;
  setMoney('lowCase',stressed(.8));setMoney('highCase',stressed(1.2));
  $('flags').replaceChildren(...cautions.map(x=>{const li=document.createElement('li');li.textContent=x;return li;}));
 }
