@@ -9,6 +9,19 @@ Ferramenta independente de apoio à decisão para empresas do Simples Nacional s
 - Evita recomendações categóricas sem documentação de entrada e sem revisão profissional.
 - Integrável ao Simulador Empresarial, mas não substitui nem modifica o motor existente.
 
+## Motor do DAS 2027-2028 (implementado e versionado)
+
+O arquivo `das-2027.js` calcula, para receita homogênea e sem tratamento especial:
+- A faixa tributária (Anexos I, II, III, IV ou V) e a alíquota efetiva `(RBT12 × alíquota nominal - parcela a deduzir) / RBT12`.
+- O valor **integral** do DAS do mês e a repartição em IRPJ, CSLL, CPP (quando incluída no DAS), ICMS, ISS, IPI, CBS e IBS conforme o anexo.
+- A parcela de CBS/IBS excluída do DAS no híbrido, o DAS residual e o percentual de crédito ao comprador **apenas para receita homogênea elegível**.
+- O teto de ISS de 5% com repartição do excedente para tributos federais nos Anexos III e IV, faixa 5, conforme a tabela oficial.
+- O enquadramento por Fator R, quando explicitamente informado que a atividade é sujeita a ele (Anexo III para fator R >= 28%; V para inferior).
+- A CPP patronal do Anexo IV é tratada como despesa **externa ao DAS**, que exige documentação e lançamento próprio.
+- O sistema bloqueia a apuração automática de RBT12 superior a R$ 3,6 milhões e de receitas mistas ou outras hipóteses sem memória suficiente. Nesses casos o usuário deve informar os valores efetivos do PGDAS-D no modo manual.
+
+A fórmula de apuração do regime regular é implementada na função `apurarRegular`: créditos de IBS e CBS **jamais são compensados entre tributos**. Saldo credor não é tratado automaticamente como dinheiro disponível. As alíquotas do regime regular para 2027 continuam informadas pelo usuário após verificação.
+
 ## Regra de cálculo preliminar (cenário mensal)
 
 - Débitos regulares de CBS e IBS: base estimada de vendas tributáveis * alíquota efetiva de cada tributo, informadas separadamente pelo usuário.
@@ -34,11 +47,13 @@ Ferramenta independente de apoio à decisão para empresas do Simples Nacional s
 
 - Lei Complementar 214/2025, arts. 41, 45 e 47 (em especial § 9º): https://www2.camara.leg.br/legin/fed/leicom/2025/leicomplementar-214-16-janeiro-2025-796905-normaatualizada-pl.html
 - Prazos de opção de 2026: https://www.gov.br/receitafederal/pt-br/assuntos/noticias/2026/setembro/simples-nacional-2027-entenda-os-novos-prazos-e-faca-sua-escolha-com-consciencia-e-tranquilidade/
-- Resoluções do CGSN 190, 191 e 194/2026, LC 227/2026: atualizar o catálogo normativo por período.
+- Resolução CGSN 190/2026, tabela dos Anexos I a V para 2027-2028: https://www.legisweb.com.br/legislacao/?id=499102
+- Resolução CGSN 140/2018, compilada no sistema oficial de normas da Receita: https://normas.receita.fazenda.gov.br/sijut2consulta/normas.receisulta/link.action?idAto=92278&visao=compilado
+- Resoluções do CGSN 191 e 194/2026 e LC 227/2026: monitorar alterações e atualizar o catálogo normativo por período.
 
 ## Limites do MVP
 
-- Apuração gerencial de um mês. Não apura automaticamente DAS por anexo, sublimite, segregações de receita, Fator R, devoluções ou eventuais regimes específicos.
+- Apuração gerencial de um mês. Já calcula automaticamente DAS por Anexo I a V, com RBT12 e Fator R quando aplicável, **somente nos cenários homogêneos sem regras especiais**, e bloqueia faixas acima do sublimite, receitas segregadas, devoluções, substituição tributária e demais regimes específicos. A empresa em início de atividade deve usar valores oficiais conferidos, pois a proporcionalização ainda não está automatizada.
 - Não valida eventos fiscais, controles de extinção dos débitos, glosas, saldos transportáveis nem efeitos detalhados de split payment.
 - A aproximação de crédito ao cliente no híbrido pressupõe comparabilidade de bases e alíquotas. Não deve ser usada para formalização sem classificação por operação e prova documental.
 - A ferramenta distingue resultado próprio da potencial vantagem ao cliente. Nenhuma transferência de vantagem comercial é presumida.
@@ -47,13 +62,21 @@ Ferramenta independente de apoio à decisão para empresas do Simples Nacional s
 ## Próximas entregas
 
 1. Motor normativo versionado por vigência, localização, CNAE, NCM/NBS, situação do Simples e tipo de operação, com trilhas legais e testes de regressão.
-2. Cálculo de DAS separado por Anexo, RBT12, receitas segregadas, Fator R e tratamento dos demais tributos, revisado com contador.
+2. Ampliar o cálculo de DAS para receitas segregadas, tratamento diferenciado, sublimites e proporcionalização de empresas em início de atividade, com revisão profissional.
 3. Importação opcional de NF-e, NFS-e e demonstrativos PGDAS-D; extrair somente campos estritamente necessários com consentimento.
 4. Comparativo por cliente e produto: proposta comercial, crédito transferível e custo líquido de cada comprador, com qualificação documental.
 5. Modelo de caixa mês a mês: débitos, créditos, vencimentos, saldos, retenções e split payment, sem extrapolar regras não publicadas.
 6. Relatório executivo auditável com fórmulas, fontes, premissas, dados ausentes e recomendação condicional validada.
-7. Casos de teste homologados para comércio, indústria e serviços; cenários B2B/B2C, alíquota reduzida, sem créditos e crédito excedente.
+7. Confrontar resultados com casos reais documentados para comércio, indústria e serviços e homologar resultados com um contador. Os testes automatizados não substituem essa conferência.
 8. Publicação após revisão normativa e conciliação dos cenários com profissionais contábeis, sem confundir MVP gerencial com cálculo oficial.
+
+## Testes automatizados em 19/10/2026
+
+Comando de regressão: `node --test simples-decisao/tests/das-2027.test.cjs`.
+
+Foram criados e executados **13 testes** de fórmulas, partilha por todos os anexos, ISS limitado, Fator R, faixa acima do sublimite, atividades mistas e segregação entre CBS/IBS, com 13 aprovações no teste do motor. São **casos sintéticos de referência**, não apurações reais de empresas.
+
+A homologação com três empresas reais **não foi concluída** porque os demonstrativos contábeis e memórias PGDAS-D individuais ainda não foram disponibilizados e os períodos de apuração de 2027 ainda não ocorreram. É inadequado afirmar validação com dados reais sem evidência documental. O requisito para sair de rascunho é conciliar pelo menos três conjuntos documentados, com contador responsável e registros de divergências.
 
 ## Testes locais
 
