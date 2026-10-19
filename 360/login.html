@@ -16,7 +16,7 @@
     .login-brand h2{font-size:28px;line-height:1.12;margin:0 0 12px;letter-spacing:-.025em}.login-brand p{color:#bdcad6;font-size:13px;line-height:1.6;max-width:320px}
     .login-card{padding:42px}.login-card .eyebrow{font-size:9px;font-weight:850;letter-spacing:.11em;color:#5c748c}
     .login-card h1{font-size:36px;line-height:1.03;margin:5px 0 12px;letter-spacing:-.035em}.login-card>p{color:var(--muted);font-size:13px;line-height:1.6}
-    .socials{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:24px 0}.socials button,.login-form button{height:44px;border-radius:6px;border:1px solid #cbd4dd;background:#fff;font-weight:800;font-size:11px;cursor:pointer}
+    .socials{display:grid;grid-template-columns:1fr;gap:8px;margin:24px 0}.socials[hidden],.divider[hidden]{display:none!important}.provider-note{display:none;margin:14px 0;padding:10px 12px;border:1px solid #d7dee6;border-radius:6px;background:#f7f9fb;color:#657386;font-size:10px;line-height:1.5}.provider-note.show{display:block}.socials button,.login-form button{height:44px;border-radius:6px;border:1px solid #cbd4dd;background:#fff;font-weight:800;font-size:11px;cursor:pointer}
     .socials button.primary,.login-form button{background:#173f63;color:#fff;border-color:#173f63}.divider{text-align:center;color:#8795a3;font-size:10px;margin:16px 0}
     .login-form{display:grid;gap:11px}.login-form label{font-size:10px;font-weight:800;color:#526579}.login-form input{width:100%;height:44px;border:1px solid #c7d0da;border-radius:6px;padding:0 11px;margin-top:5px;font:inherit;font-size:12px}
     .login-form input:focus{outline:none;border-color:#47769c;box-shadow:0 0 0 3px rgba(36,91,134,.08)}
@@ -39,11 +39,11 @@
       <p class="eyebrow">ACESSO IDENTIFICADO</p>
       <h1>Acesso à comunidade e recursos personalizados.</h1>
       <p>O cadastro identifica sua participação na comunidade e permite manter recursos personalizados vinculados ao seu usuário.</p>
-      <div class="socials">
+      <div class="socials" id="socialAuth" hidden>
         <button id="googleLogin" class="primary" type="button">Continuar com Google</button>
-        <button id="facebookLogin" type="button">Continuar com Facebook</button>
       </div>
-      <div class="divider">ou use e-mail e senha</div>
+      <div class="provider-note" id="providerNote"></div>
+      <div class="divider" id="socialDivider" hidden>ou use e-mail e senha</div>
       <div class="mode-row">
         <button id="modeLogin" class="active" type="button">Entrar</button>
         <button id="modeSignup" type="button">Criar conta</button>
@@ -84,10 +84,35 @@
       $('authStatus').textContent='';
     }
     $('modeLogin').onclick=()=>setMode(false);$('modeSignup').onclick=()=>setMode(true);
-    function nextPath(){const q=new URLSearchParams(location.search);return q.get('next')||'/360/';}
+    function nextPath(){
+      const q=new URLSearchParams(location.search),v=q.get('next')||'/360/';
+      return v.startsWith('/')&&!v.startsWith('//')&&!v.includes('\\')?v:'/360/';
+    }
+    function showErr(e){
+      const raw=String(e?.message||'');
+      $('authStatus').textContent=/provider|enabled/i.test(raw)
+        ?'O acesso com Google está temporariamente indisponível. Use e-mail e senha.'
+        :(raw||'Não foi possível autenticar.');
+      $('authStatus').className='auth-status error';
+    }
+    async function configureProviders(){
+      try{
+        const r=await fetch('/api/auth-health',{cache:'no-store'});
+        const data=await r.json();
+        const google=Boolean(data?.external?.google);
+        $('socialAuth').hidden=!google;
+        $('socialDivider').hidden=!google;
+        if(!google){
+          $('providerNote').textContent='Acesso social temporariamente indisponível. Entre ou crie sua conta com e-mail e senha.';
+          $('providerNote').classList.add('show');
+        }
+      }catch(_){
+        $('socialAuth').hidden=true;
+        $('socialDivider').hidden=true;
+      }
+    }
     $('googleLogin').onclick=()=>P360Auth.signInWithGoogle(nextPath()).catch(showErr);
-    $('facebookLogin').onclick=()=>P360Auth.signInWithFacebook(nextPath()).catch(showErr);
-    function showErr(e){$('authStatus').textContent=e.message||'Não foi possível autenticar.';$('authStatus').className='auth-status error';}
+    configureProviders();
     P360Auth.ready.then(({configured,session})=>{
       if(!configured){$('authStatus').textContent='Estrutura de login pronta. Falta conectar o banco de autenticação ao ambiente de preview.';$('authStatus').className='auth-status error';return;}
       if(session){const q=new URLSearchParams(location.search),next=q.get('next')||'/360/';location.replace(next);}
