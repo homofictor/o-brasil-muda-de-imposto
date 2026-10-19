@@ -11,10 +11,10 @@
 <link rel="stylesheet" href="/assets/brand-system.css?v=20261019-news1">
 <style>
 .news-hero{background:linear-gradient(135deg,#07182b,#12395f);color:#fff;padding:66px 0 58px}.news-hero h1{font-size:clamp(2.7rem,6vw,5rem);line-height:.96;margin:10px 0 16px}.news-hero p{max-width:780px;color:#d7e1eb;font-size:18px}.news-note{margin-top:18px;max-width:830px;padding:13px 15px;border:1px solid rgba(255,255,255,.15);border-radius:13px;background:rgba(255,255,255,.06);font-size:12px;color:#c7d4df}
-.news-main{padding:54px 0 76px}.news-toolbar{display:flex;justify-content:space-between;gap:20px;align-items:end;margin-bottom:24px}.news-toolbar h2{font-size:clamp(2rem,4vw,3.4rem);margin:0}.news-updated{font-size:11px;color:#0f674c;background:#eaf7f1;border:1px solid #c7e8da;border-radius:999px;padding:8px 11px;font-weight:900;white-space:nowrap}
-.news-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.news-card{display:flex;flex-direction:column;min-height:285px;padding:22px;background:#fff;border:1px solid var(--line);border-radius:18px;text-decoration:none;box-shadow:0 8px 26px rgba(7,24,43,.04);transition:.18s ease}.news-card:hover{transform:translateY(-2px);box-shadow:var(--brand-soft-shadow)}.news-meta{display:flex;gap:7px;flex-wrap:wrap}.news-pill{font-size:9px;text-transform:uppercase;letter-spacing:.09em;font-weight:950;color:var(--blue2);background:#eef4f8;border-radius:999px;padding:5px 7px}.news-card h3{font-size:21px;line-height:1.17;margin:13px 0 10px}.news-card p{font-size:13px;color:var(--muted);margin:0}.news-source{margin-top:auto;padding-top:18px;display:flex;justify-content:space-between;gap:10px;font-size:11px;font-weight:850;color:var(--blue2)}.news-source span:last-child{white-space:nowrap}.news-empty{padding:24px;background:#fff;border:1px solid var(--line);border-radius:16px;color:var(--muted)}
+.news-main{padding:54px 0 76px}.news-toolbar{display:flex;justify-content:space-between;gap:20px;align-items:end;margin-bottom:18px}.news-toolbar h2{font-size:clamp(2rem,4vw,3.4rem);margin:0}.news-updated{font-size:11px;color:#0f674c;background:#eaf7f1;border:1px solid #c7e8da;border-radius:999px;padding:8px 11px;font-weight:900;white-space:nowrap}.news-controls{display:grid;grid-template-columns:minmax(240px,1fr) auto;gap:12px;align-items:center;margin:0 0 22px}.news-search{width:100%;height:42px;border:1px solid var(--line);border-radius:8px;background:#fff;padding:0 12px;font:inherit;font-size:12px;color:var(--ink)}.news-filters{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.news-filter{border:1px solid var(--line);background:#fff;color:#4f6175;border-radius:6px;padding:8px 10px;font-size:10px;font-weight:850;cursor:pointer}.news-filter.active{background:#173f63;color:#fff;border-color:#173f63}.news-count{font-size:11px;color:var(--muted);margin:-10px 0 18px}
+.news-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.news-card{display:flex;flex-direction:column;min-height:285px;padding:22px;background:#fff;border:1px solid var(--line);border-radius:18px;text-decoration:none;box-shadow:0 8px 26px rgba(7,24,43,.04);transition:.18s ease}.news-card:hover{transform:translateY(-2px);box-shadow:var(--brand-soft-shadow)}.news-meta{display:flex;gap:7px;flex-wrap:wrap}.news-pill{font-size:9px;text-transform:uppercase;letter-spacing:.09em;font-weight:950;color:var(--blue2);background:#eef4f8;border-radius:999px;padding:5px 7px}.news-card h3{font-size:21px;line-height:1.17;margin:13px 0 10px}.news-card p{font-size:13px;color:var(--muted);margin:0}.news-source{margin-top:auto;padding-top:18px;display:flex;justify-content:space-between;gap:10px;font-size:11px;font-weight:850;color:var(--blue2)}.news-card.official{border-left:4px solid #245b86}.news-card.official .news-pill:first-child{background:#e7f0f7;color:#173f63}.news-topic{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#657b90;font-weight:900;margin-top:10px}.news-source span:last-child{white-space:nowrap}.news-empty{padding:24px;background:#fff;border:1px solid var(--line);border-radius:16px;color:var(--muted)}
 .news-method{margin-top:34px;padding:24px;border-radius:18px;background:#f0f4f8;border:1px solid var(--line)}.news-method h2{font-family:Inter,system-ui,sans-serif!important;font-size:21px;margin:0 0 8px}.news-method p{margin:0;color:var(--muted);font-size:13px}
-@media(max-width:900px){.news-grid{grid-template-columns:1fr 1fr}}@media(max-width:650px){.news-hero{padding:46px 0}.news-grid{grid-template-columns:1fr}.news-toolbar{align-items:flex-start;flex-direction:column}.news-card{min-height:0}}
+@media(max-width:900px){.news-grid{grid-template-columns:1fr 1fr}.news-controls{grid-template-columns:1fr}.news-filters{justify-content:flex-start}}@media(max-width:650px){.news-hero{padding:46px 0}.news-grid{grid-template-columns:1fr}.news-toolbar{align-items:flex-start;flex-direction:column}.news-card{min-height:0}}
 </style>
 </head>
 <body>
@@ -22,26 +22,68 @@
 <section class="news-hero"><div class="wrap"><div class="eyebrow">Radar da Reforma</div><h1>Notícias que ajudam a entender o que está mudando.</h1><p>Seleção de informações relevantes sobre a Reforma Tributária do Consumo em fontes oficiais e veículos jornalísticos. O foco é impacto prático para empresas, profissionais e gestores.</p><div class="news-note"><strong>Notícia não é norma.</strong> Quando uma matéria tratar de mudança legal, prazo, obrigação ou alíquota, a seção de Atualizações continua sendo a referência para distinguir regra vigente de anúncio, interpretação ou debate.</div></div></section>
 <main class="news-main"><div class="wrap">
 <div class="news-toolbar"><div><div class="eyebrow">Feed automático</div><h2 class="display">Últimas notícias selecionadas</h2></div><span class="news-updated" id="newsUpdated">Carregando atualização...</span></div>
+<div class="news-controls">
+  <input class="news-search" id="newsSearch" type="search" placeholder="Pesquisar por tema, fonte ou palavra-chave">
+  <div class="news-filters" id="newsFilters">
+    <button class="news-filter active" type="button" data-news-filter="todos">Todas</button>
+    <button class="news-filter" type="button" data-news-filter="oficiais">Fontes oficiais</button>
+    <button class="news-filter" type="button" data-news-filter="ibs-cbs">IBS e CBS</button>
+    <button class="news-filter" type="button" data-news-filter="simples">Simples</button>
+    <button class="news-filter" type="button" data-news-filter="split-payment">Split payment</button>
+    <button class="news-filter" type="button" data-news-filter="setorial">Setorial e regional</button>
+  </div>
+</div>
+<p class="news-count" id="newsCount"></p>
 <div class="news-grid" id="newsGrid"><div class="news-empty">Carregando notícias...</div></div>
 <section class="news-method"><h2>Como fazemos a seleção</h2><p>Priorizamos Receita Federal, Comitê Gestor do IBS, Planalto, Congresso, TCU e órgãos públicos. Também incluímos matérias jornalísticas quando trazem contexto empresarial, regional ou setorial relevante. Conteúdo duplicado, opinativo sem fato novo e material sem relação prática com a reforma são descartados.</p></section>
 </div></main>
 <footer><div class="wrap">O Brasil muda de imposto · Wagner Rubim Rangel · Homo Fictor Edições Independentes</div></footer>
 <script>
 (async function(){
-  const grid=document.getElementById('newsGrid'),updated=document.getElementById('newsUpdated');
+  const grid=document.getElementById('newsGrid'),updated=document.getElementById('newsUpdated'),
+        search=document.getElementById('newsSearch'),count=document.getElementById('newsCount'),
+        filters=document.getElementById('newsFilters');
+  let items=[],active='todos';
+
+  const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+  const topicLabel=t=>({
+    'ibs-cbs':'IBS e CBS','simples':'Simples Nacional','split-payment':'Split payment',
+    'imposto-seletivo':'Imposto Seletivo','documentos-fiscais':'Documentos fiscais',
+    'creditos':'Créditos','setorial':'Setorial e regional','geral':'Geral'
+  }[t]||'Geral');
+
+  function matches(n){
+    const q=(search.value||'').trim().toLowerCase();
+    const filterOk=active==='todos' ||
+      (active==='oficiais' && /oficial/i.test(n.type||'')) ||
+      active===n.topic ||
+      (active==='setorial' && (n.topic==='setorial' || n.region!=='Brasil'));
+    if(!filterOk)return false;
+    if(!q)return true;
+    return [n.title,n.summary,n.source,n.region,n.type,topicLabel(n.topic)].join(' ').toLowerCase().includes(q);
+  }
+
+  function render(){
+    const visible=items.filter(matches);
+    count.textContent=visible.length+' matéria'+(visible.length===1?'':'s')+' exibida'+(visible.length===1?'':'s')+'.';
+    grid.innerHTML=visible.map(n=>{
+      const d=new Date((n.date||'')+'T12:00:00');
+      const date=Number.isNaN(d.getTime())?'':d.toLocaleDateString('pt-BR');
+      const cls=/oficial/i.test(n.type||'')?'news-card official':'news-card';
+      return '<a class="'+cls+'" href="'+esc(n.url)+'" target="_blank" rel="noopener">'+
+        '<div class="news-meta"><span class="news-pill">'+esc(n.type)+'</span><span class="news-pill">'+esc(n.region)+'</span></div>'+
+        '<div class="news-topic">'+esc(topicLabel(n.topic))+'</div>'+
+        '<h3>'+esc(n.title)+'</h3>'+(n.summary?'<p>'+esc(n.summary)+'</p>':'')+
+        '<div class="news-source"><span>'+esc(n.source)+'</span><span>'+esc(date)+' ↗</span></div></a>';
+    }).join('')||'<div class="news-empty">Nenhuma notícia corresponde aos filtros selecionados.</div>';
+  }
+
   try{
-    const r=await fetch('/api/noticias-reforma?limit=18',{cache:'no-store'});
+    const r=await fetch('/api/noticias-reforma?limit=24',{cache:'no-store'});
     if(!r.ok)throw new Error('Falha ao carregar');
     const data=await r.json();
-    const items=(data.items||[]).slice(0,18);
-    grid.innerHTML=items.map(n=>{
-      const d=new Date(n.date+'T12:00:00');
-      const date=d.toLocaleDateString('pt-BR');
-      return '<a class="news-card" href="'+n.url+'" target="_blank" rel="noopener">'+
-        '<div class="news-meta"><span class="news-pill">'+n.type+'</span><span class="news-pill">'+n.region+'</span></div>'+
-        '<h3>'+n.title+'</h3><p>'+n.summary+'</p>'+
-        '<div class="news-source"><span>'+n.source+'</span><span>'+date+' ↗</span></div></a>';
-    }).join('')||'<div class="news-empty">Nenhuma notícia selecionada no momento.</div>';
+    items=(data.items||[]).slice(0,24);
+    render();
     if(data.updated_at){
       const d=new Date(data.updated_at);
       updated.textContent='Feed atualizado em '+d.toLocaleDateString('pt-BR')+' às '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
@@ -50,6 +92,13 @@
     grid.innerHTML='<div class="news-empty">Não foi possível carregar as notícias agora. Tente novamente mais tarde.</div>';
     updated.textContent='Atualização temporariamente indisponível';
   }
+
+  search.addEventListener('input',render);
+  filters.addEventListener('click',e=>{
+    const b=e.target.closest('[data-news-filter]');if(!b)return;
+    filters.querySelectorAll('[data-news-filter]').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');active=b.dataset.newsFilter;render();
+  });
 })();
 </script>
 <script defer src="/assets/usage.js?v=20260922-metrics1"></script>
