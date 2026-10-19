@@ -11,20 +11,20 @@ Ferramenta independente de apoio à decisão para empresas do Simples Nacional s
 
 ## Regra de cálculo preliminar (cenário mensal)
 
-- Débito regular de IBS/CBS: base estimada de vendas tributáveis * alíquota efetiva aplicável, informadas pelo usuário.
-- Recolhimento regular simulado: max(0, débito regular - créditos utilizáveis informados nas aquisições). Se créditos excederem débitos, o saldo é destacado como **não convertido automaticamente em caixa**.
+- Débitos regulares de CBS e IBS: base estimada de vendas tributáveis * alíquota efetiva de cada tributo, informadas separadamente pelo usuário.
+- Recolhimento regular simulado: max(0, débito de CBS - crédito de CBS) + max(0, débito de IBS - crédito de IBS). Créditos são segregados nos termos dos arts. 45 e 47 da LC 214/2025. **Nunca** há compensação cruzada entre CBS e IBS. Saldo credor de cada tributo não é convertido automaticamente em caixa.
 - Diferença de resultado próprio: parcela IBS/CBS atribuída ao DAS (informada pela contabilidade) - recolhimento regular simulado - custo incremental de conformidade.
 - Vendas elegíveis para crédito ao cliente: receita mensal * participação B2B * compradores B2B com possibilidade de crédito.
 - Crédito potencial cliente no Simples: vendas elegíveis * alíquota efetiva de crédito transferível no Simples informada pelo usuário.
-- Crédito potencial cliente no híbrido: vendas elegíveis * alíquota regular de saída, **somente como aproximação**; depende da operação, documento e comprovação de débito extinto.
+- Crédito potencial cliente no híbrido: vendas elegíveis * soma das alíquotas de saída de CBS e IBS, **somente como aproximação**; depende da operação, documento e comprovação de débito extinto.
 - Vantagem ao comprador: crédito potencial híbrido - crédito transferível estimado no Simples (pode ser negativa).
-- Renegociação: apenas hipótese comercial, igual ao diferencial positivo ao comprador * percentual de captura comercial informado. Efeito no resultado desconta a alíquota regular simulada sobre o valor de renegociação.
-- Teste de resistência: valores de créditos aproveitáveis de entrada 20% menores ou maiores.
+- Renegociação: apenas hipótese comercial, igual ao diferencial positivo ao comprador * percentual de captura comercial informado. Efeito no resultado desconta a soma das alíquotas regulares simuladas sobre o valor de renegociação.
+- Teste de resistência: valores de créditos aproveitáveis de CBS e IBS 20% menores ou maiores, de forma segregada.
 
 ## Regras de segurança da informação
 
 1. A opção híbrida só é apresentada quando o usuário declara que é optante do Simples Nacional em 2027.
-2. Nenhuma alíquota é preenchida automaticamente com taxa genérica de 2033.
+2. Nenhuma alíquota é preenchida automaticamente com taxa genérica de 2033. IBS e CBS são sempre digitados separadamente.
 3. O resultado é bloqueado sem dados obrigatórios.
 4. Checklist de evidências não dá garantia: marcações apenas elevam o grau **declarado** de preparação para revisão contábil.
 5. Exemplo fictício é sinalizado; nenhuma hipótese é apresentada como tributação legal da empresa.
@@ -32,7 +32,7 @@ Ferramenta independente de apoio à decisão para empresas do Simples Nacional s
 
 ## Fontes normativas e referências
 
-- Lei Complementar 214/2025, art. 41 e art. 47 (em especial § 9º): https://www2.camara.leg.br/legin/fed/leicom/2025/leicomplementar-214-16-janeiro-2025-796905-normaatualizada-pl.html
+- Lei Complementar 214/2025, arts. 41, 45 e 47 (em especial § 9º): https://www2.camara.leg.br/legin/fed/leicom/2025/leicomplementar-214-16-janeiro-2025-796905-normaatualizada-pl.html
 - Prazos de opção de 2026: https://www.gov.br/receitafederal/pt-br/assuntos/noticias/2026/setembro/simples-nacional-2027-entenda-os-novos-prazos-e-faca-sua-escolha-com-consciencia-e-tranquilidade/
 - Resoluções do CGSN 190, 191 e 194/2026, LC 227/2026: atualizar o catálogo normativo por período.
 
