@@ -33,6 +33,7 @@
 <section class="panel"><h2>Base técnica e limitações</h2><p class="sources">A LC 214/2025, art. 41, trata da opção, os arts. 45 e 47 da apuração segregada dos créditos e o art. 47, § 9º, dos créditos nas aquisições de optantes pelo Simples. O cliente do regime regular não fica automaticamente sem créditos quando compra de fornecedor no Simples tradicional.</p><p class="sources"><a href="https://www2.camara.leg.br/legin/fed/leicom/2025/leicomplementar-214-16-janeiro-2025-796905-normaatualizada-pl.html" target="_blank" rel="noopener noreferrer">LC 214/2025 atualizada</a> | <a href="https://www.gov.br/receitafederal/pt-br/assuntos/noticias/2026/setembro/simples-nacional-2027-entenda-os-novos-prazos-e-faca-sua-escolha-com-consciencia-e-tranquilidade/" target="_blank" rel="noopener noreferrer">Orientação oficial de prazos</a></p><p class="sources">Modelo gerencial simplificado de um mês. Não calcula por si o DAS, a classificação fiscal, a base legal de créditos, regimes específicos, split payment, estornos, antecipações, devoluções, momentos de caixa ou obrigações acessórias. A redução dos créditos para o cliente requer confirmação documental. Não substitui revisão técnica.</p></section></div></div></main>
 <footer class="footer"><div class="wrap">Simples Decisão 360 | O Brasil Muda de Imposto | Wagner Rubim Rangel | Ferramenta educativa com supervisão humana. Não armazena neste módulo os valores digitados.</div></footer>
 <script src="/simples-decisao/das-2027.js"></script>
+<script src="/simples-decisao/qa-fixtures.js"></script>
 <script>
 (function(){'use strict';
 const $=id=>document.getElementById(id);
@@ -125,7 +126,7 @@ function calc(){
  else if(proprio>0){message='Regime regular apresenta vantagem própria';desc='No cenário informado, recolher IBS e CBS fora do DAS melhora o resultado da empresa, antes de qualquer renegociação com compradores.';}
  else{message='Simples tradicional apresenta vantagem própria';desc='No cenário informado, permanecer com IBS e CBS no DAS preserva maior resultado próprio, antes de eventual negociação com compradores.';}
  if(!allValidated)desc+=' Verificações pendentes impedem conclusão definitiva.';
- $('status').textContent=(allValidated && (totalDAS!==null) && !(($('anexo').value==='IV'||apuracaoDas?.anexo==='IV')&&(!extras)))?'Verificações declaradas':'Simulação preliminar';
+ $('status').textContent=(auto && allValidated && (totalDAS!==null) && !(($('anexo').value==='IV'||apuracaoDas?.anexo==='IV')&&(!extras)))?'Verificações declaradas':'Simulação preliminar';
  $('headline').textContent=message;
  $('interpretacao').textContent=desc;
  $('confianca').textContent='Verificações declaradas: '+checklist+'/5. A memória das tabelas não valida individualmente o CNAE, as notas e as alíquotas. Não utilize isoladamente para formalizar a opção.';
@@ -176,4 +177,5 @@ $('exemplo').addEventListener('click',()=>{const demo={modoDas:'manual',simples:
 $('buscar').addEventListener('click',async()=>{const c=$('cnpj').value.replace(/\D/g,'');if(c.length!==14){$('cnpjStatus').textContent='Informe um CNPJ numérico com 14 dígitos.';return;}const b=$('buscar');b.disabled=true;$('cnpjStatus').textContent='Consultando base pública...';try{const res=await fetch('/api/cnpj?cnpj='+encodeURIComponent(c));const r=await res.json();if(!res.ok)throw new Error(r.error||'Consulta indisponível');const v=r.data||{};$('cnpjStatus').textContent=(v.razao_social||v.nome_fantasia||'Empresa localizada')+(v.cnae_fiscal?' | CNAE principal '+v.cnae_fiscal:'')+'. Confira enquadramento separadamente.';}catch(e){$('cnpjStatus').textContent='Não foi possível consultar: '+e.message+'. Continue com preenchimento manual.';}finally{b.disabled=false;}});
 })();
 </script>
+<script src="/simples-decisao/qa-panel.js" defer></script>
 </body></html>
