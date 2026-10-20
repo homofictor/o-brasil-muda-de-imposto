@@ -59,6 +59,26 @@ A fórmula de apuração do regime regular é implementada na função `apurarRe
 - A ferramenta distingue resultado próprio da potencial vantagem ao cliente. Nenhuma transferência de vantagem comercial é presumida.
 - Preço e bases têm particularidades tributárias. Ajustes de preço e de alíquota devem ser reconciliados com valores efetivamente faturados.
 
+
+## Laboratório de testes (28 cenários totalmente fictícios)
+
+O aplicativo possui um painel expansível **"Laboratório de testes | 28 empresas fictícias"** que permite:
+1. Selecionar um caso e carregar suas entradas no formulário de modo editável.
+2. Rodar o teste individualmente, comparando automaticamente respostas contra os resultados esperados.
+3. Executar toda a bateria de 28 casos em um quadro isolado, sem sobrescrever os dados do formulário principal.
+4. Ver aprovações e diferenças por indicador, e exportar o registro dos testes em CSV.
+
+Os fixtures estão em \`qa-fixtures.js\`, armazenados no mesmo aplicativo. Os 28 casos contemplam 20 cenários calculáveis (15 com verificações declaradas e cinco preliminares) e oito bloqueios obrigatórios.
+
+A regressão verifica o status, o DAS, CBS/IBS no DAS, recolhimento regular, diferenças próprias e comerciais, sensibilidade, margem projetada e repartição por tributo nos casos automáticos. O arquivo \`tests/qa-cenarios.test.cjs\` executa a mesma trilha do cálculo da interface sem dados reais, e a GitHub Actions executa todos os arquivos \`*.test.cjs\`.
+
+**Importante:** os testes confirmam consistência matemática e comportamento do software frente ao gabarito sintético. Não são homologação tributária oficial, nem conferência de alíquotas reais por CNAE/NCM/NBS ou documentos de empresa. Os campos são fictícios e as opções marcadas no checklist representam somente hipóteses de teste.
+
+### Correções provocadas pelos cenários
+
+- Fator R: folha12 ausente agora é dado obrigatório e bloqueia o cálculo. Antes, valores nulos podiam ser tratados como zero.
+- Modo manual: resultados permanecem preliminares, mesmo quando todas as verificações simuladas estão marcadas.
+
 ## Próximas entregas
 
 1. Motor normativo versionado por vigência, localização, CNAE, NCM/NBS, situação do Simples e tipo de operação, com trilhas legais e testes de regressão.
