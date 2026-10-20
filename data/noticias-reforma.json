@@ -1,7 +1,37 @@
 {
-  "updated_at": "2026-10-19T09:20:00-03:00",
+  "updated_at": "2026-10-20T08:14:06-03:00",
   "criteria": "Seleção editorial de notícias relevantes sobre a Reforma Tributária do Consumo. Mudanças legais só são tratadas como regra vigente quando confirmadas por fonte oficial.",
   "items": [
+    {
+      "id": "nfse-via-nt010-producao-2026-10-19",
+      "date": "2026-10-19",
+      "source": "Portal Nacional da NFS-e",
+      "type": "Fonte oficial",
+      "region": "Brasil",
+      "title": "NFS-e Via coloca em produção novo leiaute e manifestação do adquirente",
+      "summary": "Desde 19/10, a NT 010 está em produção na NFS-e Via. O adquirente pode registrar aceite ou rejeição do serviço, e o leiaute 1.01 inclui a modalidade de pagamento sem cobrança.",
+      "url": "https://www.gov.br/nfse/pt-br/noticias/disponibilizadas-em-producao-as-evolucoes-da-nota-tecnica-010-da-nfs-e-via"
+    },
+    {
+      "id": "svrs-nt2026004-homologacao-2026-10-19",
+      "date": "2026-10-19",
+      "source": "SVRS / ENCAT",
+      "type": "Fonte oficial",
+      "region": "Brasil",
+      "title": "SVRS libera em homologação ajustes da NT 2026.004 para documentos fiscais",
+      "summary": "O ambiente de testes da SVRS recebeu alterações da reforma tributária relativas ao valor líquido sem tributos e outros campos dos documentos fiscais eletrônicos. A implantação anunciada é em homologação, não em produção.",
+      "url": "https://dfe-portal.svrs.rs.gov.br/Nfe/Avisos/3013"
+    },
+    {
+      "id": "riobonito-comissao-reforma-2026-10-19",
+      "date": "2026-10-19",
+      "source": "Prefeitura de Rio Bonito",
+      "type": "Fonte oficial",
+      "region": "Rio de Janeiro",
+      "title": "Rio Bonito institui comissão para preparar município para IBS e CBS",
+      "summary": "O Decreto municipal 377/2026 criou grupo para revisar normas, adaptar sistemas e notas fiscais e avaliar impactos na arrecadação. Um plano de ação deverá ser elaborado após a designação dos integrantes.",
+      "url": "https://riobonito.rj.gov.br/prefeitura-de-rio-bonito-cria-comissao-para-organizar-mudancas-da-reforma-tributaria/"
+    },
     {
       "id": "folha-vitoria-municipios-es-2026-10-17",
       "date": "2026-10-17",
