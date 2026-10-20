@@ -82,6 +82,7 @@
     let anexo=String(d.anexo||'').toUpperCase();
     let fatorR=null;
     if(d.sujeitaFatorR===true){
+      if(d.folha12===null || d.folha12===undefined || String(d.folha12).trim()==='') throw new Error('Informe folha dos 12 meses para atividade sujeita ao Fator R.');
       const folha=Number(d.folha12);
       if(!Number.isFinite(folha)||folha<0)throw new Error('Informe folha dos 12 meses para atividade sujeita ao Fator R.');
       fatorR=folha/rbt;
