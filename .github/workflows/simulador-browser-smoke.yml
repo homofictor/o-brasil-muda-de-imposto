@@ -46,10 +46,10 @@ jobs:
               await page.goto(process.env.BASE_URL + '/simulador/guiado/', { waitUntil: 'domcontentloaded', timeout: 45000 });
               const versionLink = page.locator('link[href*="guided.css"]').first();
               deployedVersion = await versionLink.count() ? (await versionLink.getAttribute('href') || '') : '';
-              if (/20261030-periodos1/.test(deployedVersion)) break;
+              if (/20261030-correcao1/.test(deployedVersion)) break;
               await page.waitForTimeout(15000);
             }
-            assert.match(deployedVersion || '', /20261030-periodos1/);
+            assert.match(deployedVersion || '', /20261030-correcao1/);
             await page.waitForSelector('#cnpj', { timeout: 30000 });
             await page.waitForSelector('#importPanel', { timeout: 30000 });
             assert.equal(await page.locator('#importPanel').isVisible(), true);
@@ -808,6 +808,32 @@ jobs:
             await page.pdf({ path: 'simulador-report-print-check.pdf', format: 'A4', printBackground: true, displayHeaderFooter: false, preferCSSPageSize: true });
             await page.emulateMedia({ media: 'screen' });
             await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
+
+            // Corrigir o valor extraído no próprio cartão, inclusive depois de aceito.
+            const editorPage = await browser.newPage({ viewport: { width: 390, height: 844 } });
+            editorPage.on('pageerror', e => pageErrors.push(String(e)));
+            await editorPage.goto(process.env.BASE_URL + '/simulador/v3/', { waitUntil: 'domcontentloaded' });
+            await editorPage.waitForSelector('#importPanel', { timeout: 30000 });
+            await editorPage.evaluate(() => {
+              brmiImport.candidates = [{field:'cashAndEquivalents',label:'Caixa e bancos',value:1000,display:'R$ 1.000,00',reason:'Saldo sintético para teste.',source:'balancete-ficticio.csv',confidence:'high',accepted:true,applied:true}];
+              renderImportCandidates();
+            });
+            await editorPage.locator('[data-import-edit="0"]').fill('2.500,75');
+            await editorPage.locator('[data-import-index="0"]').click();
+            const correction = await editorPage.evaluate(() => ({
+              value:parseMoneyValue(document.getElementById('cashAndEquivalents').value),
+              original:brmiImport.candidates[0].originalExtraction.value,
+              corrected:document.getElementById('cashAndEquivalents').dataset.importCorrected,
+              accepted:brmiImport.candidates[0].accepted
+            }));
+            assert.equal(correction.value,2500.75);
+            assert.equal(correction.original,1000);
+            assert.equal(correction.corrected,'1');
+            assert.equal(correction.accepted,true);
+            await editorPage.locator('[data-import-edit="0"]').fill('3.000,00');
+            await editorPage.locator('[data-import-edit="0"]').press('Enter');
+            assert.equal(await editorPage.evaluate(() => parseMoneyValue(document.getElementById('cashAndEquivalents').value)),3000);
+            await editorPage.close();
 
             const relevantConsoleErrors = consoleErrors.filter(x => !/favicon|Failed to load resource.*404/i.test(x));
             if (pageErrors.length || relevantConsoleErrors.length) {
