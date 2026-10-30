@@ -19,6 +19,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Conferir períodos e anualização do importador
+        run: node --test simulador/tests/*.test.cjs
       - name: Install Playwright
         run: |
           npm install --no-save playwright@1.55.0
@@ -190,7 +192,7 @@ jobs:
                 'LUCRO LIQUIDO DO EXERCICIO R$ 63.000,00 R$ 70.000,00'
               ].join('\n');
 
-              const doc = analyseImportDoc({ name: 'dre-teste.pdf' }, { text: syntheticDre, rows: null });
+              const doc = analyseImportDoc({ name: 'dre-teste.pdf' }, { text: syntheticDre, rows: null, manualMonths: 12 });
               brmiImport.docs = [doc];
               brmiImport.candidates = [...doc.candidates];
               brmiImport.candidates.forEach((x, i) => x._index = i);
@@ -307,7 +309,7 @@ jobs:
               ].join('\n');
 
               const bpDoc = analyseImportDoc({ name: 'Balanço 2025 RR VEICULOS.pdf' }, { text: bp, rows: null, extraction: 'text' });
-              const dreDoc = analyseImportDoc({ name: 'DRE 2025 RR VEICULOS.pdf' }, { text: dre, rows: null, extraction: 'text' });
+              const dreDoc = analyseImportDoc({ name: 'DRE 2025 RR VEICULOS.pdf' }, { text: dre, rows: null, extraction: 'text', manualMonths: 12 });
               const pick = (doc, field) => doc.candidates.filter(x => x.field === field).map(x => ({ value: x.value, label: x.label, confidence: x.confidence, usageConfidence: x.usageConfidence, reason: x.reason, ebitdaAnnual: x.ebitdaAnnual, unclassifiedLongTerm: x.unclassifiedLongTerm }));
               return {
                 bp: {
@@ -458,7 +460,7 @@ jobs:
                 'PROVISÃO PARA IRPJ (91.319,32)',
                 'RESULTADO DO EXERCÍCIO (326.489,65)'
               ].join('\n');
-              const doc = analyseImportDoc({ name: 'dre2025-pedra-lisa.pdf' }, { text: syntheticLossDre, rows: null });
+              const doc = analyseImportDoc({ name: 'dre2025-pedra-lisa.pdf' }, { text: syntheticLossDre, rows: null, manualMonths: 12 });
               const candidate = doc.candidates.find(x => x.field === 'realAccountingProfitAnnual');
               if (!candidate) return { candidate: false };
               brmiImport.candidates = [candidate];

@@ -215,7 +215,7 @@ function financialMetrics(){
  const ac=Math.max(0,num('currentAssets')),pc=Math.max(0,num('currentLiabilities')),ccl=ac-pc;
  const start=Math.max(0,num('debtStart')),end=Math.max(0,num('debtEnd'));
  const avg=start>0&&end>0?(start+end)/2:(end>0?end:start);
- const interest=Math.max(0,num('interestExpense')),months=clamp(num('dreMonths')||12,1,12);
+ const interest=Math.max(0,num('interestExpense')),months=clamp(Number($('interestExpense')?.dataset?.importPeriodMonths)||num('dreMonths')||12,1,12);
  const rawAnnualRate=debtKnown&&interestKnown&&avg>0&&interest>0?(interest/avg)*(12/months):null;
  const referenceMin=.20,referenceMax=.30,referenceRate=.25;
  const observedRateUsable=rawAnnualRate!=null&&Number.isFinite(rawAnnualRate)&&rawAnnualRate>=referenceMin&&rawAnnualRate<=referenceMax;

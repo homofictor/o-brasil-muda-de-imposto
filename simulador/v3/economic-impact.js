@@ -101,7 +101,7 @@
  function currentOperatingRevenueBase(r){
   const docs=root.brmiImport?.docs||[],dre=docs.find(d=>(d.type==='DRE'||d.type==='Balanço + DRE')&&Number(d.revenueNet)>0);
   if(!dre)return r?.annualRevenue||0;
-  const months=Math.max(1,Math.min(12,fieldNumber('dreMonths')||12));
+  const months=dre.period?.months;if(!months)return r?.annualRevenue||0;
   return Number(dre.revenueNet)*(12/months);
  }
 
