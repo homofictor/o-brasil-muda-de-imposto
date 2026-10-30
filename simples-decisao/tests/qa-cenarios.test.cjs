@@ -14,7 +14,7 @@ const inline=mainScripts.at(-1);
 const fixtureScript=fs.readFileSync(path.join(root,'qa-fixtures.js'),'utf8');
 const qaScript=fs.readFileSync(path.join(root,'qa-panel.js'),'utf8');
 const engine=require('../das-2027.js');
-const browserWindow={location:{search:'?qa-runner=1'},SimplesDAS2027:engine,
+const browserWindow={location:{search:'?qa-runner=1'},SimplesDAS2027:engine,SimplesProjecao:require('../projecao.js'),
   print(){},scrollTo(){}};
 vm.runInNewContext(fixtureScript,{window:browserWindow});
 function Event(type,props){this.type=type;Object.assign(this,props||{});}
@@ -33,12 +33,12 @@ function makeDocument(){
     addEventListener(name,callback){this.listeners[name]=callback;},
     dispatchEvent(evt){if(this.listeners[evt.type])this.listeners[evt.type](evt);},
     click(){if(this.listeners.click)this.listeners.click();},
-    replaceChildren(...children){this.children=children;},
+    replaceChildren(...children){this.children=children;},appendChild(child){this.children.push(child);},
     scrollIntoView(){}});
   }
   return elements.get(id);
  }
- return {getElementById:get,querySelectorAll:()=>[],createElement:tag=>({tag,textContent:''})};
+ return {getElementById:get,querySelectorAll:()=>[],createElement:tag=>({tag,textContent:'',style:{},children:[],appendChild(child){this.children.push(child);}})};
 }
 const doc=makeDocument();
 const queryParser=class{has(key){return key==='qa-runner';}};
@@ -55,3 +55,14 @@ for(const item of browserWindow.SD360QA.casos){
   else assert.ok(actual.indicadores>=8,'Insuficientes indicadores verificados');
  });
 }
+
+test('Interface renderiza 12 meses e bloqueia projeção incoerente',()=>{
+const values={modoDas:'auto',simples:'sim',anexo:'I',rbt12:600000,receita:50000,sujeitaFatorR:'nao',taxaCbs:9,taxaIbs:.1,creditoCbs:1000,creditoIbs:0,admin:500,b2b:0,elegiveis:0,capture:0,tributosExtra:0,projAtiva:'sim',projHistorico:Array(12).fill(50000).join(';'),projCrescimento:2,projCreditos:'proporcionais',projFuturas:''};
+for(const [k,v] of Object.entries(values))doc.getElementById(k).value=String(v);
+doc.getElementById('calcular').click();
+assert.equal(doc.getElementById('projLinhas').children.length,12);
+assert.match(doc.getElementById('projResumo').textContent,/Receita anual/);
+doc.getElementById('projHistorico').value='100';doc.getElementById('calcular').click();
+assert.match(doc.getElementById('projResumo').textContent,/Projeção bloqueada/);
+assert.equal(doc.getElementById('projLinhas').children.length,0);
+});
