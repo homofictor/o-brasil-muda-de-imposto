@@ -375,7 +375,12 @@ separados. Os arquivos locais testados têm os mesmos hashes Git blob
 dos arquivos relidos da branch: `446f19846f732b0d9b18bc1335381b43b78f7d5f`
 e `c5bbf7baeef7a29e034afe46c27a4dc5cb58d2b9`. Dependências
 `ibs-cbs.js` e `creditos.js` também foram copiadas e conferidas
-por hash. **A suíte completa do repositório não foi executada.**
+por hash. **A suíte completa do repositório não foi executada.** Verificação adicional: executados também os testes existentes de
+`atividades-ibs-cbs.test.mjs` e `ibs-cbs.test.mjs` no mesmo ambiente
+Node 22, totalizando **9 testes nativos aprovados, 0 falhas**. Hashes
+conferidos: `30ea3ab437f4aa42b261ac538f227727499c09b0` e
+`37d024bf51fdb0c991e9ea601d475b36d9a16ae6`.
+
 
 **Prontidão: não pronto para testes integrados.** A regressão isolada
 passou, mas não há homologação manual dos cenários setoriais, conciliação
