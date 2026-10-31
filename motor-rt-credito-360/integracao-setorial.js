@@ -1,3 +1,4 @@
+import {auditarPonteTributaria} from "./auditoria-ponte-tributaria.js";
 import {projetarAtividadesRT} from "./atividades-rt.js";
 import {calcularIndicadoresFinanceiros} from "./indicadores-financeiros.js";
 
@@ -10,7 +11,7 @@ export function integrarAtividadesCredito({
  historico,anoBase,anos=5,atividades,eventosCredito,
  aliquotaReferencia,ressarcimentosRecebidos={},saldoCreditoInicial=0,
  ajustesNegativos={},capex={},variacaoNCG={},impostosResultado={},
- juros={},amortizacoes={}
+ juros={},amortizacoes={},tratamentoTributario=null
 }){
  if(historico?.revisadoPorAnalista!==true||historico.exercicio!==anoBase)
   throw new Error("Histórico contábil não revisado ou exercício divergente");
@@ -38,19 +39,29 @@ export function integrarAtividadesCredito({
   const caixaReferencia=ebitdaReferencia-
    anual(capex,ano,"capex")-anual(variacaoNCG,ano,"variacaoNCG")-
    anual(impostosResultado,ano,"impostosResultado");
-  const caixaReforma=caixaReferencia-deltaTributo+t.ressarcido;
+  const auditoria=auditarPonteTributaria({
+   receitaBase:receita,ebitdaBase:ebitdaReferencia,
+   tributoReferencia,tributoReforma:t.tributoPagar,
+   impostoReferenciaJaRefletidoNoEbitda:tratamentoTributario?.referenciaRefletida,
+   impostoReformaJaRefletidoNoEbitda:tratamentoTributario?.reformaRefletida,
+   evidenciaContabil:tratamentoTributario?.evidenciaContabil,
+   validadoPorAnalista:tratamentoTributario?.validadoPorAnalista
+  });
+  const caixaReforma=auditoria.autorizadoParaProjecao &&
+   auditoria.ajusteTributarioCaixa!==null
+   ?caixaReferencia+auditoria.ajusteTributarioCaixa+t.ressarcido:null;
   const servicoDivida=anual(juros,ano,"juros")+anual(amortizacoes,ano,"amortizacoes");
   return {...t,ebitdaReferencia,tributoReferencia,deltaTributo,
-   caixaReferencia,caixaReforma,servicoDivida,
+   caixaReferencia,caixaReforma,servicoDivida,auditoriaPonte:auditoria,
    icsdReferencia:servicoDivida>0?caixaReferencia/servicoDivida:null,
-   icsdReforma:servicoDivida>0?caixaReforma/servicoDivida:null,
-   variacaoCaixa:caixaReforma-caixaReferencia};
+   icsdReforma:caixaReforma!==null&&servicoDivida>0?caixaReforma/servicoDivida:null,
+   variacaoCaixa:caixaReforma===null?null:caixaReforma-caixaReferencia};
  });
  return {indicadoresHistoricos:calcularIndicadoresFinanceiros(historico),
   projecoes,aptoParaParecer:false,
   ressalvas:["Alíquotas por atividade e créditos dependem de validação jurídica.",
    "Projeção financeira simplificada; ICSD não substitui FCADS contratual.",
    "Não há segregação entre IBS e CBS, nem modelagem de repasse a preços.",
-   "EBITDA mantido constante em margem; efeito tributário tratado separadamente no caixa.",
+   "Sem ponte tributária auditada, caixa e ICSD da reforma ficam indisponíveis.",
    "A conciliação de receita não substitui a auditoria de demonstrações."]};
 }
