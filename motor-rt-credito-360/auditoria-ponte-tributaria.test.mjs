@@ -9,7 +9,8 @@ test("não deduz tributos novamente quando EBITDA já os reflete",()=>{
  impostoReferenciaJaRefletidoNoEbitda:true,
  impostoReformaJaRefletidoNoEbitda:true});
  assert.equal(r.ajusteTributarioCaixa,null);
- assert.equal(r.autorizadoParaProjecao,true);
+ assert.equal(r.autorizadoParaProjecao,false);
+ assert.match(r.alertas.join(" "),/ajuste de caixa não autorizado/);
 });
 test("permite diferença de caixa somente em EBITDA pré-tributos documentado",()=>{
  const r=auditarPonteTributaria({...base,
