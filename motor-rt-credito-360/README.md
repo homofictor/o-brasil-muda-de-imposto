@@ -496,3 +496,34 @@ e armazenamento privado de documentos, além de revisão legal.
 Próxima ação: localizar consumidores reais e impedir exibição como
 resultado validado quando `statusAuditoriaNCG !== "conciliada_documentalmente"`.
 Nenhum merge na main, deploy manual, uso de dados pessoais ou gastos.
+
+
+## Bloqueio de aprovação de revisão contábil sem registros válidos (31/10/2026)
+
+Falha reproduzida: `aprovarRevisaoContabil` liberava como revisada e
+`aptoParaProjecao:true` uma extração sem linhas contábeis, bem como
+um objeto de revisão sem a lista obrigatória de erros. A aprovação agora
+exige estado `aguardando_revisao`, aptidão anterior falsa, listas
+`erros` e `registros` presentes, ao menos uma linha válida e
+valores finitos. Reaprovação de resultado já aprovado e linhas
+adulteradas são rejeitadas. Não houve alteração de cálculos tributários,
+caixa ou ICSD, nem implantação de armazenamento de documentos.
+
+Commits: código `a364e3fc3fe5c8566bcb04a4cbb725c9d8b99730`;
+testes `39b41b2a969aa7cf7f0e255e983cc2d81b40f07b`.
+Regressão: três novos testes reproduziram a falha antes da correção;
+após os commits, **6 testes aprovados, 0 falhas** em JavaScript V8,
+com adaptação síncrona de `node:test` e `assert`. Blobs relidos
+da branch e conferidos: código `cbd3db8d5c82414926c94073d67e6e8780c4da3d`,
+testes `c3914e2b9676c0cb3f30f1648a8e291cd72be1ae`.
+Não houve execução nativa de `node --test`, suíte integral ou QA de interface.
+
+**Prontidão: não pronto para testes integrados.** A revisão permanece
+declarativa e sem autenticação institucional. Falta armazenamento privado
+e autorização documental efetivos; DFC e FCADS/ICSD contratual ainda
+não foram conciliados; os cenários multissetoriais são sintéticos e
+não homologados manualmente; a interface financeira não está integrada.
+A ponte financeira direta continua acessível sem gate global de NCG.
+Próxima ação: proteger o consumidor efetivo dos resultados não auditados
+antes de habilitar qualquer parecer. Nenhum merge na `main`, deploy
+manual, gasto ou uso de dados pessoais nesta entrega.
