@@ -48,7 +48,15 @@ export function prepararRevisaoContabil({documentoId,exercicio,demonstracao,linh
   status:"aguardando_revisao",aptoParaProjecao:false};
 }
 export function aprovarRevisaoContabil(revisao,{analistaId,confirmacoes}={}){
- if(revisao.erros?.length)throw new Error("Há inconsistências na extração");
+ if(!revisao||revisao.status!=="aguardando_revisao"||
+    revisao.aptoParaProjecao!==false||!Array.isArray(revisao.erros)||
+    !Array.isArray(revisao.registros)||revisao.registros.length===0)
+  throw new Error("Revisão contábil sem registros pendentes válidos");
+ if(revisao.erros.length)throw new Error("Há inconsistências na extração");
+ if(revisao.registros.some(r=>!r||typeof r.conta!=="string"||
+    !r.conta.trim()||!Number.isFinite(r.valor)||
+    r.revisadoPorAnalista!==false))
+  throw new Error("Registros contábeis inválidos");
  if(!analistaId||confirmacoes?.conferiuFonte!==true||
     confirmacoes?.conferiuUnidades!==true||
     confirmacoes?.conferiuTotais!==true)
