@@ -80,3 +80,19 @@ test("rejeita receita não conciliada, crédito sem revisão e CAPEX negativo",(
  assert.throws(()=>integrarIBSCBSAoCredito({...entrada,
   capex:{2027:-1}}),/capex/);
 });
+
+test("liberação de NCG aumenta caixa e ICSD sem afetar a ponte IBS/CBS",()=>{
+ const p=integrarIBSCBSAoCredito({...entrada,variacaoNCG:{2027:-10}}).projecoes[0];
+ perto(p.caixaAntesTributos,145);
+ perto(p.caixaReferencia,65);perto(p.caixaReforma,81);
+ perto(p.icsdReferencia,1.625);perto(p.icsdReforma,2.025);
+ perto(p.variacaoCaixa,16);
+ perto(p.ibs.conciliacao,0);perto(p.cbs.conciliacao,0);
+});
+
+test("rejeita NCG não numérica e mantém vedação a CAPEX negativo",()=>{
+ assert.throws(()=>integrarIBSCBSAoCredito({...entrada,
+  variacaoNCG:{2027:NaN}}),/variacaoNCG/);
+ assert.throws(()=>integrarIBSCBSAoCredito({...entrada,
+  capex:{2027:-10}}),/capex/);
+});
