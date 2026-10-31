@@ -19,12 +19,18 @@ export function apurarIBSeCBS({
  const serieIBS=calcular("IBS",ibs),serieCBS=calcular("CBS",cbs);
  const anosConsolidados=serieIBS.map((linha,i)=>{
   const outra=serieCBS[i];
-  return {ano:linha.ano,ibs:linha,cbs:outra,
+  const totais={
    debitoTotal:linha.debito+outra.debito,
    creditoGeradoTotal:linha.gerado+outra.gerado,
    creditoUtilizadoTotal:linha.utilizado+outra.utilizado,
    tributoPagarTotal:linha.tributoPagar+outra.tributoPagar,
-   ressarcimentoRecebidoTotal:linha.ressarcido+outra.ressarcido,
+   ressarcimentoRecebidoTotal:linha.ressarcido+outra.ressarcido
+  };
+  // Cada conta pode ser finita, mas a soma IBS + CBS pode exceder o limite.
+  for(const [nome,valor] of Object.entries(totais))
+   if(!Number.isFinite(valor))
+    throw new Error("Consolidação IBS/CBS não finita: "+nome+" "+linha.ano);
+  return {ano:linha.ano,ibs:linha,cbs:outra,...totais,
    saldoCreditoIBS:linha.saldoFinal,saldoCreditoCBS:outra.saldoFinal};
  });
  return {anos:anosConsolidados,
