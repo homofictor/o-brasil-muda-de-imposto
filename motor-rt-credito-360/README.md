@@ -285,3 +285,42 @@ autorização institucional e rastreabilidade legal por exercício não
 estão homologadas. Próxima ação: localizar e proteger o ponto de
 entrada operacional antes de exibir qualquer projeção como validada,
 sem publicação em produção ou alteração da `main`.
+
+## Triagem CNAE multissetorial: agronegócio (31/10/2026)
+
+Lacuna comprovada: CNAEs das divisões 01 (agropecuária), 02 (produção
+florestal) e 03 (pesca e aquicultura) eram classificados como `geral`,
+sem perguntas sobre sazonalidade e capital de giro. A triagem agora os
+identifica como `agronegocio`, solicita dados de produção, receitas,
+exportações, insumos, estoques e sazonalidade, e destaca a necessidade de
+diferenciar produtor, agroindústria e operações com tratamento específico.
+Uma empresa com CNAE agropecuário principal e indústria secundária mantém
+as duas atividades separadas e exige alocação por operação.
+
+Não foram criadas alíquotas, benefícios, créditos automáticos ou regras
+tributárias por CNAE. A classificação é somente orientação para revisão
+do analista, não homologação legal ou financeira. Locadoras continuam
+apenas um dos setores testados, sem mudança de seu tratamento.
+
+Commits: implementação `2032aebbe00b2a322fb556291140523a7a71263c`;
+regressão `a760342a775c0af91e7d4df1a1e2cde25d467d64`.
+Reprodução antes da correção: quatro testes novos falharam (0/4).
+Após a correção: `node --test classificador-cnae.test.mjs
+classificador-agronegocio.test.mjs` executado em Node 22.16.0,
+**7 testes aprovados, 0 falhas**. Os dois blobs relidos da branch após
+os commits coincidiram com `git hash-object` dos arquivos locais
+testados: `9e7cba0172c7e0620982357201da552e38fe7d6a` e
+`7c290cb60d050436ea699c88545c60bd2c92daef`.
+A suíte completa do repositório não foi executada. Contexto GitHub
+Vercel do commit de regressão: `success`, sem comprovação de publicação
+em produção; nenhuma publicação manual foi autorizada ou realizada.
+
+**Prontidão: não pronto para testes integrados.** Testes de triagem:
+aprovados, mas sem homologação de todos os setores ou cenários contábeis.
+Caixa e ICSD permanecem simplificados, sem DFC/FCADS contratual auditados;
+a entrada financeira sem gate global da NCG segue acessível; interface
+apenas cadastral; revisão legal por exercício, autorização institucional
+e armazenamento privado documental não comprovados. Próxima prioridade:
+proteger o fluxo operacional para impedir interpretação de simulação
+sem conciliação como parecer validado. Não houve merge na `main`,
+alteração intencional de produção, gastos ou uso de dados pessoais.
