@@ -59,13 +59,20 @@ export function integrarIBSCBSAoCredito({
   const caixaReforma=conciliado?caixaAntesTributos-t.tributoPagarTotal+
    t.ressarcimentoRecebidoTotal:null;
   const servicoDivida=componentesCaixa.juros+componentesCaixa.amortizacoes;
+  const icsdReferencia=caixaReferencia!==null&&servicoDivida>0?
+   caixaReferencia/servicoDivida:null;
+  const icsdReforma=caixaReforma!==null&&servicoDivida>0?
+   caixaReforma/servicoDivida:null;
+  const variacaoCaixa=conciliado?caixaReforma-caixaReferencia:null;
+  // Impede que operações com entradas finitas produzam Infinity ou NaN.
+  for(const [nome,valor] of Object.entries({caixaAntesTributos,caixaReferencia,
+   caixaReforma,servicoDivida,icsdReferencia,icsdReforma,variacaoCaixa})){
+   if(valor!==null&&!Number.isFinite(valor))
+    throw new Error("Resultado financeiro não finito: "+nome+" "+ano);
+  }
   return {...t,ebitdaReferencia,tributoReferencia,componentesCaixa,caixaAntesTributos,
    caixaReferencia,caixaReforma,servicoDivida,auditoriaPonte,
-   icsdReferencia:caixaReferencia!==null&&servicoDivida>0?
-    caixaReferencia/servicoDivida:null,
-   icsdReforma:caixaReforma!==null&&servicoDivida>0?
-    caixaReforma/servicoDivida:null,
-   variacaoCaixa:conciliado?caixaReforma-caixaReferencia:null};
+   icsdReferencia,icsdReforma,variacaoCaixa};
  });
  return {indicadoresHistoricos:calcularIndicadoresFinanceiros(historico),
   projecoes,homologado:false,aptoParaParecer:false,
