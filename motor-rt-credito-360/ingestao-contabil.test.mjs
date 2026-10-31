@@ -19,3 +19,29 @@ test("revisão contábil só é liberada com confirmações",()=>{
  confirmacoes:{conferiuFonte:true,conferiuUnidades:true,conferiuTotais:true}});
  assert.equal(aprovado.aptoParaProjecao,true);
 });
+
+
+test("impede aprovação de revisão sem linhas contábeis",()=>{
+ const r=prepararRevisaoContabil({documentoId:"doc_sintetico",exercicio:2026,
+  demonstracao:"dre",linhas:[]});
+ assert.throws(()=>aprovarRevisaoContabil(r,{analistaId:"analista_sintetico",
+  confirmacoes:{conferiuFonte:true,conferiuUnidades:true,conferiuTotais:true}}),
+  /sem registros pendentes/);
+});
+test("impede aprovação de objeto sem lista de erros e reaprovação",()=>{
+ const r=prepararRevisaoContabil({documentoId:"doc_sintetico",exercicio:2026,
+  demonstracao:"dre",linhas:[{conta:"Receita",valor:100,paginaOrigem:1}]});
+ const op={analistaId:"analista_sintetico",
+  confirmacoes:{conferiuFonte:true,conferiuUnidades:true,conferiuTotais:true}};
+ assert.throws(()=>aprovarRevisaoContabil({...r,erros:undefined},op),/sem registros pendentes/);
+ const aprovado=aprovarRevisaoContabil(r,op);
+ assert.throws(()=>aprovarRevisaoContabil(aprovado,op),/sem registros pendentes/);
+});
+test("rejeita linhas adulteradas após preparação",()=>{
+ const r=prepararRevisaoContabil({documentoId:"doc_sintetico",exercicio:2026,
+  demonstracao:"dre",linhas:[{conta:"Receita",valor:100,paginaOrigem:1}]});
+ const op={analistaId:"analista_sintetico",
+  confirmacoes:{conferiuFonte:true,conferiuUnidades:true,conferiuTotais:true}};
+ assert.throws(()=>aprovarRevisaoContabil({...r,
+  registros:[{...r.registros[0],valor:NaN}]},op),/Registros contábeis inválidos/);
+});
