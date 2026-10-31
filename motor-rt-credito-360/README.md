@@ -354,3 +354,33 @@ autorização institucional e armazenamento privado documental.
 Próxima prioridade: isolar o fluxo operacional não auditado antes
 de qualquer exibição de projeções como validadas. Não houve merge,
 publicação em produção, uso de dados pessoais ou gasto.
+
+## Proteção contra overflow de receitas multissetoriais (31/10/2026)
+
+Na projeção por atividade, duas receitas individualmente finitas podiam
+produzir `receitaTotal = Infinity`, mesmo quando os débitos individuais
+de IBS e CBS permaneciam finitos. A função retornava essa receita inválida
+ao consumidor. A correção em `atividades-ibs-cbs.js` rejeita receitas
+projetadas, débitos por tributo e totais de receita não finitos antes de
+entregar a projeção. Não modifica alíquotas, fórmulas, direitos a crédito,
+regras legais nem compensação entre IBS e CBS.
+
+Commits: implementação `322c32ed3007a8fc873899b154a14cf212d55357`;
+regressão `62b441be0e1bede8b90dbcdcecdb47ea6390d4cf`.
+Reprodução antes da correção: `npm test` em diretório isolado com Node 22,
+**1 aprovado e 2 falhas**. Depois da correção: **3 testes nativos Node
+aprovados, 0 falhas**, cobrindo overflow de receita consolidada, overflow
+por crescimento e conciliação de oito atividades sintéticas com IBS/CBS
+separados. Os arquivos locais testados têm os mesmos hashes Git blob
+dos arquivos relidos da branch: `446f19846f732b0d9b18bc1335381b43b78f7d5f`
+e `c5bbf7baeef7a29e034afe46c27a4dc5cb58d2b9`. Dependências
+`ibs-cbs.js` e `creditos.js` também foram copiadas e conferidas
+por hash. **A suíte completa do repositório não foi executada.**
+
+**Prontidão: não pronto para testes integrados.** A regressão isolada
+passou, mas não há homologação manual dos cenários setoriais, conciliação
+completa de DFC/FCADS, validação contratual do ICSD, interface financeira
+operacional, controle de acesso e armazenamento privado comprovados.
+A entrada financeira antiga ainda permite simulações sem auditoria global
+da NCG. A revisão legal por exercício permanece obrigatória.
+Não houve merge na `main`, publicação ou alteração de produção.
