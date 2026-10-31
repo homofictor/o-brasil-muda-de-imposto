@@ -462,3 +462,37 @@ O caminho financeiro sem gate global da NCG permanece acessível.
 Próxima ação: localizar consumidores da ponte financeira e impedir que
 projeções sem auditoria documental sejam exibidas como validadas.
 Nenhum merge na `main`, deploy manual, gasto ou dado pessoal nesta entrega.
+
+
+## Identificação explícita da auditoria NCG no resultado financeiro (31/10/2026)
+
+Entrega limitada à identificação do caminho de execução, sem mudar fórmulas,
+valores de IBS/CBS, caixa ou ICSD. A ponte direta
+`integrarIBSCBSAoCredito` agora informa
+`statusAuditoriaNCG: "nao_auditada"` no resultado e em cada exercício.
+A entrada `integrarCreditoComNCGAuditada` informa
+`statusAuditoriaNCG: "conciliada_documentalmente"` somente depois de
+validar as evidências de todos os exercícios. Em ambos os casos,
+`homologado` e `aptoParaParecer` permanecem falsos. A etiqueta de
+conciliação da NCG não equivale a homologação de DFC, FCADS ou ICSD.
+
+Commits: ponte direta `f14fd857ad90effb402e973e355951c7574e3e33`;
+entrada auditada `b6f3e83f1f246fba13ebe9c384da84827ef86209`;
+testes `0f78e421c4f2ffda601bb7bfd18c78ba1f3b8497`.
+Verificação após commits: **29 testes aprovados, 0 falhas** em executor
+JavaScript V8 com adaptações síncronas de `node:test` e `assert/strict`,
+a partir de 8 módulos e 3 arquivos de teste relidos da branch.
+A primeira execução do adaptador apresentou 1 erro por ausência de
+`assert.notEqual` no próprio adaptador; após acrescentá-lo, 29/29 passaram.
+Não houve execução nativa do Node nem da suíte completa.
+
+**Prontidão: não pronto para testes integrados.** A ponte direta continua
+tecnicamente acessível e não impõe auditoria documental da NCG; agora
+expõe seu status para que consumidores não a confundam com projeção
+conciliada. Não foi comprovado que todos os consumidores respeitem o campo.
+Faltam conciliação completa da DFC, FCADS/ICSD contratual, validação
+manual de cenários multissetoriais, interface financeira, controle de acesso
+e armazenamento privado de documentos, além de revisão legal.
+Próxima ação: localizar consumidores reais e impedir exibição como
+resultado validado quando `statusAuditoriaNCG !== "conciliada_documentalmente"`.
+Nenhum merge na main, deploy manual, uso de dados pessoais ou gastos.
