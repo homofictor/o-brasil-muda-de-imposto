@@ -49,7 +49,7 @@ export function auditarOrigemNCG({
     exercicioBase, exercicioProjetado, base, projetado,
     variacaoInformada, variacaoCalculada, diferenca, conciliado,
     pendencias, status: pendencias.length ? "pendente_revisao" : "conciliado_revisado",
-    // A ponte de caixa ainda não consome esta auditoria; não autoriza parecer.
+    // Mesmo consumida pela entrada auditada, esta revisão não autoriza parecer.
     aptoParaParecer: false
   };
 }
