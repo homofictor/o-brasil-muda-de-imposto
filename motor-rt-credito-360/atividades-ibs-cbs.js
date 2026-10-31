@@ -29,6 +29,8 @@ export function projetarAtividadesIBSCBS({
   for(const t of ["ibs","cbs"]){debitos[t][ano]=0;gerados[t][ano]=0;}
   for(const a of atividades){
    const receita=a.receitaBase*Math.pow(1+a.crescimento,i);
+   if(!Number.isFinite(receita))
+    throw new Error("Receita ou débito não finito: "+a.id+" "+ano);
    const taxas={};const valorTributo={};
    for(const t of ["ibs","cbs"]){
     const taxa=a.aliquotasValidadas?.[t]?.[ano];
@@ -36,8 +38,12 @@ export function projetarAtividadesIBSCBS({
      throw new Error("Alíquota "+t+" não validada: "+a.id+" "+ano);
     taxas[t]=taxa;valorTributo[t]=receita*taxa;
     debitos[t][ano]+=valorTributo[t];
+    if(!Number.isFinite(valorTributo[t])||!Number.isFinite(debitos[t][ano]))
+     throw new Error("Receita ou débito não finito: "+a.id+" "+ano);
    }
    receitas[ano]+=receita;
+   if(!Number.isFinite(receitas[ano]))
+    throw new Error("Receita ou débito não finito: total "+ano);
    detalhes[ano].push({atividadeId:a.id,descricao:a.descricao??a.id,
     receita,aliquotas:taxas,debitos:valorTributo});
   }
