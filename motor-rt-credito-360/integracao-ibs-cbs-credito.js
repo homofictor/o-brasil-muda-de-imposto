@@ -36,9 +36,13 @@ export function integrarIBSCBSAoCredito({
  const projecoes=tributario.projecoes.map(t=>{
   const ano=t.ano,ebitdaReferencia=t.receitaTotal*margem;
   const tributoReferencia=t.receitaTotal*aliquotaReferencia;
-  const caixaAntesTributos=ebitdaReferencia-anual(capex,ano,"capex")-
-   anual(variacaoNCG,ano,"variacaoNCG")-
-   anual(impostosResultado,ano,"impostosResultado");
+  const componentesCaixa={capex:anual(capex,ano,"capex"),
+   variacaoNCG:anual(variacaoNCG,ano,"variacaoNCG"),
+   impostosResultado:anual(impostosResultado,ano,"impostosResultado"),
+   juros:anual(juros,ano,"juros"),
+   amortizacoes:anual(amortizacoes,ano,"amortizacoes")};
+  const caixaAntesTributos=ebitdaReferencia-componentesCaixa.capex-
+   componentesCaixa.variacaoNCG-componentesCaixa.impostosResultado;
   const auditoriaPonte=auditarPonteTributaria({
    receitaBase:t.receitaTotal,ebitdaBase:ebitdaReferencia,
    tributoReferencia,tributoReforma:t.tributoPagarTotal,
@@ -54,9 +58,8 @@ export function integrarIBSCBSAoCredito({
   const caixaReferencia=conciliado?caixaAntesTributos-tributoReferencia:null;
   const caixaReforma=conciliado?caixaAntesTributos-t.tributoPagarTotal+
    t.ressarcimentoRecebidoTotal:null;
-  const servicoDivida=anual(juros,ano,"juros")+
-   anual(amortizacoes,ano,"amortizacoes");
-  return {...t,ebitdaReferencia,tributoReferencia,caixaAntesTributos,
+  const servicoDivida=componentesCaixa.juros+componentesCaixa.amortizacoes;
+  return {...t,ebitdaReferencia,tributoReferencia,componentesCaixa,caixaAntesTributos,
    caixaReferencia,caixaReforma,servicoDivida,auditoriaPonte,
    icsdReferencia:caixaReferencia!==null&&servicoDivida>0?
     caixaReferencia/servicoDivida:null,
