@@ -61,3 +61,12 @@ test("não aceita períodos não consecutivos nem entradas não finitas", () => 
   assert.throws(() => auditarOrigemNCG({...entrada, exercicioProjetado: 2028}), /inválidos/);
   assert.throws(() => auditarOrigemNCG({...entrada, variacaoInformada: NaN}), /inválidos/);
 });
+
+test("não permite tolerância documental acima de um centavo", () => {
+  assert.throws(() => auditarOrigemNCG({...entrada, variacaoInformada: 11,
+    tolerancia: 1000000}), /tolerância inválidos/);
+  assert.equal(auditarOrigemNCG({...entrada, tolerancia: 0}).status,
+    "conciliado_revisado");
+  assert.equal(auditarOrigemNCG({...entrada, tolerancia: 0.01}).status,
+    "conciliado_revisado");
+});
