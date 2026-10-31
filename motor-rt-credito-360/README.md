@@ -527,3 +527,37 @@ A ponte financeira direta continua acessível sem gate global de NCG.
 Próxima ação: proteger o consumidor efetivo dos resultados não auditados
 antes de habilitar qualquer parecer. Nenhum merge na `main`, deploy
 manual, gasto ou uso de dados pessoais nesta entrega.
+
+## Conciliação patrimonial: tolerância e overflow (31/10/2026)
+
+Falha reproduzida em `demonstracoes.js`: `conciliarBalanco` aceitava
+tolerância arbitrária (por exemplo, 1.000), permitindo classificar um
+balanço divergente como conciliado. Valores de entrada individualmente
+finitos também podiam gerar diferença infinita por overflow, sem rejeição.
+
+Correção restrita à validação da tolerância (intervalo de 0 a 0,01) e
+da diferença patrimonial finita. Nenhuma fórmula de IBS/CBS, caixa ou ICSD
+foi alterada. Testes novos cobrem tolerância elevada, negativa, limite
+permitido e overflow.
+
+Commits: correção `db4f6734a92d56b53fdd18cc03cd8921fd024526`;
+regressão `3a88b58fa650cb23a5226903b1ee43af06700932`.
+Verificação após os commits: 6 testes do arquivo
+`demonstracoes.test.mjs` executados em JavaScript V8 com adaptador
+para `node:test` e `assert`, **6 aprovados, 0 falhas**.
+Blobs relidos da branch: módulo
+`e5b67ba14e0fb283c80fb9e2b831a8172eaffb5a` e testes
+`a8b8dca25a67594480b679957e6025d9fcd1cd83`.
+O comando nativo `node --test` e a suíte integral **não** foram
+executados. Não houve QA de interface ou deploy confirmado.
+
+**Prontidão: não pronto para testes integrados.** Os cenários setoriais
+seguem sintéticos, sem conciliação manual e revisão legal por exercício.
+DFC e FCADS/ICSD contratual não foram homologados; a interface
+financeira não está integrada; controle de acesso, autorização e
+armazenamento privado documental não foram comprovados. A entrada
+financeira direta ainda permite NCG não auditada, embora rotulada.
+Próxima ação: localizar consumidores efetivos da ponte financeira e
+bloquear a apresentação de projeções com NCG não auditada como
+resultados validados. Nenhum merge na `main`, alteração manual de
+produção, uso de dados pessoais ou contratação de serviços nesta entrega.
