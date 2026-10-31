@@ -21,6 +21,8 @@ export function apurarCreditosAnuais({anoInicial, anos=5, saldoInicial=0, gerado
     const solicitado=n(ressarcidos,"ressarcidos");
     const ajuste=n(ajustesNegativos,"ajustesNegativos");
     const disponivel=saldo+gerado;
+    if (!Number.isFinite(disponivel))
+      throw new Error("Saldo de créditos excede limite numérico em "+ano);
     const utilizado=Math.min(disponivel,debito);
     const remanescente=disponivel-utilizado;
     if(solicitado+ajuste>remanescente+1e-8)
