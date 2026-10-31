@@ -38,8 +38,10 @@ export function integrarCreditoComNCGAuditada({dadosFinanceiros, auditoriasNCG})
   return {
     ...resultado,
     projecoes: resultado.projecoes.map(projecao => ({
-      ...projecao, auditoriaNCG: relatorios[projecao.ano]
+      ...projecao, auditoriaNCG: relatorios[projecao.ano],
+      statusAuditoriaNCG: "conciliada_documentalmente"
     })),
+    statusAuditoriaNCG: "conciliada_documentalmente",
     homologado: false,
     aptoParaParecer: false
   };
