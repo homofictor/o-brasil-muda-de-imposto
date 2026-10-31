@@ -19,3 +19,12 @@ test("identifica histórico insuficiente",()=>{
  const r=validarSerieHistorica([{nome:"bp.pdf",tamanho:100,tipo:"balanco_patrimonial",ano:2025}]);
  assert.equal(r.completo,false);
 });
+
+test("rejeita tolerância arbitrária na conciliação patrimonial",()=>{
+ assert.throws(()=>conciliarBalanco({ativoTotal:100,passivoTotal:60,patrimonioLiquido:30},1000),/Tolerância/);
+ assert.throws(()=>conciliarBalanco({ativoTotal:100,passivoTotal:60,patrimonioLiquido:40},-1),/Tolerância/);
+ assert.equal(conciliarBalanco({ativoTotal:100,passivoTotal:60,patrimonioLiquido:40},0.01).conciliado,true);
+});
+test("rejeita diferença patrimonial não finita produzida por overflow",()=>{
+ assert.throws(()=>conciliarBalanco({ativoTotal:1e308,passivoTotal:-1e308,patrimonioLiquido:0}),/não finita/);
+});
