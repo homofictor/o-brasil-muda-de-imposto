@@ -4,6 +4,7 @@
  * Nenhuma alíquota, crédito ou benefício fiscal é presumido.
  */
 const perfis = [
+ {prefixos:["01","02","03"],setor:"agronegocio",perguntas:["tipoProducao","receitasPorAtividade","operacoesExportacao","regimeProdutor","insumosEEstoques","sazonalidadeCaixa"],riscos:["diferenciar_produtor_agroindustria","operacoes_com_tratamento_especifico","sazonalidade_capital_giro"]},
  {prefixos:["7711"],setor:"locacao_veiculos",perguntas:["percentualReceitaLocacao","percentualReceitaVendaUsados","frotaCapexAnual","cicloRenovacaoFrota","creditosAquisicaoVeiculos"],riscos:["segregar_locacao_e_alienacao","creditos_recorrentes_capex","cronograma_ressarcimento"]},
  {prefixos:["41","42","43"],setor:"construcao_civil",perguntas:["tiposContratos","receitasPorEmpreendimento","materiaisESubcontratacoes","regimeOperacoesImobiliarias"],riscos:["regimes_especificos_por_operacao","contratos_longo_prazo"]},
  {prefixos:["86"],setor:"saude",perguntas:["naturezaServicos","composicaoReceitas","operacoesElegiveisTratamentoEspecifico"],riscos:["classificacao_servicos","tratamento_legal_condicionado"]},
