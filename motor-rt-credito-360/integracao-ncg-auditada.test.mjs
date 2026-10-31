@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {integrarCreditoComNCGAuditada} from "./integracao-ncg-auditada.js";
+import {integrarIBSCBSAoCredito} from "./integracao-ibs-cbs-credito.js";
 
 const origem = (valor, linhaOrigem) => ({valor, linhaOrigem,
   demonstracao: "balanco_patrimonial", documentoId: "balanco-sintetico"});
@@ -97,4 +98,23 @@ test("bloqueia caixa e ICSD quando duas contas reutilizam a mesma linha document
   assert.throws(() => executar(dadosFinanceiros, {2027: {...auditoria,
     saldosBase: {...auditoria.saldosBase, estoques: origem(90, 1)}}}),
     /conciliação pendente/);
+});
+
+
+test("ponte financeira direta identifica NCG não auditada e veda parecer", () => {
+  const r = integrarIBSCBSAoCredito(dadosFinanceiros);
+  assert.equal(r.statusAuditoriaNCG, "nao_auditada");
+  assert.equal(r.projecoes[0].statusAuditoriaNCG, "nao_auditada");
+  assert.equal(r.projecoes[0].auditoriaNCG, undefined);
+  assert.equal(r.aptoParaParecer, false);
+  assert.equal(r.homologado, false);
+});
+
+test("entrada documental explicita conciliação da NCG sem homologar parecer", () => {
+  const r = executar();
+  assert.equal(r.statusAuditoriaNCG, "conciliada_documentalmente");
+  assert.equal(r.projecoes[0].statusAuditoriaNCG, "conciliada_documentalmente");
+  assert.equal(r.projecoes[0].auditoriaNCG.status, "conciliado_revisado");
+  assert.equal(r.aptoParaParecer, false);
+  assert.equal(r.homologado, false);
 });
