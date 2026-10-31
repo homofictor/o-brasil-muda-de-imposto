@@ -25,12 +25,14 @@ export function auditarPonteTributaria({
  if(impostoReferenciaJaRefletidoNoEbitda!==impostoReformaJaRefletidoNoEbitda)
   alertas.push("Bases contábeis não comparáveis: exige normalização");
  const comparavel=flags[0]===flags[1];
+ if(comparavel&&flags[0])
+  alertas.push("EBITDA já reflete tributos sobre consumo: ajuste de caixa não autorizado");
  // Somente no caso de EBITDA pré-tributos explicitamente documentado
  // a variação dos tributos é um ajuste de caixa incremental permitido.
  const ajusteTributarioCaixa=comparavel&&!flags[0]
   ?tributoReferencia-tributoReforma:null;
  return {comparavel,ajusteTributarioCaixa,
   efeitoPreco,efeitoCusto,alertas,
-  autorizadoParaProjecao:comparavel&&alertas.length===0,
+  autorizadoParaProjecao:comparavel&&alertas.length===0&&ajusteTributarioCaixa!==null,
   regra:"Não adicionar tributo de referência ao EBITDA líquido de tributos sem conciliação."};
 }
