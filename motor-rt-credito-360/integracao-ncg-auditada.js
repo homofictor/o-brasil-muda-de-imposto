@@ -25,7 +25,9 @@ export function integrarCreditoComNCGAuditada({dadosFinanceiros, auditoriasNCG})
       throw new Error(`NCG ${ano}: exercícios da evidência não correspondem à projeção`);
     }
     const relatorio = auditarOrigemNCG({
-      ...evidencia, variacaoInformada: dadosFinanceiros.variacaoNCG[ano]
+      ...evidencia, variacaoInformada: dadosFinanceiros.variacaoNCG[ano],
+      // O limiar do gate não pode ser ampliado pela própria evidência.
+      tolerancia: 0.01
     });
     if (relatorio.status !== "conciliado_revisado") {
       throw new Error(`NCG ${ano}: conciliação pendente (${relatorio.pendencias.join("; ")})`);
