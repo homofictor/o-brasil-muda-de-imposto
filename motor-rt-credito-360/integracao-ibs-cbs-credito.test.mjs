@@ -96,3 +96,16 @@ test("rejeita NCG não numérica e mantém vedação a CAPEX negativo",()=>{
  assert.throws(()=>integrarIBSCBSAoCredito({...entrada,
   capex:{2027:-10}}),/capex/);
 });
+
+
+test("expõe memória anual de caixa e concilia ICSD sem alterar o cálculo",()=>{
+ const p=integrarIBSCBSAoCredito({...entrada,variacaoNCG:{2027:-10}}).projecoes[0];
+ assert.deepEqual(p.componentesCaixa,{capex:20,variacaoNCG:-10,
+  impostosResultado:5,juros:15,amortizacoes:25});
+ perto(p.caixaAntesTributos,p.ebitdaReferencia-p.componentesCaixa.capex-
+  p.componentesCaixa.variacaoNCG-p.componentesCaixa.impostosResultado);
+ perto(p.servicoDivida,p.componentesCaixa.juros+p.componentesCaixa.amortizacoes);
+ perto(p.caixaReforma,p.caixaAntesTributos-p.ibs.tributoPagar-
+  p.cbs.tributoPagar+p.ibs.ressarcido+p.cbs.ressarcido);
+ perto(p.icsdReforma,p.caixaReforma/p.servicoDivida);
+});
