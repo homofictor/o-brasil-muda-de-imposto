@@ -9,7 +9,10 @@ const entrada={anoBase:2026,anos:2,
  ],eventosCredito:[
  {atividadeId:"locacao",ano:2027,valor:100,fundamento:"Hipótese simulada",validadoPorAnalista:true},
  {atividadeId:"locacao",ano:2028,valor:50,fundamento:"Hipótese simulada",validadoPorAnalista:true}],
- aliquotaReferencia:.1,juros:{2027:20,2028:20},amortizacoes:{2027:30,2028:30}};
+ aliquotaReferencia:.1,
+ tratamentoTributario:{referenciaRefletida:false,reformaRefletida:false,
+ evidenciaContabil:"Conciliação documental simulada",validadoPorAnalista:true},
+ juros:{2027:20,2028:20},amortizacoes:{2027:30,2028:30}};
 test("compara caixa e ICSD com créditos recorrentes",()=>{
  const r=integrarAtividadesCredito(entrada);
  assert.equal(r.projecoes[0].receitaTotal,1000);
@@ -27,4 +30,18 @@ test("bloqueia receita segmentada incompatível com DRE",()=>{
 test("bloqueia histórico não aprovado",()=>{
  assert.throws(()=>integrarAtividadesCredito({...entrada,
  historico:{...entrada.historico,revisadoPorAnalista:false}}));
+});
+
+test("bloqueia ICSD da reforma sem ponte tributária",()=>{
+ const r=integrarAtividadesCredito({...entrada,tratamentoTributario:null});
+ assert.equal(r.projecoes[0].caixaReforma,null);
+ assert.equal(r.projecoes[0].icsdReforma,null);
+ assert.equal(r.projecoes[0].auditoriaPonte.autorizadoParaProjecao,false);
+});
+test("não duplica ajuste quando tributos já estão no EBITDA",()=>{
+ const r=integrarAtividadesCredito({...entrada,tratamentoTributario:{
+ referenciaRefletida:true,reformaRefletida:true,
+ evidenciaContabil:"Conciliação documental simulada",validadoPorAnalista:true}});
+ assert.equal(r.projecoes[0].caixaReforma,null);
+ assert.equal(r.projecoes[0].icsdReforma,null);
 });
