@@ -91,3 +91,10 @@ test("tolerância fornecida na evidência não pode liberar NCG divergente", () 
   assert.throws(() => executar({...dadosFinanceiros, variacaoNCG: {2027: 50}},
     {2027: {...auditoria, tolerancia: 1000000}}), /conciliação pendente/);
 });
+
+
+test("bloqueia caixa e ICSD quando duas contas reutilizam a mesma linha documental", () => {
+  assert.throws(() => executar(dadosFinanceiros, {2027: {...auditoria,
+    saldosBase: {...auditoria.saldosBase, estoques: origem(90, 1)}}}),
+    /conciliação pendente/);
+});
