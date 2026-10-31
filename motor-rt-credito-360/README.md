@@ -107,3 +107,34 @@ por exercício, interface utilizável, autorização, armazenamento privado e
 auditoria documental. Próxima ação: vincular, sem cálculo presumido, a
 conciliação da origem da NCG e os demonstrativos à revisão obrigatória do
 analista. Nenhum merge ou deploy autorizado.
+
+## Auditoria documental da origem da NCG (31/10/2026)
+
+Entrega limitada ao novo módulo isolado `auditoria-origem-ncg.js` e seus
+testes, sem alterar a ponte financeira existente. Para dois balanços
+consecutivos, reconcilia clientes + estoques - fornecedores operacionais,
+compara a variação apurada com a informada e exige referência de documento,
+demonstração e linha para cada saldo. Identifica divergências, falta de
+evidência e ausência de revisão declarada pelo analista; aceita liberação
+de capital de giro com variação negativa. Nenhuma classificação ou valor
+é inferido automaticamente. `aptoParaParecer` permanece sempre falso.
+
+Commits: implementação `827105580c98f20948b27b1ad599dee922e472bd`;
+regressão `010cd81b8b1f88803d1acd6cbf7ac08816a6fe8a`.
+Verificação posterior aos commits: os dois blobs relidos diretamente da
+branch coincidem com `git hash-object` dos arquivos locais testados
+(`930f91f98c48ea423a77a4569e0db77a324310f0` e
+`9dbb162b465ae5673415a826a2dc83f646e5b385`).
+`npm test` no diretório isolado contendo exatamente esses dois arquivos
+e `package.json` mínimo: **6 testes nativos Node aprovados, 0 falhas**.
+Não foi executada a suíte integral do repositório.
+
+**Prontidão: não pronto para testes integrados.** A auditoria da origem da
+NCG ainda não é consumida por `integracao-ibs-cbs-credito.js`; a revisão
+é apenas declarativa, sem autenticação institucional. A conciliação da DFC
+e do FCADS contratual, validação manual por setor, rastreabilidade legal
+por exercício, interface operacional, autorização e armazenamento privado
+de documentos continuam pendentes. Não houve merge, deploy ou alteração
+de produção. Próxima ação: conectar a conciliação documental da NCG à
+ponte financeira com bloqueio seguro quando faltar evidência, preservando
+os testes de IBS/CBS e ICSD.
