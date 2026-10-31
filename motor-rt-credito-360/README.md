@@ -418,3 +418,13 @@ pendentes. A entrada financeira não auditada continua acessível.
 Próxima ação: tornar explícito no fluxo operacional o bloqueio de validação
 sem NCG documental e revisão institucional. Não houve merge, deploy manual,
 uso de dados pessoais nem contratação de serviços nesta execução.
+
+## Bloqueio explícito de ponte tributária já refletida no EBITDA (31/10/2026)
+
+A auditoria da ponte tributária não sinaliza mais `autorizadoParaProjecao=true` quando os tributos sobre consumo já estão refletidos no EBITDA de ambos os cenários e não existe ajuste tributário de caixa autorizado (`null`). Agora registra alerta e retorna autorização falsa. A integração financeira já bloqueava caixa e ICSD nesse caso; suas fórmulas, valores e a segregação IBS/CBS não foram alterados.
+
+Commits da entrega: correção `d4a5e215545b5e7f2e1ee59448aa4d9a55680281`, teste unitário `49990ee0a332386f159994a5eec6a119fb811a6e`, regressão de integração `65f09ad530efbbfc2f18f4469338a936bb7be63d`.
+
+Verificação posterior às alterações: 13 testes executados em JavaScript V8 com adaptador de `node:test` e `assert` (4 da auditoria e 9 da integração), todos aprovados; 0 falhas. A falha foi reproduzida antes da correção. Não houve execução nativa de `node --test`, suíte completa nem QA da interface.
+
+**Prontidão: não pronto para testes integrados.** Cenários multissetoriais continuam sintéticos e sem homologação manual; DFC e FCADS/ICSD contratual não estão conciliados; o caminho financeiro antigo permanece acessível sem gate global de NCG; a interface ainda não opera o fluxo financeiro; autorização e armazenamento privado de documentos não estão comprovados. Próxima ação: localizar e proteger o fluxo operacional efetivo contra exibição de projeções não auditadas como validadas. Nenhum merge ou deploy autorizado.
