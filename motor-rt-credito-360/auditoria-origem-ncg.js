@@ -13,7 +13,7 @@ export function auditarOrigemNCG({
   if (!Number.isInteger(exercicioBase) ||
       exercicioProjetado !== exercicioBase + 1 ||
       !Number.isFinite(variacaoInformada) ||
-      !Number.isFinite(tolerancia) || tolerancia < 0) {
+      !Number.isFinite(tolerancia) || tolerancia < 0 || tolerancia > 0.01) {
     throw new Error("Exercícios, variação de NCG ou tolerância inválidos");
   }
   const pendencias = [];
