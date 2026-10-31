@@ -53,6 +53,7 @@ test("bloqueia caixa e ICSD quando tributos já integram EBITDA",()=>{
   ...tratamentoTributario,referenciaRefletida:true,reformaRefletida:true}}).projecoes[0];
  assert.equal(p.caixaReferencia,null);assert.equal(p.caixaReforma,null);
  assert.equal(p.icsdReferencia,null);assert.equal(p.icsdReforma,null);
+ assert.equal(p.auditoriaPonte.autorizadoParaProjecao,false);
 });
 
 test("bloqueia caixa e ICSD sem revisão documental ou com bases incomparáveis",()=>{
