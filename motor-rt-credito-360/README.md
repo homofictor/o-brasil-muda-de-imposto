@@ -48,3 +48,29 @@ Não houve merge na `main` nem publicação em produção.
 
 Próxima ação: conciliar um cenário multissetorial com DRE, balanço e fluxo
 de caixa, incluindo a memória da variação de NCG, antes de ampliar a interface.
+
+## Rastreabilidade dos componentes de caixa e ICSD (31/10/2026)
+
+A projeção anual da ponte IBS/CBS agora expõe `componentesCaixa` com
+CAPEX, variação da NCG, impostos sobre resultado, juros e amortizações.
+Os mesmos valores alimentam o caixa pré-tributos e o serviço da dívida;
+nenhuma fórmula, regra fiscal, permissão ou fonte de dados foi alterada.
+A memória permite conferir, por exercício, a formação do caixa e do ICSD
+sem confundir a conta-corrente do IBS com a da CBS.
+
+Commits: implementação `e63eff43c621c79818b3fa3f0e695fc08b5e320d`;
+regressão `f092ee07d61495d5b3c7f4b4cde7a8951224dd4a`.
+Verificação após os commits: 25 casos de teste existentes e acrescentados,
+executados com sucesso em um harness JavaScript V8 que adapta as asserções
+`node:test`; 0 falhas. Não foi executado o comando `node --test` nem
+a suíte completa do repositório. Os arquivos alterados foram relidos da branch
+após as escritas e conferidos por SHA de conteúdo.
+
+Prontidão: **não pronto para testes integrados**. Faltam conciliação manual
+de DRE, balanço e fluxo de caixa por setor, conferência do FCADS/ICSD por
+analista, interface utilizável, rastreabilidade jurídica por exercício,
+controle de acesso e armazenamento privado de documentos. Não houve merge
+na `main`, implantação em produção ou uso de dados pessoais.
+
+Próxima ação: conciliar manualmente DRE, balanço, NCG e fluxo de caixa de um
+cenário sintético multissetorial, verificando o ICSD e a dupla contagem.
