@@ -28,7 +28,8 @@ export function integrarIBSCBSAoCredito({
   saldosIniciais,ressarcimentosRecebidos,ajustesNegativos});
  const anual=(mapa,ano,nome)=>{
   const valor=mapa?.[ano]??0;
-  if(!Number.isFinite(valor)||valor<0)throw new Error("Valor inválido: "+nome+" "+ano);
+  if(!Number.isFinite(valor)||(nome!=="variacaoNCG"&&valor<0))
+   throw new Error("Valor inválido: "+nome+" "+ano);
   return valor;
  };
  const margem=historico.ebitda/historico.receitaLiquida;
