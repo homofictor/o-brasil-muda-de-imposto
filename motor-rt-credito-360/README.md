@@ -389,3 +389,32 @@ operacional, controle de acesso e armazenamento privado comprovados.
 A entrada financeira antiga ainda permite simulações sem auditoria global
 da NCG. A revisão legal por exercício permanece obrigatória.
 Não houve merge na `main`, publicação ou alteração de produção.
+
+
+## Proteção da consolidação IBS/CBS contra overflow (31/10/2026)
+
+A soma dos valores anuais de IBS e CBS podia produzir `Infinity` mesmo quando
+cada conta-corrente isolada tinha valores finitos. A consolidação agora rejeita
+resultados não finitos nos totais de débitos, créditos gerados e utilizados,
+tributos a pagar e ressarcimentos recebidos, sem compensação cruzada nem
+alteração das fórmulas ou regras tributárias. Falha reproduzida antes da
+correção em três casos sintéticos de overflow; o cenário ordinário passou.
+
+Commits: implementação `91cb1172b190c87bf5bc822a5fcb7b272afa2068`;
+testes `ab7cb0848a2b8c74a98dce502690820cf17fe421`.
+Após os commits, os módulos e testes foram relidos da branch; 9 testes
+executados em JavaScript V8 com adaptação de `node:test` e
+`node:assert/strict`: **9 aprovados, 0 falhas** (3 casos IBS/CBS
+existentes, 2 casos de créditos existentes e 4 novos casos de consolidação).
+Blobs verificados: módulo `4ff203eb1f6d91fbb6de686d4a76c36c4625cacb`, regressão
+`603162530db454615f9ddb99d8f6038936cbf17e`.
+**Não** houve execução nativa de `node --test`, suíte integral ou QA da interface.
+
+**Prontidão: não pronto para testes integrados.** A conciliação setorial ainda
+não foi homologada manualmente; DFC e ICSD contratual não estão auditados;
+interface financeira não está integrada; revisão legal por exercício,
+controle de acesso e armazenamento privado dos documentos permanecem
+pendentes. A entrada financeira não auditada continua acessível.
+Próxima ação: tornar explícito no fluxo operacional o bloqueio de validação
+sem NCG documental e revisão institucional. Não houve merge, deploy manual,
+uso de dados pessoais nem contratação de serviços nesta execução.
