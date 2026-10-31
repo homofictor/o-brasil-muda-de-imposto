@@ -20,3 +20,31 @@ Núcleo inicial isolado em `core.js`, sem alteração da página pública. Proje
 5. Gerar relatório com memória de cálculo e ressalvas, sujeito à revisão do analista.
 
 Não publicar como ferramenta homologada de concessão de crédito.
+
+## Liberação de NCG (31/10/2026)
+
+Entrega limitada à ponte financeira multissetorial: a variação anual da
+necessidade de capital de giro (NCG) agora admite valor negativo, que representa
+liberação de recursos e aumenta o caixa disponível. CAPEX, impostos sobre
+resultado e serviço da dívida continuam não negativos. Nenhuma regra de IBS/CBS,
+fórmula tributária ou permissão foi modificada.
+
+Commits de implementação e regressão:
+`2902c3413fdd4c1b50be4776a12caee6bd8cbc0d` e
+`873bfe4add1866f45347e0418e8cdef7c5919ffa`.
+
+Verificação: 24 testes Node executados com sucesso em cópia local dos módulos
+e arquivos de teste obtidos da branch, incluindo dois novos casos de NCG
+negativa, ICSD e rejeição de entradas inválidas. A primeira execução ampliada
+falhou porque a cópia local de `indicadores-financeiros.js` estava incompleta;
+após completar a cópia com a função existente no repositório, 24/24 passaram.
+Isto não constitui execução da suíte integral do repositório nem QA da interface.
+
+Prontidão: **não pronto para testes integrados**. Permanecem sem comprovação
+a conciliação manual de cenários setoriais e demonstrações, o FCADS contratual,
+a interface utilizável e os controles de acesso e armazenamento privado de
+documentos. Revisão legal e aprovação do analista continuam obrigatórias.
+Não houve merge na `main` nem publicação em produção.
+
+Próxima ação: conciliar um cenário multissetorial com DRE, balanço e fluxo
+de caixa, incluindo a memória da variação de NCG, antes de ampliar a interface.
