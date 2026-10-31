@@ -75,7 +75,8 @@ export function integrarIBSCBSAoCredito({
    icsdReferencia,icsdReforma,variacaoCaixa};
  });
  return {indicadoresHistoricos:calcularIndicadoresFinanceiros(historico),
-  projecoes,homologado:false,aptoParaParecer:false,
+  projecoes:projecoes.map(p=>({...p,statusAuditoriaNCG:"nao_auditada"})),
+  statusAuditoriaNCG:"nao_auditada",homologado:false,aptoParaParecer:false,
   ressalvas:["IBS e CBS segregados, sem compensação cruzada entre tributos.",
    "Caixa e ICSD indisponíveis sem ponte contábil pré-tributos revisada.",
    "Alíquotas, créditos e ressarcimentos dependem de evidência legal e documental.",
