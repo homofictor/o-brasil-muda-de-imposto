@@ -245,3 +245,43 @@ isolamento no fluxo operacional antes de uso. Não houve merge na
 `main`, publicação ou alteração de produção, gasto ou uso de dados pessoais.
 Próxima ação: localizar o ponto de entrada operacional e impedir exibição
 de projeções sem conciliação como resultados validados.
+
+
+## Proteção de resultados financeiros não finitos (31/10/2026)
+
+Falha reproduzida na ponte `integrarIBSCBSAoCredito`: valores de entrada
+individualmente finitos podiam produzir `Infinity` no caixa antes dos
+tributos, no serviço da dívida ou no ICSD. Exemplo sintético: EBITDA de
+`1e308` e liberação de NCG de `-1e308`; outro: juros e amortizações
+de `1e308` cada. A saída anterior não rejeitava esses resultados, que
+poderiam contaminar a leitura da capacidade de pagamento.
+
+A ponte agora rejeita resultados não finitos de caixa pré-tributos,
+caixa de referência, caixa da reforma, serviço da dívida, ICSD e
+variação de caixa. As fórmulas, as alíquotas, os créditos e a separação
+entre IBS e CBS foram preservados. O bloqueio vale para todos os setores
+que utilizem a ponte, inclusive o caminho com NCG auditada.
+
+Commits: implementação `fdc8a6b030e30c62886f72322024002602296123`;
+regressão `ee3764833a44d9aeb8f1b71a8ddfeff041db8d31`.
+Verificação **após os commits**: 13 casos executados em JavaScript V8
+com adaptador de `node:test` e `assert`, sendo 9 regressões existentes
+e 4 novos testes (caso normal, overflow do caixa, do serviço da dívida
+e do ICSD); **13 aprovados, 0 falhas**. Os arquivos foram relidos
+diretamente da branch e os blobs conferidos:
+`d7b365b490c8f02b8694294fd23eb51f5a2df9a0` (módulo) e
+`ea3408c826492560dd778fb65ddbf0913b85a68a` (novo teste).
+**Não houve execução nativa de `node --test` nem da suíte integral,
+nem QA de interface.** Status GitHub do commit de regressão:
+contexto Vercel `success`; não é comprovação de publicação em
+produção e não houve ação manual de publicação.
+
+**Prontidão: não pronto para testes integrados.** Os testes focados
+passaram, mas a conciliação multissetorial é sintética e não substitui
+revisão manual da DRE, balanço, DFC e FCADS contratual. A entrada
+financeira antiga continua acessível sem o gate global de NCG;
+a interface disponível é apenas cadastral. Segurança documental,
+autorização institucional e rastreabilidade legal por exercício não
+estão homologadas. Próxima ação: localizar e proteger o ponto de
+entrada operacional antes de exibir qualquer projeção como validada,
+sem publicação em produção ou alteração da `main`.
