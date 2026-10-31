@@ -138,3 +138,43 @@ de documentos continuam pendentes. Não houve merge, deploy ou alteração
 de produção. Próxima ação: conectar a conciliação documental da NCG à
 ponte financeira com bloqueio seguro quando faltar evidência, preservando
 os testes de IBS/CBS e ICSD.
+
+
+## Entrada financeira com NCG documental auditada (31/10/2026)
+
+Criado `integracao-ncg-auditada.js`, ponto de entrada **alternativo e
+restritivo** para `integrarIBSCBSAoCredito`. Antes de calcular qualquer
+projeção, exige para **cada exercício** a variação explícita da NCG e
+auditoria de dois balanços consecutivos, com origem por documento/linha,
+conciliação dentro da tolerância e revisão declarada pelo analista.
+Exercícios incompatíveis, documentos ausentes, divergências e falta de
+revisão bloqueiam a projeção inteira. O retorno inclui `auditoriaNCG`
+em cada exercício, mantendo `homologado` e `aptoParaParecer` falsos.
+Não altera fórmulas, alíquotas, contas de IBS/CBS ou dados de usuários.
+
+Commits: entrada auditada
+`1f81951dd130845c37728db3eff7a9010fa5f444`;
+regressão `8c3798cd373335766d89e9c0bf1428b076cb3927`;
+ajuste de comentário `87f47efca7e94a99ec47cc40339caef132448cd4`.
+Teste real: `npm test` com Node 22 em diretório isolado contendo os
+**mesmos blobs** dos sete módulos existentes da branch e os dois arquivos
+novos. **7 testes nativos aprovados, 0 falhas**, incluindo oito atividades
+sintéticas, liberação de NCG, ICSD, IBS/CBS segregados, exercícios
+incompatíveis e bloqueios por evidência ausente ou divergente. Os blobs
+novos relidos no GitHub coincidiram com `git hash-object` dos arquivos
+testados: `f8ab4feed09a64edc4ab50b1d1364ea838122de6` e
+`a3efbc012fd4fff8d3bf87dc99a156a4c990dd8a`.
+A suíte integral do repositório e o QA da interface **não** foram executados.
+
+**Prontidão: não pronto para testes integrados.** Testes isolados: aprovados.
+Cenários multissetoriais: somente sintéticos, sem homologação manual.
+Caixa/ICSD: auditáveis no caminho novo para os casos testados, ainda sem
+FCADS contratual ou DFC completa. Interface: não integrada. Documentos:
+sem autorização institucional nem armazenamento privado comprovados.
+Bloqueio crítico: a entrada antiga `integrarIBSCBSAoCredito` permanece
+acessível sem exigir auditoria NCG; o novo caminho não é um gate global.
+Não há rastreabilidade legal completa por exercício. Próxima ação:
+conectar a interface e o fluxo efetivo exclusivamente à entrada auditada,
+sem contornar controles e após validação da segurança documental.
+Não houve merge nem ação manual de publicação. Status Vercel do commit
+`87f47ef` observado como `pending`, sem deploy confirmado.
