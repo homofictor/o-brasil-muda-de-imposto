@@ -214,3 +214,34 @@ antes dos controles documentais.
 Verificação do commit de regressão: contexto Vercel `pending`, sem
 confirmação de deploy. Nenhum merge na `main`, publicação manual,
 modificação de produção, gasto ou uso de dados pessoais nesta entrega.
+
+## Proteção contra overflow na conta-corrente IBS/CBS (31/10/2026)
+
+Problema reproduzido: entradas individualmente finitas, como saldo inicial
+de 1e308 e créditos gerados de 1e308, produziam saldo disponível infinito
+em `apurarCreditosAnuais`. A conciliação virava NaN e a condição anterior
+não rejeitava esse resultado, permitindo propagação de valores não finitos.
+A correção bloqueia o saldo disponível não finito antes de utilizar créditos,
+sem alterar fórmulas, regras tributárias, alíquotas ou compensações.
+
+Commits: correção `ae6cc0db23ac288adb3dcbf9ea179d00d8a0507c`;
+regressão `f4c923c8772ce627fd8134d283c7a72bcb51740b`.
+Teste reproduzido antes da correção: 1 falha e 1 aprovação em dois casos
+nativos Node. Depois da correção, `npm test` em diretório isolado com os
+blobs de `creditos.js`, `core.js`, `creditos.test.mjs` e o novo teste:
+**5 testes aprovados, 0 falhas**. Arquivos alterados relidos na branch,
+com SHA de blob coincidente com `git hash-object` local:
+`2b005cb3d457930b38cbf10d10c6b641b14aa4c4` e
+`8069503bf7ed0a75ad05c650cd5f72ba03195662`.
+Não foi executada a suíte integral do repositório.
+
+**Prontidão: não pronto para testes integrados.** A verificação numérica
+local passou, mas os cenários setoriais seguem apenas sintéticos e sem
+conciliação manual completa; caixa e ICSD não constituem DFC ou FCADS
+contratual auditados; a interface não está integrada; autorização
+institucional e armazenamento privado documental não estão comprovados.
+A entrada financeira sem auditoria NCG continua acessível e exige
+isolamento no fluxo operacional antes de uso. Não houve merge na
+`main`, publicação ou alteração de produção, gasto ou uso de dados pessoais.
+Próxima ação: localizar o ponto de entrada operacional e impedir exibição
+de projeções sem conciliação como resultados validados.
