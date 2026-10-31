@@ -428,3 +428,37 @@ Commits da entrega: correção `d4a5e215545b5e7f2e1ee59448aa4d9a55680281`, teste
 Verificação posterior às alterações: 13 testes executados em JavaScript V8 com adaptador de `node:test` e `assert` (4 da auditoria e 9 da integração), todos aprovados; 0 falhas. A falha foi reproduzida antes da correção. Não houve execução nativa de `node --test`, suíte completa nem QA da interface.
 
 **Prontidão: não pronto para testes integrados.** Cenários multissetoriais continuam sintéticos e sem homologação manual; DFC e FCADS/ICSD contratual não estão conciliados; o caminho financeiro antigo permanece acessível sem gate global de NCG; a interface ainda não opera o fluxo financeiro; autorização e armazenamento privado de documentos não estão comprovados. Próxima ação: localizar e proteger o fluxo operacional efetivo contra exibição de projeções não auditadas como validadas. Nenhum merge ou deploy autorizado.
+
+
+## Origem documental única por conta na auditoria NCG (31/10/2026)
+
+Falha reproduzida antes da correção: duas contas do mesmo balanço
+(clientes e estoques) podiam apontar para o mesmo documento e linha,
+sem gerar pendência; o resultado era `conciliado_revisado`. A auditoria
+`auditarOrigemNCG` agora rejeita a reutilização de um par
+`documentoId + linhaOrigem` entre contas do **mesmo exercício**.
+Permanece permitida a referência à mesma linha em balanços de exercícios
+diferentes, pois podem existir colunas anuais no mesmo documento.
+A entrada auditada bloqueia projeções quando essa duplicidade ocorre.
+Não houve alteração de fórmulas de NCG, IBS, CBS, caixa ou ICSD.
+
+Commits: código `ea9ea37062badce74cfa7e6ab6cc227a6f2301ea`;
+testes da auditoria `f61bcdc23b70e1a22f7bb023becb93ed9d36037f`;
+regressão da integração `66f8147e265e7c27fbc628a821d2c5d78e1bfc38`.
+Verificação **após os commits**: 27 testes executados em JavaScript V8
+com adaptação de `node:test` e `node:assert/strict`, 27 aprovados,
+0 falhas. Foram relidos diretamente da branch os oito módulos necessários
+e três arquivos de testes; os blobs alterados foram confirmados:
+`916e02e4cf449522e675daca597b8d89ce085c1b` (auditoria),
+`211a7c3e899ab75d4e9dbba87cbf5b58778f7b4c` (teste unitário),
+`b98a273cddd7196cc5fa684fd72559c4740f54f2` (teste integração).
+**Não** houve execução nativa de Node, suíte integral nem QA da interface.
+
+**Prontidão: não pronto para testes integrados.** Cenários setoriais
+continuam sintéticos e sem homologação manual; DFC e FCADS/ICSD contratual
+não estão conciliados; interface financeira não está integrada; falta
+controle de acesso, armazenamento privado e revisão legal por exercício.
+O caminho financeiro sem gate global da NCG permanece acessível.
+Próxima ação: localizar consumidores da ponte financeira e impedir que
+projeções sem auditoria documental sejam exibidas como validadas.
+Nenhum merge na `main`, deploy manual, gasto ou dado pessoal nesta entrega.
