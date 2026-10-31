@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Motor RT Crédito 360 | Cadastro e enquadramento</title>
+<style>
+:root{font-family:system-ui,Arial,sans-serif;color:#102139;background:#f3f6fa}*{box-sizing:border-box}
+body{margin:0}header{background:#07182b;color:white;padding:24px max(18px,calc((100vw - 1000px)/2))}
+main{max-width:1000px;margin:28px auto;padding:0 18px}section{background:white;border:1px solid #dce3ea;border-radius:14px;padding:24px;margin:16px 0}
+h1{margin:0;font-size:1.6rem}h2{font-size:1.1rem}label{display:block;margin:12px 0 5px;font-weight:650}
+input,select,textarea,button{font:inherit;padding:10px;border:1px solid #aab8c8;border-radius:7px;max-width:100%}
+input[type=text],select,textarea{width:100%}button{background:#123154;color:white;cursor:pointer;padding:12px 18px}button:disabled{opacity:.5;cursor:not-allowed}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.muted{color:#52657a;font-size:.92rem}.error{color:#a12020;white-space:pre-wrap}.ok{color:#12664c}
+.card{border:1px solid #dce3ea;padding:14px;border-radius:10px;margin:12px 0}
+.check{display:flex;gap:10px;align-items:center;font-weight:400}.check input{width:auto}
+</style></head><body>
+<header><h1>Motor RT Crédito 360</h1><p>Cadastro e enquadramento econômico | protótipo de desenvolvimento</p></header>
+<main><section><h2>1. Identificação cadastral</h2>
+<label for="cnpj">CNPJ da empresa</label><div class="grid"><input id="cnpj" type="text" inputmode="numeric" placeholder="00.000.000/0000-00" maxlength="18"><button id="consultar" type="button">Consultar cadastro</button></div>
+<p class="muted">Consulta BrasilAPI e descrição CNAE no IBGE. Informações sujeitas à confirmação. Não informa automaticamente alíquotas nem benefícios fiscais.</p><p id="mensagem" role="status" aria-live="polite"></p></section>
+<section id="resultado" hidden><h2>2. Dados recuperados</h2><div id="cadastro"></div><h2>3. Revisão do analista</h2>
+<label for="regime">Regime tributário informado pelo analista</label><select id="regime"><option value="">Selecione</option><option value="lucro_real">Lucro real</option><option value="lucro_presumido">Lucro presumido</option><option value="simples_nacional">Simples Nacional</option><option value="outro">Outro / confirmar</option></select>
+<p class="muted">Para cada operação, informe a participação da receita em percentual, a natureza e a fonte legal revisada. Os campos não representam validação jurídica automática.</p>
+<div id="operacoes"></div><button id="adicionar" type="button">Adicionar operação</button>
+<h2>4. Confirmações</h2>
+<label class="check"><input type="checkbox" id="conf-cadastro"> Conferi os dados cadastrais</label>
+<label class="check"><input type="checkbox" id="conf-atividades"> Conferi as atividades e a composição das receitas</label>
+<label class="check"><input type="checkbox" id="conf-regime"> Confirmei o regime tributário</label>
+<label class="check"><input type="checkbox" id="conf-premissas"> Revisei as premissas tributárias e suas fontes</label>
+<p><button id="validar" type="button">Validar enquadramento</button></p>
+<pre id="pendencias" role="status" aria-live="polite" style="white-space:pre-wrap"></pre>
+</section></main>
+<script type="module">
+import {iniciarCadastro,confirmarPerfil} from "./fluxo-cadastral.js";
+const el=id=>document.getElementById(id);
+let perfil=null,indice=0;
+function mensagem(texto,erro=false){el("mensagem").textContent=texto;el("mensagem").className=erro?"error":"ok";}
+function linha(parent,rotulo,valor){const p=document.createElement("p");const b=document.createElement("strong");b.textContent=rotulo+": ";p.append(b,document.createTextNode(valor??"Não informado"));parent.append(p);}
+function campo(parent,labelTexto,valor="",tipo="text"){
+ const wrap=document.createElement("div"),label=document.createElement("label"),input=document.createElement("input");
+ label.textContent=labelTexto;input.type=tipo;input.value=valor;wrap.append(label,input);parent.append(wrap);return input;
+}
+function adicionarOperacao(){
+ const id=++indice,box=document.createElement("div");box.className="card";
+ const descricao=campo(box,"Descrição da operação");
+ const tipo=document.createElement("select");
+ for(const [value,text] of [["","Selecione a natureza"],["locacao","Locação"],["venda_usados","Venda de usados"],["venda","Venda de mercadorias"],["servico","Prestação de serviços"],["outro","Outra"]]){
+  const opt=document.createElement("option");opt.value=value;opt.textContent=text;tipo.append(opt);
+ }
+ const label=document.createElement("label");label.textContent="Natureza da operação";box.append(label,tipo);
+ const participacao=campo(box,"Participação na receita (%)","","number");participacao.min="0";participacao.max="100";participacao.step="any";
+ const fonte=campo(box,"Referência legal conferida pelo analista");
+ const aliquota=campo(box,"Alíquota ilustrativa 2027 (%)","","number");aliquota.min="0";aliquota.max="100";aliquota.step="any";
+ const validado=document.createElement("input");validado.type="checkbox";
+ const check=document.createElement("label");check.className="check";check.append(validado,document.createTextNode("Tratamento revisado pelo analista"));box.append(check);
+ const remover=document.createElement("button");remover.type="button";remover.textContent="Remover operação";remover.addEventListener("click",()=>box.remove());box.append(remover);
+ box.coletar=()=>({id:String(id),descricao:descricao.value.trim(),tipoOperacao:tipo.value,
+  participacaoReceita:participacao.value===""?NaN:Number(participacao.value)/100,
+  fonteLegal:fonte.value.trim(),tratamentoValidado:validado.checked,
+  aliquotasPorAno:aliquota.value===""?null:{2027:Number(aliquota.value)/100},creditosPorAno:null});
+ el("operacoes").append(box);
+}
+el("consultar").addEventListener("click",async()=>{
+ el("consultar").disabled=true;mensagem("Consultando...");el("resultado").hidden=true;perfil=null;
+ try{
+  perfil=await iniciarCadastro(el("cnpj").value);
+  const destino=el("cadastro");destino.replaceChildren();
+  linha(destino,"Razão social",perfil.cadastro.razaoSocial);
+  linha(destino,"CNPJ",perfil.cadastro.cnpj);
+  linha(destino,"Situação cadastral",perfil.cadastro.situacaoCadastral);
+  linha(destino,"CNAE principal",perfil.cadastro.cnaePrincipal+" | "+(perfil.descricaoCNAEOficial?.descricao??perfil.cadastro.descricaoPrincipal??"Descrição não verificada"));
+  linha(destino,"CNAEs secundários",perfil.cadastro.cnaesSecundarios.join(", ")||"Nenhum informado");
+  linha(destino,"Setores sugeridos",perfil.classificacao.setores.join(", "));
+  linha(destino,"Pontos de atenção",perfil.classificacao.riscos.join(", "));
+  el("operacoes").replaceChildren();indice=0;adicionarOperacao();
+  for(const id of ["conf-cadastro","conf-atividades","conf-regime","conf-premissas"])el(id).checked=false;
+  el("regime").value="";el("pendencias").textContent="";
+  el("resultado").hidden=false;mensagem("Cadastro recuperado. Confirme as atividades e premissas.");
+ }catch(e){mensagem(e.message||"Falha na consulta",true);}
+ finally{el("consultar").disabled=false;}
+});
+el("adicionar").addEventListener("click",adicionarOperacao);
+el("validar").addEventListener("click",()=>{
+ if(!perfil)return;
+ const operacoes=[...el("operacoes").children].map(x=>x.coletar());
+ const confirmacoes={cadastro:el("conf-cadastro").checked,atividades:el("conf-atividades").checked,
+ regime:el("conf-regime").checked,premissas:el("conf-premissas").checked};
+ const resultado=confirmarPerfil(perfil,{confirmacoes,regimeTributario:el("regime").value,segmentosReceita:operacoes});
+ el("pendencias").textContent=resultado.autorizadoParaProjecao?
+ "Perfil preliminar validado para próxima etapa. A apuração legal e o parecer de crédito ainda exigem homologação.":
+ "Pendências:\n"+resultado.pendencias.map(x=>"• "+x).join("\n");
+ el("pendencias").className=resultado.autorizadoParaProjecao?"ok":"error";
+});
+</script></body></html>
