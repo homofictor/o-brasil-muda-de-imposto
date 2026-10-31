@@ -19,6 +19,7 @@ export function auditarOrigemNCG({
   const pendencias = [];
   const extrair = (saldos, rotulo) => {
     const valores = {};
+    const origensUsadas = new Set();
     for (const conta of CONTAS) {
       const origem = saldos?.[conta];
       if (!origem || !Number.isFinite(origem.valor) || origem.valor < 0 ||
@@ -27,7 +28,14 @@ export function auditarOrigemNCG({
           !Number.isInteger(origem.linhaOrigem) || origem.linhaOrigem < 1) {
         pendencias.push(`${rotulo}: ${conta} sem saldo ou origem documental válida`);
       } else {
-        valores[conta] = origem.valor;
+        // A mesma linha do documento não pode justificar duas contas no período.
+        const chaveOrigem = JSON.stringify([origem.documentoId.trim(), origem.linhaOrigem]);
+        if (origensUsadas.has(chaveOrigem)) {
+          pendencias.push(`${rotulo}: ${conta} reutiliza linha documental de outra conta`);
+        } else {
+          origensUsadas.add(chaveOrigem);
+          valores[conta] = origem.valor;
+        }
       }
     }
     return CONTAS.every(conta => Object.hasOwn(valores, conta)) ? {
