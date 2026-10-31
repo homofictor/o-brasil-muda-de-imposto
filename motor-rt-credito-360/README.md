@@ -324,3 +324,33 @@ e armazenamento privado documental não comprovados. Próxima prioridade:
 proteger o fluxo operacional para impedir interpretação de simulação
 sem conciliação como parecer validado. Não houve merge na `main`,
 alteração intencional de produção, gastos ou uso de dados pessoais.
+
+## Tolerância documental na auditoria isolada da NCG (31/10/2026)
+
+O módulo `auditoria-origem-ncg.js` aceitava `tolerancia` arbitrária
+quando chamado diretamente. Isso permitia classificar como
+`conciliado_revisado` uma variação de NCG divergente dos dois balanços,
+mesmo com evidências e revisão apenas declaradas. A entrada auditada já
+limitava a tolerância, mas a função isolada permanecia permissiva.
+A auditoria agora rejeita tolerâncias fora de 0 a 0,01, inclusive no
+uso direto. Não há mudança em fórmulas, alíquotas, IBS, CBS ou ICSD.
+
+Commits: correção `e07529383c6dcfb96881c75854cc8267b069b87f`;
+regressão `182b2afd031bc2d4473a90cf03aae3d8582392ea`.
+O novo teste falhou antes da correção (6 aprovados, 1 falha).
+Depois: `npm test` em Node 22.16.0, diretório isolado com o módulo e
+seus testes: **7 aprovados, 0 falhas**. Blobs relidos da branch após
+os commits e conferidos com `git hash-object` dos arquivos testados:
+`ccd2b947bfbab7d0571aeb84e3b4547b2b65bffe` e
+`bcad82d1a6ca1c27d8e5059ed18e64fa6eef05af`.
+Não foi executada a suíte integral do repositório.
+
+**Prontidão: não pronto para testes integrados.** Cenários de oito setores
+seguem sintéticos e sem homologação manual de DRE, balanço e DFC.
+Caixa/ICSD ainda não representam FCADS contratual auditado. A entrada
+financeira sem auditoria NCG continua acessível, a interface não
+está integrada, a rastreabilidade legal não foi homologada e faltam
+autorização institucional e armazenamento privado documental.
+Próxima prioridade: isolar o fluxo operacional não auditado antes
+de qualquer exibição de projeções como validadas. Não houve merge,
+publicação em produção, uso de dados pessoais ou gasto.
