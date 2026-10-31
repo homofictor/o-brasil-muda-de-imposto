@@ -70,3 +70,23 @@ test("não permite tolerância documental acima de um centavo", () => {
   assert.equal(auditarOrigemNCG({...entrada, tolerancia: 0.01}).status,
     "conciliado_revisado");
 });
+
+
+test("não reutiliza linha documental entre contas do mesmo balanço", () => {
+  const r = auditarOrigemNCG({...entrada, saldosBase: {
+    ...entrada.saldosBase, estoques: origem(90, 1)
+  }});
+  assert.equal(r.base, null);
+  assert.equal(r.status, "pendente_revisao");
+  assert.match(r.pendencias.join(" "), /reutiliza linha documental/);
+});
+
+test("rejeita duplicidade no projetado sem proibir a mesma linha em exercícios distintos", () => {
+  const r = auditarOrigemNCG({...entrada, saldosProjetados: {
+    ...entrada.saldosProjetados, estoques: origem(95, 1)
+  }});
+  assert.equal(r.projetado, null);
+  assert.equal(r.conciliado, false);
+  assert.match(r.pendencias.join(" "), /projetado: estoques reutiliza/);
+  assert.equal(auditarOrigemNCG(entrada).status, "conciliado_revisado");
+});
