@@ -178,3 +178,39 @@ conectar a interface e o fluxo efetivo exclusivamente à entrada auditada,
 sem contornar controles e após validação da segurança documental.
 Não houve merge nem ação manual de publicação. Status Vercel do commit
 `87f47ef` observado como `pending`, sem deploy confirmado.
+
+## Limite de tolerância da NCG na entrada auditada (31/10/2026)
+
+Falha comprovada: a entrada `integrarCreditoComNCGAuditada` repassava
+`tolerancia` da própria evidência para `auditarOrigemNCG`. Um valor
+arbitrariamente elevado (por exemplo, 1.000.000) permitia aceitar uma
+variação de NCG divergente dos balanços, mesmo com o bloqueio documental
+aparentemente ativo. A entrada auditada agora fixa a tolerância em 0,01,
+sem modificar as fórmulas financeiras ou tributárias e sem alterar a
+função isolada de auditoria. O teste de regressão reproduziu a falha antes
+da correção e passou depois dela.
+
+Commits: correção `9528981cdf1fb0e3f6e5df53592fc5b0ea50b2b2`;
+regressão `0cdefeeeae175428182399bc7cede9e461c2020b`.
+Verificação posterior aos commits: 8 testes da entrada auditada
+executados em JavaScript V8, usando os corpos dos módulos relidos da
+branch e um adaptador de `node:test` / `assert`: **8 aprovados,
+0 falhas**. Os blobs relidos são `dcf159f95bcb4e26d0ab5444c3b600e64f1cbe0b`
+e `8d66483d71e82f33d544096e3f123a51a4283d78`. Não foi
+executado `node --test` nativo nem a suíte integral. O teste novo falhou
+antes da correção, demonstrando o bypass.
+
+**Prontidão: não pronto para testes integrados.** Testes focados passaram,
+mas falta a suíte nativa completa. Os oito setores foram cobertos apenas
+por dados sintéticos, sem conciliação manual ou revisão legal. Caixa e ICSD
+são rastreáveis somente na entrada auditada e não substituem DFC/FCADS
+contratual. A interface não está integrada. Segurança documental,
+autorização institucional e armazenamento privado não estão comprovados.
+A entrada financeira anterior continua acessível sem o gate de NCG.
+Próxima ação: localizar o fluxo operacional efetivo e impedir que resultados
+sem conciliação sejam apresentados como validados, sem liberar a interface
+antes dos controles documentais.
+
+Verificação do commit de regressão: contexto Vercel `pending`, sem
+confirmação de deploy. Nenhum merge na `main`, publicação manual,
+modificação de produção, gasto ou uso de dados pessoais nesta entrega.
