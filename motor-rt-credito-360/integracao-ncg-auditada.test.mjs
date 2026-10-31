@@ -86,3 +86,8 @@ test("não aceita segundo ano sem conciliação documental própria", () => {
   assert.throws(() => executar({...dadosFinanceiros, anos: 2},
     {2027: auditoria}), /NCG 2028/);
 });
+
+test("tolerância fornecida na evidência não pode liberar NCG divergente", () => {
+  assert.throws(() => executar({...dadosFinanceiros, variacaoNCG: {2027: 50}},
+    {2027: {...auditoria, tolerancia: 1000000}}), /conciliação pendente/);
+});
