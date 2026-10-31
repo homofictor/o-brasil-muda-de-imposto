@@ -21,9 +21,12 @@ export function validarDocumentoContabil({nome,tamanho,tipo,ano,periodo="anual"}
   exigeRevisaoHumana:true,uploadAutorizado:false};
 }
 export function conciliarBalanco({ativoTotal,passivoTotal,patrimonioLiquido},tolerancia=0.01){
+ if(!Number.isFinite(tolerancia)||tolerancia<0||tolerancia>0.01)
+  throw new Error("Tolerância de conciliação inválida");
  for(const [campo,v] of Object.entries({ativoTotal,passivoTotal,patrimonioLiquido}))
   if(!Number.isFinite(v))throw new Error("Valor inválido: "+campo);
  const diferenca=ativoTotal-passivoTotal-patrimonioLiquido;
+ if(!Number.isFinite(diferenca))throw new Error("Diferença patrimonial não finita");
  return {diferenca,conciliado:Math.abs(diferenca)<=tolerancia};
 }
 export function validarSerieHistorica(registros){
