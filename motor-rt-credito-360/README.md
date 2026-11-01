@@ -954,3 +954,53 @@ constitui parecer validado. Próxima prioridade: teste interativo real
 de importação e revisão, seguido de conciliação do caixa e ICSD com
 dados sintéticos. Não houve merge na `main`, alteração da produção,
 gastos ou utilização de dados pessoais nesta entrega.
+
+
+## Invalidação de candidatos pendentes ao reabrir o importador (01/11/2026)
+
+**Correção pontual do MVP:** ao iniciar nova sessão de transferência do
+Simulador RT v3.2, o Motor fecha o canal anterior, descarta os candidatos
+pendentes, oculta a tabela anterior, desmarca a confirmação de juros importados
+e desabilita o botão de aplicação até receber novo pacote aceito. Isso impede
+que candidatos de uma importação anterior sejam aplicados por engano depois
+de abrir outra aba. Juros já aplicados como premissa financeira **não são
+alterados silenciosamente**. O importador existente em
+`simulador/v3/import.js` não foi modificado nem duplicado.
+
+**Commits na branch exclusiva:**
+código `c4755e40002435e2fb1941deba5f09aec2338be3`;
+regressão `f7e11f8aa3d3381c12503a4034e6fc612f51808d`;
+interface `577630a87dfad9b3a7cfed247d33e8f8ee3cc92d`.
+Hashes dos blobs de código e teste conferidos com a cópia local executada:
+`1f1c24287321cc72b50a75353137bbf12f0e6056` e
+`233ade3b7314f101ddefc8eaf71c9de6c3522b84`.
+
+**Testes realmente executados:** Node.js v22.16.0,
+`node --test mvp-import-bridge.test.mjs`: **6 aprovados, 0 falhas**.
+O novo teste reproduziu a falha antes da correção (**5 aprovados,
+1 falha**) e passou depois. Também passou
+`node --check mvp-import-bridge.js`.
+O teste usa eventos e canais simulados em Node, não interação real
+em duas abas. A interface foi inspecionada no código e a publicação
+dos arquivos HTML/JS foi verificada por HTTP, mas não houve QA
+interativo em navegador nem execução da suíte integral.
+
+**Preview verificado:** deployment `dpl_9rNRBxRRwBdiZzYtmtPzBZGZ9cSX`
+da branch `feature/motor-rt-credito-360`, commit
+`577630a87dfad9b3a7cfed247d33e8f8ee3cc92d`, estado
+**READY**, alvo preview (`target:null`). Com acesso autorizado
+à implantação protegida, a Vercel respondeu **HTTP 200** para
+`/motor-rt-credito-360/mvp.html`,
+`/motor-rt-credito-360/mvp-import-bridge.js`,
+`/simulador/v3/index.html` e `/simulador/v3/import.js`.
+O HTML e o módulo servidos contêm a correção. Link de compartilhamento
+temporário obtido, sem registrar o token no Git.
+
+**Bloqueios:** sem teste ponta a ponta com cliques em navegador;
+DFC/FCADS e ICSD contratual ainda não conciliados, documentação
+institucional sem controle de acesso/armazenamento privado, regras
+legais por exercício e homologação manual multissetorial pendentes.
+A interface continua **somente sintética, não homologada para crédito**.
+Próxima prioridade: validar interação real entre abas e conciliar caixa,
+IBS/CBS e ICSD com casos sintéticos multissetoriais. Nenhum merge
+na `main`, alteração de produção, gasto ou dado pessoal.
