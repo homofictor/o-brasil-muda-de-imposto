@@ -893,3 +893,64 @@ O HTML servido contém a chamada de invalidação de revisões.
 Foi obtido link de compartilhamento temporário, não armazenado neste
 repositório. A confirmação HTTP não substitui teste interativo real
 em navegador; a interface segue apenas como demonstração sintética.
+
+
+## Ponte de candidatos revisados v3.2 para o MVP (01/11/2026)
+
+**Entrega prioritária:** o MVP agora abre o importador documental **já existente**
+em `simulador/v3/index.html` com canal temporário `BroadcastChannel`.
+A página do v3.2, sem modificar `import.js` ou duplicar leitores de PDF,
+XLS/XLSX e CSV, mostra botão para enviar **somente candidatos numéricos
+explicitamente aceitos** pelo usuário. A ponte não transmite documentos,
+nomes de arquivos, fontes documentais, CNPJ ou identificações. Não grava
+os dados no backend nem na sessão do Motor. O v3.2 mantém seu
+comportamento preexistente de armazenamento local independente.
+
+O Motor mostra os candidatos para conferência. Somente a despesa
+financeira (`interestExpense`) pode preencher uma premissa do MVP,
+mediante confirmação adicional de período e unidade. Se o documento
+cobre menos de 12 meses, anualiza linearmente uma única vez
+(`valor * 12 / meses`); período ausente impede preenchimento. Receita
+bruta/RBT12 **não** é confundida com receita líquida, nem ativo/passivo
+circulante com NCG. A edição de juros dispara invalidação das três
+revisões contábeis anteriores e dos resultados. Esta ponte é
+**experimental** e não torna as demonstrações importadas auditadas.
+
+**Commits exclusivos da branch:** ponte
+`47357043d3db846d00f2ceebcf760cd209b382a0`; testes
+`9852e25cbb91fe389afd02de67dd24655f2d611c`; interface
+`59fb294c62a94d2fc12a495288bcd25dfd116861`; carregamento
+no importador existente
+`7a301326f457e02bd30de0fc4e491cf751fcc229`.
+
+**Testes nativos realmente executados:** Node.js v22.16.0,
+`node --test mvp-import-bridge.test.mjs`, **5 aprovados, 0 falhas**.
+`node --check mvp-import-bridge.js` também passou. Os hashes Git
+dos arquivos locais testados coincidiram com os blobs relidos na branch:
+`a5a06389ebbcf1a81b505fc960f66a8100c81f4d` (ponte) e
+`2585ae28f740f89af179daf570b6006796143ab8` (testes).
+Cobertura: revisão explícita, descarte de CNPJ/fonte, conflitos,
+dados não finitos, períodos inválidos, anualização e proibição
+de mapear receita bruta ou ativos circulantes como receita líquida/NCG.
+Não foram executados testes reais de duas abas em navegador nem
+suíte integral.
+
+**Preview verificado:** deployment automático
+`dpl_AWm7pUeWygStRMBXfR8YtbNrse4N`, commit
+`7a301326f457e02bd30de0fc4e491cf751fcc229`,
+estado **READY**, alvo preview, sem promoção à produção.
+Com acesso autorizado, a Vercel respondeu **HTTP 200** para
+`/motor-rt-credito-360/mvp.html`,
+`/motor-rt-credito-360/mvp-import-bridge.js`,
+`/simulador/v3/index.html` e `/simulador/v3/import.js`.
+O link temporário de compartilhamento não é gravado neste README.
+
+**Bloqueios:** interação ponta a ponta em duas abas ainda não
+homologada em navegador, compatibilidade de período e unidade monetária
+dependem do analista, DFC e FCADS/ICSD contratual não conciliados,
+regras legais e matriz multissetorial não homologadas, ausência de
+controles institucionais para documentos reais. Nenhum resultado
+constitui parecer validado. Próxima prioridade: teste interativo real
+de importação e revisão, seguido de conciliação do caixa e ICSD com
+dados sintéticos. Não houve merge na `main`, alteração da produção,
+gastos ou utilização de dados pessoais nesta entrega.
