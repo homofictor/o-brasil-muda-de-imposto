@@ -1676,3 +1676,50 @@ reutilizado, expiração informada em 02/11/2026 às 20:02:30
 (fuso não especificado). O link compartilhável também retornou HTTP 200
 na leitura autorizada, mas a verificação pública independente não
 conseguiu acessá-lo. **Não afirmar homologação de navegador**.
+
+
+## Separação de risco preexistente e agravamento simulado (01/11/2026)
+
+**Objetivo de crédito:** a projeção ajustada não deve atribuir à reforma um
+déficit que já existia no fluxo de caixa original do economista. A nova
+camada `mvp-alertas-credito.js` calcula, por exercício, folga de pagamento
+(`caixa disponível - serviço da dívida`) nos dois cenários e classifica
+se a cobertura era insuficiente na referência, tornou-se insuficiente
+apenas após os ajustes, recuperou-se ou permaneceu suficiente com menor
+ou maior folga. Sem serviço da dívida, não inventa cobertura nem déficit.
+
+**Interface:** `projecao-economista.html` agora mostra a folga original e
+a ajustada, identifica os exercícios já insuficientes na referência e os
+novos exercícios insuficientes no cenário ajustado. O texto adverte que
+os ajustes são hipotéticos e não comprovam causalidade tributária.
+A projeção original não é sobrescrita, e o importador documental original
+`simulador/v3/import.js` não foi alterado nem duplicado.
+
+**Commits na branch autorizada:** módulo `ac812291`, regressão
+`38f2fa40`, interface `9fb57e2f`.
+
+**Teste nativo executado:** Node.js 22.16.0,
+`node --test mvp-alertas-credito.test.mjs`, **4 aprovados e 0 falhas**.
+Abrange déficit preexistente versus novo, recuperação, redução da folga
+sem déficit, exercício sem dívida, imutabilidade e entradas inválidas.
+Os hashes Git dos arquivos executados localmente coincidiram com os
+blobs relidos do GitHub: módulo
+`e5c0a58a175b646ce727d3c8766b4da52fe40347`, teste
+`c1226c3bdf35d9e56962eb7fdf200c408a40f0ed`.
+Integração HTML conferida estaticamente: import do novo módulo, colunas,
+cartões de risco e alertas. **Não** houve teste interativo de navegador
+nem execução da suíte integral.
+
+**Bloqueios:** a planilha integrada real do economista ainda não é
+importada nem interpretada automaticamente; permanecem pendentes
+mapeamento seguro de abas/fórmulas, conciliação de DRE/BP/DFC, FCADS e
+ICSD contratuais, regras legais de transição, créditos e ressarcimentos,
+segurança documental e validação institucional. Os dados usados nesta
+entrega são exclusivamente sintéticos. Não utilizar para parecer de
+crédito. Nenhum dado do arquivo enviado pelo usuário foi publicado.
+
+**Próxima ação prioritária:** integrar a leitura XLSX do Simulador v3.2
+à identificação das rubricas da projeção original, exigir a reprodução
+do caixa e ICSD antes da segunda projeção e conciliar manualmente
+a decomposição de impactos. Manter somente preview, sem merge na main,
+sem alteração da produção e sem custos.
