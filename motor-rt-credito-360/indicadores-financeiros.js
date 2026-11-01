@@ -4,10 +4,17 @@
  * Não inferir EBITDA a partir de lucro líquido ou de dados incompletos.
  */
 const valor=(dados,chave)=>Number.isFinite(dados[chave])?dados[chave]:null;
-const dividir=(a,b)=>a===null||b===null||b===0?null:a/b;
 export function calcularIndicadoresFinanceiros(dados){
  if(!dados||typeof dados!=="object")throw new Error("Dados financeiros inválidos");
  const avisos=[];
+ // Aritmética finita na entrada não garante resultados finitos.
+ const seguro=(resultado)=>{
+  if(Number.isFinite(resultado))return resultado;
+  avisos.push("Resultado financeiro não finito; indicador indisponível");
+  return null;
+ };
+ const dividir=(a,b)=>a===null||b===null||b===0?null:seguro(a/b);
+ const subtrair=(a,b)=>a===null||b===null?null:seguro(a-b);
  const ac=valor(dados,"ativoCirculante"),pc=valor(dados,"passivoCirculante");
  const caixa=valor(dados,"caixaEquivalentes"),divida=valor(dados,"dividaBruta");
  const pl=valor(dados,"patrimonioLiquido"),ativo=valor(dados,"ativoTotal");
@@ -15,14 +22,14 @@ export function calcularIndicadoresFinanceiros(dados){
  const ebitda=valor(dados,"ebitda"),juros=valor(dados,"despesasFinanceiras");
  const caixaOp=valor(dados,"caixaOperacional"),capex=valor(dados,"capex");
  const servico=valor(dados,"servicoDivida"),fcads=valor(dados,"fluxoCaixaDisponivelServicoDivida");
- const dividaLiquida=divida===null||caixa===null?null:divida-caixa;
+ const dividaLiquida=subtrair(divida,caixa);
  if(ebitda===null)avisos.push("EBITDA ausente: não foi estimado automaticamente");
  if(fcads===null)avisos.push("FCADS ausente: ICSD não calculado");
  if(!Number.isFinite(dados.exercicio))avisos.push("Exercício não identificado");
  return {
   exercicio:dados.exercicio??null,
   liquidezCorrente:dividir(ac,pc),
-  endividamentoGeral:dividir(ativo===null||pl===null?null:ativo-pl,ativo),
+  endividamentoGeral:dividir(subtrair(ativo,pl),ativo),
   margemLiquida:dividir(lucro,receita),
   margemEbitda:dividir(ebitda,receita),
   roe:dividir(lucro,pl),
@@ -30,7 +37,7 @@ export function calcularIndicadoresFinanceiros(dados){
   dividaLiquida,
   dividaLiquidaEbitda:dividir(dividaLiquida,ebitda),
   coberturaJuros:dividir(ebitda,juros),
-  fluxoCaixaLivre:caixaOp===null||capex===null?null:caixaOp-capex,
+  fluxoCaixaLivre:subtrair(caixaOp,capex),
   icsd:dividir(fcads,servico),
   avisos,
   status:"indicadores_preliminares_requerem_validacao"
