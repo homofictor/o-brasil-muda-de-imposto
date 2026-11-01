@@ -12,6 +12,7 @@ const verificarNumero = (valor, nome) => {
 export function exemploSinteticoEconomista() {
   return Array.from({length: 8}, (_, i) => ({
     ano: 2026 + i, caixaOriginal: 70 + 3 * i, servicoDivida: 40,
+    icsdConferido: (70 + 3 * i) / 40,
     ajusteEBITDA: -(0.5 + 1.4 * i), ajusteNCG: 0.2 + 0.5 * i,
     ajusteCAPEX: 0, ajusteIR: -(0.1 + 0.2 * i),
     ajusteIBS: -(0.2 + 0.3 * i), ajusteCBS: -(0.1 + 0.2 * i),
@@ -39,20 +40,33 @@ export function compararProjecaoEconomista(linhas, revisao) {
     const caixaReforma = valores.caixaOriginal + deltaCaixa;
     const icsdOriginal = valores.servicoDivida === 0 ? null : valores.caixaOriginal / valores.servicoDivida;
     const icsdReforma = valores.servicoDivida === 0 ? null : caixaReforma / valores.servicoDivida;
+    // Conciliação independente com o ICSD apresentado na projeção do economista.
+    // Não valida FCADS, fórmulas de origem nem a exatidão do caixa informado.
+    if (valores.servicoDivida === 0) {
+      if (linha.icsdConferido !== null)
+        throw new Error(`${linha.ano}: sem serviço da dívida, ICSD da planilha deve ficar vazio`);
+    } else {
+      const informado = verificarNumero(linha.icsdConferido, `${linha.ano} ICSD da planilha`);
+      if (Math.abs(informado - icsdOriginal) > 0.01 + 1e-10)
+        throw new Error(`${linha.ano}: ICSD da planilha (${informado}) não concilia com caixa/serviço (${icsdOriginal.toFixed(4)})`);
+    }
     return {
-      ano: linha.ano, ...valores, deltaCaixa, caixaReforma, icsdOriginal, icsdReforma,
+      ano: linha.ano, ...valores, icsdConferido: linha.icsdConferido, deltaCaixa, caixaReforma, icsdOriginal, icsdReforma,
       insuficienciaReforma: valores.servicoDivida > 0 && caixaReforma < valores.servicoDivida,
       observacao: valores.servicoDivida === 0 ? 'Sem serviço da dívida: ICSD indisponível' : ''
     };
   });
   return {
     status: 'simulacao_sintetica_nao_homologada',
+    referenciasConciliadas: resultados.length,
+    toleranciaICSDReferencia: 0.01,
     projecao: resultados,
     deltaCaixaAcumulado: resultados.reduce((s, a) => s + a.deltaCaixa, 0),
     anosInsuficiencia: resultados.filter(a => a.insuficienciaReforma).map(a => a.ano),
     menorICSDReforma: resultados.reduce((min, a) => a.icsdReforma === null ? min :
       (min === null ? a.icsdReforma : Math.min(min, a.icsdReforma)), null),
     ressalvas: [
+      'O ICSD informado foi conciliado aritmeticamente com caixa e serviço da dívida (tolerância 0,01x), sem auditar a planilha.',
       'A projeção original é preservada e não foi auditada.',
       'IBS/CBS informados são efeitos incrementais de caixa, não tributos brutos.',
       'A ponte não calcula regras legais, créditos elegíveis nem transição tributária.',
