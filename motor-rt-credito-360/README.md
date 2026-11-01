@@ -1137,3 +1137,55 @@ de documentos. Próxima ação prioritária: validar interação real entre
 abas e conferir IBS, CBS, NCG, caixa e ICSD por cenário sintético.
 Não houve merge na `main`, promoção à produção, gastos ou uso de
 dados pessoais nesta entrega.
+
+
+## Classificação correta do cenário multissetorial no MVP (01/11/2026)
+
+**Entrega pontual:** a categoria "Empresa multissetorial" deixou de ser
+tratada como uma oitava atividade econômica fictícia com receita e
+alíquotas próprias. O exemplo mantém oito atividades reais da matriz
+de escopo: comércio, indústria, serviços, construção, saúde, transporte,
+agronegócio e locação (somente caso de teste). A empresa multissetorial
+é representada pela composição de duas ou mais atividades, cada uma com
+receita e alíquotas hipotéticas de IBS e CBS independentes. A interface
+explicita essa distinção. Não foram alterados o importador v3.2, as
+fórmulas de caixa/ICSD, o cálculo de créditos nem o tratamento legal.
+
+**Commits na branch autorizada:** adaptação
+`bcf0854c8a579e8a9dab4517aadacbf7ef6a26f9`; regressão
+`e0bf2af1361f7b17457e2a5898307bf15c4927d9`; esclarecimento
+na interface `26ecd4e79d4ed6c3bc008702d73539c8f24fa180`.
+Blobs da adaptação e regressão relidos no GitHub e conferidos com
+`git hash-object` dos arquivos efetivamente testados:
+`48f75fe7c8b85a9b97d1ef4ca9c7b1b72b385a0f` e
+`c538d82a986bb853ee9783c9129d436f08377191`.
+O teste preexistente também coincidiu com seu blob
+`f14c0d1e372daabcd0a4a56b527d2c44e0c9ded5`.
+
+**Testes nativos executados:** Node.js v22.16.0,
+`node --check mvp-cenario.js` aprovado e
+`node --test mvp-cenario.test.mjs mvp-setores-reais.test.mjs`:
+**8 aprovados, 0 falhas**. Os três casos novos verificam que
+"multissetorial" não é uma atividade tributável, que receitas e
+alíquotas IBS/CBS permanecem segregadas em uma empresa com comércio
+e indústria, e que locação não recebe tratamento especial. Não foi
+executada a suíte integral nem o QA interativo em navegador.
+
+**Preview da implementação:** deployment
+`dpl_4wN9ZqA4PaBeuZMd9YfHjNLeVqAX`, commit de interface
+`26ecd4e`, confirmado **READY** e associado à branch autorizada,
+sem promoção à produção. Com acesso autorizado, a Vercel respondeu
+**HTTP 200** para `mvp.html`, `mvp-cenario.js`,
+`mvp-setores-reais.test.mjs` e `simulador/v3/import.js`.
+O código publicado contém a substituição. Não houve teste de cliques
+reais, e link temporário de compartilhamento não é registrado no Git.
+
+**Prontidão:** interface sintética navegável e testes focados aprovados;
+cenários multissetoriais sem homologação manual completa; caixa/ICSD
+indicativos, sem DFC integral ou FCADS contratual; controles de acesso,
+armazenamento privado e auditoria institucional de documentos não
+comprovados; rastreabilidade legal por exercício pendente. A simulação
+não é parecer validado. Próxima ação: QA de interação real entre abas
+e conciliação financeira sintética por setor, sem ampliar funcionalidades.
+Não houve merge na `main`, alteração de produção, gasto ou uso de dados
+pessoais.
