@@ -10,6 +10,23 @@ const conciliar = (informado, esperado, campo) => {
     throw new Error(`Memoria de caixa nao conciliada: ${campo}`);
 };
 
+// Recalcula cada conta sem confiar apenas no campo conciliacao do motor.
+const validarConta = (conta, nome) => {
+  const campos = ['saldoInicial', 'gerado', 'debito', 'utilizado',
+    'ressarcido', 'ajusteNegativo', 'saldoFinal'];
+  const v = Object.fromEntries(campos.map(campo =>
+    [campo, finito(conta[campo], `${nome} ${campo}`)]));
+  if (campos.some(campo => v[campo] < 0) ||
+      v.utilizado > v.debito + TOLERANCIA ||
+      v.utilizado > v.saldoInicial + v.gerado + TOLERANCIA)
+    throw new Error(`Memoria de caixa nao conciliada: limites da conta ${nome}`);
+  conciliar(conta.tributoPagar, v.debito - v.utilizado, `${nome} tributo a pagar`);
+  conciliar(v.saldoFinal, v.saldoInicial + v.gerado - v.utilizado -
+    v.ressarcido - v.ajusteNegativo, `${nome} saldo final`);
+  conciliar(conta.conciliacao, 0, `conta ${nome}`);
+  return v.ressarcido;
+};
+
 export function validarMemoriaCaixaMVP(projecao) {
   const p = projecao;
   const c = p?.componentesCaixa;
@@ -25,8 +42,9 @@ export function validarMemoriaCaixaMVP(projecao) {
   const cbs = finito(p.cbs.tributoPagar, 'CBS a pagar');
   const ressarcimentos = finito(p.ressarcimentoRecebidoTotal, 'ressarcimentos recebidos');
   const referencia = finito(p.tributoReferencia, 'tributo de referencia');
-  conciliar(p.ibs.conciliacao, 0, 'conta IBS');
-  conciliar(p.cbs.conciliacao, 0, 'conta CBS');
+  const ressarcimentoIBS = validarConta(p.ibs, 'IBS');
+  const ressarcimentoCBS = validarConta(p.cbs, 'CBS');
+  conciliar(ressarcimentos, ressarcimentoIBS + ressarcimentoCBS, 'ressarcimentos segregados');
   conciliar(p.tributoPagarTotal, ibs + cbs, 'tributos segregados');
   const antes = ebitda - capex - ncg - ir;
   const caixaReferencia = antes - referencia;
