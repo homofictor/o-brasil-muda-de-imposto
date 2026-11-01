@@ -1,3 +1,5 @@
+import {criarEmissorConfirmado, confirmarRecebimento} from './mvp-confirmacao-transferencia.js';
+
 // Ponte opt-in, somente no navegador, para candidatos explicitamente aceitos no Simulador v3.2.
 // Nenhum arquivo, CNPJ, nome ou fonte documental atravessa a ponte.
 const CAMPOS = Object.freeze({
@@ -72,6 +74,11 @@ export function iniciarPonteImportacaoMVP({abrir, receber, status, limpar}) {
         const candidatos = validarPacoteRevisado(event.data);
         receber(candidatos);
         status(`${candidatos.length} candidato(s) aceito(s) recebido(s). Revise antes de utilizar.`);
+        try {
+          confirmarRecebimento(canal, event.data);
+        } catch (_) {
+          status('Candidatos recebidos, mas não foi possível confirmar a entrega à outra aba.');
+        }
       } catch (_) { status('Pacote de importação recusado por inconsistência.'); }
     };
     const url = new URL('../simulador/v3/index.html', location.href);
@@ -86,6 +93,7 @@ export function iniciarPonteImportacaoV3(doc = document, loc = location) {
   const token = new URLSearchParams(loc.search).get('rt360');
   if (!TOKEN.test(token || '') || !globalThis.BroadcastChannel) return;
   const canal = new BroadcastChannel(NOME_CANAL + token);
+  let emissor = null;
   const montar = () => {
     const painel = doc.getElementById('importPanel');
     if (!painel || doc.getElementById('enviar-rt360')) return;
@@ -99,19 +107,19 @@ export function iniciarPonteImportacaoV3(doc = document, loc = location) {
     mensagem.setAttribute('role', 'status');
     bloco.append(botao, mensagem);
     painel.append(bloco);
+    emissor = criarEmissorConfirmado({canal, avisar: texto => { mensagem.textContent = texto; }});
     botao.addEventListener('click', () => {
       const candidatos = extrairCandidatosRevisados(window.brmiImport?.candidates);
       if (!candidatos.length) {
         mensagem.textContent = 'Nenhum candidato numérico elegível foi aceito explicitamente. Revise os valores primeiro.';
         return;
       }
-      canal.postMessage({tipo: 'rt360-candidatos-revisados-v1', candidatos});
-      mensagem.textContent = `${candidatos.length} valor(es) enviado(s), sem documentos ou identificação. Volte à aba do Motor e confira as premissas.`;
+      emissor.enviar(candidatos);
     });
   };
   doc.addEventListener('brmi:import-ready', montar);
   montar();
-  window.addEventListener('pagehide', () => canal.close());
+  window.addEventListener('pagehide', () => { emissor?.encerrar(); canal.close(); });
 }
 
 if (typeof window !== 'undefined' && location.pathname.startsWith('/simulador/v3/'))
