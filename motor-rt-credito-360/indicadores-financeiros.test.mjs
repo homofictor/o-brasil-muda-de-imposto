@@ -20,3 +20,22 @@ test("sinaliza lacunas históricas",()=>{
  const r=calcularSerieFinanceira([{exercicio:2023},{exercicio:2025}]);
  assert.equal(r.alertas.length,2);
 });
+
+test("não propaga overflow de divisão ao ICSD e margem EBITDA",()=>{
+ const r=calcularIndicadoresFinanceiros({exercicio:2026,
+  receitaLiquida:1e-308,ebitda:1e308,
+  fluxoCaixaDisponivelServicoDivida:1e308,servicoDivida:1e-308});
+ assert.equal(r.margemEbitda,null);
+ assert.equal(r.icsd,null);
+ assert.ok(r.avisos.some(x=>x.includes("não finito")));
+});
+test("não propaga overflow de subtração em dívida líquida e fluxo de caixa livre",()=>{
+ const r=calcularIndicadoresFinanceiros({exercicio:2026,
+  dividaBruta:1e308,caixaEquivalentes:-1e308,
+  caixaOperacional:1e308,capex:-1e308,
+  ativoTotal:1e308,patrimonioLiquido:-1e308});
+ assert.equal(r.dividaLiquida,null);
+ assert.equal(r.fluxoCaixaLivre,null);
+ assert.equal(r.endividamentoGeral,null);
+ assert.ok(r.avisos.filter(x=>x.includes("não finito")).length>=3);
+});
