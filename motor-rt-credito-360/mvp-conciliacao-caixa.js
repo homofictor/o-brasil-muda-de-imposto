@@ -27,6 +27,35 @@ const validarConta = (conta, nome) => {
   return v.ressarcido;
 };
 
+// Concilia a receita e os debitos por atividade com as contas consolidadas.
+// Uma conta IBS/CBS fechada isoladamente nao comprova a origem setorial.
+const validarAtividades = p => {
+  if (!Array.isArray(p.atividades) || p.atividades.length === 0)
+    throw new Error('Memoria de caixa incompleta: detalhamento de atividades');
+  const ids = new Set();
+  let receitaTotal = 0, ibsTotal = 0, cbsTotal = 0;
+  for (const a of p.atividades) {
+    if (typeof a?.atividadeId !== 'string' || !a.atividadeId || ids.has(a.atividadeId))
+      throw new Error('Memoria de caixa nao conciliada: atividade duplicada ou invalida');
+    ids.add(a.atividadeId);
+    const receita = finito(a.receita, 'receita atividade');
+    if (receita < 0) throw new Error('Memoria de caixa nao conciliada: receita atividade negativa');
+    receitaTotal += receita;
+    for (const tributo of ['ibs', 'cbs']) {
+      const aliquota = finito(a.aliquotas?.[tributo], `${tributo} aliquota atividade`);
+      const debito = finito(a.debitos?.[tributo], `${tributo} debito atividade`);
+      if (aliquota < 0 || aliquota > 1 || debito < 0)
+        throw new Error(`Memoria de caixa nao conciliada: ${tributo.toUpperCase()} atividade invalida`);
+      conciliar(debito, receita * aliquota, `${tributo.toUpperCase()} debito atividade`);
+      if (tributo === 'ibs') ibsTotal += debito;
+      else cbsTotal += debito;
+    }
+  }
+  conciliar(p.receitaTotal, receitaTotal, 'receita atividades');
+  conciliar(p.ibs.debito, ibsTotal, 'IBS debitos atividades');
+  conciliar(p.cbs.debito, cbsTotal, 'CBS debitos atividades');
+};
+
 export function validarMemoriaCaixaMVP(projecao) {
   const p = projecao;
   const c = p?.componentesCaixa;
@@ -50,6 +79,7 @@ export function validarMemoriaCaixaMVP(projecao) {
   }
   const ressarcimentoIBS = validarConta(p.ibs, 'IBS');
   const ressarcimentoCBS = validarConta(p.cbs, 'CBS');
+  validarAtividades(p);
   conciliar(ressarcimentos, ressarcimentoIBS + ressarcimentoCBS, 'ressarcimentos segregados');
   conciliar(p.tributoPagarTotal, ibs + cbs, 'tributos segregados');
   const antes = ebitda - capex - ncg - ir;
