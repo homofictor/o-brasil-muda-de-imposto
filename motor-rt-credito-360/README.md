@@ -723,3 +723,43 @@ da ponte e exigir a interpretação explícita de
 `statusAuditoriaNCG`, `homologado` e `aptoParaParecer` antes de
 qualquer apresentação como resultado validado. Sem merge na `main`,
 publicação manual, gastos ou dados pessoais.
+
+## Ajuste tributário indisponível sem evidência e revisão (01/11/2026)
+
+**Falha reproduzida:** a auditoria da ponte podia retornar um valor monetário
+em `ajusteTributarioCaixa` mesmo com `autorizadoParaProjecao: false`, por
+falta de evidência ou revisão do analista. Um consumidor que utilizasse o
+ajuste sem verificar a autorização poderia incorporar tributo não auditado
+no fluxo de caixa e no ICSD. Evidência com tipo objeto também provocava
+exceção inesperada em `.trim()`.
+
+**Correção:** `ajusteTributarioCaixa` agora é `null` enquanto não houver
+memória contábil textual não vazia, revisão booleana explícita e bases
+comparáveis pré-tributos. Evidências malformadas geram alerta em vez de
+exceção de tipo. A segregação IBS/CBS e as fórmulas financeiras não foram
+alteradas. O resultado continua preliminar e não homologado.
+
+**Commits na branch exclusiva:** código
+`edc3896e52ed44717d330cb875e1e9665722d94f` e teste
+`ace2fcae432ab24fb0c55a0460b57e5f452cdb51`.
+Blobs confirmados por releitura no GitHub e `git hash-object` da cópia
+executada: código `524fd75bb52aa1510ee557753e3e4a4fd64c3aeb`,
+teste `b4c8d94de719475e54ddc2ed6f68558e390e3d8d`.
+
+**Testes realmente executados:** Node.js v22.16.0,
+`node --test auditoria-ponte-tributaria.test.mjs` em cópia local isolada
+dos arquivos com blobs idênticos aos do GitHub. Antes da correção:
+5 aprovados, 1 reprovado. Após os commits e conferência de blobs:
+**6 aprovados, 0 reprovados**. Não foi executada a suíte integral,
+integração com banco, QA de interface ou teste em produção.
+
+**Prontidão:** não pronto para testes integrados de aceitação. A matriz
+multissetorial continua sem homologação manual por setor, DFC e FCADS
+contratual não foram conciliados, o ICSD permanece preliminar, a interface
+financeira não está integrada e faltam controles institucionais de acesso,
+armazenamento privado de documentos e revisão jurídica por exercício.
+A entrada direta ainda produz projeções com NCG não auditada, identificadas
+como `nao_auditada`; nenhum consumidor operacional de projeções foi
+confirmado nesta execução. Próxima prioridade: bloquear apresentação de
+resultados não auditados como validados no primeiro consumidor real.
+Nenhum merge na `main`, publicação em produção, dado pessoal ou gasto.
