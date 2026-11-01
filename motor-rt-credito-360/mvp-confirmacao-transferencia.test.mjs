@@ -65,3 +65,23 @@ test('erro de envio e fechamento não deixam confirmação pendente', () => {
   assert.equal(a.canal.onmessage, null);
   assert.throws(() => a.emissor.enviar([]), /Não há candidatos/);
 });
+
+test('duas abas simuladas trocam candidatos e confirmação sem documentos', async () => {
+  const avisos = [];
+  const canalMotor = {onmessage: null, postMessage: msg => queueMicrotask(() => canalImportador.onmessage?.({data: msg}))};
+  const canalImportador = {onmessage: null, postMessage: msg => queueMicrotask(() => canalMotor.onmessage?.({data: msg}))};
+  let recebido = null;
+  canalMotor.onmessage = event => {
+    recebido = event.data.candidatos;
+    confirmarRecebimento(canalMotor, event.data);
+  };
+  const emissor = criarEmissorConfirmado({canal: canalImportador, avisar: s => avisos.push(s)});
+  const candidatos = [{field: 'interestExpense', value: 42, periodMonths: 6}];
+  emissor.enviar(candidatos);
+  assert.match(avisos.at(-1), /Aguardando confirmação/);
+  await new Promise(resolve => setImmediate(resolve));
+  assert.deepEqual(recebido, candidatos);
+  assert.match(avisos.at(-1), /recebido\(s\)/);
+  assert.equal(JSON.stringify(recebido).includes('cnpj'), false);
+  emissor.encerrar();
+});
