@@ -1004,3 +1004,53 @@ A interface continua **somente sintética, não homologada para crédito**.
 Próxima prioridade: validar interação real entre abas e conciliar caixa,
 IBS/CBS e ICSD com casos sintéticos multissetoriais. Nenhum merge
 na `main`, alteração de produção, gasto ou dado pessoal.
+
+
+## Confirmação efetiva da transferência local entre abas (01/11/2026)
+
+**Entrega prioritária do MVP:** a interface do importador v3.2 não afirma
+mais que os candidatos chegaram ao Motor apenas porque `postMessage`
+foi chamado. A ponte `mvp-import-bridge.js` agora usa o módulo
+`mvp-confirmacao-transferencia.js` para identificar cada envio por
+número efêmero, aguardar confirmação de recebimento da aba do Motor,
+recusar confirmações atrasadas e avisar após 5 segundos quando o
+recebimento não foi confirmado. O Motor responde **somente depois**
+de validar o pacote e entregar os candidatos ao formulário de revisão.
+A mensagem de êxito não representa conciliação ou auditoria contábil.
+O protocolo não inclui arquivos, CNPJ, fontes ou nomes de documentos.
+
+**Commits reais exclusivamente na branch:**
+módulo `b193b78059cd42703b8e80ac2314eca37dc788e9`;
+testes `74fb5b3e86d044cf171dcdf6544ac3cd4bdab760`;
+integração `1457c8be1e13cd35bfa0c756377f7bfb832777c8`;
+teste de troca entre abas simuladas
+`5eeb61bb9e08d1abecc34b870032595137f49b64`.
+
+**Testes realmente executados:** Node.js v22.16.0,
+`node --check mvp-confirmacao-transferencia.js` aprovado e
+`node --test mvp-confirmacao-transferencia.test.mjs` com
+**6 aprovados, 0 falhas**. Cobertura: confirmação correlacionada,
+ausência de destinatário, resposta atrasada, identificadores inválidos,
+falha de canal e troca entre duas abas simuladas.
+Os blobs Git relidos coincidem com `git hash-object` dos arquivos
+executados: módulo `74ef530da21e0444d41de98b7842bc5d5c0c4307`;
+testes `87ef0c2de3cc1a9774085ee1c6fef5f49ee14740`.
+A suíte integral e a interação em navegador real **não** foram executadas.
+
+**Preview:** deployment automático `dpl_BWtFX6wKjKhGzXmE97Yho8Nirmja`
+do commit de integração `1457c8be1e13cd35bfa0c756377f7bfb832777c8`
+confirmado **READY**, alvo preview, branch correta.
+Com acesso autorizado ao ambiente protegido, a Vercel respondeu
+**HTTP 200** para `mvp.html`, `mvp-import-bridge.js`,
+`mvp-confirmacao-transferencia.js` e `simulador/v3/index.html`.
+Não houve teste de cliques reais em duas abas. Links temporários de
+compartilhamento não são armazenados no repositório.
+
+**Bloqueios:** conciliação integral da DFC, FCADS/ICSD contratual,
+homologação dos oito setores e das regras legais, autorização e
+armazenamento privado de documentos e QA interativo permanecem
+pendentes. Apenas simulação sintética, nunca parecer validado.
+**Próxima prioridade:** executar QA real da transferência em navegador
+e conferir a conciliação IBS/CBS, caixa e ICSD com cenários sintéticos
+multissetoriais. Nenhum merge na `main`, publicação em produção,
+dado pessoal ou gasto adicional.
