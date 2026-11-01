@@ -3,7 +3,7 @@ export const SETORES_MVP = Object.freeze([
   ["comercio", "Comércio"], ["industria", "Indústria"],
   ["servicos", "Serviços"], ["construcao", "Construção civil"],
   ["saude", "Saúde"], ["transporte", "Transporte"],
-  ["agronegocio", "Agronegócio"], ["multissetorial", "Empresa multissetorial"]
+  ["agronegocio", "Agronegócio"], ["locacao", "Locação (caso de teste)"]
 ]);
 const CONTAS = ["clientes", "estoques", "fornecedoresOperacionais"];
 const numero = (valor, rotulo, negativo = false) => {
