@@ -12,6 +12,14 @@
 <p class="small">EBITDA: diferença econômica total já líquida dos tributos operacionais considerados. NCG, CAPEX e IR: valores positivos consomem caixa; negativos liberam caixa. IBS e CBS: somente efeitos adicionais de caixa <strong>não incluídos no ajuste de EBITDA</strong>, com sinal positivo para entrada e negativo para saída. Não informe tributos brutos novamente.</p>
 <div class="scroll"><table><thead><tr><th>Ano</th><th>Caixa original</th><th>Juros + amortização</th><th>ICSD original da planilha</th><th>Δ EBITDA</th><th>Δ NCG</th><th>Δ CAPEX</th><th>Δ IR</th><th>Δ caixa IBS</th><th>Δ caixa CBS</th><th>Δ outros</th></tr></thead><tbody id="linhas"></tbody></table></div>
 </section>
+<section><h2>1A. Transferência manual da referência da planilha (opcional)</h2>
+<p class="small">Etapa provisória enquanto a leitura das fórmulas da planilha padronizada não está homologada. Copie apenas <strong>valores já calculados</strong> do Excel, com oito linhas de 2026 a 2033 e quatro colunas nesta ordem: <strong>ano, caixaOriginal, servicoDivida, icsdConferido</strong>. Separe colunas por tabulação. Use números sem separador de milhares, com vírgula ou ponto decimal. Informe valores na mesma unidade monetária. Não cole dados reais ou confidenciais neste preview.</p>
+<label for="referencia-colada">Tabela de referência, exclusivamente sintética</label>
+<textarea id="referencia-colada" rows="5" style="width:100%;font:inherit;padding:9px;border:1px solid #a9b9c9;border-radius:6px" placeholder="2026&#9;70&#9;40&#9;1,75&#10;2027&#9;72&#9;40&#9;1,8"></textarea>
+<div class="actions"><button type="button" id="aplicar-referencia">Aplicar referência conciliada</button></div>
+<p id="status-referencia" class="small" role="status" aria-live="polite"></p>
+<p class="alert">Ao aplicar a referência, todos os ajustes de RT são zerados para evitar misturar dados da planilha com hipóteses sintéticas anteriores. O arquivo e as fórmulas não são importados nem armazenados. O importador documental v3.2 permanece disponível no menu.</p>
+</section>
 <section><h2>2. Revisão explícita pelo analista</h2>
 <label><input type="checkbox" id="r-original"> Conferi a projeção original do economista, sua unidade monetária e o cronograma da dívida.</label>
 <label><input type="checkbox" id="r-ponte"> Conferi a origem e os sinais dos efeitos incrementais da reforma.</label>
@@ -26,6 +34,7 @@
 <section><h2>Limitações antes de uso real</h2><p>Faltam leitura e preservação de fórmulas da planilha do economista, reconciliação da DRE/BP/DFC, aplicação legal da transição por atividade, créditos comprovados, ICSD contratual, armazenamento privado e aprovação institucional. O importador PDF/XLSX/CSV existente permanece no Simulador RT v3.2, sem duplicação.</p></section>
 </main><script type="module">
 import {exemploSinteticoEconomista,compararProjecaoEconomista} from './mvp-ponte-economista.js';
+import {interpretarReferenciaColada} from './mvp-referencia-colada.js';
 import {analisarFolgaCredito} from './mvp-alertas-credito.js';
 import {decomporImpactoCaixa} from './mvp-decomposicao-caixa.js';
 const el=id=>document.getElementById(id);
@@ -34,7 +43,7 @@ const fmt=v=>v===null?'Indisponível':new Intl.NumberFormat('pt-BR',{maximumFrac
 const invalida=()=>{el('resultado').hidden=true;el('decomposicao').hidden=true;el('erro').textContent='';for(const id of ['r-original','r-ponte','r-dupla'])el(id).checked=false;};
 function preencher(){el('linhas').replaceChildren();for(const l of exemploSinteticoEconomista()){
  const tr=document.createElement('tr'),ano=document.createElement('th');ano.textContent=String(l.ano);tr.append(ano);
- for(const [id,rotulo] of campos){const td=document.createElement('td'),inp=document.createElement('input');inp.type='number';inp.step='any';inp.id=`e-${l.ano}-${id}`;inp.value=l[id]===null?'':String(l[id]);inp.setAttribute('aria-label',`${rotulo} ${l.ano}`);inp.addEventListener('input',invalida);td.append(inp);tr.append(td)}el('linhas').append(tr)}invalida();}
+ for(const [id,rotulo] of campos){const td=document.createElement('td'),inp=document.createElement('input');inp.type='number';inp.step='any';inp.id=`e-${l.ano}-${id}`;inp.value=l[id]===null?'':String(l[id]);inp.setAttribute('aria-label',`${rotulo} ${l.ano}`);inp.addEventListener('input',invalida);td.append(inp);tr.append(td)}el('linhas').append(tr)}invalida();el('referencia-colada').value='';el('status-referencia').textContent='';}
 function coletar(){return Array.from({length:8},(_,i)=>{const ano=2026+i,r={ano};for(const [id] of campos){const valor=el(`e-${ano}-${id}`).value;r[id]=valor.trim()===''?(id==='icsdConferido'?null:NaN):Number(valor)}return r});}
 function card(t,v){const d=document.createElement('div'),s=document.createElement('span'),b=document.createElement('strong');s.textContent=t;b.textContent=v;d.append(s,b);el('resumo').append(d)}
 function mostrarDecomposicao(r){const d=decomporImpactoCaixa(r.projecao);el('memoria-caixa').replaceChildren();
@@ -43,6 +52,20 @@ function mostrarDecomposicao(r){const d=decomporImpactoCaixa(r.projecao);el('mem
  el('memoria-aviso').textContent=d.ressalva;el('decomposicao').hidden=false;}
 function mostrar(r){const risco=analisarFolgaCredito(r.projecao);el('resumo').replaceChildren();el('comparacao').replaceChildren();card('Referências conciliadas',String(r.referenciasConciliadas)+' exercício(s)');card('Variação acumulada de caixa',fmt(r.deltaCaixaAcumulado));card('Menor ICSD com RT',r.menorICSDReforma===null?'Indisponível':fmt(r.menorICSDReforma)+'x');card('Anos com cobertura inferior a 1x',r.anosInsuficiencia.join(', ')||'Nenhum');card('Déficit já na referência',risco.anosDeficitReferencia.join(', ')||'Nenhum');card('Novo déficit no cenário ajustado',risco.anosNovosDeficits.join(', ')||'Nenhum');
  for(const [i,a] of r.projecao.entries()){const situacao=risco.exercicios[i];const tr=document.createElement('tr');for(const v of [a.ano,fmt(a.caixaOriginal),fmt(a.caixaReforma),fmt(a.deltaCaixa),fmt(situacao.folgaOriginal),fmt(situacao.folgaReforma),a.icsdOriginal===null?'Indisponível':fmt(a.icsdOriginal)+'x',a.icsdReforma===null?'Indisponível':fmt(a.icsdReforma)+'x',situacao.alerta]){const td=document.createElement('td');td.textContent=String(v);tr.append(td)}el('comparacao').append(tr)}el('aviso-risco').textContent=risco.aviso;el('resultado').hidden=false;mostrarDecomposicao(r);}
+el('aplicar-referencia').addEventListener('click',()=>{
+ try {
+  const referencia=interpretarReferenciaColada(el('referencia-colada').value);
+  const ajustes=['ajusteEBITDA','ajusteNCG','ajusteCAPEX','ajusteIR','ajusteIBS','ajusteCBS','ajusteOutros'];
+  for(const linha of referencia){
+   for(const campo of ['caixaOriginal','servicoDivida','icsdConferido'])
+    el('e-'+linha.ano+'-'+campo).value=linha[campo]===null?'':String(linha[campo]);
+   for(const campo of ajustes)el('e-'+linha.ano+'-'+campo).value='0';
+  }
+  invalida();
+  el('referencia-colada').value='';
+  el('status-referencia').textContent='Referência anual conciliada. Ajustes de RT zerados. Revise as premissas e marque novamente as três confirmações.';
+ } catch(e){el('status-referencia').textContent='Referência recusada: '+e.message;}
+});
 el('calcular').addEventListener('click',()=>{el('resultado').hidden=true;el('decomposicao').hidden=true;try{mostrar(compararProjecaoEconomista(coletar(),{projecaoOriginal:el('r-original').checked,ponteTributaria:el('r-ponte').checked,semDuplaContagem:el('r-dupla').checked}));el('erro').textContent='';}catch(e){el('erro').textContent=e.message;}});
 el('restaurar').addEventListener('click',preencher);preencher();
 </script></body></html>
