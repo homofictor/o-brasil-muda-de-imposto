@@ -101,12 +101,11 @@ export function iniciarPonteImportacaoMVP({abrir, receber, status, limpar}) {
     window.open(url.href, '_blank', 'noopener,noreferrer');
     status('No importador aberto em outra aba, aceite os candidatos e clique em Enviar ao Motor RT Crédito 360.');
   });
+  // Navegação e retorno pelo cache do navegador não devem preservar candidatos
+  // de uma sessão cujo canal já foi encerrado.
   window.addEventListener('pagehide', () => {
-    if (canal) {
-      canal.onmessage = null;
-      canal.close();
-      canal = null;
-    }
+    cancelar();
+    status('Sessão de importação encerrada. Abra novamente o importador para transferir novos candidatos.');
   });
   return cancelar;
 }
