@@ -1613,3 +1613,55 @@ economista, mapear anos/rubricas/fórmulas, reproduzir exatamente o caixa
 original e exigir conciliação antes de aplicar ajustes tributários. Não
 duplicar leitor documental, não sobrescrever a projeção original, não
 alterar produção e não efetuar merge na `main`.
+
+
+## Conciliação aritmética do ICSD da projeção original (01/11/2026, fim da tarde)
+
+**Objetivo prioritário:** antes de ajustar o fluxo de caixa do economista
+pela RT, impedir a comparação quando o ICSD original transcrito não
+coincidir com o caixa disponível e o serviço da dívida do mesmo exercício.
+O modelo integrado `.xls` enviado pelo usuário **não foi incorporado
+nem enviado ao GitHub ou à Vercel**. Nenhum dado empresarial ou pessoal
+foi usado nesta entrega. A leitura das abas/fórmulas do modelo real
+permanece pendente, com necessidade de ambiente autorizado e validação
+da metodologia de FCADS do economista.
+
+**Entrega sintética:** `mvp-ponte-economista.js` exige agora o campo
+`icsdConferido` em cada exercício com serviço da dívida positivo,
+compara com `caixaOriginal/servicoDivida` e bloqueia divergência
+absoluta superior a 0,01x. Sem serviço da dívida, o ICSD deve ficar
+explicitamente vazio (`null`), sem indicador fictício. A interface
+`projecao-economista.html` apresenta a coluna de conferência, instrução
+e contagem de exercícios conciliados. A referência é preservada, e IBS,
+CBS, EBITDA, NCG, CAPEX, IR e serviço da dívida continuam separados.
+
+**Commits exclusivos da branch:**
+implementação `d51ea8d823ac97781c85ccb76cdd533fdf7e09b0`;
+testes `19335d8947546f993a9289942c8c61f7a6e2d152`;
+interface `9f3339509c5e3072b15c939f83f05a12b302a0c8`.
+
+**Teste nativo executado:** Node.js v22.16.0,
+`node --test --test-skip-pattern='a interface usa' mvp-ponte-economista.test.mjs`:
+**8 aprovados, 0 falhas** em cópia local dos arquivos idênticos aos
+blobs da branch (módulo `db79d14f5eb5f6b4fe34fd49af1070ba28682c5a`,
+teste `2402e180a0eebbc4384f922625d70ca322baa92d`).
+O teste de leitura estática do HTML foi excluído da execução local
+porque a página completa não foi copiada ao ambiente de teste.
+Em contrapartida, oito verificações estáticas da integração foram
+executadas diretamente contra os blobs do GitHub, todas aprovadas:
+navegação, import do módulo, coluna, coleta, nulo, aviso, importador
+original e revisões. **Não houve teste interativo de navegador** nem
+execução da suíte integral.
+
+**Limitações:** conciliação somente aritmética do ICSD, sem validação
+da composição do FCADS, dos contratos ou das fórmulas da planilha.
+A entrada continua manual e sintética; a incidência legal de IBS/CBS,
+créditos, regras de transição e fluxos multissetoriais reais não está
+homologada. A conferência de ICSD não substitui auditoria ou parecer.
+
+**Próxima ação prioritária:** mapear a estrutura da planilha integrada
+retrospectiva/prospectiva em ambiente seguro, sem copiar dados para
+o repositório, e reutilizar a leitura documental do Simulador RT v3.2
+para identificar períodos e rubricas da projeção original, preservando
+fórmulas e exigindo conciliação antes de aplicar ajustes tributários.
+Sem merge na `main`, sem alteração de produção e sem gastos.
