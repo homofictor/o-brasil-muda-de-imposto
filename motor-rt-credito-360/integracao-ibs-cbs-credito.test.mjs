@@ -110,3 +110,11 @@ test("expõe memória anual de caixa e concilia ICSD sem alterar o cálculo",()=
   p.cbs.tributoPagar+p.ibs.ressarcido+p.cbs.ressarcido);
  perto(p.icsdReforma,p.caixaReforma/p.servicoDivida);
 });
+
+test("revisão textual não libera caixa e ICSD",()=>{
+ const p=integrarIBSCBSAoCredito({...entrada,
+  tratamentoTributario:{...tratamentoTributario,validadoPorAnalista:"true"}}).projecoes[0];
+ assert.equal(p.auditoriaPonte.autorizadoParaProjecao,false);
+ assert.equal(p.caixaReforma,null);
+ assert.equal(p.icsdReforma,null);
+});
