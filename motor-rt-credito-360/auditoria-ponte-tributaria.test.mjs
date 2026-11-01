@@ -28,3 +28,13 @@ test("bloqueia bases incomparáveis e ausência de revisão",()=>{
 test("exige flags explícitas",()=>{
  assert.throws(()=>auditarPonteTributaria(base));
 });
+
+test("revisão exige booleano verdadeiro, não valores truthy",()=>{
+ for(const valor of ["true",1,{},[],"sim"]){
+  const r=auditarPonteTributaria({...base,validadoPorAnalista:valor,
+   impostoReferenciaJaRefletidoNoEbitda:false,
+   impostoReformaJaRefletidoNoEbitda:false});
+  assert.equal(r.autorizadoParaProjecao,false);
+  assert.match(r.alertas.join(" "),/Revisão do analista pendente/);
+ }
+});
