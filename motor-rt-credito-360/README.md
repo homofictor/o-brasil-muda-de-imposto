@@ -627,3 +627,50 @@ ainda permite NCG não auditada, embora a identifique.
 Próxima ação: localizar e proteger consumidores reais das projeções para
 impedir apresentação de resultados não auditados como validados.
 Sem merge na `main`, deploy manual, dados pessoais ou gastos.
+
+
+## Indicadores financeiros finitos na projeção (31/10/2026)
+
+**Objetivo e falha reproduzida:** a função
+`calcularIndicadoresFinanceiros` aceitava entradas individualmente finitas
+que geravam `Infinity` em razões financeiras (inclusive ICSD e margem
+EBITDA), dívida líquida, fluxo de caixa livre e endividamento geral.
+Exemplos sintéticos: `1e308 / 1e-308` e `1e308 - (-1e308)`.
+Antes da correção, esses indicadores retornavam `Infinity`.
+
+**Entrega:** cálculos aritméticos não finitos passam a retornar `null`
+(indicador indisponível), com aviso explícito de cálculo não finito.
+Dados ausentes continuam `null`; nenhum valor é presumido como zero.
+Fórmulas tributárias, segregação IBS/CBS, projeções de caixa e ICSD
+projetado não foram alterados. O controle é setorialmente neutro.
+
+**Commits:** correção `9fc4ca0f62d402bc84fc1041cbe5d6acba43130f`;
+regressão `fd3e2a9e007352b4376e7e4f961a5076154f10c4`.
+**Verificação após commits:** arquivos relidos da branch autorizada.
+Blobs: `indicadores-financeiros.js`
+`6e0e0a540502c27a3b9671244e25148c5360c24c`;
+`indicadores-financeiros.test.mjs`
+`fbec830b3ff57265ed35ee27fa27445b3692c36a`.
+Foram executados **28 testes em JavaScript V8, 28 aprovados e 0 falhas**:
+5 de indicadores (3 anteriores e 2 novos), 9 da ponte IBS/CBS e
+14 da entrada com NCG auditada, usando 8 módulos da branch e adaptação
+síncrona de `node:test` e `node:assert/strict`.
+**Não** houve execução nativa do comando `node --test`, suíte integral,
+teste de banco, QA de interface ou comprovação de deploy.
+
+**Critérios de prontidão:** testes focados passaram, mas cenários de
+comércio, indústria, serviços, construção, saúde, transporte, agronegócio
+e empresa multissetorial continuam sintéticos, sem homologação manual.
+Caixa e ICSD da entrada auditada têm memória preliminar, não DFC
+conciliada ou FCADS contratual validado. A interface é cadastral,
+não financeira; faltam rastreabilidade jurídica por exercício,
+autenticação institucional, autorização e armazenamento privado de
+documentos. A entrada direta sem gate documental de NCG continua
+acessível e identificada como `nao_auditada`.
+**Não pronto para testes integrados.**
+
+**Próxima ação exata:** localizar o primeiro consumidor operacional
+de projeções e impedir que a entrada sem auditoria da NCG ou resultados
+não homologados sejam exibidos como validados, sem publicar interface
+financeira antes da segurança documental. Sem merge na `main`,
+publicação manual, gastos ou dados pessoais.
