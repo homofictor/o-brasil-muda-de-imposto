@@ -1223,3 +1223,38 @@ conciliação multissetorial completa e QA real entre abas permanecem
 pendentes. Não usar como parecer de crédito. Nenhuma alteração na
 produção ou merge na `main`. Próxima ação: validar a navegação real
 entre abas e conciliar os indicadores de diferentes setores no preview.
+
+
+## Verificacao independente das subcontas IBS e CBS (01/11/2026)
+
+Entrega limitada ao verificador `mvp-conciliacao-caixa.js`, consumido pela
+interface `mvp.html`. A memória do MVP passa a recompor **separadamente**
+para IBS e CBS: tributo a pagar = débito menos crédito utilizado;
+saldo final = saldo inicial + créditos gerados - utilizados - ressarcidos -
+ajustes negativos. Também verifica limites de utilização, valores não
+negativos e se os ressarcimentos consolidados correspondem à soma das
+duas contas. Um campo `conciliacao: 0` declarado pelo próprio motor
+não é mais evidência suficiente de consistência. Nenhuma regra legal,
+alíquota, fórmula da ponte principal ou importador foi alterado.
+
+Commits: implementação `7397881a93e82ab29149578372dec7c9e7b3d5b5`;
+regressão `1635e95c42cafc3259a71b5cf31941b8b1503e7d`.
+Verificação nativa **Node.js 22.16.0**: comando
+`node --test mvp-conciliacao-caixa.test.mjs`, **9 testes aprovados,
+0 falhas**, em diretório isolado com os dois blobs exatos da branch.
+Os hashes Git SHA-1 dos arquivos testados coincidem com os blobs publicados:
+`d64830208c680b57e13af7d92a736089bce875e3` e
+`ff0e6f9763e8fdfac09deab33978622f3db03fc6`.
+Três regressões novas cobrem débito de IBS divergente, saldo final de
+CBS adulterado e ressarcimento consolidado sem origem. Não foi
+executada a suíte integral nem teste interativo real entre abas.
+
+**Bloqueios mantidos:** conciliação completa da DFC, FCADS/ICSD
+contratual, validação jurídica por exercício, homologação multissetorial
+manual, controle de acesso e segurança documental. A simulação sintética
+não equivale a parecer de crédito. Sem merge na `main`, alteração
+da produção, dados pessoais ou gastos autorizados.
+
+Próxima ação: homologar o fluxo interativo real entre importador v3.2
+e Motor e conferir um cenário sintético com créditos e ressarcimentos,
+incluindo conciliação manual de IBS, CBS, caixa e ICSD.
