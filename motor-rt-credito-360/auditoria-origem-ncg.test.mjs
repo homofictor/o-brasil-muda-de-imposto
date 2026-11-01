@@ -90,3 +90,27 @@ test("rejeita duplicidade no projetado sem proibir a mesma linha em exercícios 
   assert.match(r.pendencias.join(" "), /projetado: estoques reutiliza/);
   assert.equal(auditarOrigemNCG(entrada).status, "conciliado_revisado");
 });
+
+test("rejeita overflow na NCG de um balanço antes da conciliação", () => {
+  const r = {...entrada, saldosBase: {...entrada.saldosBase,
+    clientes: origem(1e308, 1), estoques: origem(1e308, 2)}};
+  assert.throws(() => auditarOrigemNCG(r), /NCG calculada não finita/);
+});
+
+test("rejeita overflow na variação entre NCGs individualmente finitas", () => {
+  const r = {...entrada, variacaoInformada: 0,
+    saldosBase: {clientes: origem(0, 1), estoques: origem(0, 2),
+      fornecedoresOperacionais: origem(1e308, 3)},
+    saldosProjetados: {clientes: origem(1e308, 1), estoques: origem(0, 2),
+      fornecedoresOperacionais: origem(0, 3)}};
+  assert.throws(() => auditarOrigemNCG(r), /Variação calculada de NCG não finita/);
+});
+
+test("rejeita overflow da diferença com variação informada finita", () => {
+  const r = {...entrada, variacaoInformada: -1e308,
+    saldosBase: {clientes: origem(0, 1), estoques: origem(0, 2),
+      fornecedoresOperacionais: origem(0, 3)},
+    saldosProjetados: {clientes: origem(1e308, 1), estoques: origem(0, 2),
+      fornecedoresOperacionais: origem(0, 3)}};
+  assert.throws(() => auditarOrigemNCG(r), /Diferença de NCG não finita/);
+});
