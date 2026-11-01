@@ -1779,3 +1779,21 @@ foi criado com expiração informada pela Vercel em
 02/11/2026 às 22:04:02 (fuso não especificado).
 A verificação externa independente de navegação e cliques
 não foi executada. Nenhuma alteração na produção.
+
+
+## Referência anual do economista por colagem controlada (01/11/2026)
+
+Entrega incremental restrita à branch `feature/motor-rt-credito-360`, sem produção e sem arquivos de clientes. A tela `projecao-economista.html` ganhou uma transferência **manual e temporária** de quatro colunas de valores previamente calculados na planilha: ano, caixaOriginal, servicoDivida e icsdConferido. Exige oito exercícios completos, 2026 a 2033, separados por tabulação. Aceita vírgula ou ponto decimal, sem separadores de milhares, e valida ICSD = caixa / serviço da dívida com tolerância 0,01x. Não interpreta fórmulas, não lê arquivos e não substitui o importador PDF/XLSX/CSV existente em `simulador/v3/import.js`.
+
+Ao aceitar a referência, a interface **zera todos os ajustes hipotéticos de RT**, oculta resultados anteriores, limpa as três confirmações e exige nova revisão. Isso impede misturar uma referência copiada com ajustes sintéticos previamente carregados. A colagem não é persistida e o campo de texto é limpo após sucesso. Em caso de dados incompletos ou inconsistentes, nenhuma célula é aplicada. Somente valores sintéticos devem ser usados no preview.
+
+Commits de implementação:
+- `a2fc7f06caa6d77a472887cb5331c277675004fc`: validador isolado `mvp-referencia-colada.js`.
+- `abc5aee71ec3f0f6373a939c5d6f749b1eb19636`: testes `mvp-referencia-colada.test.mjs`.
+- `ee0b6f8a153bf6576d9d6aba52fc1d3dc6fd0771`: integração à página de comparação.
+
+**Teste nativo executado:** Node.js 22.16.0, `node --test mvp-referencia-colada.test.mjs`, **6 aprovados e 0 falhas**. Cobertos oito anos, cabeçalho, vírgula decimal, conciliação do ICSD, exercício sem dívida, valores inválidos, fórmulas e linhas incompletas. Os hashes Git dos dois arquivos executados localmente coincidem com os blobs relidos da branch (`f622c771f6d7b637fbeb69e049415b9abd71299b` e `47522fee4725c6dc98c43e7b4fec75563fffeace`). Não foi executada a suíte integral.
+
+**Preview verificado:** deployment `dpl_FwEjsJ2DiXznH6jF8VNsfJfEx61b`, commit `ee0b6f8a`, estado READY, target null, branch autorizada. Leitura autenticada Vercel HTTP 200 para `projecao-economista.html`, `mvp-referencia-colada.js`, teste e `simulador/v3/import.js`. A resposta da página contém importação do novo módulo, textarea, botão de aplicação, zeragem de ajustes, referência ao importador existente e aviso de não homologação. URL temporária compartilhável criada/reutilizada; expiração informada 02/11/2026 às 22:56:29, fuso não especificado. Sem homologação visual/interativa em navegador externo.
+
+**Bloqueios e próxima ação:** esta é uma ponte manual para dados sintéticos, não upload ou leitura da planilha integrada `.xls` fornecida pelo usuário. Não há mapeamento auditado das abas, fórmulas, FCADS/ICSD institucional, DRE/DFC ou transição legal setorial; não há segurança documental para informações reais. Priorizar o mapeamento da planilha padronizada, a reprodução exata da projeção original e sua integração segura ao importador v3.2, sem duplicar leitor. Não utilizar para parecer de crédito.
