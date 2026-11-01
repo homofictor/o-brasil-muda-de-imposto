@@ -1562,3 +1562,54 @@ com candidatos fictícios e revisar manualmente um cenário multissetorial
 com créditos, ressarcimentos e liberação de NCG, antes de homologar.
 Sem merge na `main`, alteração de produção, gasto adicional ou
 uso de dados pessoais nesta entrega.
+
+
+## Ponte incremental da projeção do economista (01/11/2026)
+
+**Diretriz funcional prioritária do usuário:** receber DRE, balanços e a
+planilha de fluxo de caixa projetado pelo economista, reproduzir e preservar
+a projeção original, calcular uma segunda projeção com efeitos da Reforma
+Tributária e comparar a capacidade de pagamento ano a ano. O objetivo não
+é substituir a metodologia de crédito nem apresentar IBS/CBS isoladamente.
+
+**Entrega pequena e navegável:** `projecao-economista.html`, ligada ao
+`mvp.html`, com oito exercícios sintéticos (2026 a 2033). O módulo puro
+`mvp-ponte-economista.js` preserva caixa original e serviço da dívida,
+calcula diferenças incrementais de EBITDA, NCG, CAPEX, imposto sobre
+resultado, IBS, CBS e outros ajustes, exibindo caixa ajustado, ICSD original,
+ICSD ajustado, delta acumulado e anos com cobertura inferior a 1x. IBS e CBS
+permanecem separados. Efeitos IBS/CBS nesta ponte são **somente ajustes
+incrementais de caixa ainda não refletidos no EBITDA**, não alíquotas ou
+tributos brutos. Há três revisões obrigatórias e invalidação dos resultados
+após editar entradas. Não foram alterados leitores do Simulador v3.2,
+mecanismos fiscais ou dados de produção.
+
+Commits exclusivos da branch `feature/motor-rt-credito-360`:
+módulo `b7fc4993eeda7146d381ad7e819166591f99f595`;
+regressão `99abf541f95eff93a7a51a3588301eef19fdf40d`;
+interface `ed5984c0a2f40f5db74c0e1c0b9f9fac200cab8e`;
+navegação `1882c1585c4f4a808a311accab766545fbbff289`.
+
+**Teste nativo executado:** Node.js v22.16.0,
+`node --test mvp-ponte-economista.test.mjs`: **7 aprovados, 0 falhas**
+na cópia local dos módulos e da página. Cobertura: preservação da
+referência, IBS/CBS separados, NCG negativa, bloqueio das três revisões,
+números inválidos, dívida zero, oito exercícios, alerta de insuficiência
+e ligação estática da interface ao módulo/importador. Não é teste de
+navegação real, de importação XLSX nem suíte integral.
+
+**Bloqueios para uso real:** esta tela **ainda não faz upload nem interpreta
+a planilha do economista**. Não preserva fórmulas, abas e vínculos de XLSX,
+não reconcilia DRE/BP/DFC nem aplica automaticamente as regras da transição
+e regimes por atividade. Os ajustes são preenchidos manualmente com
+números fictícios, sem homologação tributária ou de crédito. FCADS e ICSD
+contratual, créditos comprovados, controles de acesso, segurança documental
+e validação jurídica por exercício permanecem pendentes. Não inserir dados
+reais, CNPJ ou documentos confidenciais.
+
+**Próxima ação prioritária:** reutilizar a leitura XLSX e a revisão de
+candidatos do Simulador v3.2 para identificar a planilha de projeção do
+economista, mapear anos/rubricas/fórmulas, reproduzir exatamente o caixa
+original e exigir conciliação antes de aplicar ajustes tributários. Não
+duplicar leitor documental, não sobrescrever a projeção original, não
+alterar produção e não efetuar merge na `main`.
