@@ -1404,3 +1404,54 @@ multissetoriais sintéticos. Persistem os bloqueios de DFC integral,
 FCADS/ICSD contratual, fundamentação legal por exercício, segurança
 documental e homologação para concessão de crédito. Nenhum parecer
 validado, merge na `main`, alteração da produção ou dado pessoal.
+
+## Encerramento seguro da importação ao navegar (01/11/2026)
+
+Correção limitada à ponte existente `mvp-import-bridge.js`. O evento
+`pagehide` agora chama a mesma rotina `cancelar()` usada no reset:
+fecha o BroadcastChannel, remove o receptor, descarta candidatos aceitos
+pendentes e desabilita a aplicação de juros na interface via callback
+`limpar`. O aviso informa que é necessário reabrir o importador.
+Isso evita reaproveitar valores da sessão anterior após voltar à página
+pelo histórico/cache do navegador. Não modifica o leitor documental
+`simulador/v3/import.js`, os cálculos financeiros ou a produção.
+
+Commits na branch `feature/motor-rt-credito-360`:
+implementação `c6cf800c496f4734ea1990124c16ecb702332e79`;
+regressão `384c90dc496af01522b0f3b8f5073b4c99049808`.
+
+Teste nativo **Node.js 22.16.0** em diretório isolado:
+`node --test mvp-import-bridge.test.mjs mvp-pagehide-importacao.test.mjs`,
+**7 aprovados, 0 falhas**. O teste novo falhou antes da correção
+(esperava limpeza dos candidatos ao navegar) e passou depois. Testa
+cancelamento, fechamento e remoção do receptor, descarte dos candidatos
+e nova sessão independente. Arquivos locais executados correspondem
+aos blobs da branch: ponte `07f73d55b4f8f574abcb8a3849765f293bc8065a`,
+regressão nova `d53a8d0e368946c13a2b3d4d010bbd38a7422d26`,
+regressão anterior `20e5391d8e9b9f09b3f283d088beabff6c42f9ff`
+e dependência `74ef530da21e0444d41de98b7842bc5d5c0c4307`.
+Não foi executada a suíte integral.
+
+**Preview verificado:** deployment `dpl_3R7R2NPLpQuMdugk3whXiMULw7PD`
+do commit `384c90dc`, estado `READY`, branch autorizada, alvo
+`target:null` (não produção). Com acesso autorizado, responderam
+HTTP 200 `motor-rt-credito-360/mvp.html`,
+`mvp-import-bridge.js`, `mvp-pagehide-importacao.test.mjs`
+e `simulador/v3/import.js`. Os três arquivos JavaScript
+publicados foram comparados byte a byte com a branch e coincidiram.
+O HTML recebeu uma pequena injeção da infraestrutura Vercel.
+Link temporário compartilhável criado/reutilizado, expiração informada
+pela Vercel em 02/11/2026 às 15h56min25s (fuso não informado).
+
+**Bloqueios:** Chromium/Playwright recusou até navegação `data:`
+com `net::ERR_BLOCKED_BY_ADMINISTRATOR` neste ambiente, portanto
+não houve homologação interativa real entre abas. Faltam DFC completa,
+FCADS/ICSD contratual, conciliação manual multissetorial, validação
+jurídica por exercício e controles institucionais de acesso e documentos.
+Todos os valores são sintéticos, sem aptidão para parecer de crédito.
+
+**Próxima ação prioritária:** homologar em navegador autorizado a
+transferência de candidatos fictícios do importador v3.2 ao Motor,
+incluindo navegação de ida e volta, e conciliar manualmente IBS, CBS,
+NCG, caixa e ICSD. Sem merge na `main`, sem alteração da produção,
+sem dados pessoais e sem gasto adicional autorizado.
