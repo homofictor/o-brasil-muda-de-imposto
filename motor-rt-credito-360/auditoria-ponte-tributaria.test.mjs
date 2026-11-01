@@ -38,3 +38,15 @@ test("revisão exige booleano verdadeiro, não valores truthy",()=>{
   assert.match(r.alertas.join(" "),/Revisão do analista pendente/);
  }
 });
+
+test("não disponibiliza ajuste de caixa sem revisão válida ou evidência documental",()=>{
+ for(const alteracao of [{validadoPorAnalista:false},{validadoPorAnalista:"true"},
+  {evidenciaContabil:"  "},{evidenciaContabil:{}},{evidenciaContabil:null}]){
+  const r=auditarPonteTributaria({...base,...alteracao,
+   impostoReferenciaJaRefletidoNoEbitda:false,
+   impostoReformaJaRefletidoNoEbitda:false});
+  assert.equal(r.ajusteTributarioCaixa,null);
+  assert.equal(r.autorizadoParaProjecao,false);
+  assert.ok(r.alertas.length>0);
+ }
+});
