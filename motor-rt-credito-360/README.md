@@ -1723,3 +1723,46 @@ crédito. Nenhum dado do arquivo enviado pelo usuário foi publicado.
 do caixa e ICSD antes da segunda projeção e conciliar manualmente
 a decomposição de impactos. Manter somente preview, sem merge na main,
 sem alteração da produção e sem custos.
+
+
+## Memória explicativa dos impactos no caixa (01/11/2026, noite)
+
+**Objetivo de análise de crédito:** demonstrar por que a projeção ajustada
+apresenta diferença em relação à projeção original do economista, em vez de
+mostrar apenas um ICSD final. A página `projecao-economista.html` passou a
+apresentar, por exercício de 2026 a 2033, a contribuição ao caixa de EBITDA,
+NCG, CAPEX, IR, IBS, CBS e outros ajustes, com sinais financeiros corretos,
+diferença total, diferença acumulada e maior pressão acumulada entre as
+rubricas informadas. A memória impede dupla interpretação de NCG e CAPEX:
+ajustes positivos nessas entradas são saídas de caixa na decomposição.
+
+**Conciliação:** `mvp-decomposicao-caixa.js` valida valores finitos,
+exercícios ordenados, soma das sete contribuições com `deltaCaixa` e
+`caixaReforma - caixaOriginal`, com tolerância absoluta de 0,01 unidade.
+Uma divergência bloqueia a apresentação da memória. A tela invalida os
+resultados quando o usuário edita premissas, exigindo novamente as revisões.
+O importador existente `simulador/v3/import.js` foi preservado, sem duplicar
+leitores de PDF, XLS, XLSX ou CSV.
+
+**Commits exclusivos da branch:** módulo `912dc63d`, regressões
+`7c262c21`, integração visual `503117b7`.
+**Testes nativos executados:** Node.js v22.16.0,
+`node --test mvp-decomposicao-caixa.test.mjs`: **5 aprovados, 0 falhas**.
+Os blobs publicados no GitHub coincidem com os arquivos testados localmente:
+módulo `227e0f0639dc539415af38fc6672f1d01946f42b` e teste
+`f79030bcd77a17d9ae2c76d242dfdb1e99290f7b`.
+A integração HTML foi conferida estaticamente, mas não houve QA interativo
+de navegador nem execução da suíte integral.
+
+**Limitações:** todos os efeitos permanecem manuais e sintéticos, sem
+demonstração de causalidade fiscal. A memória aritmética não substitui
+a importação e reprodução da planilha integrada de crédito, conciliação
+de DRE/BP/DFC, aplicação legal da transição e dos créditos, cálculo
+contratual do FCADS/ICSD ou auditoria documental. Nenhum documento real,
+dado pessoal ou empresarial foi enviado ao GitHub ou à Vercel.
+
+**Próxima ação prioritária:** mapear, em ambiente privado, as abas e fórmulas
+da planilha padronizada do economista, preservar a projeção original e
+reutilizar a leitura e a revisão de candidatos do importador v3.2 para
+reproduzir e conciliar caixa e ICSD antes dos ajustes fiscais.
+Sem merge na `main`, sem alterações na produção e sem custos autorizados.
