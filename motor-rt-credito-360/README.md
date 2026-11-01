@@ -1297,3 +1297,56 @@ publicacao em producao, gastos ou uso de dados pessoais.
 Proxima acao: executar QA interativo entre o importador existente e o
 MVP em navegador real, com candidatos ficticios, e conciliar
 manual e independentemente caixa e ICSD de cenarios multissetoriais.
+
+
+## Cancelamento de importação ao restaurar o exemplo sintético (01/11/2026)
+
+Correção focada na navegação já existente: antes, o botão **Restaurar exemplo
+sintético** redefinia os campos financeiros e as três revisões, mas mantinha
+a sessão de transferência aberta e os candidatos aceitos do importador
+v3.2 visíveis e potencialmente reaplicáveis. Agora, o botão chama a
+rotina de cancelamento da ponte antes de restaurar os valores: fecha o
+BroadcastChannel, remove seu receptor, descarta candidatos pendentes,
+desmarca a confirmação de juros e desabilita sua aplicação. Uma nova
+importação cria uma sessão independente. A rotina também encerra o canal
+no descarregamento da página.
+
+Commits exclusivos da branch `feature/motor-rt-credito-360`:
+ponte `6c379560b6c40a34e8fe5649966476949f7a62bd`;
+interface `e570b0ed3124b4ff0ad34374e8ceb857bbafaec7`;
+regressão `03021e05c79deab5206d1e098a06b680d355eb3d`.
+
+**Testes nativos executados:** Node.js 22.16.0,
+`node --test mvp-import-bridge.test.mjs mvp-reset-importacao.test.mjs`
+em diretório isolado: **8 aprovados, 0 falhas**. O teste novo simula
+recebimento, cancelamento, fechamento do canal, remoção do receptor e
+abertura de nova sessão. A segunda asserção verifica a ligação do botão
+no HTML; foi executada contra um recorte local desse trecho, não contra
+a página HTML completa. O trecho também foi conferido diretamente no
+arquivo da branch e na página publicada. Os hashes dos módulos e testes
+locais coincidiram com os blobs da branch: ponte
+`64592ee0b4677fd8842e746273802e62abb425ee`, dependência
+`74ef530da21e0444d41de98b7842bc5d5c0c4307`, regressão anterior
+`20e5391d8e9b9f09b3f283d088beabff6c42f9ff` e teste novo
+`737ff5683baf5b3f692c21f3e872fd718ebaa233`.
+Não houve execução da suíte integral nem teste interativo real com duas
+abas de navegador.
+
+**Preview verificado:** deployment automático
+`dpl_AyP3NV3RaMuJSzLD8qNLtQGyhyFo`, commit
+`03021e05c79deab5206d1e098a06b680d355eb3d`, estado **READY**,
+branch correta e alvo preview. Com acesso autorizado, a Vercel respondeu
+HTTP 200 para `mvp.html`, `mvp-import-bridge.js`, teste novo e
+`simulador/v3/import.js`. O HTML publicado contém a chamada de
+cancelamento e o módulo publicado retorna a função de cancelamento.
+Nenhuma alteração do leitor de PDF/XLSX/CSV ou dos cálculos IBS/CBS,
+EBITDA, NCG, caixa e ICSD.
+
+**Bloqueios:** a comunicação real entre abas ainda requer QA com cliques
+no navegador. DFC integral, FCADS/ICSD contratual, conciliação manual
+multissetorial, validação jurídica por exercício, controle de acesso e
+segurança institucional dos documentos permanecem pendentes. A revisão
+é apenas sintética e declarativa, não auditoria ou parecer de crédito.
+Próxima ação prioritária: QA interativo da transferência entre abas e
+conciliação independente dos cenários sintéticos. Sem merge na
+`main`, promoção à produção, uso de dados pessoais ou gastos.
