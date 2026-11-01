@@ -20,7 +20,8 @@ export function auditarPonteTributaria({
  if(flags.some(v=>typeof v!=="boolean"))
   throw new Error("Informar explicitamente o tratamento dos tributos no EBITDA");
  const alertas=[];
- if(!evidenciaContabil?.trim())alertas.push("Ausente memória de conciliação contábil");
+ if(typeof evidenciaContabil!=="string"||!evidenciaContabil.trim())
+  alertas.push("Ausente memória de conciliação contábil");
  if(validadoPorAnalista!==true)alertas.push("Revisão do analista pendente");
  if(impostoReferenciaJaRefletidoNoEbitda!==impostoReformaJaRefletidoNoEbitda)
   alertas.push("Bases contábeis não comparáveis: exige normalização");
@@ -29,10 +30,12 @@ export function auditarPonteTributaria({
   alertas.push("EBITDA já reflete tributos sobre consumo: ajuste de caixa não autorizado");
  // Somente no caso de EBITDA pré-tributos explicitamente documentado
  // a variação dos tributos é um ajuste de caixa incremental permitido.
- const ajusteTributarioCaixa=comparavel&&!flags[0]
+ // Não expor ajuste monetário utilizável antes da conciliação e revisão.
+ const autorizadoParaProjecao=comparavel&&!flags[0]&&alertas.length===0;
+ const ajusteTributarioCaixa=autorizadoParaProjecao
   ?tributoReferencia-tributoReforma:null;
  return {comparavel,ajusteTributarioCaixa,
   efeitoPreco,efeitoCusto,alertas,
-  autorizadoParaProjecao:comparavel&&alertas.length===0&&ajusteTributarioCaixa!==null,
+  autorizadoParaProjecao,
   regra:"Não adicionar tributo de referência ao EBITDA líquido de tributos sem conciliação."};
 }
