@@ -42,6 +42,12 @@ export function validarMemoriaCaixaMVP(projecao) {
   const cbs = finito(p.cbs.tributoPagar, 'CBS a pagar');
   const ressarcimentos = finito(p.ressarcimentoRecebidoTotal, 'ressarcimentos recebidos');
   const referencia = finito(p.tributoReferencia, 'tributo de referencia');
+  // Controles independentes das restricoes do motor: NCG e EBITDA podem ser negativos,
+  // mas desembolsos, servico da divida e tributos nao podem gerar caixa por sinal invertido.
+  for (const [nome, valor] of Object.entries({CAPEX: capex,
+    impostosResultado: ir, juros, amortizacoes, tributoReferencia: referencia})) {
+    if (valor < 0) throw new Error(`Memoria de caixa nao conciliada: ${nome} negativo`);
+  }
   const ressarcimentoIBS = validarConta(p.ibs, 'IBS');
   const ressarcimentoCBS = validarConta(p.cbs, 'CBS');
   conciliar(ressarcimentos, ressarcimentoIBS + ressarcimentoCBS, 'ressarcimentos segregados');
