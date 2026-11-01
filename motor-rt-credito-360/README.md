@@ -1089,3 +1089,51 @@ por exercício, controles institucionais de documentos e QA completo.
 Próxima ação: verificar em navegador a ida e volta entre abas e a
 conciliação de IBS, CBS, NCG, caixa e ICSD com cenários sintéticos.
 Sem merge na `main`, alteração de produção, dados pessoais ou gastos.
+
+
+## Proteção contra pacotes atrasados ou repetidos na transferência v3.2 (01/11/2026)
+
+**Entrega pequena e verificável:** o receptor do MVP agora registra o maior
+`envioId` efetivamente aceito na sessão de importação e rejeita mensagens
+com identificador igual ou inferior. Pacotes atrasados ou repetidos não
+substituem os candidatos mais recentes nem recebem nova confirmação de
+entrega. Um pacote inválido não avança o contador, e a abertura de uma nova
+sessão reinicia a sequência. O importador original
+`simulador/v3/import.js` não foi modificado; nenhum leitor foi duplicado.
+
+**Commits na branch exclusiva:**
+correção `49bf597ac5836ec58c4355893c3e1bc5eecb2cc2`;
+regressão `e5f8fabb2a4919c6dc6366a409aba75c4baf3e29`.
+Blobs relidos da branch e conferidos com `git hash-object` das cópias
+locais executadas: ponte `d369a6e9cd9b15d1430f55e73308b2626c8cb995`;
+novo teste `d137218f6f522b41c93ff501bfdb9d1792077bcb`.
+O teste anterior também foi conferido:
+`20e5391d8e9b9f09b3f283d088beabff6c42f9ff`.
+
+**Testes nativos efetivamente executados:** Node.js 22.16.0,
+`node --check mvp-import-bridge.js` aprovado;
+`node --test mvp-import-bridge.test.mjs mvp-ordem-transferencia.test.mjs`,
+**7 aprovados, 0 falhas**. O teste novo falhou antes da correção
+(1 falha, 0 aprovados) e passou depois. Cobre replay, ordem inversa,
+rejeição de pacote inválido e reinício de sessão. Os testes usam
+`EventTarget` e canais simulados, não navegador real. Não foi executada
+a suíte integral do repositório.
+
+**Preview isolado:** deployment automático da correção
+`dpl_BpFKxjWciMSj4kWKp1LrdMSNN3pc`, commit `49bf597`,
+confirmado `READY` na branch `feature/motor-rt-credito-360`,
+alvo preview (`target:null`). A Vercel respondeu HTTP 200 para
+`/motor-rt-credito-360/mvp.html` e
+`/motor-rt-credito-360/mvp-import-bridge.js`, contendo a proteção
+nova. Não houve verificação de cliques reais entre abas. O deployment
+do commit de testes estava `BUILDING` na primeira consulta, portanto
+seu estado final não foi afirmado aqui.
+
+**Prontidão e bloqueios:** MVP sintético navegável, sem homologação
+para parecer de crédito. Continuam pendentes QA real entre abas,
+conciliação integral da DFC, FCADS/ICSD contratual, homologação manual
+multissetorial e legal, autorização institucional e armazenamento privado
+de documentos. Próxima ação prioritária: validar interação real entre
+abas e conferir IBS, CBS, NCG, caixa e ICSD por cenário sintético.
+Não houve merge na `main`, promoção à produção, gastos ou uso de
+dados pessoais nesta entrega.
