@@ -38,15 +38,19 @@ export function auditarOrigemNCG({
         }
       }
     }
-    return CONTAS.every(conta => Object.hasOwn(valores, conta)) ? {
-      ...valores,
-      ncg: valores.clientes + valores.estoques - valores.fornecedoresOperacionais
-    } : null;
+    if (!CONTAS.every(conta => Object.hasOwn(valores, conta))) return null;
+    const ncg = valores.clientes + valores.estoques - valores.fornecedoresOperacionais;
+    if (!Number.isFinite(ncg)) throw new Error(`${rotulo}: NCG calculada não finita`);
+    return {...valores, ncg};
   };
   const base = extrair(saldosBase, "base");
   const projetado = extrair(saldosProjetados, "projetado");
   const variacaoCalculada = base && projetado ? projetado.ncg - base.ncg : null;
+  if (variacaoCalculada !== null && !Number.isFinite(variacaoCalculada))
+    throw new Error("Variação calculada de NCG não finita");
   const diferenca = variacaoCalculada === null ? null : variacaoCalculada - variacaoInformada;
+  if (diferenca !== null && !Number.isFinite(diferenca))
+    throw new Error("Diferença de NCG não finita");
   const conciliado = diferenca !== null && Math.abs(diferenca) <= tolerancia;
   if (diferenca !== null && !conciliado) pendencias.push("Variação informada diverge dos balanços");
   if (validadoPorAnalista !== true ||
