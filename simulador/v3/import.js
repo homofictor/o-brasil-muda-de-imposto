@@ -46,7 +46,7 @@ function loadImportScript(src,test){if(test())return Promise.resolve();return ne
 async function ensureXlsx(){await loadImportScript('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',()=>typeof XLSX!=='undefined')}
 async function ensurePdf(){await loadImportScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',()=>typeof pdfjsLib!=='undefined');pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'}
 function normImport(s){return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\s+/g,' ').trim()}
-function brNum(s){if(typeof s==='number')return s;const raw=String(s||'').trim(),paren=/^\(.*\)$/.test(raw);let x=raw.replace(/R\$|\s/g,'').replace(/[^0-9,.-]/g,'');if(!x)return NaN;if(x.includes(',')&&x.includes('.'))x=x.replace(/\./g,'').replace(',','.');else if(x.includes(','))x=x.replace(',','.');const n=Number(x);return paren&&Number.isFinite(n)?-Math.abs(n):n}
+function brNum(s){if(typeof s==='number')return s;const raw=String(s||'').trim(),paren=/^\(.*\)$/.test(raw);let x=raw.replace(/R\$|\s/g,'').replace(/[^0-9,.-]/g,'');if(!x)return NaN;if(x.includes(',')&&x.includes('.'))x=x.replace(/\./g,'').replace(',','.');else if(x.includes(','))x=x.replace(',','.');else if(/^-?\d{1,3}(?:\.\d{3})+$/.test(x))x=x.replace(/\./g,'');const n=Number(x);return paren&&Number.isFinite(n)?-Math.abs(n):n}
 function fmtMoney(v){return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:2}).format(v)}
 function fmtPct(v){return `${Number(v).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})}%`}
 function extOf(name){return String(name||'').split('.').pop().toLowerCase()}
