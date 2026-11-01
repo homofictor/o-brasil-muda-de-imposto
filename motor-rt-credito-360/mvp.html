@@ -10,6 +10,15 @@
 <section><h2>1. Base financeira e serviço da dívida</h2><p class="muted">Valores ilustrativos em unidades monetárias, exercício-base 2026 e projeção 2027. EBITDA informado antes dos tributos sobre consumo nos dois cenários, sem dupla dedução.</p><div id="financeiro" class="grid"></div></section>
 <section><h2>2. Receitas e alíquotas hipotéticas por atividade</h2><p class="muted">IBS e CBS possuem contas independentes. As taxas são entradas ilustrativas, não determinadas pelo CNAE. Créditos não são presumidos neste exemplo.</p><div class="scroll"><table><thead><tr><th>Atividade</th><th>Receita-base</th><th>IBS (%)</th><th>CBS (%)</th></tr></thead><tbody id="atividades"></tbody></table></div></section>
 <section><h2>3. Origem sintética da NCG</h2><p class="muted">NCG = clientes + estoques − fornecedores operacionais. A variação entre os balanços alimenta o caixa. Os identificadores de documento são apenas referências sintéticas.</p><div class="scroll"><table><thead><tr><th>Conta</th><th>Base 2026</th><th>Projeção 2027</th></tr></thead><tbody id="ncg"></tbody></table></div></section>
+<section><h2>3A. Candidatos aceitos no importador existente</h2>
+<p class="muted">Transferência local entre abas, sem enviar documentos, CNPJ, nomes ou fontes ao Motor. Utilize preferencialmente arquivos fictícios. A aceitação no Simulador v3.2 não substitui auditoria contábil ou jurídica. Receita bruta, ativo e passivo circulantes não são convertidos automaticamente em receita líquida ou NCG.</p>
+<button type="button" id="abrir-importador">Abrir importador v3.2 para revisão e transferência</button>
+<p id="status-importacao" role="status" aria-live="polite" class="muted"></p>
+<div id="candidatos-importados" hidden><div class="scroll"><table><thead><tr><th>Campo revisado na origem</th><th>Valor</th><th>Meses</th></tr></thead><tbody id="tabela-candidatos"></tbody></table></div>
+<p id="aviso-juros" class="muted"></p>
+<label class="check"><input id="confirmar-juros-importados" type="checkbox"> Confirmei que a despesa financeira é compatível com o exercício projetado e que os demais valores foram ajustados à mesma unidade monetária. A anualização é linear, não contratual.</label>
+<button type="button" id="aplicar-juros-importados" disabled>Usar despesa financeira anualizada como premissa de juros</button>
+</div></section>
 <section><h2>4. Revisão explícita da demonstração</h2><p class="muted">Marque as três confirmações apenas para simular uma revisão contábil. Nenhuma evidência documental real é recebida, armazenada ou autenticada nesta tela.</p>
 <label class="check"><input id="revisao-dre" type="checkbox"> Conferi a DRE sintética, receita e EBITDA pré-tributos</label>
 <label class="check"><input id="revisao-ponte" type="checkbox"> Conferi a ponte de tributos, sem dupla contagem no EBITDA</label>
@@ -22,6 +31,7 @@
 import {SETORES_MVP,premissasSinteticasMVP,executarMVP} from './mvp-cenario.js';
 import {integrarCreditoComNCGAuditada} from './integracao-ncg-auditada.js';
 import {configurarInvalidacaoRevisaoMVP} from './mvp-revisao.js';
+import {iniciarPonteImportacaoMVP, estimarJurosAnuais} from './mvp-import-bridge.js';
 const el=id=>document.getElementById(id),brl=v=>v===null||v===undefined?'Indisponível':new Intl.NumberFormat('pt-BR',{maximumFractionDigits:2}).format(v),
   num=(id)=>{const v=el(id)?.value;return v===''?NaN:Number(v)};
 const campos=[['ebitda','EBITDA pré-tributos'],['aliquotaReferencia','Tributo referência (%)'],['capex','CAPEX'],['impostosResultado','Impostos sobre resultado'],['juros','Juros'],['amortizacoes','Amortização da dívida']];
@@ -40,5 +50,36 @@ function mostrar(r){const p=r.projecoes[0];el('metricas').replaceChildren();el('
  linha('Caixa antes dos tributos',brl(p.caixaAntesTributos));linha('CAPEX',brl(p.componentesCaixa.capex));linha('Impostos sobre resultado',brl(p.componentesCaixa.impostosResultado));linha('IBS: débito / crédito utilizado / saldo',`${brl(p.ibs.debito)} / ${brl(p.ibs.utilizado)} / ${brl(p.ibs.saldoFinal)}`);linha('CBS: débito / crédito utilizado / saldo',`${brl(p.cbs.debito)} / ${brl(p.cbs.utilizado)} / ${brl(p.cbs.saldoFinal)}`);linha('Serviço da dívida (juros + amortização)',brl(p.servicoDivida));linha('Conciliação IBS / CBS',`${brl(p.ibs.conciliacao)} / ${brl(p.cbs.conciliacao)}`);linha('Auditoria NCG do exemplo',p.auditoriaNCG.status);linha('Homologado / apto para parecer','Não / Não');
  el('ressalvas').textContent=r.ressalvas.join(' ')+' Não há evidência documental real, DFC conciliada ou FCADS contratual.';el('resultados').hidden=false;}
 el('calcular').addEventListener('click',()=>{el('resultados').hidden=true;try{const revisao=Object.fromEntries(['dre','ponte','ncg'].map(id=>[id,el('revisao-'+id).checked]));const r=executarMVP(coletar(),revisao,integrarCreditoComNCGAuditada);mostrar(r);el('mensagem').textContent='Demonstração sintética calculada. Sem homologação ou parecer.';el('mensagem').className='status success';el('resultados').scrollIntoView({behavior:'smooth'});}catch(e){el('mensagem').textContent=e.message||'Não foi possível calcular.';el('mensagem').className='status error';}});
+let candidatosImportados=[];
+iniciarPonteImportacaoMVP({
+ abrir:el('abrir-importador'),
+ status:mensagem=>{el('status-importacao').textContent=mensagem;},
+ receber:candidatos=>{
+  candidatosImportados=candidatos;
+  el('candidatos-importados').hidden=false;
+  el('tabela-candidatos').replaceChildren();
+  for(const c of candidatos){
+   const tr=document.createElement('tr');
+   for(const texto of [c.rotulo,brl(c.value),c.periodMonths===null?'Não identificado':String(c.periodMonths)]){
+    const td=document.createElement('td');td.textContent=texto;tr.append(td);
+   }
+   el('tabela-candidatos').append(tr);
+  }
+  const juros=estimarJurosAnuais(candidatos);
+  el('confirmar-juros-importados').checked=false;
+  el('aplicar-juros-importados').disabled=juros===null;
+  el('aviso-juros').textContent=juros===null?
+   'Não há despesa financeira com período confiável. Nenhum campo será preenchido automaticamente.':
+   'Despesa financeira anualizada sugerida: '+brl(juros)+'. Verifique periodicidade, classificação e unidade antes de aplicar.';
+ }
+});
+el('aplicar-juros-importados').addEventListener('click',()=>{
+ const juros=estimarJurosAnuais(candidatosImportados);
+ if(!el('confirmar-juros-importados').checked||juros===null)return;
+ el('f-juros').value=String(juros);
+ el('f-juros').dispatchEvent(new Event('input',{bubbles:true}));
+ el('confirmar-juros-importados').checked=false;
+ el('mensagem').textContent='Premissa de juros alterada. Todas as revisões foram invalidadas. Confira a base e revise novamente.';
+});
 el('restaurar').addEventListener('click',preencher);configurarInvalidacaoRevisaoMVP(document);preencher();
 </script></body></html>
