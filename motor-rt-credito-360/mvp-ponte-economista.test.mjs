@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {exemploSinteticoEconomista, compararProjecaoEconomista} from './mvp-ponte-economista.js';
 const revisao = {projecaoOriginal: true, ponteTributaria: true, semDuplaContagem: true};
 const uma = () => [{ano: 2027, caixaOriginal: 70, servicoDivida: 40, ajusteEBITDA: -5,
-  ajusteNCG: 2, ajusteCAPEX: 1, ajusteIR: -1, ajusteIBS: -3, ajusteCBS: -2, ajusteOutros: 0}];
+  icsdConferido: 1.75, ajusteNCG: 2, ajusteCAPEX: 1, ajusteIR: -1, ajusteIBS: -3, ajusteCBS: -2, ajusteOutros: 0}];
 test('reproduz referência do economista e explicita IBS/CBS separadamente', () => {
   const r = compararProjecaoEconomista(uma(), revisao).projecao[0];
   assert.equal(r.caixaOriginal, 70); assert.equal(r.icsdOriginal, 1.75);
@@ -28,7 +28,7 @@ test('rejeita números inválidos, dívida negativa e anos duplicados', () => {
   assert.throws(() => compararProjecaoEconomista([uma()[0], uma()[0]], revisao), /repetidos/);
 });
 test('sem dívida não inventa ICSD e não classifica insuficiência', () => {
-  const l = uma(); l[0].servicoDivida = 0;
+  const l = uma(); l[0].servicoDivida = 0; l[0].icsdConferido = null;
   const r = compararProjecaoEconomista(l, revisao).projecao[0];
   assert.equal(r.icsdOriginal, null); assert.equal(r.icsdReforma, null);
   assert.equal(r.insuficienciaReforma, false);
@@ -52,4 +52,21 @@ test('a interface usa a mesma ponte e preserva link ao importador existente', as
   assert.match(html, /from '\.\/mvp-ponte-economista\.js'/);
   assert.match(html, /\.\.\/simulador\/v3\/index\.html/);
   assert.match(html, /r-dupla/);
+});
+
+test('bloqueia projeção original sem ICSD conferido ou divergente da planilha', () => {
+  const ausente = uma(); delete ausente[0].icsdConferido;
+  assert.throws(() => compararProjecaoEconomista(ausente, revisao), /ICSD da planilha/);
+  const divergente = uma(); divergente[0].icsdConferido = 1.6;
+  assert.throws(() => compararProjecaoEconomista(divergente, revisao), /não concilia/);
+  const tolerado = uma(); tolerado[0].icsdConferido = 1.759;
+  const r = compararProjecaoEconomista(tolerado, revisao);
+  assert.equal(r.referenciasConciliadas, 1);
+  assert.equal(r.toleranciaICSDReferencia, 0.01);
+});
+test('sem serviço da dívida exige ICSD vazio, não zero artificial', () => {
+  const l = uma(); l[0].servicoDivida = 0;
+  assert.throws(() => compararProjecaoEconomista(l, revisao), /deve ficar vazio/);
+  l[0].icsdConferido = null;
+  assert.equal(compararProjecaoEconomista(l, revisao).projecao[0].icsdOriginal, null);
 });
