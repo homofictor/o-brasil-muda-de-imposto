@@ -54,7 +54,7 @@ export function estimarJurosAnuais(candidatos) {
   return Number.isFinite(anual) && anual <= 1e15 ? anual : null;
 }
 
-export function iniciarPonteImportacaoMVP({abrir, receber, status}) {
+export function iniciarPonteImportacaoMVP({abrir, receber, status, limpar}) {
   if (!globalThis.BroadcastChannel || !globalThis.crypto?.randomUUID) {
     status('Este navegador não permite transferência local entre abas. Use o importador separadamente.');
     abrir.disabled = true;
@@ -63,6 +63,8 @@ export function iniciarPonteImportacaoMVP({abrir, receber, status}) {
   let canal;
   abrir.addEventListener('click', () => {
     canal?.close();
+    // Impede reaproveitar valores revisados de uma importação anterior.
+    if (typeof limpar === 'function') limpar();
     const token = crypto.randomUUID();
     canal = new BroadcastChannel(NOME_CANAL + token);
     canal.onmessage = event => {
