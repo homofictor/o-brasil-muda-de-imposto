@@ -1350,3 +1350,49 @@ segurança institucional dos documentos permanecem pendentes. A revisão
 Próxima ação prioritária: QA interativo da transferência entre abas e
 conciliação independente dos cenários sintéticos. Sem merge na
 `main`, promoção à produção, uso de dados pessoais ou gastos.
+
+
+## Transporte real BroadcastChannel em Node e bloqueio do QA de navegador (01/11/2026)
+
+Entrega restrita à regressão de integração `mvp-canal-nativo.test.mjs`.
+A suíte usa **dois canais BroadcastChannel nativos do Node**, em vez de
+substitutos de EventTarget, para exercitar o módulo existente
+`mvp-confirmacao-transferencia.js` sem alterar o importador v3.2, o
+MVP, os cálculos de IBS/CBS ou o comportamento de produção. Verifica
+(1) envio de candidato fictício e confirmação somente após recebimento,
+(2) ausência de falsa confirmação quando o receptor não responde e
+(3) rejeição de confirmação antiga depois de uma transferência nova.
+
+**Execução real:** Node.js v22.16.0,
+`node --test mvp-canal-nativo.test.mjs`, **3 testes aprovados, 0 falhas**.
+O teste foi executado em diretório isolado com cópia idêntica do módulo
+existente (blob SHA `74ef530da21e0444d41de98b7842bc5d5c0c4307`).
+Após corrigir um erro de escrita no predicado de espera no próprio
+arquivo de teste, o blob publicado do teste passou a coincidir com
+o arquivo efetivamente executado (SHA
+`3554812edc8da2bee59d12da533c48c5c2e21582`).
+Commits na branch autorizada: criação `4a514c6df3274937390a9a5f6bd0bf7b1d46ff27`;
+correção do teste `60f93c6961bc0db1c241b6b8c8df62af527c104f`.
+A suíte integral do repositório não foi executada.
+
+**Preview:** deployment `dpl_DYSQSb1CFxKqqc71taUPj9FyQiHg`,
+commit `60f93c6`, confirmado `READY` pela Vercel, na branch
+`feature/motor-rt-credito-360` e sem alvo de produção (`target:null`).
+Esse estado comprova a publicação do deployment, mas não substitui
+uma verificação HTTP autorizada do caminho do MVP.
+
+**Bloqueio específico:** foi tentado QA interativo em duas abas com
+Chromium/Playwright e servidor local usando o módulo real de confirmação.
+O navegador recusou a navegação com
+`net::ERR_BLOCKED_BY_ADMINISTRATOR`. Portanto, **não houve
+homologação em navegador**, e o teste nativo não deve ser apresentado
+como teste ponta a ponta da interface ou do importador documental.
+
+**Próxima ação:** validar em navegador autorizado o fluxo completo
+Simulador v3.2 -> revisão de candidatos -> transferência confirmada ->
+conferência no MVP -> aplicação opcional de juros -> restauração.
+Conferir manualmente IBS, CBS, NCG, caixa e ICSD em cenários
+multissetoriais sintéticos. Persistem os bloqueios de DFC integral,
+FCADS/ICSD contratual, fundamentação legal por exercício, segurança
+documental e homologação para concessão de crédito. Nenhum parecer
+validado, merge na `main`, alteração da produção ou dado pessoal.
