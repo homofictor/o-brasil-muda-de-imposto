@@ -21,7 +21,7 @@ export function auditarPonteTributaria({
   throw new Error("Informar explicitamente o tratamento dos tributos no EBITDA");
  const alertas=[];
  if(!evidenciaContabil?.trim())alertas.push("Ausente memória de conciliação contábil");
- if(!validadoPorAnalista)alertas.push("Revisão do analista pendente");
+ if(validadoPorAnalista!==true)alertas.push("Revisão do analista pendente");
  if(impostoReferenciaJaRefletidoNoEbitda!==impostoReformaJaRefletidoNoEbitda)
   alertas.push("Bases contábeis não comparáveis: exige normalização");
  const comparavel=flags[0]===flags[1];
