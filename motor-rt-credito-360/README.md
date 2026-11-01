@@ -1506,3 +1506,59 @@ DFC integral, FCADS/ICSD contratual, fundamentação legal por exercício
 e segurança documental institucional. Apenas dados sintéticos;
 nenhum parecer de crédito validado, merge na `main`, mudança em
 produção ou gasto adicional.
+
+
+## Conciliação independente do detalhamento multissetorial (01/11/2026)
+
+Entrega focada na interface financeira existente, sem novo leitor documental.
+O verificador `mvp-conciliacao-caixa.js` passou a exigir detalhamento
+por atividade e a reconciliar, com tolerância absoluta de 0,01,
+(1) soma das receitas setoriais com a receita consolidada,
+(2) débito de IBS e CBS de cada atividade com receita x alíquota
+hipotética e (3) soma dos débitos setoriais com as contas separadas
+de IBS e CBS. Rejeita atividade duplicada, memória ausente,
+alíquota fora de 0 a 100%, valor negativo ou não finito.
+Os controles anteriores de caixa, créditos, ressarcimentos, NCG
+e ICSD foram preservados. Não houve alteração de premissas
+legais, fórmulas do motor, interface de importação ou produção.
+
+Commits exclusivos da branch `feature/motor-rt-credito-360`:
+implementação `cc09080a637b7857f76c69d131e536803af796bd`;
+adaptação dos testes existentes `18deba967c1ab7d609b2fadbd6b3356d66a9cef3`;
+regressão setorial `f156ca90c7ecc1e26bceaf3d9a9bf556ae7bf63d`.
+
+**Testes nativos executados:** Node.js v22.16.0,
+`node --test mvp-conciliacao-caixa.test.mjs mvp-detalhamento-setorial.test.mjs`,
+**14 aprovados, 0 falhas**. Antes da correção, 4 dos 5 casos
+do novo arquivo falhavam, expondo ausência de conciliação setorial.
+Após a correção, os 14 passaram. Os três blobs relidos da branch
+coincidiram com os arquivos executados localmente:
+`20569fc5e72aab283347b16dac186839eca0eeba`,
+`ba2f41f3274b9c70d5a800dd5dc3c292391c46df` e
+`d5ae62bd72d94d62915a926e9e040d6f2839d462`.
+Não houve execução da suíte integral do repositório ou QA real de navegador.
+
+**Preview verificado:** deployment automático
+`dpl_69js6UVcBJcAGkREaDcPCmKw9xi1`, commit `f156ca90`,
+estado `READY`, branch autorizada e `target:null`
+(sem destino de produção). A leitura autorizada da Vercel retornou
+HTTP 200 para `mvp.html`, `mvp-conciliacao-caixa.js`,
+`mvp-detalhamento-setorial.test.mjs` e
+`simulador/v3/import.js`. A URL temporária compartilhável foi
+reutilizada, com expiração informada para 02/11/2026 às 18:03:53
+(fuso não especificado). A checagem pública independente via ferramenta
+web não conseguiu acessar a URL, embora a leitura autorizada tenha
+retornado HTTP 200.
+
+**Bloqueios:** ainda faltam testes reais entre abas em navegador
+autorizado, DFC integral, FCADS/ICSD contratual, conciliação manual
+de balanço e CAPEX por atividade, fundamentação legal por exercício,
+controle de acesso e segurança institucional de documentos. A
+revisão permanece declarativa e exclusivamente sintética.
+Nenhum resultado deve ser tratado como parecer de crédito validado.
+
+**Próxima ação:** validar navegação real do importador v3.2 para o Motor
+com candidatos fictícios e revisar manualmente um cenário multissetorial
+com créditos, ressarcimentos e liberação de NCG, antes de homologar.
+Sem merge na `main`, alteração de produção, gasto adicional ou
+uso de dados pessoais nesta entrega.
