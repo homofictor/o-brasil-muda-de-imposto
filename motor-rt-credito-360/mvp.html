@@ -53,6 +53,14 @@ el('calcular').addEventListener('click',()=>{el('resultados').hidden=true;try{co
 let candidatosImportados=[];
 iniciarPonteImportacaoMVP({
  abrir:el('abrir-importador'),
+ limpar:()=>{
+  candidatosImportados=[];
+  el('candidatos-importados').hidden=true;
+  el('tabela-candidatos').replaceChildren();
+  el('confirmar-juros-importados').checked=false;
+  el('aplicar-juros-importados').disabled=true;
+  el('aviso-juros').textContent='';
+ },
  status:mensagem=>{el('status-importacao').textContent=mensagem;},
  receber:candidatos=>{
   candidatosImportados=candidatos;
