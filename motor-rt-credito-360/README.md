@@ -1378,8 +1378,16 @@ A suíte integral do repositório não foi executada.
 **Preview:** deployment `dpl_DYSQSb1CFxKqqc71taUPj9FyQiHg`,
 commit `60f93c6`, confirmado `READY` pela Vercel, na branch
 `feature/motor-rt-credito-360` e sem alvo de produção (`target:null`).
-Esse estado comprova a publicação do deployment, mas não substitui
-uma verificação HTTP autorizada do caminho do MVP.
+A verificação HTTP autorizada posterior confirmou **HTTP 200** para
+`motor-rt-credito-360/mvp.html`,
+`motor-rt-credito-360/mvp-confirmacao-transferencia.js`,
+`motor-rt-credito-360/mvp-canal-nativo.test.mjs` e
+`simulador/v3/import.js`. Os três arquivos JavaScript publicados são
+idênticos aos da branch. O HTML publicado coincide integralmente com o
+arquivo do GitHub e recebeu apenas um script adicional de feedback da
+Vercel após o fechamento do documento. Foi criado um link temporário
+de compartilhamento, válido até 02/11/2026 16:00:45 conforme
+informação da Vercel (fuso horário não especificado).
 
 **Bloqueio específico:** foi tentado QA interativo em duas abas com
 Chromium/Playwright e servidor local usando o módulo real de confirmação.
