@@ -6,7 +6,7 @@ import {criarEmissorConfirmado, confirmarRecebimento, TIPO_CONFIRMACAO} from './
 
 const esperar = async (predicado, limiteMs = 1000) => {
   const inicio = Date.now();
-  while (!predicado) {
+  while (!predicado()) {
     if (Date.now() - inicio > limiteMs) throw new Error('Tempo excedido aguardando evento');
     await new Promise(resolve => setTimeout(resolve, 5));
   }
