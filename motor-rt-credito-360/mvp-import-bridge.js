@@ -1,4 +1,5 @@
 import {criarEmissorConfirmado, confirmarRecebimento} from './mvp-confirmacao-transferencia.js';
+import {encerrarSessaoImportadorV3} from './mvp-encerramento-v3.js';
 
 // Ponte opt-in, somente no navegador, para candidatos explicitamente aceitos no Simulador v3.2.
 // Nenhum arquivo, CNPJ, nome ou fonte documental atravessa a ponte.
@@ -115,7 +116,11 @@ export function iniciarPonteImportacaoV3(doc = document, loc = location) {
   if (!TOKEN.test(token || '') || !globalThis.BroadcastChannel) return;
   const canal = new BroadcastChannel(NOME_CANAL + token);
   let emissor = null;
+  let botaoEnvio = null;
+  let mensagemEnvio = null;
+  let encerrada = false;
   const montar = () => {
+    if (encerrada) return;
     const painel = doc.getElementById('importPanel');
     if (!painel || doc.getElementById('enviar-rt360')) return;
     const bloco = doc.createElement('div');
@@ -128,6 +133,8 @@ export function iniciarPonteImportacaoV3(doc = document, loc = location) {
     mensagem.setAttribute('role', 'status');
     bloco.append(botao, mensagem);
     painel.append(bloco);
+    botaoEnvio = botao;
+    mensagemEnvio = mensagem;
     emissor = criarEmissorConfirmado({canal, avisar: texto => { mensagem.textContent = texto; }});
     botao.addEventListener('click', () => {
       const candidatos = extrairCandidatosRevisados(window.brmiImport?.candidates);
@@ -140,7 +147,10 @@ export function iniciarPonteImportacaoV3(doc = document, loc = location) {
   };
   doc.addEventListener('brmi:import-ready', montar);
   montar();
-  window.addEventListener('pagehide', () => { emissor?.encerrar(); canal.close(); });
+  window.addEventListener('pagehide', () => {
+    encerrada = true;
+    encerrarSessaoImportadorV3({emissor, canal, botao: botaoEnvio, mensagem: mensagemEnvio});
+  });
 }
 
 if (typeof window !== 'undefined' && location.pathname.startsWith('/simulador/v3/'))
