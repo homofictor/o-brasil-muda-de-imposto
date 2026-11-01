@@ -1258,3 +1258,42 @@ da produção, dados pessoais ou gastos autorizados.
 Próxima ação: homologar o fluxo interativo real entre importador v3.2
 e Motor e conferir um cenário sintético com créditos e ressarcimentos,
 incluindo conciliação manual de IBS, CBS, caixa e ICSD.
+
+## Verificacao independente dos sinais financeiros (01/11/2026)
+
+Entrega focada no verificador de caixa do MVP, sem alterar formulas tributarias,
+classificacoes setoriais, importador documental ou o motor financeiro.
+Foi reproduzido um caso em que CAPEX, impostos sobre resultado, juros,
+amortizacoes ou tributo de referencia negativos podiam ser aceitos pelo
+verificador quando caixa e ICSD eram recalculados de forma coerente com
+os sinais indevidos. A protecao independente agora rejeita esses cinco
+componentes negativos, preservando EBITDA negativo e variacao negativa
+da NCG como situacoes economicamente possiveis.
+
+Commits: implementacao `ec3c8c06b6370974017fcf11b8d83973995ea08f`;
+regressao `b7349c7d1269532f0adefeaaa170395ad70ad504`.
+Teste antes da correcao: 5 falhas em 7 casos novos. Depois da correcao,
+`npm test` com Node 22.16.0 em diretorio isolado contendo o verificador,
+o teste anterior e o teste novo: **16 testes nativos aprovados, 0 falhas**.
+Os blobs dos arquivos alterados foram relidos da branch e coincidiram com
+os hashes locais: `1d201c611a71e7bc273bba2d89bb5f3d47745950` e
+`c545b0598f9cb8f20b55fbc9d3eda9b16c303381`.
+A suite completa do repositorio nao foi executada.
+
+Preview da branch confirmado como READY no deployment
+`dpl_13PURUqJXxjBY5yowc9kHJ9Qyunt` (commit de regressao).
+A pagina `motor-rt-credito-360/mvp.html`, o modulo corrigido e
+`simulador/v3/import.js` responderam com HTTP 200 no acesso
+autorizado. Isto nao equivale a homologacao de cliques reais ou da
+transferencia entre abas.
+
+Bloqueios: faltam testes interativos reais entre abas, conciliacao
+integral da DFC, FCADS e ICSD contratual, fundamentacao legal por
+exercicio, homologacao multissetorial e controles institucionais de
+acesso e documentos. A simulacao permanece sintetica e nao pode
+ser usada como parecer de credito. Nao houve merge na `main`,
+publicacao em producao, gastos ou uso de dados pessoais.
+
+Proxima acao: executar QA interativo entre o importador existente e o
+MVP em navegador real, com candidatos ficticios, e conciliar
+manual e independentemente caixa e ICSD de cenarios multissetoriais.
