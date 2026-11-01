@@ -1766,3 +1766,16 @@ da planilha padronizada do economista, preservar a projeção original e
 reutilizar a leitura e a revisão de candidatos do importador v3.2 para
 reproduzir e conciliar caixa e ICSD antes dos ajustes fiscais.
 Sem merge na `main`, sem alterações na produção e sem custos autorizados.
+
+**Verificação de preview (01/11/2026):** deployment
+`dpl_AwhZmURiizVTYHDpjPJyVdY48kdX` do commit `23021ac1`,
+estado `READY`, branch `feature/motor-rt-credito-360`,
+`target:null` (não produção). A leitura autorizada da Vercel
+retornou HTTP 200 para `projecao-economista.html`,
+`mvp-decomposicao-caixa.js`, `README.md` e
+`simulador/v3/import.js`. A interface contém a memória de caixa
+e o módulo foi publicado. O link temporário de compartilhamento
+foi criado com expiração informada pela Vercel em
+02/11/2026 às 22:04:02 (fuso não especificado).
+A verificação externa independente de navegação e cliques
+não foi executada. Nenhuma alteração na produção.
