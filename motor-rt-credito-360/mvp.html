@@ -21,6 +21,7 @@
 <script type="module">
 import {SETORES_MVP,premissasSinteticasMVP,executarMVP} from './mvp-cenario.js';
 import {integrarCreditoComNCGAuditada} from './integracao-ncg-auditada.js';
+import {configurarInvalidacaoRevisaoMVP} from './mvp-revisao.js';
 const el=id=>document.getElementById(id),brl=v=>v===null||v===undefined?'Indisponível':new Intl.NumberFormat('pt-BR',{maximumFractionDigits:2}).format(v),
   num=(id)=>{const v=el(id)?.value;return v===''?NaN:Number(v)};
 const campos=[['ebitda','EBITDA pré-tributos'],['aliquotaReferencia','Tributo referência (%)'],['capex','CAPEX'],['impostosResultado','Impostos sobre resultado'],['juros','Juros'],['amortizacoes','Amortização da dívida']];
@@ -39,5 +40,5 @@ function mostrar(r){const p=r.projecoes[0];el('metricas').replaceChildren();el('
  linha('Caixa antes dos tributos',brl(p.caixaAntesTributos));linha('CAPEX',brl(p.componentesCaixa.capex));linha('Impostos sobre resultado',brl(p.componentesCaixa.impostosResultado));linha('IBS: débito / crédito utilizado / saldo',`${brl(p.ibs.debito)} / ${brl(p.ibs.utilizado)} / ${brl(p.ibs.saldoFinal)}`);linha('CBS: débito / crédito utilizado / saldo',`${brl(p.cbs.debito)} / ${brl(p.cbs.utilizado)} / ${brl(p.cbs.saldoFinal)}`);linha('Serviço da dívida (juros + amortização)',brl(p.servicoDivida));linha('Conciliação IBS / CBS',`${brl(p.ibs.conciliacao)} / ${brl(p.cbs.conciliacao)}`);linha('Auditoria NCG do exemplo',p.auditoriaNCG.status);linha('Homologado / apto para parecer','Não / Não');
  el('ressalvas').textContent=r.ressalvas.join(' ')+' Não há evidência documental real, DFC conciliada ou FCADS contratual.';el('resultados').hidden=false;}
 el('calcular').addEventListener('click',()=>{el('resultados').hidden=true;try{const revisao=Object.fromEntries(['dre','ponte','ncg'].map(id=>[id,el('revisao-'+id).checked]));const r=executarMVP(coletar(),revisao,integrarCreditoComNCGAuditada);mostrar(r);el('mensagem').textContent='Demonstração sintética calculada. Sem homologação ou parecer.';el('mensagem').className='status success';el('resultados').scrollIntoView({behavior:'smooth'});}catch(e){el('mensagem').textContent=e.message||'Não foi possível calcular.';el('mensagem').className='status error';}});
-el('restaurar').addEventListener('click',preencher);preencher();
+el('restaurar').addEventListener('click',preencher);configurarInvalidacaoRevisaoMVP(document);preencher();
 </script></body></html>
