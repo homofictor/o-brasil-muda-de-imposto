@@ -71,6 +71,8 @@ export function iniciarPonteImportacaoMVP({abrir, receber, status, limpar}) {
     canal = new BroadcastChannel(NOME_CANAL + token);
     canal.onmessage = event => {
       try {
+        if (!Number.isSafeInteger(event.data?.envioId) || event.data.envioId < 1)
+          throw new Error('Identificador de transferência inválido');
         const candidatos = validarPacoteRevisado(event.data);
         receber(candidatos);
         status(`${candidatos.length} candidato(s) aceito(s) recebido(s). Revise antes de utilizar.`);
