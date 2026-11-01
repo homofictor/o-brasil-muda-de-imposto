@@ -1189,3 +1189,37 @@ não é parecer validado. Próxima ação: QA de interação real entre abas
 e conciliação financeira sintética por setor, sem ampliar funcionalidades.
 Não houve merge na `main`, alteração de produção, gasto ou uso de dados
 pessoais.
+
+## Conciliação independente da memória de caixa do MVP (01/11/2026)
+
+O MVP passa a executar `validarMemoriaCaixaMVP` antes de exibir qualquer
+resultado financeiro. A verificação independente recompõe o caixa a partir
+de EBITDA, CAPEX, variação da NCG, impostos sobre resultado, tributo de
+referência, IBS e CBS separados e ressarcimentos efetivamente recebidos.
+Também confere serviço da dívida (juros + amortizações), ICSD de cada
+cenário, variação do caixa, total IBS + CBS e as conciliações individuais
+das contas tributárias. Divergências superiores a 0,01, valores não
+finitos ou ICSD indevido quando não há serviço da dívida bloqueiam a
+exibição. A memória visível apresenta a decomposição e o status
+"Conciliado somente para simulação sintética".
+
+Commits: verificador `af34e0ad35a370562953f5740b8f7816627d569a`,
+regressões `7e1c4cc88111b10426db157b3a154442f179e5f8`,
+integração de interface `efaaf30478a717a2341ae03ff60d92776e520be1`.
+Teste executado em Node.js 22.16.0: `npm test` com
+`node --test *.test.mjs`, **6 testes aprovados, 0 falhas**.
+Cobertura: cenário sintético normal, dupla dedução de IBS, divergência
+de IBS + CBS, ICSD incoerente, liberação de NCG com ressarcimento e
+serviço da dívida nulo. Os blobs relidos da branch coincidem com os
+arquivos testados: `b54a2fc067449ab199df154a6901c0a14e153ac5`
+(módulo) e `5b7cb85fb7d3de561579ee0bd7558e9e5cfa83ac`
+(testes). Não foi executada a suíte integral do repositório nem
+homologação interativa em navegador.
+
+**Prontidão limitada ao MVP sintético:** esta conciliação aritmética
+não substitui DFC integral, FCADS/ICSD contratual, revisão legal por
+exercício ou auditoria de documentos reais. Segurança institucional,
+conciliação multissetorial completa e QA real entre abas permanecem
+pendentes. Não usar como parecer de crédito. Nenhuma alteração na
+produção ou merge na `main`. Próxima ação: validar a navegação real
+entre abas e conciliar os indicadores de diferentes setores no preview.
