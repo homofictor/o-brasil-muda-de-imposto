@@ -879,3 +879,17 @@ DFC/FCADS contratual, ICSD auditável, controles institucionais de
 documentos, revisão jurídica por exercício e homologação manual
 dos setores seguem pendentes. Não usar para parecer de crédito.
 Não houve merge na `main`, alteração da produção, gasto ou dado pessoal.
+
+### Confirmação posterior do preview da correção (01/11/2026)
+
+O deployment automático `dpl_34NTv9Zrs34bS5TTBFH2atteiDpm`
+do commit `9e438b88f4c8aeb73e7e384ed873f46b173760be`
+atingiu **READY**, ambiente **preview**, sem promoção à produção.
+Com acesso autorizado ao deployment protegido, a Vercel retornou
+**HTTP 200** para `/motor-rt-credito-360/mvp.html`,
+`mvp-revisao.js`, `mvp-cenario.js`,
+`integracao-ncg-auditada.js` e `/simulador/v3/index.html`.
+O HTML servido contém a chamada de invalidação de revisões.
+Foi obtido link de compartilhamento temporário, não armazenado neste
+repositório. A confirmação HTTP não substitui teste interativo real
+em navegador; a interface segue apenas como demonstração sintética.
