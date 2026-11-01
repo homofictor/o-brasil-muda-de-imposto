@@ -20,6 +20,16 @@ export function integrarCreditoComNCGAuditada({dadosFinanceiros, auditoriasNCG})
         !Object.hasOwn(auditoriasNCG ?? {}, ano)) {
       throw new Error(`NCG ${ano}: variação informada ou auditoria documental ausente`);
     }
+    // No caminho auditado, ausência de componente não equivale a zero.
+    // Exigir declaração explícita, inclusive quando o valor correto é zero.
+    for (const campo of ["capex", "impostosResultado", "juros", "amortizacoes"]) {
+      const valores = dadosFinanceiros?.[campo];
+      const valor = valores?.[ano];
+      if (!Object.hasOwn(valores ?? {}, ano) ||
+          !Number.isFinite(valor) || valor < 0) {
+        throw new Error(`Componente financeiro ${campo} ${ano}: valor explícito não negativo obrigatório`);
+      }
+    }
     const evidencia = auditoriasNCG[ano];
     if (evidencia?.exercicioBase !== ano - 1 || evidencia?.exercicioProjetado !== ano) {
       throw new Error(`NCG ${ano}: exercícios da evidência não correspondem à projeção`);
