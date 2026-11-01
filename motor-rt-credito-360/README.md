@@ -1665,3 +1665,14 @@ o repositório, e reutilizar a leitura documental do Simulador RT v3.2
 para identificar períodos e rubricas da projeção original, preservando
 fórmulas e exigindo conciliação antes de aplicar ajustes tributários.
 Sem merge na `main`, sem alteração de produção e sem gastos.
+
+**Publicação de preview desta entrega:** deployment automático
+`dpl_7tDWpftqDwiG3AtBfA7tVDoGHQM6`, commit `b6e650f`,
+estado `READY`, branch `feature/motor-rt-credito-360`, `target:null`
+(sem produção). Leitura autorizada na Vercel retornou HTTP 200 para
+`projecao-economista.html`, `mvp-ponte-economista.js`, `mvp.html`
+e `simulador/v3/import.js`. Link temporário de compartilhamento
+reutilizado, expiração informada em 02/11/2026 às 20:02:30
+(fuso não especificado). O link compartilhável também retornou HTTP 200
+na leitura autorizada, mas a verificação pública independente não
+conseguiu acessá-lo. **Não afirmar homologação de navegador**.
