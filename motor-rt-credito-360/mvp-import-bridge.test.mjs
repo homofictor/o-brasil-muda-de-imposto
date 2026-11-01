@@ -49,7 +49,7 @@ test('nova sessão de importação invalida candidatos da sessão anterior antes
   globalThis.window={open:()=>({}),addEventListener:()=>{}};
   iniciarPonteImportacaoMVP({abrir,receber:c=>recebidos.push(c),status:()=>{},limpar:()=>limpezas.push('limpou')});
   abrir.dispatchEvent(new Event('click'));
-  canais[0].onmessage({data:{tipo:'rt360-candidatos-revisados-v1',candidatos:[{field:'interestExpense',value:24,periodMonths:6}]}});
+  canais[0].onmessage({data:{tipo:'rt360-candidatos-revisados-v1',envioId:1,candidatos:[{field:'interestExpense',value:24,periodMonths:6}]}});
   assert.equal(recebidos.length,1);
   abrir.dispatchEvent(new Event('click'));
   assert.equal(canais[0].fechado,true);
