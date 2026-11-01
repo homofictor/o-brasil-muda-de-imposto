@@ -674,3 +674,52 @@ de projeções e impedir que a entrada sem auditoria da NCG ou resultados
 não homologados sejam exibidos como validados, sem publicar interface
 financeira antes da segurança documental. Sem merge na `main`,
 publicação manual, gastos ou dados pessoais.
+
+## Revisão booleana obrigatória na ponte tributária (31/10/2026)
+
+**Falha reproduzida:** `auditarPonteTributaria` usava a condição
+`!validadoPorAnalista`. Valores truthy não booleanos, como `"true"`,
+`1`, `{}` ou `[]`, eram aceitos como revisão declarada. Em cenário
+com EBITDA documentado antes dos tributos, isso autorizava indevidamente
+a projeção de caixa e ICSD. A verificação prévia executou 29 testes
+em JavaScript V8, com **27 aprovados e 2 falhas** nos novos casos
+de regressão.
+
+**Correção:** somente `validadoPorAnalista === true` autoriza a
+revisão na ponte tributária. Entradas não booleanas geram alerta de
+revisão pendente e mantêm caixa e ICSD indisponíveis. A regra é neutra
+quanto ao setor. Não foram alterados cálculos, alíquotas, segregação
+IBS/CBS, fórmulas de caixa ou ICSD.
+
+**Commits reais na branch autorizada:**
+código `c24983a8810746b72d01236a18cb0e39fb332a33`;
+teste unitário `585825d01480198a699a3238c0cce6db7fceb9d2`;
+teste de integração `2edd1c7cecbe05c57a60c67cab7368f7b8a4d470`.
+
+**Verificação posterior aos commits:** os onze arquivos dos módulos
+e testes utilizados foram relidos diretamente da branch. Os blobs
+alterados são `9108fe08f9d400d1266b2f2d10060cf308a55cf6`
+(código), `2b171e4718e1dcc343d97cd6e3ab9327d446d402`
+(teste unitário) e `e53249a9fc8c3820f756eef6b92aef5d75c9ec23`
+(teste de integração). Foram executados **29 testes, 29 aprovados,
+0 falhas**, em JavaScript V8 com adaptador síncrono de `node:test`
+e `assert/strict`: 5 de auditoria tributária, 10 de integração
+IBS/CBS com caixa e ICSD e 14 da entrada com NCG auditada.
+Não foi executado `node --test` nativo, a suíte integral, testes
+de banco ou QA de interface. Nenhum deploy foi confirmado.
+
+**Prontidão: não pronto para testes integrados de aceitação.**
+Os cenários de comércio, indústria, serviços, construção civil, saúde,
+transporte, agronegócio e empresa multissetorial continuam sintéticos
+e não homologados manualmente. Caixa e ICSD permanecem preliminares,
+sem DFC integral conciliada nem FCADS contratual validado.
+A interface financeira não está integrada e faltam rastreabilidade
+jurídica por exercício, autenticação institucional, autorização e
+armazenamento privado dos documentos. A entrada direta ainda permite
+NCG não auditada, embora rotulada como `nao_auditada`.
+
+**Próxima ação exata:** localizar o consumidor operacional efetivo
+da ponte e exigir a interpretação explícita de
+`statusAuditoriaNCG`, `homologado` e `aptoParaParecer` antes de
+qualquer apresentação como resultado validado. Sem merge na `main`,
+publicação manual, gastos ou dados pessoais.
