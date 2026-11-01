@@ -834,3 +834,48 @@ Próxima prioridade: testar interação real da página e ligar
 candidatos revisados do importador existente ao formulário sem
 duplicar leitura de arquivos. Não houve merge na `main`,
 publicação em produção, gastos ou dados pessoais.
+
+## Invalidação de revisões após edição no MVP (01/11/2026)
+
+**Entrega:** a interface financeira sintética não conserva mais as três
+confirmações de revisão quando o usuário modifica receitas, alíquotas,
+EBITDA, CAPEX, juros, amortizações, impostos ou saldos da NCG.
+Eventos `input` e `change` nos grupos financeiro, atividades e NCG
+desmarcam as três revisões, ocultam resultados anteriores e exigem
+nova conferência. Alterações nos próprios checkboxes após um cálculo
+também ocultam resultados anteriores. Não há mudança de fórmula,
+alíquota legal, dados ou integração documental.
+
+**Commits reais na branch exclusiva:** módulo de proteção
+`0ce764bee3b33afb2b3f2a2cfd223efff5b21b7a`,
+testes `7c242c6a08846504eac32bbadcc18ec87877f0f1`,
+integração da interface `9e438b88f4c8aeb73e7e384ed873f46b173760be`.
+Blobs relidos do GitHub e confrontados com `git hash-object` da
+cópia executada: módulo
+`b2b7dc32641a98ab360a074872f6ad1a93509a19`;
+testes `cf281579b576626715b4df6ded77119600c8588b`.
+HTML integrado blob `e70ab37016acd4719cb68e4ce929db098fc84c9f`.
+
+**Verificação realmente executada:** Node.js v22.16.0,
+`node --test mvp-revisao.test.mjs`, **4 testes aprovados,
+0 falhas**. O módulo passou em `node --check`.
+Cobertura: alteração dos três grupos, evento `change`, alteração
+de revisão após cálculo e ausência de falso alerta na edição inicial.
+Os testes usam elementos `EventTarget` simulados, não um navegador.
+Não foram executados a suíte integral, cliques reais em navegador,
+conciliação manual multissetorial nem testes institucionais de segurança.
+
+**Preview:** a Vercel recebeu deploy automático
+`dpl_34NTv9Zrs34bS5TTBFH2atteiDpm` para o commit de interface,
+na branch correta, alvo preview (`target:null`). No instante
+da consulta estava `BUILDING`, portanto a nova versão não foi
+declarada acessível ou publicada com sucesso nesta verificação.
+
+**Bloqueios e próxima ação:** o MVP anterior já possui demonstração
+sintética navegável, mas falta validar a interação real em navegador
+e integrar somente candidatos documentais revisados do importador
+existente `simulador/v3/import.js`, sem duplicar leitores.
+DFC/FCADS contratual, ICSD auditável, controles institucionais de
+documentos, revisão jurídica por exercício e homologação manual
+dos setores seguem pendentes. Não usar para parecer de crédito.
+Não houve merge na `main`, alteração da produção, gasto ou dado pessoal.
