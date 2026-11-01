@@ -763,3 +763,74 @@ como `nao_auditada`; nenhum consumidor operacional de projeções foi
 confirmado nesta execução. Próxima prioridade: bloquear apresentação de
 resultados não auditados como validados no primeiro consumidor real.
 Nenhum merge na `main`, publicação em produção, dado pessoal ou gasto.
+
+## MVP financeiro navegável, demonstração sintética (01/11/2026)
+
+**Entrega prioritária:** criada a página `motor-rt-credito-360/mvp.html`,
+acessível a partir do cadastro `index.html`. O adaptador
+`mvp-cenario.js` transforma receitas e alíquotas hipotéticas de oito
+atividades (comércio, indústria, serviços, construção, saúde, transporte,
+agronegócio e empresa multissetorial) em entrada para o motor existente
+`integrarCreditoComNCGAuditada`. A tela permite alterar receita por
+atividade, IBS e CBS separados, EBITDA pré-tributos, CAPEX, impostos sobre
+resultado, juros, amortizações e seis saldos de balanço para NCG. Exibe
+caixa, ICSD indicativo, tributos por conta e memória de conciliação.
+
+O cálculo é bloqueado até três confirmações explícitas, separadas para
+DRE, ponte tributária sem dupla contagem e NCG. Mesmo após a confirmação,
+`homologado` e `aptoParaParecer` permanecem falsos. A origem da NCG é
+**inteiramente sintética**: a marcação de revisão nesta página não
+autentica analista nem valida documentos reais. Não há upload, gravação,
+persistência ou processamento de dados pessoais nesta página. O importador
+existente de PDF, XLS/XLSX, CSV e revisão de candidatos permanece no
+Simulador RT v3.2, acessível por navegação, sem leitor duplicado. **A
+transferência dos candidatos importados para o motor ainda não está
+integrada**, pois exige mapeamento e revisão documental seguros.
+
+**Commits da entrega na branch `feature/motor-rt-credito-360`:**
+adaptador `9bc88c36925a98030c72b1fe76c2feda3c0891b4`;
+testes `3f5001eda11f6e5b2ea89bc19196742d8aedabcd`;
+interface `2e4f4e4e60a18473ca44f3bc5b8e30b04bfe1974`;
+correção da interpolação HTML `189e019452ab276ba573ef0a3e0ea3442ccbf3cc`;
+navegação `b806e9b9ec757aed06dd89e7e58896ad8243694c`.
+
+**Testes efetivamente executados:** Node.js 22.16.0,
+`node --test mvp-cenario.test.mjs` em cópia local isolada:
+**5 aprovados, 0 falhas**. Os blobs Git do adaptador
+`2b4030928aa614238c7d2be1a4bea42a3bd32bcf`, dos testes
+`f14c0d1e372daabcd0a4a56b527d2c44e0c9ded5` e do HTML
+`ef7f4e09d20b2cb5cacd2cdef3349be9f84e27b8`
+coincidiram com `git hash-object` dos arquivos locais.
+O script da interface passou em `node --check` local.
+Adicionalmente, foi executada integração em JavaScript V8 com os
+**nove módulos reais relidos da branch**, obtendo receita 800,
+IBS 40, CBS 24, caixa da reforma 61 e ICSD 1,525, com NCG
+documental sintética conciliada e `homologado:false`.
+Esta verificação de integração **não foi `node --test` nativo**.
+A suíte integral, QA visual/interativo no navegador e auditoria
+institucional não foram executados.
+
+**Preview Vercel automático:** deploy
+`dpl_EjpxKHNyYE7WuHnydi5b4bhDroUs`, commit
+`b806e9b9ec757aed06dd89e7e58896ad8243694c`,
+ambiente preview (`target:null`), estado **READY**.
+A Vercel retornou **HTTP 200** ao consultar a página
+`/motor-rt-credito-360/mvp.html`, o adaptador, a integração
+financeira, o cadastro e a página do importador v3.2, mediante acesso
+autenticado à implantação protegida. O projeto exige autenticação
+Vercel nas prévias. Foi emitido link temporário de compartilhamento
+para teste; **o segredo de compartilhamento não é registrado no Git**.
+Acesso externo em navegador não autenticado e execução de cliques
+não foram comprovados nesta execução.
+
+**Critérios de prontidão:** há uma interface navegável com dados
+sintéticos e testes focados aprovados. **Não é homologação para
+análise real de crédito**. Persistem ausência de integração do
+importador com revisão de candidatos, conciliação integral da DFC,
+FCADS/ICSD contratual, auditoria jurídica de alíquotas e créditos,
+autenticação institucional, autorização e armazenamento privado de
+documentos, além da homologação manual dos oito setores.
+Próxima prioridade: testar interação real da página e ligar
+candidatos revisados do importador existente ao formulário sem
+duplicar leitura de arquivos. Não houve merge na `main`,
+publicação em produção, gastos ou dados pessoais.
