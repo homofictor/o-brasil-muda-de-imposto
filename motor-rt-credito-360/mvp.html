@@ -52,7 +52,7 @@ function mostrar(r){const p=r.projecoes[0];const conciliacao=validarMemoriaCaixa
  el('ressalvas').textContent=r.ressalvas.join(' ')+' Não há evidência documental real, DFC conciliada ou FCADS contratual.';el('resultados').hidden=false;}
 el('calcular').addEventListener('click',()=>{el('resultados').hidden=true;try{const revisao=Object.fromEntries(['dre','ponte','ncg'].map(id=>[id,el('revisao-'+id).checked]));const r=executarMVP(coletar(),revisao,integrarCreditoComNCGAuditada);mostrar(r);el('mensagem').textContent='Demonstração sintética calculada. Sem homologação ou parecer.';el('mensagem').className='status success';el('resultados').scrollIntoView({behavior:'smooth'});}catch(e){el('mensagem').textContent=e.message||'Não foi possível calcular.';el('mensagem').className='status error';}});
 let candidatosImportados=[];
-iniciarPonteImportacaoMVP({
+const cancelarImportacao = iniciarPonteImportacaoMVP({
  abrir:el('abrir-importador'),
  limpar:()=>{
   candidatosImportados=[];
@@ -90,5 +90,5 @@ el('aplicar-juros-importados').addEventListener('click',()=>{
  el('confirmar-juros-importados').checked=false;
  el('mensagem').textContent='Premissa de juros alterada. Todas as revisões foram invalidadas. Confira a base e revise novamente.';
 });
-el('restaurar').addEventListener('click',preencher);configurarInvalidacaoRevisaoMVP(document);preencher();
+el('restaurar').addEventListener('click',()=>{cancelarImportacao?.();preencher();el('status-importacao').textContent='Exemplo restaurado. A sessão anterior de importação foi cancelada.';});configurarInvalidacaoRevisaoMVP(document);preencher();
 </script></body></html>
