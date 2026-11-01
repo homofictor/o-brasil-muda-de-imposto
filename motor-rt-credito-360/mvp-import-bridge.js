@@ -69,12 +69,18 @@ export function iniciarPonteImportacaoMVP({abrir, receber, status, limpar}) {
     if (typeof limpar === 'function') limpar();
     const token = crypto.randomUUID();
     canal = new BroadcastChannel(NOME_CANAL + token);
+    let ultimoEnvioAceito = 0;
     canal.onmessage = event => {
       try {
         if (!Number.isSafeInteger(event.data?.envioId) || event.data.envioId < 1)
           throw new Error('Identificador de transferência inválido');
+        if (event.data.envioId <= ultimoEnvioAceito) {
+          status('Transferência antiga ou repetida ignorada. Os candidatos mais recentes foram preservados.');
+          return;
+        }
         const candidatos = validarPacoteRevisado(event.data);
         receber(candidatos);
+        ultimoEnvioAceito = event.data.envioId;
         status(`${candidatos.length} candidato(s) aceito(s) recebido(s). Revise antes de utilizar.`);
         try {
           confirmarRecebimento(canal, event.data);
