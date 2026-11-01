@@ -1455,3 +1455,54 @@ transferência de candidatos fictícios do importador v3.2 ao Motor,
 incluindo navegação de ida e volta, e conciliar manualmente IBS, CBS,
 NCG, caixa e ICSD. Sem merge na `main`, sem alteração da produção,
 sem dados pessoais e sem gasto adicional autorizado.
+
+
+## Encerramento do envio no importador após navegação (01/11/2026)
+
+Correção pequena e isolada na integração com o Simulador RT v3.2. Ao ocorrer
+`pagehide` na aba do importador, o emissor é encerrado, o BroadcastChannel é
+fechado, o botão **Enviar candidatos aceitos ao Motor RT Crédito 360** é
+desabilitado e a mensagem informa que a sessão terminou. Assim, ao retornar
+pelo cache de navegação (BFCache), o usuário não tenta enviar por um canal
+obsoleto. O evento de montagem tardia do painel também deixa de criar uma
+nova interface de envio após o encerramento. A nova sessão deve ser iniciada
+pelo botão do Motor. Não houve alteração em `simulador/v3/import.js`, nem
+duplicação dos leitores PDF, XLSX ou CSV. Nenhuma fórmula IBS/CBS, EBITDA,
+NCG, caixa ou ICSD foi modificada.
+
+Commits na branch `feature/motor-rt-credito-360`:
+módulo de encerramento `59a3df2f36612584da3422d59bee440e97daf8f3`;
+regressão `3bb1e83b6b94cc28c1c74aa4b1c6d8a88617b33e`;
+integração `24bd3faa61a502fdb961f9438523668b2aab22c0`.
+
+**Teste nativo executado:** Node.js v22.16.0,
+`node --test mvp-encerramento-v3.test.mjs`, **3 aprovados, 0 falhas**.
+Foram verificados encerramento do emissor/canal, bloqueio do botão no
+retorno pelo cache, encerramento antes de montar o painel e ausência de
+alteração nos candidatos sintéticos. Os blobs relidos do GitHub
+coincidiram com os arquivos executados localmente: módulo
+`824b64c6c210d06924df8050339acb4294c9eb62` e regressão
+`78cd0aa159673d4490bec36a982966644b63acc0`.
+A integração foi relida da branch e contém a chamada do novo módulo,
+mas **não** foi executada a suíte integral do repositório.
+
+**Preview confirmado:** Vercel deployment
+`dpl_74XmrZG1o6k8nBtHT599FYSevP4u`, commit `24bd3faa`,
+estado **READY**, branch autorizada e `target:null` (preview).
+Leitura autenticada do deployment retornou **HTTP 200** para
+`mvp.html`, `mvp-import-bridge.js`, `mvp-encerramento-v3.js`
+e `simulador/v3/import.js`. Os dois módulos novos/alterados estão
+presentes na publicação. Link de compartilhamento temporário
+criado/reutilizado, com expiração informada pela Vercel em
+02/11/2026 às 17h05min16s (fuso horário não especificado).
+
+**Bloqueios e próxima ação:** Chromium/Playwright neste ambiente
+recusou navegação `data:` com `net::ERR_BLOCKED_BY_ADMINISTRATOR`;
+portanto **não houve QA interativo real** nem homologação ponta a ponta
+das abas. Testar em navegador autorizado o fluxo completo de aceitação,
+envio, confirmação, retorno e restauração, além da conciliação manual
+multissetorial de IBS, CBS, NCG, caixa e ICSD. Permanecem pendentes
+DFC integral, FCADS/ICSD contratual, fundamentação legal por exercício
+e segurança documental institucional. Apenas dados sintéticos;
+nenhum parecer de crédito validado, merge na `main`, mudança em
+produção ou gasto adicional.
