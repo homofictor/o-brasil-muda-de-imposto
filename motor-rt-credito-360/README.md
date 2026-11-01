@@ -1054,3 +1054,38 @@ pendentes. Apenas simulação sintética, nunca parecer validado.
 e conferir a conciliação IBS/CBS, caixa e ICSD com cenários sintéticos
 multissetoriais. Nenhum merge na `main`, publicação em produção,
 dado pessoal ou gasto adicional.
+
+
+## Validação do identificador de envio no importador MVP (01/11/2026)
+
+Entrega pontual na interface multissetorial de demonstração: o receptor da
+ponte local com o importador v3.2 passa a recusar pacotes sem `envioId`
+inteiro seguro e positivo **antes** de exibir candidatos ou tentar confirmar
+recebimento. O protocolo de confirmação existente é preservado. Não houve
+mudança de leitores PDF/XLSX/CSV, regras IBS/CBS, fórmulas de caixa/ICSD ou
+tratamento de dados reais.
+
+Commits: correção `3a85766744bc529bf5e33dcbc005edf9a7983fc0`;
+atualização de teste existente `70e190efddb5f55b45c888a7e6841c182ea237b7`;
+novo teste `3f181011fff3ec9acea62df5d3883bf98672818e`.
+Blobs relidos da branch e conferidos com `git hash-object` dos arquivos
+locais testados: ponte `2dc2836980eec782472aba6d7111a56a82b72047`,
+teste existente `20e5391d8e9b9f09b3f283d088beabff6c42f9ff`,
+novo teste `c7c40e073790ad69c6de6e082c4cea97fb0af271`.
+Dependência de confirmação também conferida por SHA
+`74ef530da21e0444d41de98b7842bc5d5c0c4307`.
+
+Teste nativo: Node.js 22.16.0, comando
+`node --test mvp-import-bridge.test.mjs recepcao-id.test.mjs`
+em cópia local idêntica aos blobs citados (o segundo arquivo está no
+repositório como `mvp-recepcao-id.test.mjs`): **7 aprovados, 0 falhas**.
+O teste novo falhou contra o módulo original e passou após a correção.
+Não foi executada a suíte integral, nem homologada interação real em navegador.
+
+Prontidão: interface sintética existente, mas não homologada para crédito.
+Cenários multissetoriais e conciliação integral da DFC ainda pendentes;
+caixa e ICSD são indicativos e não contratuais. Persistem revisão legal
+por exercício, controles institucionais de documentos e QA completo.
+Próxima ação: verificar em navegador a ida e volta entre abas e a
+conciliação de IBS, CBS, NCG, caixa e ICSD com cenários sintéticos.
+Sem merge na `main`, alteração de produção, dados pessoais ou gastos.
