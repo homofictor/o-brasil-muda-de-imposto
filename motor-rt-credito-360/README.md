@@ -596,3 +596,34 @@ não auditada, embora identificada no resultado.
 Próxima ação: localizar e proteger consumidores reais da ponte, sem
 apresentar simulações não auditadas como resultados validados.
 Sem merge na `main`, deploy manual, gasto ou dados pessoais.
+
+
+## Proteção contra overflow na auditoria documental da NCG (31/10/2026)
+
+Falha reproduzida: valores de saldos individualmente finitos podiam produzir
+`Infinity` na NCG, na variação entre exercícios ou na diferença de
+conciliação. O relatório retornava números não finitos, embora seu status
+ficasse pendente. A correção rejeita essas três situações com erro explícito
+antes de retornar qualquer relatório. Não modifica fórmulas de IBS/CBS,
+caixa, ICSD, tolerâncias ou critérios documentais.
+
+Commits: código `b8af54fda6aced9619ad6a0aaebf41668c4ab92f`;
+testes `91c0d163058221117843fd7350e559779e31fbbd`.
+Verificação após os commits: **35 testes aprovados, 0 falhas** em executor
+JavaScript V8 com adaptação síncrona de `node:test` e `assert/strict`.
+Foram executados 12 testes de origem da NCG, 9 da ponte IBS/CBS e 14
+da entrada com NCG auditada. Os três novos casos de overflow foram
+reproduzidos antes da correção. Arquivos relidos da branch:
+código blob `5828a09dad971b5bd25df5c6bf6dcb0fa9a458a7`;
+testes blob `992dd852082ad6793124d834b3b51eef30626802`.
+Não foi executado `node --test` nativo, a suíte integral nem QA da interface.
+
+**Prontidão: não pronto para testes integrados.** A cobertura setorial
+permanece sintética, sem conciliação manual homologada. Caixa e ICSD são
+preliminares e não substituem DFC e FCADS contratual. Interface financeira,
+revisão legal por exercício, autenticação institucional, autorização e
+armazenamento privado de documentos continuam pendentes. A entrada direta
+ainda permite NCG não auditada, embora a identifique.
+Próxima ação: localizar e proteger consumidores reais das projeções para
+impedir apresentação de resultados não auditados como validados.
+Sem merge na `main`, deploy manual, dados pessoais ou gastos.
