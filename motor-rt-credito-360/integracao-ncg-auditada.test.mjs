@@ -22,7 +22,7 @@ const dadosFinanceiros = {
   aliquotaReferencia: 0.1,
   tratamentoTributario: {referenciaRefletida: false, reformaRefletida: false,
     evidenciaContabil: "DRE sintética pré-tributos", validadoPorAnalista: true},
-  variacaoNCG: {2027: 10}, capex: {2027: 2}, juros: {2027: 4},
+  variacaoNCG: {2027: 10}, capex: {2027: 2}, impostosResultado: {2027: 0}, juros: {2027: 4},
   amortizacoes: {2027: 6}
 };
 const executar = (dados = dadosFinanceiros, evidencias = {2027: auditoria}) =>
@@ -117,4 +117,28 @@ test("entrada documental explicita conciliação da NCG sem homologar parecer", 
   assert.equal(r.projecoes[0].auditoriaNCG.status, "conciliado_revisado");
   assert.equal(r.aptoParaParecer, false);
   assert.equal(r.homologado, false);
+});
+
+test("entrada auditada não presume zero quando falta componente financeiro anual", () => {
+  for (const campo of ["capex", "impostosResultado", "juros", "amortizacoes"]) {
+    assert.throws(() => executar({...dadosFinanceiros, [campo]: {}}),
+      new RegExp(campo));
+  }
+});
+
+test("entrada auditada rejeita valores inválidos dos componentes financeiros", () => {
+  for (const campo of ["capex", "impostosResultado", "juros", "amortizacoes"]) {
+    for (const valor of [NaN, Infinity, -1]) {
+      assert.throws(() => executar({...dadosFinanceiros, [campo]: {2027: valor}}),
+        new RegExp(campo));
+    }
+  }
+});
+
+test("zero explícito é válido e dívida nula deixa ICSD indisponível", () => {
+  const r = executar({...dadosFinanceiros, capex: {2027: 0},
+    impostosResultado: {2027: 0}, juros: {2027: 0}, amortizacoes: {2027: 0}});
+  assert.equal(r.projecoes[0].caixaReforma, 12);
+  assert.equal(r.projecoes[0].icsdReforma, null);
+  assert.equal(r.aptoParaParecer, false);
 });
