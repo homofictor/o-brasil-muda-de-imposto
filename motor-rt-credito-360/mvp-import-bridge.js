@@ -63,10 +63,17 @@ export function iniciarPonteImportacaoMVP({abrir, receber, status, limpar}) {
     return;
   }
   let canal;
-  abrir.addEventListener('click', () => {
-    canal?.close();
-    // Impede reaproveitar valores revisados de uma importação anterior.
+  // O reset do exemplo deve cancelar também a sessão, não apenas esconder valores.
+  const cancelar = () => {
+    if (canal) {
+      canal.onmessage = null;
+      canal.close();
+      canal = null;
+    }
     if (typeof limpar === 'function') limpar();
+  };
+  abrir.addEventListener('click', () => {
+    cancelar();
     const token = crypto.randomUUID();
     canal = new BroadcastChannel(NOME_CANAL + token);
     let ultimoEnvioAceito = 0;
@@ -94,7 +101,14 @@ export function iniciarPonteImportacaoMVP({abrir, receber, status, limpar}) {
     window.open(url.href, '_blank', 'noopener,noreferrer');
     status('No importador aberto em outra aba, aceite os candidatos e clique em Enviar ao Motor RT Crédito 360.');
   });
-  window.addEventListener('pagehide', () => canal?.close());
+  window.addEventListener('pagehide', () => {
+    if (canal) {
+      canal.onmessage = null;
+      canal.close();
+      canal = null;
+    }
+  });
+  return cancelar;
 }
 
 export function iniciarPonteImportacaoV3(doc = document, loc = location) {
