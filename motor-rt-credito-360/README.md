@@ -561,3 +561,38 @@ Próxima ação: localizar consumidores efetivos da ponte financeira e
 bloquear a apresentação de projeções com NCG não auditada como
 resultados validados. Nenhum merge na `main`, alteração manual de
 produção, uso de dados pessoais ou contratação de serviços nesta entrega.
+
+## Componentes anuais explícitos na entrada com NCG auditada (31/10/2026)
+
+A entrada `integrarCreditoComNCGAuditada` não aceita mais a omissão
+silenciosa de CAPEX, impostos sobre resultado, juros ou amortizações em
+qualquer exercício. Cada componente exige valor explícito, finito e não
+negativo; zero declarado é permitido. A NCG permanece obrigatoriamente
+conciliada por evidência documental. A entrada direta preliminar não foi
+alterada, assim como fórmulas de IBS/CBS, caixa e ICSD. Isso evita que
+ausência de dados seja confundida com despesa ou dívida zero no caminho
+auditado. Não comprova elegibilidade tributária, origem documental dos
+demais componentes ou FCADS contratual.
+
+Commits: código `c2b44f43365f77a0b0cdc55c59a9a9944c917779`;
+regressão `73cd713361a1439817f85c1c2c2a21b40ee0e266`.
+O teste novo de ausência de componente falhou antes da correção;
+após os commits, **32 testes aprovados, 0 falhas** em JavaScript V8
+com adaptação síncrona de `node:test` e `assert/strict`: 14 da
+entrada NCG auditada, 9 da ponte financeira e 9 da origem da NCG.
+Os arquivos alterados foram relidos da branch, com blobs
+`1845a580a40b12e0a9839cc87c0803b6127222b9` (código) e
+`347e15571184205812794eb09e6c7907f9ed8be0` (testes).
+Não foi executado `node --test` nativo, a suíte integral nem QA
+de interface.
+
+**Prontidão: não pronto para testes integrados.** A cobertura de oito
+atividades é sintética e não homologada manualmente. Caixa e ICSD são
+preliminares, sem conciliação completa da DFC ou FCADS contratual.
+A interface atual é cadastral; faltam revisão legal por exercício,
+controle de acesso, armazenamento privado e auditoria documental
+institucional. A ponte financeira direta continua acessível com NCG
+não auditada, embora identificada no resultado.
+Próxima ação: localizar e proteger consumidores reais da ponte, sem
+apresentar simulações não auditadas como resultados validados.
+Sem merge na `main`, deploy manual, gasto ou dados pessoais.
