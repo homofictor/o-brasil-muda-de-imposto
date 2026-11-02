@@ -33,6 +33,7 @@ th,td{padding:9px;text-align:right;border-bottom:1px solid #e0e8ef}th:first-chil
 <p class="muted">O exemplo fictício preserva o caixa e o serviço da dívida da projeção original em 2026 a 2033. As três sensibilidades usam fatores matemáticos de 0,5x, 1x e 1,5x sobre ajustes hipotéticos. Não são parâmetros legais nem setoriais.</p>
 <p id="mensagem-relatorio" class="status" role="status" aria-live="polite">Selecione “Usar exemplo fictício” para habilitar o relatório demonstrativo.</p>
 <div id="relatorio" hidden><h3>Relatório sintético de capacidade de pagamento</h3><p class="alert"><strong>EXCLUSIVAMENTE FICTÍCIO.</strong> Nenhum valor deste relatório deriva do CNPJ ou de documentos enviados.</p>
+<h3>Memória contábil fictícia de 2026</h3><div id="memoria-contabil" class="cards"></div><p id="ressalva-memoria" class="muted"></p>
 <div id="resumos" class="cards"></div>
 <div class="scroll"><table><thead><tr><th>Cenário / ano</th><th>Δ EBITDA</th><th>Δ NCG</th><th>Δ IBS</th><th>Δ CBS</th><th>Caixa original</th><th>Caixa ajustado</th><th>Serviço dívida</th><th>ICSD</th></tr></thead><tbody id="linhas-relatorio"></tbody></table></div>
 <h3>Limitações e ressalvas</h3><div id="limitacoes"></div><button type="button" id="imprimir" class="secondary">Imprimir relatório fictício</button></div></section>
@@ -43,6 +44,7 @@ import {iniciarCadastro} from './fluxo-cadastral.js';
 import {iniciarPonteImportacaoMVP} from './mvp-import-bridge.js';
 import {gerarTresCenariosSinteticos} from './mvp-tres-cenarios.js';
 import {conciliarExemploContabil} from './mvp-exemplo-contabil.js';
+import {gerarMemoriaContabilSintetica} from './mvp-memoria-relatorio.js';
 const el=id=>document.getElementById(id);
 const fmt=n=>n===null?'Indisponível':new Intl.NumberFormat('pt-BR',{maximumFractionDigits:2}).format(n);
 let demo=false;
@@ -71,10 +73,12 @@ el('consultar').addEventListener('click',async()=>{
 cancelarImportacao=iniciarPonteImportacaoMVP({abrir:el('importar'),status:msg=>{el('status-importacao').textContent=msg;},
  receber:candidatos=>{demo=false;el('gerar').disabled=true;limparRelatorio();el('status-importacao').textContent=candidatos.length+' candidato(s) numérico(s) aceito(s). A classificação, conciliação BP/DRE/balancete e materialidade ainda exigem revisão; nenhum valor foi aplicado automaticamente.';},
  limpar:()=>{el('status-importacao').textContent='Sessão de importação encerrada. Nenhum valor transferido para a projeção.';}}) || (()=>{});
-function card(titulo,valor,nota){const d=document.createElement('div');d.className='card';const t=document.createElement('span'),v=document.createElement('strong'),n=document.createElement('small');t.textContent=titulo;v.textContent=valor;n.textContent=nota;d.append(t,v,n);el('resumos').append(d);}
+function card(titulo,valor,nota,destino='resumos'){const d=document.createElement('div');d.className='card';const t=document.createElement('span'),v=document.createElement('strong'),n=document.createElement('small');t.textContent=titulo;v.textContent=valor;n.textContent=nota;d.append(t,v,n);el(destino).append(d);}
 el('gerar').addEventListener('click',()=>{
  if(!demo)return;
- try{const r=gerarTresCenariosSinteticos();el('resumos').replaceChildren();el('linhas-relatorio').replaceChildren();el('limitacoes').replaceChildren();
+ try{const r=gerarTresCenariosSinteticos(),memoria=gerarMemoriaContabilSintetica();el('resumos').replaceChildren();el('memoria-contabil').replaceChildren();el('linhas-relatorio').replaceChildren();el('limitacoes').replaceChildren();
+ for(const i of memoria.indicadores)card(i.rotulo,fmt(i.valor),i.nota,'memoria-contabil');
+ el('ressalva-memoria').textContent=memoria.ressalva;
  for(const c of r.cenarios){card(c.titulo,fmt(c.resumo.menorICSD)+'x','Δ caixa acumulado: '+fmt(c.resumo.deltaCaixaAcumulado)+' | Insuficiência: '+(c.resumo.anosInsuficiencia.join(', ')||'nenhuma'));
   for(const p of c.exercicios){const tr=document.createElement('tr');for(const v of [c.titulo+' / '+p.ano,fmt(p.ebitdaIncremental),fmt(p.ncgIncremental),fmt(p.ibsIncremental),fmt(p.cbsIncremental),fmt(p.caixaOriginal),fmt(p.caixaAjustado),fmt(p.servicoDivida),fmt(p.icsdAjustado)+'x']){const td=document.createElement('td');td.textContent=v;tr.append(td);}el('linhas-relatorio').append(tr);}}
  for(const aviso of r.limitacoes){const p=document.createElement('p');p.textContent=aviso;el('limitacoes').append(p);}
