@@ -35,3 +35,31 @@ test('pacote vazio não é apresentado como conciliado',()=>{
  const r=conciliarRubricasRevisadas([]);
  assert.deepEqual(r.exercicios,[]);assert.equal(r.aptoParaParecer,false);
 });
+
+test('quantifica diferença patrimonial sem atribuir materialidade arbitrária',()=>{
+ const entradas=base.map(x=>x.grupo==='ativo'?{...x,valor:1070}:x);
+ const r=conciliarRubricasRevisadas(entradas).exercicios[0];
+ assert.equal(r.materialidade.status,'sem_limite_de_materialidade_validado');
+ assert.equal(r.materialidade.bp.valorAbsoluto,10);
+ assert.equal(r.materialidade.bp.baseComparacao,1070);
+ assert.ok(Math.abs(r.materialidade.bp.percentualDaBase-10/1070*100)<1e-12);
+ assert.equal(r.status,'pendente_revisao');
+});
+test('sem grupo completo, não calcula percentual nem trata ausência como zero',()=>{
+ const r=conciliarRubricasRevisadas(base.filter(x=>x.grupo!=='patrimonio')).exercicios[0];
+ assert.equal(r.materialidade.bp.valorAbsoluto,null);
+ assert.equal(r.materialidade.bp.percentualDaBase,null);
+ assert.equal(r.materialidade.bp.baseComparacao,null);
+});
+test('balancete divergente usa maior total como denominador',()=>{
+ const r=conciliarRubricasRevisadas(base.map(x=>x.grupo==='creditos'?{...x,valor:1650}:x)).exercicios[0];
+ assert.equal(r.materialidade.balancete.valorAbsoluto,50);
+ assert.equal(r.materialidade.balancete.baseComparacao,1700);
+ assert.ok(Math.abs(r.materialidade.balancete.percentualDaBase-50/1700*100)<1e-12);
+});
+test('base nula retorna percentual indisponível sem divisão por zero',()=>{
+ const r=conciliarRubricasRevisadas(base.map(x=>x.demonstracao==='BALANCETE'?{...x,valor:0}:x)).exercicios[0];
+ assert.equal(r.materialidade.balancete.valorAbsoluto,0);
+ assert.equal(r.materialidade.balancete.baseComparacao,0);
+ assert.equal(r.materialidade.balancete.percentualDaBase,null);
+});
