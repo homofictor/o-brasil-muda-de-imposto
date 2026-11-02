@@ -15,7 +15,8 @@ test('ativo e passivo circulantes geram uma exceção de NCG sem cálculo indevi
 });
 test('despesa financeira não é confundida com serviço da dívida',()=>{
  const r=triarExcecoesContabeis([c('interestExpense',24,6)]);
- assert.equal(r.excecoes.length,1);assert.match(r.excecoes[0],/amortizações/);
+ assert.equal(r.excecoes.length,2);assert.match(r.excecoes[0],/amortizações/);
+ assert.match(r.excecoes[1],/período parcial de 6 meses/);
 });
 test('receita bruta, margem e tributos geram pendências distintas sem inferir valores',()=>{
  const r=triarExcecoesContabeis([c('rbt12'),c('currentOperatingMarginPct',20),c('currentConsumptionTaxAnnual',10)]);
@@ -50,4 +51,16 @@ test('margem sem competência gera ressalva, saldos patrimoniais não são anual
  const r=triarExcecoesContabeis([c('currentOperatingMarginPct',20,null),c('currentAssets',100,null)]);
  assert.match(r.excecoes.join(' '),/Margem operacional: período não informado/);
  assert.equal(r.excecoes.some(x=>x.includes('Ativo circulante: período')),false);
+});
+test('juros e margem de período parcial não são tratados como anuais',()=>{
+ const r=triarExcecoesContabeis([c('interestExpense',18,9),c('currentOperatingMarginPct',12,3)]);
+ assert.match(r.excecoes.join(' '),/Despesas financeiras: período parcial de 9 meses/);
+ assert.match(r.excecoes.join(' '),/Margem operacional: período parcial de 3 meses/);
+ assert.equal(r.excecoes.length,4);
+ assert.equal(JSON.stringify(r).includes('arquivo'),false);
+});
+test('período anual não recebe alerta de período parcial',()=>{
+ const r=triarExcecoesContabeis([c('interestExpense',18,12),c('currentOperatingMarginPct',12,12)]);
+ assert.equal(r.excecoes.length,2);
+ assert.equal(r.excecoes.some(x=>x.includes('período parcial')),false);
 });
