@@ -2072,3 +2072,47 @@ contábeis revisadas com período, origem não identificável e trilha de
 conciliação, preservando a projeção do economista e bloqueando cálculos
 com dados reais não conciliados. Nenhum merge na `main`, alteração
 de produção, gasto ou uso de dados pessoais nesta entrega.
+
+
+## Competência dos candidatos contábeis revisados (02/11/2026)
+
+**Entrega pequena e verificável:** a triagem da etapa 2 agora ressalva explicitamente
+a falta de comprovação do período de RBT12, dos tributos atuais anuais,
+das despesas financeiras e da margem operacional. Para RBT12 e tributos
+anuais, período diferente de 12 meses (inclusive desconhecido) gera alerta;
+despesas financeiras e margem sem período também geram alerta. Saldos de
+ativo e passivo circulantes continuam tratados como posições, sem
+anualização. A triagem não altera valores, não calcula materialidade e
+não alimenta a projeção do economista, o ICSD ou IBS/CBS.
+
+**Commits exclusivos da branch:** implementação
+`56d8832e964735d617d2c576b2338ca0c87e2929`; regressão
+`3eca1e1f6767d8fb4d0ca8403951ee36aafc7eb6`.
+**Testes nativos executados:** Node.js 22.16.0,
+`npm test` em diretório isolado, **9 aprovados, 0 falhas**.
+Os arquivos testados foram conferidos por `git hash-object` contra
+os blobs relidos da branch:
+`8cc26c78a2a282027d32ba766187875629964268` e
+`9026ef42f2cc42882abfca4e75810f3623f8f4ba`.
+Não foi executada a suíte integral nem QA interativo móvel.
+
+**Preview verificado pela Vercel:** deployment automático
+`dpl_WQk8Wd3uAS2ag1UyhhER3jtYBCwv`, `READY`,
+`target:null`, commit `3eca1e1f6767d8fb4d0ca8403951ee36aafc7eb6`.
+Leituras HTTP autenticadas retornaram **200** para a interface,
+o módulo atualizado e o leitor original `simulador/v3/import.js`.
+Link temporário de testes disponibilizado por mecanismo de compartilhamento
+da Vercel; o acesso externo independente e a navegação completa não foram
+homologados. Nenhuma publicação em produção ou merge na `main`.
+
+**Bloqueios:** ainda não existe transferência de rubricas detalhadas
+por exercício nem conciliação completa de BP, DRE, balancete, DFC e
+projeção original do economista. A materialidade das exceções não é
+quantificada. Matriz legal setorial, elegibilidade de créditos IBS/CBS,
+transição 2027 a 2033, tratamento de compra/revenda de frota e
+FCADS/ICSD contratual exigem validação. Não utilizar documentos reais
+no preview nem emitir parecer de crédito.
+
+**Próxima ação:** ampliar a ponte com rubricas contábeis revisadas,
+competência e referências documentais não identificáveis, mantendo
+os bloqueios de conciliação antes de recalcular cenários reais.
