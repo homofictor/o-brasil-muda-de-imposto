@@ -1829,3 +1829,71 @@ Nenhum dado empresarial foi enviado ao GitHub. Não houve merge na
 **Próxima ação:** testar o fluxo navegável da branch no preview e avançar
 no mapeamento de campos da planilha padronizada para importar a referência
 sem duplicar o leitor `simulador/v3/import.js`, mantendo revisão explícita.
+
+
+## Candidatos do importador v3.2 na projeção do economista (01/11/2026, noite)
+
+**Entrega verificável:** a página `projecao-economista.html` agora abre o
+importador documental existente do Simulador RT v3.2 por meio de
+`iniciarPonteImportacaoMVP`, sem criar outro leitor de PDF, XLS, XLSX ou
+CSV. O usuário aceita candidatos no importador e a tela da projeção recebe
+somente números revisados via `BroadcastChannel`, com sessão efêmera e
+limpeza ao restaurar o exemplo ou sair da página. A exibição usa
+`textContent`, não HTML originado dos documentos. O arquivo original,
+nomes, CNPJ e fontes documentais não são transferidos à projeção.
+
+**Elegibilidade financeira restritiva:** o módulo
+`mvp-elegibilidade-projecao.js` classifica os seis indicadores
+retrospectivos já autorizados na ponte e informa por que nenhum pode
+ser aplicado automaticamente como caixa disponível, serviço da dívida,
+ICSD, ajuste de IBS/CBS ou projeção do economista. Em particular,
+despesa financeira não equivale a juros mais amortizações; receita bruta
+não equivale à receita líquida; ativo/passivo circulante não constituem
+NCG. A chegada de candidatos invalida os resultados e as três revisões
+anteriores. Não há importação de fórmulas nem tratamento de documentos
+empresariais reais neste preview.
+
+**Commits exclusivos da branch:**
+`c016e9811006464d29f0a56a773838f055562597` (elegibilidade),
+`90010f44351239413eb997a04fb46ec823f99e2e` (testes) e
+`2584827119a22d68102fa19458a9f886f941ec3d` (interface).
+
+**Testes nativos executados:** Node.js v22.16.0,
+`npm test` em diretório isolado com o módulo e teste da branch:
+**4 aprovados, 0 falhas**. Casos: campos e rótulos permitidos, ausência
+de autopreenchimento, distinção de NCG e receita, rejeição de campos
+desconhecidos, duplicados, não finitos e períodos inválidos. Os hashes
+dos arquivos relidos da branch coincidiram com `git hash-object` dos
+arquivos testados:
+`81bf1c5337b42a3d561948095738c9abbbcfc95f` e
+`1487fd1a658a5f8a9e146598c035f2ed0dd3758b`.
+O HTML foi relido da branch e teve oito pontos de integração conferidos
+estaticamente. Não foi realizado teste interativo do navegador nem
+executada a suíte integral do repositório.
+
+**Preview conferido:** deployment automático
+`dpl_3UhoZHVniSA11pYRodRYbKfinpxC` do commit
+`2584827119a22d68102fa19458a9f886f941ec3d`,
+estado `READY`, `target:null`, exclusivamente na branch
+`feature/motor-rt-credito-360`. A leitura autenticada da Vercel
+retornou HTTP 200 para a página de projeção, o novo módulo de
+elegibilidade, a ponte de importação, `simulador/v3/import.js` e
+`mvp.html`. O endereço temporário de compartilhamento também
+respondeu HTTP 200 na leitura autorizada. O teste externo independente
+e o fluxo interativo entre abas permanecem sem homologação.
+
+**Bloqueios:** o arquivo integrado `.xls` enviado pelo usuário não foi
+interpretado nem publicado; a planilha do economista continua sem
+mapeamento de abas, fórmulas e FCADS. Não existe conciliação contábil
+completa da DRE/BP/DFC nem validação legal de IBS/CBS e créditos por
+atividade. Dados sintéticos não equivalem a parecer de crédito.
+Sem controle institucional de acesso ou armazenamento privado
+comprovados, não inserir dados reais ou confidenciais.
+
+**Próxima ação prioritária:** mapear de forma privada a estrutura da
+planilha integrada, identificar as abas e fórmulas que geram o fluxo
+de caixa e o ICSD e reutilizar o leitor v3.2 para propor candidatos
+de referência por ano com confirmação explícita. Preservar a projeção
+original, conciliar antes dos ajustes fiscais e não presumir serviço
+da dívida a partir de despesa financeira. Nenhum merge na `main`,
+alteração deliberada de produção ou gasto nesta entrega.
