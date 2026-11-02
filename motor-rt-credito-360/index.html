@@ -28,6 +28,7 @@ th,td{padding:9px;text-align:right;border-bottom:1px solid #e0e8ef}th:first-chil
 <p>Reutilizamos o importador do Simulador RT v3.2 para PDF, XLSX, XLS e CSV, com aceitação de candidatos no próprio leitor. Não há outro parser nesta página.</p>
 <button type="button" id="importar">Abrir leitor existente e revisar candidatos</button>
 <p id="status-importacao" class="status muted" role="status" aria-live="polite">Nenhum documento revisado. O fluxo real ainda depende de conciliação contábil e revisão de exceções materiais.</p>
+<p id="excecoes-importacao" class="alert status" role="status" aria-live="polite" hidden></p>
 <p class="muted">Os indicadores recebidos não são aplicados automaticamente à projeção do economista, ao serviço da dívida nem aos créditos de IBS/CBS.</p></section>
 <section id="etapa3"><h2>3. Gerar análise com três cenários e relatório sintético</h2>
 <p class="muted">O exemplo fictício preserva o caixa e o serviço da dívida da projeção original em 2026 a 2033. As três sensibilidades usam fatores matemáticos de 0,5x, 1x e 1,5x sobre ajustes hipotéticos. Não são parâmetros legais nem setoriais.</p>
@@ -42,6 +43,7 @@ th,td{padding:9px;text-align:right;border-bottom:1px solid #e0e8ef}th:first-chil
 <script type="module">
 import {iniciarCadastro} from './fluxo-cadastral.js';
 import {iniciarPonteImportacaoMVP} from './mvp-import-bridge.js';
+import {triarExcecoesContabeis} from './mvp-triagem-excecoes.js';
 import {gerarTresCenariosSinteticos} from './mvp-tres-cenarios.js';
 import {conciliarExemploContabil} from './mvp-exemplo-contabil.js';
 import {gerarMemoriaContabilSintetica} from './mvp-memoria-relatorio.js';
@@ -71,8 +73,14 @@ el('consultar').addEventListener('click',async()=>{
  finally{el('consultar').disabled=false;}
 });
 cancelarImportacao=iniciarPonteImportacaoMVP({abrir:el('importar'),status:msg=>{el('status-importacao').textContent=msg;},
- receber:candidatos=>{demo=false;el('gerar').disabled=true;limparRelatorio();el('status-importacao').textContent=candidatos.length+' candidato(s) numérico(s) aceito(s). A classificação, conciliação BP/DRE/balancete e materialidade ainda exigem revisão; nenhum valor foi aplicado automaticamente.';},
- limpar:()=>{el('status-importacao').textContent='Sessão de importação encerrada. Nenhum valor transferido para a projeção.';}}) || (()=>{});
+ receber:candidatos=>{demo=false;el('gerar').disabled=true;limparRelatorio();
+  const triagem=triarExcecoesContabeis(candidatos);
+  el('status-importacao').textContent=triagem.recebidos+' candidato(s) numérico(s) aceito(s). Nenhum valor aplicado automaticamente à projeção.';
+  el('excecoes-importacao').hidden=triagem.excecoes.length===0;
+  el('excecoes-importacao').textContent=triagem.excecoes.join('\n')+(triagem.excecoes.length?'\n':'')+triagem.aviso;
+ },
+ limpar:()=>{el('status-importacao').textContent='Sessão de importação encerrada. Nenhum valor transferido para a projeção.';
+  el('excecoes-importacao').hidden=true;el('excecoes-importacao').textContent='';}}) || (()=>{});
 function card(titulo,valor,nota,destino='resumos'){const d=document.createElement('div');d.className='card';const t=document.createElement('span'),v=document.createElement('strong'),n=document.createElement('small');t.textContent=titulo;v.textContent=valor;n.textContent=nota;d.append(t,v,n);el(destino).append(d);}
 el('gerar').addEventListener('click',()=>{
  if(!demo)return;
