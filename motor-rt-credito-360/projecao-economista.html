@@ -20,6 +20,13 @@
 <p id="status-referencia" class="small" role="status" aria-live="polite"></p>
 <p class="alert">Ao aplicar a referência, todos os ajustes de RT são zerados para evitar misturar dados da planilha com hipóteses sintéticas anteriores. O arquivo e as fórmulas não são importados nem armazenados. O importador documental v3.2 permanece disponível no menu.</p>
 </section>
+<section><h2>1B. Revisão de candidatos contábeis no importador existente</h2>
+<p class="small">Abra o Simulador RT v3.2 em outra aba, importe PDF, XLS, XLSX ou CSV e aceite explicitamente os candidatos. Somente campos numéricos revisados são transferidos entre abas no navegador, sem arquivos ou identificação empresarial. Use apenas dados sintéticos neste preview.</p>
+<button type="button" id="abrir-importador-projecao">Abrir importador v3.2 e revisar candidatos</button>
+<p id="status-importador-projecao" role="status" aria-live="polite" class="small"></p>
+<div id="candidatos-projecao" hidden><div class="scroll"><table><thead><tr><th>Indicador revisado</th><th>Valor</th><th>Meses</th><th>Limitação para a projeção</th></tr></thead><tbody id="tabela-candidatos-projecao"></tbody></table></div></div>
+<p id="aviso-importador-projecao" class="alert">Nenhum indicador retrospectivo será aplicado automaticamente ao caixa original, serviço da dívida, ICSD, IBS ou CBS. A projeção do economista continua exigindo conciliação própria.</p>
+</section>
 <section><h2>2. Revisão explícita pelo analista</h2>
 <label><input type="checkbox" id="r-original"> Conferi a projeção original do economista, sua unidade monetária e o cronograma da dívida.</label>
 <label><input type="checkbox" id="r-ponte"> Conferi a origem e os sinais dos efeitos incrementais da reforma.</label>
@@ -37,13 +44,17 @@ import {exemploSinteticoEconomista,compararProjecaoEconomista} from './mvp-ponte
 import {interpretarReferenciaColada} from './mvp-referencia-colada.js';
 import {analisarFolgaCredito} from './mvp-alertas-credito.js';
 import {decomporImpactoCaixa} from './mvp-decomposicao-caixa.js';
+import {iniciarPonteImportacaoMVP} from './mvp-import-bridge.js';
+import {classificarCandidatosProjecao} from './mvp-elegibilidade-projecao.js';
 const el=id=>document.getElementById(id);
 const campos=[['caixaOriginal','Caixa original'],['servicoDivida','Serviço da dívida'],['icsdConferido','ICSD da planilha'],['ajusteEBITDA','Δ EBITDA'],['ajusteNCG','Δ NCG'],['ajusteCAPEX','Δ CAPEX'],['ajusteIR','Δ IR'],['ajusteIBS','Δ IBS'],['ajusteCBS','Δ CBS'],['ajusteOutros','Δ outros']];
 const fmt=v=>v===null?'Indisponível':new Intl.NumberFormat('pt-BR',{maximumFractionDigits:2}).format(v);
+let cancelarImportacaoProjecao;
 const invalida=()=>{el('resultado').hidden=true;el('decomposicao').hidden=true;el('erro').textContent='';for(const id of ['r-original','r-ponte','r-dupla'])el(id).checked=false;};
 function preencher(){el('linhas').replaceChildren();for(const l of exemploSinteticoEconomista()){
  const tr=document.createElement('tr'),ano=document.createElement('th');ano.textContent=String(l.ano);tr.append(ano);
- for(const [id,rotulo] of campos){const td=document.createElement('td'),inp=document.createElement('input');inp.type='number';inp.step='any';inp.id=`e-${l.ano}-${id}`;inp.value=l[id]===null?'':String(l[id]);inp.setAttribute('aria-label',`${rotulo} ${l.ano}`);inp.addEventListener('input',invalida);td.append(inp);tr.append(td)}el('linhas').append(tr)}invalida();el('referencia-colada').value='';el('status-referencia').textContent='';}
+ for(const [id,rotulo] of campos){const td=document.createElement('td'),inp=document.createElement('input');inp.type='number';inp.step='any';inp.id=`e-${l.ano}-${id}`;inp.value=l[id]===null?'':String(l[id]);inp.setAttribute('aria-label',`${rotulo} ${l.ano}`);inp.addEventListener('input',invalida);td.append(inp);tr.append(td)}el('linhas').append(tr)}invalida();el('referencia-colada').value='';el('status-referencia').textContent='';
+ el('candidatos-projecao').hidden=true;el('tabela-candidatos-projecao').replaceChildren();el('status-importador-projecao').textContent='';}
 function coletar(){return Array.from({length:8},(_,i)=>{const ano=2026+i,r={ano};for(const [id] of campos){const valor=el(`e-${ano}-${id}`).value;r[id]=valor.trim()===''?(id==='icsdConferido'?null:NaN):Number(valor)}return r});}
 function card(t,v){const d=document.createElement('div'),s=document.createElement('span'),b=document.createElement('strong');s.textContent=t;b.textContent=v;d.append(s,b);el('resumo').append(d)}
 function mostrarDecomposicao(r){const d=decomporImpactoCaixa(r.projecao);el('memoria-caixa').replaceChildren();
@@ -67,5 +78,29 @@ el('aplicar-referencia').addEventListener('click',()=>{
  } catch(e){el('status-referencia').textContent='Referência recusada: '+e.message;}
 });
 el('calcular').addEventListener('click',()=>{el('resultado').hidden=true;el('decomposicao').hidden=true;try{mostrar(compararProjecaoEconomista(coletar(),{projecaoOriginal:el('r-original').checked,ponteTributaria:el('r-ponte').checked,semDuplaContagem:el('r-dupla').checked}));el('erro').textContent='';}catch(e){el('erro').textContent=e.message;}});
-el('restaurar').addEventListener('click',preencher);preencher();
+el('restaurar').addEventListener('click',()=>{cancelarImportacaoProjecao?.();preencher();});
+preencher();
+cancelarImportacaoProjecao=iniciarPonteImportacaoMVP({
+ abrir:el('abrir-importador-projecao'),
+ status:mensagem=>{el('status-importador-projecao').textContent=mensagem;},
+ limpar:()=>{
+  el('candidatos-projecao').hidden=true;
+  el('tabela-candidatos-projecao').replaceChildren();
+  el('aviso-importador-projecao').textContent='Nenhum candidato importado será aplicado automaticamente à projeção original ou à ponte IBS/CBS.';
+ },
+ receber:candidatos=>{
+  const resumo=classificarCandidatosProjecao(candidatos);
+  invalida();
+  el('tabela-candidatos-projecao').replaceChildren();
+  for(const c of resumo.itens){
+   const tr=document.createElement('tr');
+   for(const valor of [c.rotulo,fmt(c.valor),c.meses===null?'Não identificado':String(c.meses),c.limitacao]){
+    const td=document.createElement('td');td.textContent=valor;tr.append(td);
+   }
+   el('tabela-candidatos-projecao').append(tr);
+  }
+  el('candidatos-projecao').hidden=resumo.itens.length===0;
+  el('aviso-importador-projecao').textContent=resumo.aviso;
+ }
+});
 </script></body></html>
