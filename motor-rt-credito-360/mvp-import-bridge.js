@@ -1,5 +1,6 @@
 import {criarEmissorConfirmado, confirmarRecebimento} from './mvp-confirmacao-transferencia.js';
 import {encerrarSessaoImportadorV3} from './mvp-encerramento-v3.js';
+import {extrairRascunhosRubricasV3, validarRascunhosRubricasV3} from './mvp-rascunhos-v3.js';
 
 // Ponte opt-in, somente no navegador, para candidatos explicitamente aceitos no Simulador v3.2.
 // Nenhum arquivo, CNPJ, nome ou fonte documental atravessa a ponte.
@@ -57,7 +58,7 @@ export function estimarJurosAnuais(candidatos) {
   return Number.isFinite(anual) && anual <= 1e15 ? anual : null;
 }
 
-export function iniciarPonteImportacaoMVP({abrir, receber, status, limpar}) {
+export function iniciarPonteImportacaoMVP({abrir, receber, receberRascunhos, status, limpar}) {
   if (!globalThis.BroadcastChannel || !globalThis.crypto?.randomUUID) {
     status('Este navegador não permite transferência local entre abas. Use o importador separadamente.');
     abrir.disabled = true;
@@ -87,9 +88,11 @@ export function iniciarPonteImportacaoMVP({abrir, receber, status, limpar}) {
           return;
         }
         const candidatos = validarPacoteRevisado(event.data);
+        const rascunhos = validarRascunhosRubricasV3(event.data.rascunhos ?? []);
         receber(candidatos);
+        if (typeof receberRascunhos === 'function') receberRascunhos(rascunhos);
         ultimoEnvioAceito = event.data.envioId;
-        status(`${candidatos.length} candidato(s) aceito(s) recebido(s). Revise antes de utilizar.`);
+        status(`${candidatos.length} candidato(s) aceito(s) e ${rascunhos.length} rubrica(s) preliminar(es) recebida(s). Rubricas não classificadas nem conciliadas.`);
         try {
           confirmarRecebimento(canal, event.data);
         } catch (_) {
@@ -142,7 +145,11 @@ export function iniciarPonteImportacaoV3(doc = document, loc = location) {
         mensagem.textContent = 'Nenhum candidato numérico elegível foi aceito explicitamente. Revise os valores primeiro.';
         return;
       }
-      emissor.enviar(candidatos);
+      let rascunhos = [], aviso = '';
+      try { rascunhos = extrairRascunhosRubricasV3(window.brmiImport?.files ?? []); }
+      catch (_) { aviso = 'Rascunhos detalhados excederam os limites e não foram transferidos. Os candidatos aceitos continuam disponíveis.'; }
+      emissor.enviar(candidatos, rascunhos);
+      if (aviso) mensagem.textContent += ' ' + aviso;
     });
   };
   doc.addEventListener('brmi:import-ready', montar);

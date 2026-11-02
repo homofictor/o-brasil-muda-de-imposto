@@ -29,6 +29,7 @@ th,td{padding:9px;text-align:right;border-bottom:1px solid #e0e8ef}th:first-chil
 <button type="button" id="importar">Abrir leitor existente e revisar candidatos</button>
 <p id="status-importacao" class="status muted" role="status" aria-live="polite">Nenhum documento revisado. O fluxo real ainda depende de conciliação contábil e revisão de exceções materiais.</p>
 <p id="excecoes-importacao" class="alert status" role="status" aria-live="polite" hidden></p>
+<p id="status-rubricas" class="muted" role="status" aria-live="polite"></p>
 <p class="muted">Os indicadores recebidos não são aplicados automaticamente à projeção do economista, ao serviço da dívida nem aos créditos de IBS/CBS.</p></section>
 <section id="etapa3"><h2>3. Gerar análise com três cenários e relatório sintético</h2>
 <p class="muted">O exemplo fictício preserva o caixa e o serviço da dívida da projeção original em 2026 a 2033. As três sensibilidades usam fatores matemáticos de 0,5x, 1x e 1,5x sobre ajustes hipotéticos. Não são parâmetros legais nem setoriais.</p>
@@ -73,6 +74,9 @@ el('consultar').addEventListener('click',async()=>{
  finally{el('consultar').disabled=false;}
 });
 cancelarImportacao=iniciarPonteImportacaoMVP({abrir:el('importar'),status:msg=>{el('status-importacao').textContent=msg;},
+ receberRascunhos:rubricas=>{el('status-rubricas').textContent=rubricas.length
+  ?rubricas.length+' linha(s) numérica(s) preliminar(es) do leitor v3.2, sem classificação, competência ou unidade confirmadas. Nenhuma usada no cálculo.'
+  :'Nenhuma rubrica detalhada elegível foi transferida. O leitor continua disponível para revisão.';},
  receber:candidatos=>{demo=false;el('gerar').disabled=true;limparRelatorio();
   const triagem=triarExcecoesContabeis(candidatos);
   el('status-importacao').textContent=triagem.recebidos+' candidato(s) numérico(s) aceito(s). Nenhum valor aplicado automaticamente à projeção.';
@@ -80,7 +84,8 @@ cancelarImportacao=iniciarPonteImportacaoMVP({abrir:el('importar'),status:msg=>{
   el('excecoes-importacao').textContent=triagem.excecoes.join('\n')+(triagem.excecoes.length?'\n':'')+triagem.aviso;
  },
  limpar:()=>{el('status-importacao').textContent='Sessão de importação encerrada. Nenhum valor transferido para a projeção.';
-  el('excecoes-importacao').hidden=true;el('excecoes-importacao').textContent='';}}) || (()=>{});
+  el('excecoes-importacao').hidden=true;el('excecoes-importacao').textContent='';
+  el('status-rubricas').textContent='';}}) || (()=>{});
 function card(titulo,valor,nota,destino='resumos'){const d=document.createElement('div');d.className='card';const t=document.createElement('span'),v=document.createElement('strong'),n=document.createElement('small');t.textContent=titulo;v.textContent=valor;n.textContent=nota;d.append(t,v,n);el(destino).append(d);}
 el('gerar').addEventListener('click',()=>{
  if(!demo)return;

@@ -21,9 +21,10 @@ export function criarEmissorConfirmado({canal, avisar, agendar = setTimeout,
     avisar(`${quantidade} valor(es) recebido(s) pelo Motor. Volte à outra aba e confira antes de aplicar.`);
   };
   return {
-    enviar(candidatos) {
+    enviar(candidatos, rascunhos = []) {
       if (!Array.isArray(candidatos) || !candidatos.length)
         throw new Error('Não há candidatos para transferir');
+      if (!Array.isArray(rascunhos)) throw new Error('Rascunhos inválidos');
       if (pendente) desagendar(pendente.timeout);
       const id = ++sequencia;
       const atual = {id, quantidade: candidatos.length, timeout: null};
@@ -35,7 +36,7 @@ export function criarEmissorConfirmado({canal, avisar, agendar = setTimeout,
         avisar('Recebimento não confirmado. Confira se a aba do Motor continua aberta e tente novamente.');
       }, esperaMs);
       try {
-        canal.postMessage({tipo: 'rt360-candidatos-revisados-v1', envioId: id, candidatos});
+        canal.postMessage({tipo: 'rt360-candidatos-revisados-v1', envioId: id, candidatos, rascunhos});
       } catch (_) {
         desagendar(atual.timeout);
         if (pendente === atual) pendente = null;
