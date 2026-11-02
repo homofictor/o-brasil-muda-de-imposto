@@ -2323,3 +2323,45 @@ origem opaca, sem enviar documentos, e só então conectar a conciliação
 **Próxima ação:** estabelecer no leitor v3.2 um contrato de saída explícito e opt-in para rubricas detalhadas revisadas, com competência e referência opaca, e construir separadamente a conciliação de balancetes intermediários, sem modificar automaticamente a projeção do economista. Confirmar preview Vercel antes de divulgar link. Sem merge na `main`, alteração deliberada de produção, gastos ou dados pessoais.
 
 **Verificação do preview desta entrega:** deployment automático `dpl_6g7hBXFc9YJd3Bj83MnxDpNHkMUZ`, commit de documentação `e864e1de253f5e994f01f92db9ae34dd3c9cda19`, confirmado `READY` e `target:null` pela Vercel. A leitura de arquivos do deployment pela API retornou `404 file not found`, a listagem de arquivos retornou `404 file tree not found` e o acesso externo independente à página não foi confirmado. **Não divulgar endereço de preview como verificado**; não houve QA de navegação ou dispositivo móvel. Nenhuma publicação manual em produção foi realizada.
+
+
+## Balancete intermediário com competência própria (02/11/2026)
+
+**Entrega única:** criado o contrato isolado `mvp-balancete-intermediario.js`, que
+aceita exclusivamente rubricas de um balancete intermediário com mesma data-base,
+exercício compatível, classificação e revisão explícitas. Reutiliza a validação
+contábil de `mvp-conciliacao-rubricas.js`, mas devolve apenas a diferença entre
+débitos e créditos, sua quantificação descritiva e as rubricas ausentes.
+Não presume que a data-base parcial represente o encerramento anual, não
+anualiza saldos, não deriva DRE/BP e não altera EBITDA, NCG, caixa, serviço
+da dívida, ICSD ou a projeção do economista. A saída omite CNPJ, nomes de
+arquivos e referências documentais. O fechamento aritmético parcial é
+explicitamente distinto de uma conciliação anual ou auditoria.
+
+**Commits exclusivos da branch:** implementação
+`d94fa87cd0e8ade9416a56a4348df03de71324e5`;
+testes `629329af3cb0c1b5c9a6e822cceb60abd6ad846b`.
+**Testes nativos:** `npm test`, Node 22.16.0, diretório isolado,
+**7 aprovados, 0 falhas**. O teste utilizou cópia funcionalmente equivalente
+do módulo de conciliação preexistente, não a suíte integral do repositório.
+Os dois arquivos novos foram relidos da branch e seus blobs coincidiram
+com os arquivos locais executados (`397f6ba44d85875cc09d033749ddf1c8e817acd7`
+e `a852aad8ce436ab8048b822ad3d12cd1e9c0ec61`).
+Não houve QA móvel ou de navegação interativa.
+
+**Bloqueios:** o contrato ainda não está conectado à saída do leitor v3.2,
+que atualmente fornece candidatos agregados, não rubricas detalhadas
+revisadas com competência e origem. A conciliação parcial não substitui
+BP/DRE, DFC, FCADS/ICSD contratual, materialidade validada, classificação
+setorial, créditos IBS/CBS ou transição 2027 a 2033. O tratamento completo
+de locadoras e compra/revenda de frota continua pendente. A interface
+principal de três etapas e o botão fixo de relatório não foram modificados.
+Nenhuma alteração foi feita na `main`, na produção ou no importador original.
+Não usar documentos empresariais reais no preview nem apresentar o
+resultado como homologado.
+
+**Próxima ação:** criar contrato opt-in no leitor v3.2 para transferir
+rubricas detalhadas explicitamente revisadas, com exercício, competência,
+referência opaca e linha de origem, sem dados pessoais; integrar somente
+após conciliação e revisão de exceções. Confirmar o preview na Vercel
+antes de divulgar link.
