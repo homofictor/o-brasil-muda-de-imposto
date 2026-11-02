@@ -44,6 +44,7 @@ th,td{padding:9px;text-align:right;border-bottom:1px solid #e0e8ef}th:first-chil
 <script type="module">
 import {iniciarCadastro} from './fluxo-cadastral.js';
 import {iniciarPonteImportacaoMVP} from './mvp-import-bridge.js';
+import {resumirPendenciasEtapa2} from './mvp-etapa2-pendencias.js';
 import {triarExcecoesContabeis} from './mvp-triagem-excecoes.js';
 import {gerarTresCenariosSinteticos} from './mvp-tres-cenarios.js';
 import {conciliarExemploContabil} from './mvp-exemplo-contabil.js';
@@ -74,9 +75,16 @@ el('consultar').addEventListener('click',async()=>{
  finally{el('consultar').disabled=false;}
 });
 cancelarImportacao=iniciarPonteImportacaoMVP({abrir:el('importar'),status:msg=>{el('status-importacao').textContent=msg;},
- receberRascunhos:rubricas=>{el('status-rubricas').textContent=rubricas.length
-  ?rubricas.length+' linha(s) numérica(s) preliminar(es) do leitor v3.2, sem classificação, competência ou unidade confirmadas. Nenhuma usada no cálculo.'
-  :'Nenhuma rubrica detalhada elegível foi transferida. O leitor continua disponível para revisão.';},
+ receberRascunhos:rubricas=>{
+  try {
+   const resumo=resumirPendenciasEtapa2(rubricas);
+   el('status-rubricas').textContent=resumo.total
+    ?resumo.pendentes+' linha(s) preliminar(es) pendente(s) de confirmação contábil. Nenhuma liberada para conciliação ou cálculo.'
+    :'Nenhuma rubrica detalhada elegível foi transferida. O leitor continua disponível para revisão.';
+  } catch {
+   el('status-rubricas').textContent='Lote de rubricas preliminares recusado. Revise a extração no leitor v3.2; nenhum dado foi aplicado.';
+  }
+ },
  receber:candidatos=>{demo=false;el('gerar').disabled=true;limparRelatorio();
   const triagem=triarExcecoesContabeis(candidatos);
   el('status-importacao').textContent=triagem.recebidos+' candidato(s) numérico(s) aceito(s). Nenhum valor aplicado automaticamente à projeção.';
