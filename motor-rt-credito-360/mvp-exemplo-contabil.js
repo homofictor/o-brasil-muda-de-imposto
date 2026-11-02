@@ -15,6 +15,12 @@ const CONTAS = Object.freeze([
 const BASE = Object.freeze({ativo: 1000, passivo: 600, patrimonio: 400,
   clientes: 190, estoques: 170, fornecedores: 140, distribuicoes: 140});
 const soma = grupo => CONTAS.filter(c => c.grupo === grupo).reduce((t, c) => t + c.valor, 0);
+function saldoUnico(grupo, rubrica) {
+  const contas = CONTAS.filter(c => c.grupo === grupo && c.rubrica === rubrica);
+  if (contas.length !== 1 || !Number.isFinite(contas[0].valor) || contas[0].valor < 0)
+    throw new Error('Rubrica sintética de NCG ausente, duplicada ou inválida: '+rubrica);
+  return contas[0].valor;
+}
 
 export function conciliarExemploContabil() {
   const ativo = soma('ativo'), passivo = soma('passivo');
@@ -25,7 +31,11 @@ export function conciliarExemploContabil() {
   const creditos = passivo + soma('patrimonio') + receita;
   const patrimonioEsperado = BASE.patrimonio - BASE.distribuicoes + lucro;
   const ncgAnterior = BASE.clientes + BASE.estoques - BASE.fornecedores;
-  const ncgAtual = 200 + 180 - 150;
+  // NCG atual usa as MESMAS rubricas do balancete/BP, nunca uma segunda tabela manual.
+  const clientes = saldoUnico('ativo', 'Clientes');
+  const estoques = saldoUnico('ativo', 'Estoques');
+  const fornecedores = saldoUnico('passivo', 'Fornecedores operacionais');
+  const ncgAtual = clientes + estoques - fornecedores;
   const divergencias = [debitos - creditos, ativo - passivo - patrimonio,
     patrimonio - patrimonioEsperado, BASE.ativo - BASE.passivo - BASE.patrimonio];
   if (divergencias.some(d => !Number.isFinite(d) || Math.abs(d) > 0.01))
@@ -38,6 +48,7 @@ export function conciliarExemploContabil() {
     patrimonio: {anterior: BASE.patrimonio, distribuicoes: BASE.distribuicoes,
       resultado: lucro, final: patrimonio},
     ncg: {anterior: ncgAnterior, atual: ncgAtual, variacao: ncgAtual - ncgAnterior},
+    memoriaNCG: {clientes, estoques, fornecedores, formula: 'clientes + estoques - fornecedores operacionais'},
     limites: 'DRE sem depreciação, resultado financeiro e tributos por simplificação. NCG operacional ilustrativa. Não há DFC nem conciliação com FCADS ou projeção do economista. Nenhum dado real foi importado.'
   };
 }
