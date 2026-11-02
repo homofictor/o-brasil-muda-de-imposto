@@ -2225,3 +2225,41 @@ Leitura autorizada pela Vercel retornou HTTP 200 para a interface,
 o módulo novo e `simulador/v3/import.js`. O acesso público externo
 independente não foi confirmado; não divulgar link sem verificação
 de compartilhamento. Nenhum teste de navegação interativa foi executado.
+
+
+## Quantificação descritiva de divergências contábeis (02/11/2026)
+
+**Entrega única desta execução:** o contrato isolado `mvp-conciliacao-rubricas.js`
+agora informa, por exercício, valor absoluto, base de comparação e percentual
+da divergência no BP e no balancete. No BP, a base é o maior valor entre ativo
+e passivo mais patrimônio; no balancete, o maior entre débitos e créditos.
+Se uma rubrica obrigatória faltar, os três indicadores ficam indisponíveis,
+sem substituição silenciosa por zero. Uma base igual a zero não produz
+percentual. O status de materialidade permanece explicitamente
+`sem_limite_de_materialidade_validado`: **não foi criado limiar arbitrário**
+nem dispensada revisão de qualquer divergência. O fechamento aritmético,
+os bloqueios, a proibição de parecer e o contrato anterior foram preservados.
+Não há novos campos na interface de três etapas e o importador v3.2
+permanece intacto.
+
+**Commits exclusivos da branch:** implementação
+`b79e10a8f6af1f1b665293ab48182cb6ccf70536`; regressão
+`a6c2a577e14dbc09ac4bdee816387c94f9034f71`.
+**Testes nativos:** `npm test` em Node.js, diretório isolado contendo
+o módulo e seus testes, **9 aprovados, 0 falhas**. Quatro novos casos
+verificam divergência percentual, ausência de grupo, denominador do
+balancete e base nula. Não foi executada a suíte completa do repositório
+nem QA interativo da interface.
+
+**Bloqueios:** a ponte do importador ainda não transporta rubricas
+revisadas com origem e competência por exercício. Os percentuais são
+medidas descritivas, **não decisões de materialidade**. Continuam sem
+conciliação completa a DFC, FCADS contratual, ICSD, regras legais setoriais,
+créditos IBS/CBS, transição 2027 a 2033 e compra/revenda de frota.
+Não utilizar dados reais no preview nem emitir parecer de crédito.
+
+**Próxima ação:** conectar, sem expor dados pessoais, as rubricas
+explicitamente revisadas do leitor v3.2 ao contrato de conciliação
+por exercício, preservando a projeção original do economista até
+aprovação das exceções. Sem merge na `main`, alteração deliberada
+de produção ou gastos. Preview Vercel pendente de confirmação final.
