@@ -2375,3 +2375,14 @@ antes de divulgar link.
 O endereço compartilhável foi disponibilizado pela Vercel, mas não houve
 QA interativo ou homologação de dispositivos móveis. A atualização deste
 registro gera novo commit e requer verificação própria do novo preview.
+
+
+## Ponte de revisões contábeis aprovadas para conciliação anual (02/11/2026)
+
+Entrega pequena e isolada: `mvp-adaptador-revisoes.js` recebe lotes previamente aprovados pelo contrato de `ingestao-contabil.js`, exige classificação explícita de cada registro, referência efêmera de documento, linha de origem, competência anual e valores em BRL. Encaminha somente rubricas numéricas revisadas a `conciliarRubricasAnuaisComCompetencia`. Não transmite CNPJ, nome, texto de conta, identificador do documento original ou identidade do analista. Não modifica a interface, a projeção do economista, o importador v3.2 ou indicadores financeiros.
+
+Commits: implementação `71d3bbeb420a2b067dc5a0d14c813544f2734583`; testes `596d8456875331204a93d91b3b38be3f4e4d2485`; documentação neste registro. Teste local nativo Node 22: `npm test` no diretório isolado com o adaptador, seus 7 testes e cópias funcionais dos módulos de competência e conciliação. **7 aprovados, 0 falhas**. Os arquivos foram escritos na branch após os testes. A suíte integral do repositório e testes de navegador não foram executados. Não se deve equiparar este ensaio local à homologação do fluxo de importação.
+
+Bloqueios: `simulador/v3/import.js` ainda fornece candidatos agregados e não um conjunto completo de rubricas revisadas com origem por linha; a nova ponte não está ligada ao fluxo operacional. Os campos de classificação, competência e escala dependem de revisão explícita. Valores negativos não são convertidos automaticamente em contas positivas. Não há materialidade validada, DFC/FCADS contratual, homologação tributária ou parecer de crédito auditado. A saída mantém `aptoParaParecer=false` e `aplicadoProjecao=false`.
+
+Próxima ação: expor, de modo opt-in e sem dados pessoais, rubricas classificadas e revisadas com origem por linha a partir do leitor existente do v3.2; só então conectar a ponte ao fluxo da etapa 2 e testar a conciliação ponta a ponta. Preservar exatamente três etapas na interface. Sem merge na main, mudança intencional de produção ou serviços pagos.
