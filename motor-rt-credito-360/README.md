@@ -2342,8 +2342,9 @@ explicitamente distinto de uma conciliação anual ou auditoria.
 `d94fa87cd0e8ade9416a56a4348df03de71324e5`;
 testes `629329af3cb0c1b5c9a6e822cceb60abd6ad846b`.
 **Testes nativos:** `npm test`, Node 22.16.0, diretório isolado,
-**7 aprovados, 0 falhas**. O teste utilizou cópia funcionalmente equivalente
-do módulo de conciliação preexistente, não a suíte integral do repositório.
+**7 aprovados, 0 falhas**. O teste utilizou o blob exato da dependência preexistente
+(`cdbd11f884392deab254320fb70c37ccfb0e5892`), conferido por
+`git hash-object`; não foi executada a suíte integral do repositório.
 Os dois arquivos novos foram relidos da branch e seus blobs coincidiram
 com os arquivos locais executados (`397f6ba44d85875cc09d033749ddf1c8e817acd7`
 e `a852aad8ce436ab8048b822ad3d12cd1e9c0ec61`).
@@ -2365,3 +2366,12 @@ rubricas detalhadas explicitamente revisadas, com exercício, competência,
 referência opaca e linha de origem, sem dados pessoais; integrar somente
 após conciliação e revisão de exceções. Confirmar o preview na Vercel
 antes de divulgar link.
+
+**Preview verificado para o commit de documentação anterior:** deployment
+`dpl_G3PgvCooCWvA1Woe71RBkXoxRXLz` associado a
+`6005a7c1b12c2b7e436f595e10cb4f6b137ccd59`, estado `READY`,
+`target:null`. A leitura autorizada pela Vercel retornou HTTP 200 para
+`index.html`, `mvp-balancete-intermediario.js` e `README.md`.
+O endereço compartilhável foi disponibilizado pela Vercel, mas não houve
+QA interativo ou homologação de dispositivos móveis. A atualização deste
+registro gera novo commit e requer verificação própria do novo preview.
