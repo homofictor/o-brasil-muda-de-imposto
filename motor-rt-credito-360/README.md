@@ -2174,3 +2174,45 @@ nem emitir parecer de crédito. **Próxima ação:** integrar rubricas
 contábeis explicitamente revisadas, com competência e trilha documental
 não identificável, à conciliação por exercício antes de aplicar qualquer
 ajuste à projeção original do economista.
+
+
+## Contrato interno de rubricas revisadas por exercício (02/11/2026)
+
+**Entrega pequena desta execução:** criado o módulo isolado
+`mvp-conciliacao-rubricas.js`, que recebe apenas rubricas explicitamente
+classificadas e revisadas por exercício e demonstração (BP, DRE ou balancete).
+Não duplica o leitor `simulador/v3/import.js`, não acessa arquivos,
+não transfere identificação da empresa e não altera a interface de três etapas.
+Exige exercício, grupo conhecido, valor finito, confirmação de revisão e
+referência opaca de documento/linha. Rejeita referências duplicadas no mesmo
+exercício e somas fora do limite numérico. Calcula fechamento aritmético do
+BP e balancete, identifica grupos ausentes e apresenta resultado ilustrativo
+da DRE. A saída não contém as referências documentais de entrada.
+A mesma linha de um documento pode ser usada em exercícios distintos.
+
+**Commits exclusivos da branch:** módulo
+`c72e381f66a0fb99ef7637e433eee69ca3a4f919`;
+testes `a51f8c19665f746687d49568e54810f49e8ff1c9`.
+**Testes executados:** Node.js 22.16.0, `npm test` em diretório isolado,
+**5 aprovados, 0 falhas**. Os blobs relidos da branch coincidiram com
+`git hash-object` dos arquivos executados:
+`5c2f407577e8c207a473b63b25b167400a36af73` (módulo) e
+`1a45e4648e6c1c5198df7809c7e3db22c749e1da` (testes).
+Não foi executada a suíte integral do repositório nem QA interativo móvel.
+
+**Integração e limitações:** o novo módulo ainda não é consumido pela ponte
+do importador nem pela interface. O leitor v3.2 continua transferindo apenas
+indicadores agregados, insuficientes para reconciliar BP, DRE e balancete
+reais. Fechamento aritmético não comprova consistência entre demonstrações,
+competência, EBITDA, NCG, DFC, FCADS, serviço da dívida, ICSD ou elegibilidade
+de créditos IBS/CBS. `aptoParaParecer` e `aplicadoProjecao` permanecem
+sempre falsos. Valores e documentos reais não devem ser usados no preview.
+Não há homologação setorial, tributária ou de crédito.
+
+**Preview:** Vercel acionada automaticamente pela branch; confirmar estado
+READY e acessibilidade da versão final antes de divulgar qualquer link.
+Não houve merge na `main`, alteração intencional de produção ou gasto.
+
+**Próxima ação:** integrar rubricas revisadas com trilha de origem opaca à
+ponte do importador, preservando a aceitação explícita e os bloqueios de
+conciliação antes de aplicar qualquer ajuste à projeção do economista.
