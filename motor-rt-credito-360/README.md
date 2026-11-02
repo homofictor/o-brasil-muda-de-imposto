@@ -2129,3 +2129,48 @@ os bloqueios de conciliação antes de recalcular cenários reais.
 **Bloqueios:** a ponte ainda transporta indicadores agregados, sem rubricas por exercício e evidência contábil suficiente para medir materialidade ou reconciliar BP/DRE/balancete/FCADS. Matriz setorial, elegibilidade IBS/CBS, transição 2027 a 2033, tratamento de frota e ICSD contratual seguem sem validação. Não usar documentos reais no preview nem emitir parecer.
 
 **Próxima ação:** transferir rubricas contábeis revisadas com competência e trilha não identificável para conciliação por exercício, sem duplicar o importador nem alterar a projeção original do economista antes da conferência.
+
+
+## NCG do exemplo vinculada às rubricas contábeis (02/11/2026)
+
+**Entrega única desta execução:** corrigida a origem da NCG atual no exemplo
+fictício. Antes, a fórmula usava números literais independentes das contas
+do balancete, permitindo divergência silenciosa após alterações nas rubricas.
+Agora os saldos de Clientes, Estoques e Fornecedores operacionais são lidos
+diretamente da mesma lista de contas que alimenta BP e balancete, exigindo
+uma ocorrência única, finita e não negativa por rubrica. A memória
+`memoriaNCG` expõe os três componentes e a fórmula, sem mudar o contrato
+anterior de `ncg`. Os resultados do exemplo original permanecem 220,
+230 e variação 10. Não há novas etapas, campos, parser ou projeções reais.
+
+**Commits na branch exclusiva:** implementação
+`802df02428ee64bd7c42020861a0f6b542ecce08`; testes
+`5f88b8fd724042b78a9374be6aa2bccb0daf9ccd`.
+**Testes nativos executados:** Node.js v22.16.0, `npm test` em diretório
+isolado com os dois módulos e seus testes: **8 aprovados, 0 falhas**.
+Incluem regressão que modifica Clientes e Caixa mantendo o BP equilibrado:
+a NCG passa a 240 e a variação a 20; e bloqueio por rubrica ausente.
+Blobs de implementação e testes conferidos contra arquivos locais
+executados: `73b6dde8d3e7f9a007f965a8946972bd996f5623` e
+`81a5c1d94e72028efe64b144014c14a4091fe2cb`.
+O módulo e os testes de memória contábil, sem alterações, também foram
+incluídos no teste de integração isolado. Não foi executada a suíte
+integral do repositório nem teste interativo móvel.
+
+**Preview verificado:** deployment automático
+`dpl_3i1LXV9bcJDRpxERshrpA254YK3W`, estado `READY`,
+`target:null`, commit `5f88b8fd724042b78a9374be6aa2bccb0daf9ccd`.
+Leitura autenticada da Vercel retornou HTTP 200 para a interface,
+o módulo alterado e o leitor existente `simulador/v3/import.js`.
+O acesso externo independente e a navegação interativa não foram
+homologados. Nenhum merge na `main` nem publicação em produção.
+
+**Bloqueios:** a conciliação ainda é apenas aritmética e sintética. O
+importador transfere indicadores agregados, não rubricas detalhadas por
+exercício. NCG real, DFC, FCADS/ICSD contratual, matriz legal IBS/CBS,
+transição 2027 a 2033, elegibilidade de créditos e compra/revenda de frota
+não foram conciliados ou homologados. Não utilizar dados reais no preview
+nem emitir parecer de crédito. **Próxima ação:** integrar rubricas
+contábeis explicitamente revisadas, com competência e trilha documental
+não identificável, à conciliação por exercício antes de aplicar qualquer
+ajuste à projeção original do economista.
