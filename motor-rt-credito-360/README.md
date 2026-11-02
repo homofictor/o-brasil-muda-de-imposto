@@ -2399,3 +2399,51 @@ Próxima ação: expor, de modo opt-in e sem dados pessoais, rubricas classifica
 **Bloqueios concretos:** a origem por linha é efêmera, mas ainda não há confirmação de período, unidade, sinal contábil e grupo pelo analista; rubricas detalhadas não chegam ao adaptador `mvp-adaptador-revisoes.js` nem à conciliação. PDF/OCR pode produzir erros e os limites de 10 arquivos, 2.000 linhas por arquivo e 250 rubricas são limites técnicos de segurança, não critérios de materialidade. A aceitação de candidatos agregados não equivale à aprovação contábil das linhas. Não há validação tributária setorial, DFC, FCADS/ICSD contratual nem tratamento completo de compra e revenda de frota. Nenhum dado real ou pessoal foi usado nos testes; não usar documentos reais no preview.
 
 **Próxima ação:** criar confirmação de competência, escala e classificação das linhas preliminares na etapa 2, priorizando apenas exceções materiais depois de definir e documentar critérios técnicos; então conectar os lotes aprovados ao adaptador de conciliação por exercício. Validar o preview na Vercel e divulgar endereço somente se o acesso for confirmado. Sem merge na `main`, alteração deliberada de produção ou serviços pagos.
+
+
+## Confirmação explícita de rubricas preliminares do leitor v3.2 (02/11/2026)
+
+**Entrega única e isolada:** criado `mvp-confirmacoes-v3.js`, que recebe os rascunhos
+numéricos já saneados por `mvp-rascunhos-v3.js` e decisões explícitas por
+referência opaca e linha. Valida exercício, competência de BP/DRE/balancete,
+grupo contábil, escala declarada (BRL, milhares ou milhões) e sinal.
+Preserva DRE parcial sem anualização e separa linhas sem confirmação,
+descartes justificados e valores negativos que exigem tratamento contábil.
+Rejeita decisões duplicadas, datas impossíveis, grupos incompatíveis e
+conversões fora do limite. A saída utiliza lista positiva de campos e
+não transporta CNPJ, nomes, textos de contas ou identidades.
+
+**Segurança e escopo:** a confirmação é declarativa, não autenticada.
+Todas as rubricas continuam `revisado:false` e
+`aptoParaConciliacao:false`; `aptoParaParecer` e
+`aplicadoProjecao` permanecem falsos. Nenhuma decisão é inferida como
+imaterial: não há limiar de materialidade tecnicamente validado.
+O novo contrato ainda não foi conectado à etapa 2, ao adaptador de
+revisões aprovadas ou às projeções do economista. A interface principal
+de três etapas, o botão fixo de relatório, o importador v3.2, a main
+e a produção não foram modificados.
+
+**Commits na branch exclusiva:** implementação
+`9ad2996c4d16eb6cdbe3c518f865cf5f605eb184`; regressão
+`1639a887c797f52d646d101401048af5799b58de`.
+**Testes Node 22.16.0:** `npm test` em diretório isolado com o módulo
+novo, os 9 testes nativos e o validador original `mvp-rascunhos-v3.js`,
+cujo blob coincide com a branch (`bb8bd9016fd04a97a1c68de090fb7cb1be8fb48e`):
+**9 aprovados, 0 falhas**. Os blobs dos arquivos novos foram relidos
+da branch e conferidos com os arquivos testados
+(`fbc2fada4f53daab01b2313016dd934e07e5ae2d` e
+`19e83a694509fa2dc68ce353579b55d3ebceb0db`).
+Não foi executada a suíte integral do repositório nem QA móvel interativo.
+
+**Bloqueios:** falta a revisão autenticada e o critério institucional
+de materialidade; a classificação declarada não substitui a
+conciliação de BP, DRE e balancete, DFC, FCADS/ICSD contratual,
+validação tributária setorial, créditos IBS/CBS, transição 2027 a
+2033 ou a segregação da compra e revenda de frota nas locadoras.
+Não usar documentos empresariais reais no preview nem emitir parecer.
+
+**Próxima ação:** integrar o contrato à etapa 2 como confirmação local
+de exceções, sem criar uma quarta etapa, e conectar ao adaptador
+somente após controle verificável de revisão e conciliação. Validar
+preview Vercel e divulgar link apenas quando o acesso estiver confirmado.
+Sem merge na main, gastos ou dados pessoais.
