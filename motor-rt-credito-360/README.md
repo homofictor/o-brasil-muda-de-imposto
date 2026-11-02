@@ -2116,3 +2116,16 @@ no preview nem emitir parecer de crédito.
 **Próxima ação:** ampliar a ponte com rubricas contábeis revisadas,
 competência e referências documentais não identificáveis, mantendo
 os bloqueios de conciliação antes de recalcular cenários reais.
+
+
+## Competência parcial de juros e margem operacional (02/11/2026)
+
+**Entrega limitada:** a triagem de candidatos explicitamente aceitos no importador v3.2 passou a alertar quando despesas financeiras ou margem EBITDA se referem a período conhecido inferior a 12 meses. Antes, apenas a ausência da competência produzia alerta para esses dois campos. A ferramenta informa a duração parcial sem anualizar juros, converter despesa financeira em serviço da dívida ou comparar margem parcial diretamente com margem anual. Os saldos patrimoniais permanecem posições, sem anualização. Não há novos campos ou etapas na interface principal, que mantém exatamente três etapas e botão fixo de relatório. O leitor `simulador/v3/import.js` não foi alterado.
+
+**Commits exclusivos da branch:** implementação `614a97482676b5fa0a0348d021e4dad046c64421`; testes `75d588c88a67e660dd59f4d3e56b9049b379b2c3`. **Testes executados:** Node.js v22.16.0, `npm test` em diretório isolado para `mvp-triagem-excecoes.test.mjs`, **11 aprovados, 0 falhas**. Incluídos casos de juros de 9 meses, margem de 3 meses, ambos anuais, manutenção de alertas anteriores e vedação de dados documentais. A suíte integral do repositório e testes interativos em navegador não foram executados.
+
+**Preview Vercel:** `dpl_8su2hB541rPRBtggDeFKxVhxKrYz`, `READY`, `target:null`, commit `75d588c88a67e660dd59f4d3e56b9049b379b2c3`. Verificação autenticada retornou HTTP 200 para `index.html`, `mvp-triagem-excecoes.js` e `simulador/v3/import.js`; o link temporário de compartilhamento da interface também retornou HTTP 200. Navegação interativa externa e QA móvel ainda não homologados. Sem merge na `main`, deploy de produção, gastos ou dados pessoais.
+
+**Bloqueios:** a ponte ainda transporta indicadores agregados, sem rubricas por exercício e evidência contábil suficiente para medir materialidade ou reconciliar BP/DRE/balancete/FCADS. Matriz setorial, elegibilidade IBS/CBS, transição 2027 a 2033, tratamento de frota e ICSD contratual seguem sem validação. Não usar documentos reais no preview nem emitir parecer.
+
+**Próxima ação:** transferir rubricas contábeis revisadas com competência e trilha não identificável para conciliação por exercício, sem duplicar o importador nem alterar a projeção original do economista antes da conferência.
