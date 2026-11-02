@@ -1909,3 +1909,14 @@ alteração deliberada de produção ou gasto nesta entrega.
 **Bloqueios:** importação real de BP/DRE/balancete ainda não produz reconciliação completa, classificação material nem FCADS contratual; candidatos aceitos permanecem informativos. Não há consulta comprovada do Simples Nacional. Não há matriz setorial auditada, elegibilidade de créditos comprovada, transição legal de 2027 a 2033, tratamento fiscal de compra e revenda de frota, nem parecer homologado. Os cenários desta entrega são apenas sensibilidades de demonstração e não devem ser utilizados para crédito.
 
 **Próxima ação:** implementar a conciliação das rubricas revisadas de BP/DRE/balancete com a projeção original do economista, mantendo a interface de três etapas e solicitando revisão somente de exceções materiais. Não houve merge na main, alteração intencional de produção, uso de dados pessoais ou gasto autorizado.
+
+**Rastreio desta entrega (02/11/2026):** commit de implementação e testes
+`f70fcefbd4b13cf47ee1e2be83821c9e5ecc3940`, somente na branch
+`feature/motor-rt-credito-360`. Preview Vercel
+`dpl_By4zqaZLr9rtcjCjrZorkYkUEESs`, estado `READY`, `target:null`,
+vinculado ao commit informado. Verificação autenticada da Vercel: HTTP 200
+para `index.html`, `mvp-tres-cenarios.js`, `mvp-ponte-economista.js`,
+`mvp-import-bridge.js` e `simulador/v3/import.js`. Link temporário de
+compartilhamento retornou HTTP 200 na verificação autorizada; acesso externo
+independente não pôde ser homologado. Não houve execução interativa do
+navegador, merge na `main` ou alteração intencional da produção.
