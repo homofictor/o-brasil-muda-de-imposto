@@ -1976,3 +1976,54 @@ tributários a partir de indicadores agregados. Exigir reconciliação
 da projeção original do economista antes de qualquer ajuste.
 Nenhum merge na `main`, publicação em produção, gasto ou uso de dados
 pessoais nesta entrega.
+
+
+## Memória contábil no relatório demonstrativo (02/11/2026)
+
+**Entrega pequena e verificável:** a etapa 3 passou a incluir, no relatório
+imprimível do exemplo fictício, cinco indicadores derivados da conciliação
+já existente em `mvp-exemplo-contabil.js`: balancete (débitos e créditos),
+BP (ativo, passivo e PL), receita da DRE, EBITDA ilustrativo e variação da
+NCG. O módulo `mvp-memoria-relatorio.js` exige fechamento aritmético
+antes de apresentar esses números. A interface principal permanece com
+**somente três etapas** e botão de relatório fixo. O importador original
+`simulador/v3/import.js` não foi alterado nem duplicado.
+
+**Separação metodológica:** a memória contábil fictícia não alimenta
+automaticamente a projeção do economista, nem transforma dados ilustrativos
+em demonstrações auditadas. O relatório explicita a ausência de DFC,
+FCADS contratual, conciliação entre bases e homologação tributária.
+
+**Commits na branch exclusiva:** módulo
+`9b5ee20f6b0bc28a4224d9127be007f65f92638a`; testes
+`820bf469d47971130702592827680603709e8b01`; interface
+`c9682b706674709b1aed79aab82d69c92fbb797a`.
+**Testes nativos executados:** Node.js 22.16.0,
+`node --test mvp-memoria-relatorio.test.mjs`, **3 aprovados,
+0 falhas**, em diretório isolado com cópia idêntica do módulo contábil
+existente. Blobs do módulo e dos testes relidos da branch e conferidos
+contra `git hash-object` local:
+`b8648ef0c9dead92ba5e1c0c33bf106abca91e51` e
+`9495f15329ee65ebc298a319c42f5d97cd61d53c`.
+Conferência estática da integração no HTML, sem teste interativo do
+navegador e sem execução da suíte completa do repositório.
+
+**Preview verificado:** deployment automático
+`dpl_CofcfUMZcndHCaM4Un5RTNapqiLJ`, `READY`, `target:null`,
+commit `c9682b706674709b1aed79aab82d69c92fbb797a`.
+A Vercel respondeu HTTP 200 para a interface, módulo, testes e
+importador original; a URL temporária compartilhável também respondeu
+HTTP 200 na leitura autenticada. Acesso independente externo e interação
+real em navegador ainda não homologados.
+
+**Bloqueios:** ainda não há classificação e reconciliação completas
+de BP/DRE/balancete reais, matriz de créditos IBS/CBS validada por
+atividade, transição legal comprovada, FCADS/ICSD contratual ou
+tratamento fiscal auditado de compra e revenda de frota.
+Não inserir dados empresariais reais no preview nem emitir parecer.
+
+**Próxima ação:** implementar classificação e reconciliação das rubricas
+efetivamente revisadas no importador v3.2 por exercício, sinalizando
+exceções materiais, e exigir conciliação da projeção original do economista
+antes de qualquer ajuste. Sem merge na `main`, sem alteração intencional
+de produção, sem dados pessoais e sem gastos nesta entrega.
