@@ -29,6 +29,18 @@ export function triarExcecoesContabeis(candidatos) {
     excecoes.push('Despesas financeiras não representam serviço da dívida. Confirmar juros, amortizações e metodologia do ICSD.');
   if (vistos.has('currentConsumptionTaxAnnual'))
     excecoes.push('Tributos atuais não comprovam base, competência nem elegibilidade de créditos IBS/CBS. Conferir dupla contagem no caixa.');
+  // Indicadores de fluxo não podem ser tratados como anuais sem conferir a competência.
+  // Os saldos patrimoniais são posições em data-base, não fluxos anuais.
+  for (const item of candidatos) {
+    if (item.field === 'rbt12' && item.periodMonths !== 12)
+      excecoes.push('RBT12: período de 12 meses não comprovado. Conferir a competência antes de usar a receita.');
+    if (item.field === 'currentConsumptionTaxAnnual' && item.periodMonths !== 12)
+      excecoes.push('Tributos atuais anuais: período de 12 meses não comprovado. Não anualizar nem comparar com IBS/CBS automaticamente.');
+    if (item.field === 'interestExpense' && item.periodMonths === null)
+      excecoes.push('Despesas financeiras: período não informado. Não anualizar nem estimar serviço da dívida.');
+    if (item.field === 'currentOperatingMarginPct' && item.periodMonths === null)
+      excecoes.push('Margem operacional: período não informado. Confirmar competência antes de comparar exercícios.');
+  }
   return {
     recebidos: vistos.size,
     excecoes,
