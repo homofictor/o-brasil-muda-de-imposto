@@ -2447,3 +2447,45 @@ de exceções, sem criar uma quarta etapa, e conectar ao adaptador
 somente após controle verificável de revisão e conciliação. Validar
 preview Vercel e divulgar link apenas quando o acesso estiver confirmado.
 Sem merge na main, gastos ou dados pessoais.
+
+
+## Etapa 2: triagem conservadora de rubricas recebidas (02/11/2026)
+
+**Entrega única:** a página principal passou a chamar `resumirPendenciasEtapa2`, que
+reutiliza `prepararConfirmacoesRubricasV3` com decisões vazias para validar
+o lote de rubricas preliminares do leitor v3.2 e informar apenas o número
+de linhas pendentes. Lotes inválidos ou com origem duplicada são recusados
+sem apresentar valores. Não há confirmação automática, classificação
+presumida, critério arbitrário de materialidade nem transferência de dados
+para conciliação, projeções financeiras ou parecer. A mensagem usa
+`textContent`, sem expor valores, textos de contas ou identidades.
+
+**Commit de implementação:** `0e9b2e8bc4303600f82d70ca32a685ce75339dfa`.
+**Testes nativos Node 22.16.0:** `node --test mvp-etapa2-confirmacoes.test.mjs`
+em diretório isolado com cópias exatas dos módulos necessários: **5
+aprovados, 0 falhas**. Abrange lote válido, vazio, falsificação de revisão,
+duplicidade de origem e não exposição de valores e metadados. Os blobs
+novos relidos da branch coincidem com `git hash-object` dos arquivos
+testados: `e857903d1e5c8afc48e37e9552ce666cd2df3fbd` e
+`99845c7c9200157c842f88c9d61bff53b2c5eaa8`.
+Verificação estática do HTML da branch: exatamente três seções
+principais, botão fixo de relatório preservado e novo módulo importado.
+Não foram executadas a suíte integral do repositório, navegação
+interativa real nem testes móveis. O importador `simulador/v3/import.js`
+não foi alterado.
+
+**Bloqueios:** o fluxo apenas identifica pendências, sem permitir ainda
+confirmar competência, unidade e classificação na interface. Não existe
+revisão autenticada nem critério institucional de materialidade.
+A ponte de conciliação por exercício não recebe rubricas aprovadas.
+DFC, FCADS/ICSD contratual, créditos IBS/CBS, transição tributária
+2027 a 2033, tratamento integral de locadoras e validação setorial
+permanecem pendentes. O exemplo fictício e a projeção do economista
+não foram alterados. Não utilizar dados empresariais reais no preview
+nem emitir parecer homologado.
+
+**Próxima ação:** criar revisão local compacta e explícita das exceções
+na própria etapa 2, sem quarta etapa nem aprovação automática; somente
+encaminhar rubricas após validação institucional de revisão e conciliação.
+Verificar o preview Vercel antes de divulgar endereço. Sem merge na
+`main`, mudança de produção, gastos ou dados pessoais.
