@@ -40,6 +40,11 @@ export function compararProjecaoEconomista(linhas, revisao) {
     const caixaReforma = valores.caixaOriginal + deltaCaixa;
     const icsdOriginal = valores.servicoDivida === 0 ? null : valores.caixaOriginal / valores.servicoDivida;
     const icsdReforma = valores.servicoDivida === 0 ? null : caixaReforma / valores.servicoDivida;
+    // Impede Infinity/NaN em contas intermediárias, mesmo com entradas individualmente finitas.
+    for (const [campo, valor] of Object.entries({deltaCaixa, caixaReforma, icsdOriginal, icsdReforma})) {
+      if (valor !== null && !Number.isFinite(valor))
+        throw new Error(`${linha.ano}: ${campo} não finito após o cálculo`);
+    }
     // Conciliação independente com o ICSD apresentado na projeção do economista.
     // Não valida FCADS, fórmulas de origem nem a exatidão do caixa informado.
     if (valores.servicoDivida === 0) {
@@ -56,12 +61,15 @@ export function compararProjecaoEconomista(linhas, revisao) {
       observacao: valores.servicoDivida === 0 ? 'Sem serviço da dívida: ICSD indisponível' : ''
     };
   });
+  const deltaCaixaAcumulado = resultados.reduce((s, a) => s + a.deltaCaixa, 0);
+  if (!Number.isFinite(deltaCaixaAcumulado))
+    throw new Error('Variação acumulada de caixa não finita após o cálculo');
   return {
     status: 'simulacao_sintetica_nao_homologada',
     referenciasConciliadas: resultados.length,
     toleranciaICSDReferencia: 0.01,
     projecao: resultados,
-    deltaCaixaAcumulado: resultados.reduce((s, a) => s + a.deltaCaixa, 0),
+    deltaCaixaAcumulado,
     anosInsuficiencia: resultados.filter(a => a.insuficienciaReforma).map(a => a.ano),
     menorICSDReforma: resultados.reduce((min, a) => a.icsdReforma === null ? min :
       (min === null ? a.icsdReforma : Math.min(min, a.icsdReforma)), null),
