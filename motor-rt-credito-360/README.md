@@ -2262,4 +2262,12 @@ Não utilizar dados reais no preview nem emitir parecer de crédito.
 explicitamente revisadas do leitor v3.2 ao contrato de conciliação
 por exercício, preservando a projeção original do economista até
 aprovação das exceções. Sem merge na `main`, alteração deliberada
-de produção ou gastos. Preview Vercel pendente de confirmação final.
+de produção ou gastos. Preview Vercel validado quanto ao estado READY, sem verificação de acesso externo.
+
+**Verificação posterior de preview:** deployment automático
+`dpl_7267pBGgWcJKnfQsbbK4P6x6VyiA`, associado ao commit de testes
+`a6c2a577e14dbc09ac4bdee816387c94f9034f71`, confirmado
+`READY` e `target:null` (preview, não produção) pela Vercel.
+O acesso externo à página de preview não pôde ser verificado e a leitura
+do arquivo implantado via API retornou 404; por isso não foi divulgado
+link de testes nem alegada homologação de navegação ou mobile.
