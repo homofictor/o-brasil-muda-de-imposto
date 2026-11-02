@@ -33,3 +33,21 @@ test('nenhum dado de origem, nome ou documento é transportado para a triagem',(
  assert.equal(JSON.stringify(r).includes('confidencial'),false);
  assert.equal(JSON.stringify(r).includes('00000000000000'),false);
 });
+test('RBT12 sem 12 meses comprovados gera ressalva sem presumir receita anual',()=>{
+ for(const meses of [null,6]) {
+  const r=triarExcecoesContabeis([c('rbt12',800,meses)]);
+  assert.match(r.excecoes.join(' '),/RBT12: período de 12 meses não comprovado/);
+ }
+ assert.equal(triarExcecoesContabeis([c('rbt12',800,12)]).excecoes.length,1);
+});
+test('tributos sem 12 meses e juros sem competência exigem revisão',()=>{
+ const r=triarExcecoesContabeis([c('currentConsumptionTaxAnnual',40,6),c('interestExpense',12,null)]);
+ assert.match(r.excecoes.join(' '),/Não anualizar nem comparar com IBS\/CBS automaticamente/);
+ assert.match(r.excecoes.join(' '),/Não anualizar nem estimar serviço da dívida/);
+ assert.equal(r.recebidos,2);
+});
+test('margem sem competência gera ressalva, saldos patrimoniais não são anualizados',()=>{
+ const r=triarExcecoesContabeis([c('currentOperatingMarginPct',20,null),c('currentAssets',100,null)]);
+ assert.match(r.excecoes.join(' '),/Margem operacional: período não informado/);
+ assert.equal(r.excecoes.some(x=>x.includes('Ativo circulante: período')),false);
+});
