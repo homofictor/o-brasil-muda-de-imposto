@@ -2271,3 +2271,43 @@ de produção ou gastos. Preview Vercel validado quanto ao estado READY, sem ver
 O acesso externo à página de preview não pôde ser verificado e a leitura
 do arquivo implantado via API retornou 404; por isso não foi divulgado
 link de testes nem alegada homologação de navegação ou mobile.
+
+## Ausência documental não é saldo zero (02/11/2026)
+
+**Entrega única:** corrigido o contrato isolado `mvp-conciliacao-rubricas.js` para
+não calcular resultado ilustrativo da DRE nem diferenças de BP e balancete
+quando faltar uma rubrica obrigatória. Nesses casos, os indicadores são
+`null`, os grupos faltantes permanecem em `ausentes` e o exercício segue
+`pendente_revisao`. Saldo zero explicitamente informado e revisado continua
+sendo aceito como zero. Isso evita gerar lucro ou fechamento presumidos
+a partir de dados incompletos, sem inventar materialidade.
+
+**Commits exclusivos da branch:** implementação
+`6c8b7ba1f00a30e9f04000f86415b44b18aa49e5`; regressão
+`62acc19ef8a4107fe8efabf9212df2e6cecaa4f0`.
+**Testes:** Node.js, `npm test` em diretório isolado com cópia do módulo e
+teste de regressão, **12 aprovados e 0 falhas**. Três casos novos cobrem
+DRE incompleta, BP/balancete incompletos e saldo zero confirmado.
+Não foi executada a suíte integral do repositório nem QA móvel interativo.
+
+**Escopo e bloqueios:** módulo ainda não conectado ao importador v3.2;
+este transporta somente indicadores agregados, sem rubricas detalhadas e
+origem por exercício. A interface mantém três etapas e botão fixo de
+relatório, sem modificações nesta entrega. Nenhum ajuste é aplicado à
+projeção original do economista. Persistem ausência de conciliação real
+BP/DRE/balancete/DFC, FCADS/ICSD contratual, matriz setorial validada,
+elegibilidade IBS/CBS, transição 2027 a 2033 e tratamento completo de
+compra e revenda de frota. Materialidade não foi definida; sem homologação
+tributária ou de crédito. Não utilizar dados reais no preview.
+
+**Preview:** deployment automático do commit de testes
+`dpl_sPzgVUkhE82aFeECGU9b1SzrPqUF` observado inicialmente
+`BUILDING`, `target:null`. A confirmação de READY e a verificação
+de acesso devem ser feitas separadamente antes de divulgar endereço.
+Sem merge na `main`, alteração intencional da produção, gastos ou dados
+pessoais.
+
+**Próxima ação:** definir o contrato mínimo para transportar do leitor
+v3.2 as rubricas efetivamente revisadas com exercício, competência e
+origem opaca, sem enviar documentos, e só então conectar a conciliação
+à etapa 2, mantendo a revisão de exceções e bloqueios.
