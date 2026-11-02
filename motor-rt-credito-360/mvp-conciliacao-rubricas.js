@@ -38,10 +38,27 @@ export function conciliarRubricasRevisadas(rubricas) {
     const diferencaDRE = saldo('DRE:receita_liquida') - saldo('DRE:custos') - saldo('DRE:despesas');
     const conciliado = ausentes.length === 0 &&
       Math.abs(diferencaBP) <= 0.01 && Math.abs(diferencaBalancete) <= 0.01;
+    // Quantificação descritiva, sem presumir limites de materialidade.
+    // Denominadores ausentes ou iguais a zero não produzem percentual fictício.
+    const medir = (diferenca, chaves, bases) => {
+      if (chaves.some(chave => !valores.has(chave)))
+        return {valorAbsoluto: null, percentualDaBase: null, baseComparacao: null};
+      const denominador = Math.max(...bases);
+      return {valorAbsoluto: Math.abs(diferenca),
+        percentualDaBase: denominador > 0 ? Math.abs(diferenca) / denominador * 100 : null,
+        baseComparacao: denominador};
+    };
+    const materialidade = {
+      status: 'sem_limite_de_materialidade_validado',
+      bp: medir(diferencaBP, ['BP:ativo','BP:passivo','BP:patrimonio'],
+        [saldo('BP:ativo'), saldo('BP:passivo') + saldo('BP:patrimonio')]),
+      balancete: medir(diferencaBalancete, ['BALANCETE:debitos','BALANCETE:creditos'],
+        [saldo('BALANCETE:debitos'), saldo('BALANCETE:creditos')])
+    };
     return {ano, status: conciliado ? 'fechamento_aritmetico' : 'pendente_revisao',
       ausentes, diferencaBP, diferencaBalancete,
-      resultadoDREIlustrativo: diferencaDRE};
+      resultadoDREIlustrativo: diferencaDRE, materialidade};
   });
   return {exercicios, aptoParaParecer: false, aplicadoProjecao: false,
-    aviso: 'Fechamento apenas aritmético. Não comprova competência, EBITDA, NCG, DFC, serviço da dívida, ICSD nem créditos IBS/CBS.'};
+    aviso: 'Fechamento apenas aritmético. Materialidade ainda sem limite validado. Não comprova competência, EBITDA, NCG, DFC, serviço da dívida, ICSD nem créditos IBS/CBS.'};
 }
