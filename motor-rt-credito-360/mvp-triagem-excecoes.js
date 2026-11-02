@@ -38,8 +38,12 @@ export function triarExcecoesContabeis(candidatos) {
       excecoes.push('Tributos atuais anuais: período de 12 meses não comprovado. Não anualizar nem comparar com IBS/CBS automaticamente.');
     if (item.field === 'interestExpense' && item.periodMonths === null)
       excecoes.push('Despesas financeiras: período não informado. Não anualizar nem estimar serviço da dívida.');
+    if (item.field === 'interestExpense' && item.periodMonths !== null && item.periodMonths !== 12)
+      excecoes.push('Despesas financeiras: período parcial de '+item.periodMonths+' meses. Não tratar como valor anual nem como serviço da dívida sem conciliação.');
     if (item.field === 'currentOperatingMarginPct' && item.periodMonths === null)
       excecoes.push('Margem operacional: período não informado. Confirmar competência antes de comparar exercícios.');
+    if (item.field === 'currentOperatingMarginPct' && item.periodMonths !== null && item.periodMonths !== 12)
+      excecoes.push('Margem operacional: período parcial de '+item.periodMonths+' meses. Não comparar com margem anual sem conciliar a DRE.');
   }
   return {
     recebidos: vistos.size,
