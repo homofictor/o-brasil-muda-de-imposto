@@ -1797,3 +1797,35 @@ Commits de implementação:
 **Preview verificado:** deployment `dpl_FwEjsJ2DiXznH6jF8VNsfJfEx61b`, commit `ee0b6f8a`, estado READY, target null, branch autorizada. Leitura autenticada Vercel HTTP 200 para `projecao-economista.html`, `mvp-referencia-colada.js`, teste e `simulador/v3/import.js`. A resposta da página contém importação do novo módulo, textarea, botão de aplicação, zeragem de ajustes, referência ao importador existente e aviso de não homologação. URL temporária compartilhável criada/reutilizada; expiração informada 02/11/2026 às 22:56:29, fuso não especificado. Sem homologação visual/interativa em navegador externo.
 
 **Bloqueios e próxima ação:** esta é uma ponte manual para dados sintéticos, não upload ou leitura da planilha integrada `.xls` fornecida pelo usuário. Não há mapeamento auditado das abas, fórmulas, FCADS/ICSD institucional, DRE/DFC ou transição legal setorial; não há segurança documental para informações reais. Priorizar o mapeamento da planilha padronizada, a reprodução exata da projeção original e sua integração segura ao importador v3.2, sem duplicar leitor. Não utilizar para parecer de crédito.
+
+
+## Bloqueio de overflow na ponte da projeção do economista (01/11/2026)
+
+A ponte `mvp-ponte-economista.js` agora rejeita resultados não finitos em
+`deltaCaixa`, `caixaReforma`, `icsdOriginal`, `icsdReforma` e
+`deltaCaixaAcumulado`, mesmo quando cada entrada individual é finita.
+Isso impede que `Infinity` seja apresentado como capacidade de pagamento
+ou variação acumulada válida. Nenhuma fórmula tributária, alíquota ou
+separação entre IBS e CBS foi alterada.
+
+Commits: correção `d665ef7da075c471c12f7c3c7d8e2f7a3ecaf36a`;
+regressão `1ae6de8c5e2d86643a2963a74edf412c76482e84`.
+Verificação: `node --test mvp-ponte-overflow.test.mjs` em Node 22.16.0,
+**5 testes nativos aprovados, 0 falhas**, em cópia local com os mesmos
+blobs SHA da branch (`73fbc059d20bdf4dae1eb160f997a977609e5c4f`
+e `2485d351396b6f2ae20f36bde0c5ce0ad514a47b`).
+Os casos incluem operação normal, overflow da soma IBS/CBS, do caixa
+ajustado, do ICSD e do acumulado entre exercícios.
+Não foi executada a suíte completa nem homologação da interface.
+
+**Bloqueios:** a importação automática da planilha integrada do economista
+ainda não existe; a transferência atual é manual e exige oito exercícios.
+As demonstrações e fórmulas não foram auditadas, as premissas de IBS/CBS
+continuam manuais e hipotéticas, e o FCADS/ICSD contratual requer revisão.
+Não utilizar dados reais ou confidenciais no preview nem emitir parecer.
+Nenhum dado empresarial foi enviado ao GitHub. Não houve merge na
+`main` ou alteração deliberada da produção.
+
+**Próxima ação:** testar o fluxo navegável da branch no preview e avançar
+no mapeamento de campos da planilha padronizada para importar a referência
+sem duplicar o leitor `simulador/v3/import.js`, mantendo revisão explícita.
