@@ -42,21 +42,35 @@ th,td{padding:9px;text-align:right;border-bottom:1px solid #e0e8ef}th:first-chil
 import {iniciarCadastro} from './fluxo-cadastral.js';
 import {iniciarPonteImportacaoMVP} from './mvp-import-bridge.js';
 import {gerarTresCenariosSinteticos} from './mvp-tres-cenarios.js';
+import {conciliarExemploContabil} from './mvp-exemplo-contabil.js';
 const el=id=>document.getElementById(id);
 const fmt=n=>n===null?'Indisponível':new Intl.NumberFormat('pt-BR',{maximumFractionDigits:2}).format(n);
 let demo=false;
+let cancelarImportacao=()=>{};
 function limparRelatorio(){el('relatorio').hidden=true;el('mensagem-relatorio').textContent='O relatório fictício não utiliza dados do cadastro nem do importador.';}
-el('demo').addEventListener('click',()=>{demo=true;el('gerar').disabled=false;el('cnpj').value='';el('cadastro').textContent='EXEMPLO FICTÍCIO. Empresa, CNAE e regime tributário não consultados. Simples Nacional: não verificado.';limparRelatorio();});
+el('demo').addEventListener('click',()=>{
+ try {
+  cancelarImportacao();
+  const r=conciliarExemploContabil();
+  demo=true;el('gerar').disabled=false;el('cnpj').value='';
+  el('cadastro').textContent='EXEMPLO FICTÍCIO. Empresa, CNAE e regime tributário não consultados. Simples Nacional: não verificado.';
+  el('status-importacao').textContent='EXEMPLO FICTÍCIO 2026. Balancete fictício: débitos '+fmt(r.balancete.debitos)+' = créditos '+fmt(r.balancete.creditos)+'. BP: ativo '+fmt(r.bp.ativo)+' = passivo '+fmt(r.bp.passivo)+' + PL '+fmt(r.bp.patrimonio)+'. DRE: receita líquida '+fmt(r.dre.receitaLiquida)+', custos '+fmt(r.dre.custos)+', despesas '+fmt(r.dre.despesas)+', EBITDA ilustrativo '+fmt(r.dre.ebitdaIlustrativo)+'. NCG operacional: '+fmt(r.ncg.anterior)+' para '+fmt(r.ncg.atual)+' (variação '+fmt(r.ncg.variacao)+'). '+r.limites;
+  limparRelatorio();
+ } catch(e) {
+  demo=false;el('gerar').disabled=true;limparRelatorio();
+  el('status-importacao').textContent='Falha na conciliação do exemplo fictício: '+e.message;
+ }
+});
 el('consultar').addEventListener('click',async()=>{
- demo=false;el('gerar').disabled=true;limparRelatorio();el('consultar').disabled=true;el('cadastro').textContent='Consultando cadastro...';
+ demo=false;el('gerar').disabled=true;cancelarImportacao();limparRelatorio();el('consultar').disabled=true;el('cadastro').textContent='Consultando cadastro...';
  try{const p=await iniciarCadastro(el('cnpj').value);const c=p.cadastro;
   el('cadastro').textContent=['Razão social: '+(c.razaoSocial??'não informada'),'CNAE: '+c.cnaePrincipal+' ('+(p.descricaoCNAEOficial?.descricao??c.descricaoPrincipal??'descrição não conferida')+')','Atividade: '+(p.classificacao.setores.join(', ')||'não classificada'),'Situação cadastral: '+(c.situacaoCadastral??'não informada'),'Simples Nacional: não verificado nesta integração; não inferir regime pelo CNAE.','Dados cadastrais sujeitos à conferência. Não inserir documentos reais no preview.'].join('\n');
  }catch(e){el('cadastro').textContent='Consulta não concluída: '+(e.message||'falha na fonte');}
  finally{el('consultar').disabled=false;}
 });
-iniciarPonteImportacaoMVP({abrir:el('importar'),status:msg=>{el('status-importacao').textContent=msg;},
- receber:candidatos=>{el('status-importacao').textContent=candidatos.length+' candidato(s) numérico(s) aceito(s). A classificação, conciliação BP/DRE/balancete e materialidade ainda exigem revisão; nenhum valor foi aplicado automaticamente.';},
- limpar:()=>{el('status-importacao').textContent='Sessão de importação encerrada. Nenhum valor transferido para a projeção.';}});
+cancelarImportacao=iniciarPonteImportacaoMVP({abrir:el('importar'),status:msg=>{el('status-importacao').textContent=msg;},
+ receber:candidatos=>{demo=false;el('gerar').disabled=true;limparRelatorio();el('status-importacao').textContent=candidatos.length+' candidato(s) numérico(s) aceito(s). A classificação, conciliação BP/DRE/balancete e materialidade ainda exigem revisão; nenhum valor foi aplicado automaticamente.';},
+ limpar:()=>{el('status-importacao').textContent='Sessão de importação encerrada. Nenhum valor transferido para a projeção.';}}) || (()=>{});
 function card(titulo,valor,nota){const d=document.createElement('div');d.className='card';const t=document.createElement('span'),v=document.createElement('strong'),n=document.createElement('small');t.textContent=titulo;v.textContent=valor;n.textContent=nota;d.append(t,v,n);el('resumos').append(d);}
 el('gerar').addEventListener('click',()=>{
  if(!demo)return;
