@@ -2311,3 +2311,13 @@ pessoais.
 v3.2 as rubricas efetivamente revisadas com exercício, competência e
 origem opaca, sem enviar documentos, e só então conectar a conciliação
 à etapa 2, mantendo a revisão de exceções e bloqueios.
+
+## Bloqueio de mistura de competências na conciliação anual (02/11/2026)
+
+**Entrega única:** criado o adaptador isolado `mvp-competencia-rubricas.js`, que valida a competência de rubricas explicitamente revisadas antes de chamar `conciliarRubricasRevisadas`. Para o caminho **exclusivamente anual**, exige BP e balancete em 31/12 do exercício e DRE abrangendo 01/01 a 31/12 do mesmo exercício. Rejeita data impossível, competência ausente, DRE parcial e balancete intermediário, sem anualizar ou inferir valores. Os balancetes recentes exigirão caminho próprio e conciliação com a projeção original do economista. O adaptador utiliza lista positiva de campos, não transmite CNPJ, nomes de arquivos ou texto original, e mantém `aptoParaParecer=false` e `aplicadoProjecao=false`. Nenhuma alteração foi feita à interface principal de três etapas, ao importador `simulador/v3/import.js`, às regras tributárias ou às projeções.
+
+**Commits exclusivos da branch:** implementação `f94bcf3086117a35b1c9940f8431a2be51ffe333`; regressão `5bb9be75a28e24ed595ded0365c38372d9a0d88d`. **Teste nativo Node 22.16.0:** `npm test` em diretório isolado com o módulo novo, o módulo existente de conciliação e o teste novo: **7 aprovados, 0 falhas**. O blob da dependência local corresponde ao blob existente na branch (`cdbd11f884392deab254320fb70c37ccfb0e5892`); os dois blobs novos foram relidos da branch e coincidem com os arquivos testados (`03ec4597cf025faad887d92962d28652d20497b2` e `f5577f02bf58cfcc17f0699b0d97b47dbd0f9aac`). Não foi executada a suíte integral nem QA móvel interativo.
+
+**Bloqueios:** este adaptador ainda não está conectado à ponte do leitor v3.2, que fornece somente indicadores agregados, não rubricas detalhadas com exercício, competência e origem. O caminho anual não processa balancete intermediário e não comprova materialidade, classificação contábil completa, NCG real, DFC, FCADS/ICSD contratual, créditos IBS/CBS, transição legal 2027 a 2033 ou compra/revenda de frota. Sem validação setorial, tributária ou de crédito. Não utilizar documentos reais no preview.
+
+**Próxima ação:** estabelecer no leitor v3.2 um contrato de saída explícito e opt-in para rubricas detalhadas revisadas, com competência e referência opaca, e construir separadamente a conciliação de balancetes intermediários, sem modificar automaticamente a projeção do economista. Confirmar preview Vercel antes de divulgar link. Sem merge na `main`, alteração deliberada de produção, gastos ou dados pessoais.
