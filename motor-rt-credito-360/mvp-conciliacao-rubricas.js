@@ -33,9 +33,11 @@ export function conciliarRubricasRevisadas(rubricas) {
   const exercicios = [...anos.entries()].sort(([a], [b]) => a - b).map(([ano, valores]) => {
     const ausentes = CHAVES.filter(chave => !valores.has(chave));
     const saldo = chave => valores.get(chave) ?? 0;
-    const diferencaBP = saldo('BP:ativo') - saldo('BP:passivo') - saldo('BP:patrimonio');
-    const diferencaBalancete = saldo('BALANCETE:debitos') - saldo('BALANCETE:creditos');
-    const diferencaDRE = saldo('DRE:receita_liquida') - saldo('DRE:custos') - saldo('DRE:despesas');
+    // Uma rubrica ausente não é um saldo contábil de zero.
+    const completo = demonstracao => GRUPOS[demonstracao].every(grupo => valores.has(demonstracao + ':' + grupo));
+    const diferencaBP = completo('BP') ? saldo('BP:ativo') - saldo('BP:passivo') - saldo('BP:patrimonio') : null;
+    const diferencaBalancete = completo('BALANCETE') ? saldo('BALANCETE:debitos') - saldo('BALANCETE:creditos') : null;
+    const diferencaDRE = completo('DRE') ? saldo('DRE:receita_liquida') - saldo('DRE:custos') - saldo('DRE:despesas') : null;
     const conciliado = ausentes.length === 0 &&
       Math.abs(diferencaBP) <= 0.01 && Math.abs(diferencaBalancete) <= 0.01;
     // Quantificação descritiva, sem presumir limites de materialidade.
