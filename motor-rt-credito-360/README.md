@@ -2216,3 +2216,12 @@ Não houve merge na `main`, alteração intencional de produção ou gasto.
 **Próxima ação:** integrar rubricas revisadas com trilha de origem opaca à
 ponte do importador, preservando a aceitação explícita e os bloqueios de
 conciliação antes de aplicar qualquer ajuste à projeção do economista.
+
+**Verificação posterior de preview:** deployment
+`dpl_2cEMmcvFt3nspkiN1z5VriMBXpYv`, commit
+`13839832cf97a32019338c04394581d1915200bd`,
+estado `READY`, `target:null` (preview, não produção).
+Leitura autorizada pela Vercel retornou HTTP 200 para a interface,
+o módulo novo e `simulador/v3/import.js`. O acesso público externo
+independente não foi confirmado; não divulgar link sem verificação
+de compartilhamento. Nenhum teste de navegação interativa foi executado.
