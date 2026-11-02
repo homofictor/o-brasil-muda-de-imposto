@@ -63,3 +63,22 @@ test('base nula retorna percentual indisponível sem divisão por zero',()=>{
  assert.equal(r.materialidade.balancete.baseComparacao,0);
  assert.equal(r.materialidade.balancete.percentualDaBase,null);
 });
+
+test('rubrica da DRE ausente não gera lucro presumido',()=>{
+ const r=conciliarRubricasRevisadas(base.filter(x=>x.grupo!=='despesas')).exercicios[0];
+ assert.equal(r.resultadoDREIlustrativo,null);
+ assert.equal(r.status,'pendente_revisao');
+ assert.deepEqual(r.ausentes,['DRE:despesas']);
+});
+test('rubricas de BP ou balancete ausentes não geram diferença calculada com zero fictício',()=>{
+ const r=conciliarRubricasRevisadas(base.filter(x=>!['passivo','creditos'].includes(x.grupo))).exercicios[0];
+ assert.equal(r.diferencaBP,null);
+ assert.equal(r.diferencaBalancete,null);
+ assert.equal(r.materialidade.bp.valorAbsoluto,null);
+ assert.equal(r.materialidade.balancete.valorAbsoluto,null);
+});
+test('saldo zero explicitamente revisado continua sendo zero, não dado ausente',()=>{
+ const r=conciliarRubricasRevisadas(base.map(x=>x.grupo==='despesas'?{...x,valor:0}:x)).exercicios[0];
+ assert.equal(r.resultadoDREIlustrativo,320);
+ assert.equal(r.status,'fechamento_aritmetico');
+});
