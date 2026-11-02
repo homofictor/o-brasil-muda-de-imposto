@@ -1920,3 +1920,59 @@ para `index.html`, `mvp-tres-cenarios.js`, `mvp-ponte-economista.js`,
 compartilhamento retornou HTTP 200 na verificação autorizada; acesso externo
 independente não pôde ser homologado. Não houve execução interativa do
 navegador, merge na `main` ou alteração intencional da produção.
+
+## Exemplo contábil sintético conciliado na etapa 2 (02/11/2026)
+
+**Entrega limitada:** o botão `Usar exemplo fictício` agora preenche também a
+etapa 2 com uma conciliação aritmética ilustrativa de balancete, BP e DRE,
+sem acrescentar uma quarta etapa e sem alterar o importador existente
+`simulador/v3/import.js`. O novo módulo `mvp-exemplo-contabil.js` representa
+um balancete antes do encerramento (débitos = créditos = 1.700), BP de
+2026 após o encerramento (ativo 1.060 = passivo 640 + PL 420), DRE
+(receita líquida 800, custos 480, despesas 160, resultado operacional
+ilustrativo 160), evolução do PL (400 - distribuições 140 + resultado
+160 = 420) e NCG operacional ilustrativa (220 para 230, variação +10).
+Todos os números são fictícios e sem unidade monetária de empresa real.
+A interface usa `textContent` e não envia dados ao servidor.
+
+**Separação e limites:** a conciliação do exemplo é somente aritmética.
+O resultado operacional ilustrativo iguala o EBITDA apenas porque a DRE
+fictícia não inclui depreciação; não representa lucro líquido auditado.
+A NCG do exemplo não alimenta automaticamente o caixa ou a projeção
+original do economista. Não existe DFC/FCADS conciliada, nem apuração
+jurídica de IBS/CBS, elegibilidade de créditos ou tratamento da frota
+de locadoras. Ao consultar CNPJ ou receber candidatos reais revisados,
+o relatório fictício é desabilitado para evitar mistura de origens.
+O Simples Nacional continua sem status inferido.
+
+**Commits exclusivos da branch:** módulo
+`1598e01a1b0320a81f060cd001ddab80fe5021ed`, testes
+`e7ce274b774489ddb2277be52780680d6f4a64c7` e interface
+`cee9aeead75d63eab61990849c6c54ec72b36c25`.
+
+**Testes executados:** Node.js v22.16.0,
+`node --test mvp-exemplo-contabil.test.mjs` em diretório isolado com
+arquivos de mesmo blob da branch: **3 aprovados, 0 falhas**.
+Conferência de `git hash-object` local contra blobs remotos:
+`384f652a7e05712ee38615ec824ec820f42ac3ac` (módulo) e
+`8f5d8af4ec6057f51567424a3b8b33514e41a215` (testes).
+Também foram conferidas estaticamente três etapas, importador reutilizado
+e exibição do exemplo na página publicada. Não foram executados testes
+interativos de navegador nem a suíte completa do repositório.
+
+**Preview verificado:** deployment automático
+`dpl_EL81zWZxfBWs7RjqfGk54HF3EKSz`, estado `READY`,
+`target:null`, commit `cee9aeead75d63eab61990849c6c54ec72b36c25`.
+A leitura autenticada da Vercel retornou HTTP 200 para `index.html`,
+o novo módulo, seus testes e `simulador/v3/import.js`. O link
+temporário de compartilhamento da página também retornou HTTP 200
+nessa verificação; não há homologação externa independente.
+
+**Bloqueios e próxima ação:** o exemplo é completo somente para a
+demonstração aritmética, não para avaliação de crédito real. Próxima
+entrega: classificar e conciliar rubricas revisadas dos documentos reais
+por período e materialidade, sem presumir NCG, dívida ou créditos
+tributários a partir de indicadores agregados. Exigir reconciliação
+da projeção original do economista antes de qualquer ajuste.
+Nenhum merge na `main`, publicação em produção, gasto ou uso de dados
+pessoais nesta entrega.
