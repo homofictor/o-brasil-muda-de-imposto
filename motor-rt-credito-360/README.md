@@ -1897,3 +1897,15 @@ de referência por ano com confirmação explícita. Preservar a projeção
 original, conciliar antes dos ajustes fiscais e não presumir serviço
 da dívida a partir de despesa financeira. Nenhum merge na `main`,
 alteração deliberada de produção ou gasto nesta entrega.
+
+## Interface principal em três etapas e relatório fictício de três cenários (02/11/2026)
+
+**Entrega única:** `index.html` agora apresenta somente três etapas visíveis: (1) identificação pelo CNPJ/CNAE, (2) envio e revisão no importador já existente do Simulador RT v3.2, (3) análise e relatório sintético. O botão de relatório permanece fixo na parte inferior, inclusive no celular. A consulta de CNPJ reutiliza `fluxo-cadastral.js`; como a integração atual não verifica o Simples Nacional, o status é explicitamente **não verificado**, sem presunção pelo CNAE. O importador é aberto pela ponte existente `mvp-import-bridge.js`; nenhum novo leitor de PDF, XLSX ou CSV foi criado.
+
+**Exemplo demonstrativo:** `mvp-tres-cenarios.js` reutiliza `mvp-ponte-economista.js` para oito exercícios de 2026 a 2033 e apresenta três sensibilidades fictícias (0,5x, 1x e 1,5x sobre ajustes incrementais já sintéticos), com EBITDA, NCG, IBS e CBS separados, caixa original e ajustado, serviço da dívida, ICSD e ressalvas. A referência do economista é preservada e conciliada aritmeticamente antes de calcular as sensibilidades. Esses fatores não são estimativas legais, setoriais ou probabilísticas. O relatório só é habilitado após seleção explícita de exemplo fictício e nunca utiliza CNPJ consultado nem candidatos importados.
+
+**Teste executado:** Node.js v22.16.0, `node --test mvp-tres-cenarios.test.mjs`, **5 aprovados, 0 falhas**, em diretório isolado com cópia funcional local da ponte já existente. Testados: três cenários completos, referência preservada, segregação IBS/CBS, conciliação de caixa, ressalvas e estrutura estática de três etapas. Uma falha inicial por comparação exata de ponto flutuante foi corrigida para tolerância 1e-9 antes do resultado final. A suíte integral do repositório e a navegação interativa em navegador ainda não foram executadas.
+
+**Bloqueios:** importação real de BP/DRE/balancete ainda não produz reconciliação completa, classificação material nem FCADS contratual; candidatos aceitos permanecem informativos. Não há consulta comprovada do Simples Nacional. Não há matriz setorial auditada, elegibilidade de créditos comprovada, transição legal de 2027 a 2033, tratamento fiscal de compra e revenda de frota, nem parecer homologado. Os cenários desta entrega são apenas sensibilidades de demonstração e não devem ser utilizados para crédito.
+
+**Próxima ação:** implementar a conciliação das rubricas revisadas de BP/DRE/balancete com a projeção original do economista, mantendo a interface de três etapas e solicitando revisão somente de exceções materiais. Não houve merge na main, alteração intencional de produção, uso de dados pessoais ou gasto autorizado.
