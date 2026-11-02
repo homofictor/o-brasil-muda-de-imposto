@@ -2027,3 +2027,48 @@ efetivamente revisadas no importador v3.2 por exercício, sinalizando
 exceções materiais, e exigir conciliação da projeção original do economista
 antes de qualquer ajuste. Sem merge na `main`, sem alteração intencional
 de produção, sem dados pessoais e sem gastos nesta entrega.
+
+
+## Triagem de exceções dos candidatos do importador v3.2 (02/11/2026)
+
+**Entrega pequena:** a etapa 2 da interface passa a resumir pendências de
+conciliação dos candidatos numéricos explicitamente aceitos pelo importador
+existente, sem criar outro leitor, outra etapa ou preencher projeções.
+O módulo `mvp-triagem-excecoes.js` valida o pacote e agrupa ativo e passivo
+circulantes numa única ressalva de NCG. Diferencia receita bruta de receita
+líquida, margem EBITDA de EBITDA monetário, despesas financeiras de serviço
+da dívida e tributos atuais de créditos IBS/CBS elegíveis. Não infere
+materialidade quantitativa sem base conciliada. Nenhum dado de origem ou
+identificação documental é exibido. O exemplo fictício e o botão fixo
+de relatório permanecem disponíveis e isolados da importação real.
+
+**Commits exclusivos da branch:** módulo
+`50c842cf6532c76f45d0c3bd5f629412ab71b4ec`, testes
+`6e90bb404c247349d18beac11c35ffef3367a3e3` e interface
+`a2742ad110e88e780d76989b1bacd0de11daabd1`.
+**Testes executados:** Node.js 22.16.0, `npm test` em diretório isolado,
+**6 aprovados, 0 falhas**. Os arquivos locais testados foram conferidos
+contra os blobs relidos da branch via `git hash-object`:
+`fd1c1724e6e818ed2e871a645eb8390e2ab74bd0` e
+`b6d437d00931c884c6d6b4cc1fe9e8b422c3f0c4`.
+Conferência estática da interface: exatamente três seções principais,
+importação do novo módulo e reutilização de `mvp-import-bridge.js`.
+Não foi executada a suíte integral do repositório nem QA interativo móvel.
+
+**Preview:** Vercel `dpl_2NmDy7bPdScehLrjB2dGbKKQ3qAS`, estado
+`READY`, `target:null`, commit da interface
+`a2742ad110e88e780d76989b1bacd0de11daabd1`. Leitura autenticada
+da Vercel: HTTP 200 para `index.html`, novo módulo, teste e
+`simulador/v3/import.js`. Link compartilhável temporário gerado ou
+reutilizado; o acesso externo independente não pôde ser confirmado.
+
+**Bloqueios:** a ponte v3.2 transfere apenas indicadores agregados e
+não oferece rubricas por período com evidência suficiente para reconciliar
+BP, DRE e balancete reais. A triagem identifica riscos de classificação,
+mas não mede materialidade, não calcula ICSD contratual, não valida
+alíquotas/créditos IBS/CBS nem implementa regras de locação e revenda
+de frota. **Próxima ação:** estruturar a transferência mínima de rubricas
+contábeis revisadas com período, origem não identificável e trilha de
+conciliação, preservando a projeção do economista e bloqueando cálculos
+com dados reais não conciliados. Nenhum merge na `main`, alteração
+de produção, gasto ou uso de dados pessoais nesta entrega.
