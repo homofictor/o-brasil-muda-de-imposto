@@ -168,13 +168,13 @@ export function iniciarPonteImportacaoV3(doc = document, loc = location) {
     });
     botao.addEventListener('click', () => {
       const candidatos = extrairCandidatosRevisados(window.brmiImport?.candidates);
-      if (!candidatos.length) {
-        mensagem.textContent = 'Nenhum candidato numérico elegível foi aceito explicitamente. Revise os valores primeiro.';
-        return;
-      }
       let rascunhos = [], aviso = '';
       try { rascunhos = extrairRascunhosRubricasV3(window.brmiImport?.files ?? []); }
       catch (_) { aviso = 'Rascunhos detalhados excederam os limites e não foram transferidos. Os candidatos aceitos continuam disponíveis.'; }
+      if (!candidatos.length && !rascunhos.length) {
+        mensagem.textContent = 'Nenhum valor aceito ou rubrica preliminar disponível. Importe documentos e tente novamente.';
+        return;
+      }
       voltar.dataset.confirmado = '0';
       voltar.textContent = 'Voltar ao Motor sem importar';
       emissor.enviar(candidatos, rascunhos);
