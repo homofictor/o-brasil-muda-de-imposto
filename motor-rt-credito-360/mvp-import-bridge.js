@@ -121,6 +121,7 @@ export function iniciarPonteImportacaoV3(doc = document, loc = location) {
   let emissor = null;
   let botaoEnvio = null;
   let mensagemEnvio = null;
+  let botaoVoltar = null;
   let encerrada = false;
   const montar = () => {
     if (encerrada) return;
@@ -134,11 +135,27 @@ export function iniciarPonteImportacaoV3(doc = document, loc = location) {
     botao.textContent = 'Enviar candidatos aceitos ao Motor RT Crédito 360';
     const mensagem = doc.createElement('p');
     mensagem.setAttribute('role', 'status');
-    bloco.append(botao, mensagem);
+    const voltar = doc.createElement('button');
+    voltar.id = 'voltar-rt360';
+    voltar.type = 'button';
+    voltar.textContent = 'Voltar ao Motor RT Crédito 360';
+    voltar.disabled = true;
+    voltar.addEventListener('click', () => {
+      if (voltar.disabled) return;
+      // A aba foi aberta pelo Motor. Fechá-la revela a aba original sem recarregar o Motor.
+      window.close();
+      mensagem.textContent = 'Transferência confirmada. Se esta aba não fechar, selecione a aba anterior do Motor RT Crédito 360.';
+    });
+    bloco.append(botao, mensagem, voltar);
+    botaoVoltar = voltar;
     painel.append(bloco);
     botaoEnvio = botao;
     mensagemEnvio = mensagem;
-    emissor = criarEmissorConfirmado({canal, avisar: texto => { mensagem.textContent = texto; }});
+    emissor = criarEmissorConfirmado({canal, avisar: texto => {
+      mensagem.textContent = texto;
+      // Habilitar o retorno apenas depois da confirmação de recebimento.
+      voltar.disabled = !/recebido\(s\) pelo Motor\./.test(texto);
+    }});
     botao.addEventListener('click', () => {
       const candidatos = extrairCandidatosRevisados(window.brmiImport?.candidates);
       if (!candidatos.length) {
@@ -148,6 +165,7 @@ export function iniciarPonteImportacaoV3(doc = document, loc = location) {
       let rascunhos = [], aviso = '';
       try { rascunhos = extrairRascunhosRubricasV3(window.brmiImport?.files ?? []); }
       catch (_) { aviso = 'Rascunhos detalhados excederam os limites e não foram transferidos. Os candidatos aceitos continuam disponíveis.'; }
+      voltar.disabled = true;
       emissor.enviar(candidatos, rascunhos);
       if (aviso) mensagem.textContent += ' ' + aviso;
     });
@@ -156,6 +174,7 @@ export function iniciarPonteImportacaoV3(doc = document, loc = location) {
   montar();
   window.addEventListener('pagehide', () => {
     encerrada = true;
+    if (botaoVoltar) botaoVoltar.disabled = true;
     encerrarSessaoImportadorV3({emissor, canal, botao: botaoEnvio, mensagem: mensagemEnvio});
   });
 }
