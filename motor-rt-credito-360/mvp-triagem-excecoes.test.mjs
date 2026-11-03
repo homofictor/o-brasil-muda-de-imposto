@@ -116,3 +116,14 @@ test('receita e tributos positivos não recebem alerta de sinal negativo',()=>{
  const r=triarExcecoesContabeis([c('rbt12',200,12),c('currentConsumptionTaxAnnual',50,12)]);
  assert.equal(r.excecoes.some(x=>x.includes('RBT12 negativa')||x.includes('Tributos atuais negativos')),false);
 });
+
+test('despesa financeira negativa exige revisão de reversões e sinal',()=>{
+ const r=triarExcecoesContabeis([c('interestExpense',-10,12)]);
+ assert.ok(r.excecoes.some(x=>x.includes('Despesas financeiras negativas')));
+ assert.ok(r.excecoes.some(x=>x.includes('não representam serviço da dívida')));
+ assert.equal(r.recebidos,1);
+});
+test('despesa financeira zero não gera alerta de sinal negativo',()=>{
+ const r=triarExcecoesContabeis([c('interestExpense',0,12)]);
+ assert.equal(r.excecoes.some(x=>x.includes('Despesas financeiras negativas')),false);
+});
