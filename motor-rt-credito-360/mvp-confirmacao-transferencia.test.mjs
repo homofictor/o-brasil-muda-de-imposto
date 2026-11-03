@@ -22,7 +22,7 @@ test('não declara recebido antes de confirmação correlacionada', () => {
   a.canal.onmessage({data: {tipo: TIPO_CONFIRMACAO, envioId: 2}});
   assert.match(a.avisos.at(-1), /Aguardando confirmação/);
   a.canal.onmessage({data: {tipo: TIPO_CONFIRMACAO, envioId: 1}});
-  assert.match(a.avisos.at(-1), /recebido\(s\)/);
+  assert.match(a.avisos.at(-1), /recebidos pelo Motor/);
   assert.equal(a.timers.size, 0);
 });
 
@@ -43,7 +43,7 @@ test('envio novo ignora confirmação atrasada de envio anterior', () => {
   a.canal.onmessage({data: {tipo: TIPO_CONFIRMACAO, envioId: 1}});
   assert.match(a.avisos.at(-1), /Aguardando confirmação/);
   a.canal.onmessage({data: {tipo: TIPO_CONFIRMACAO, envioId: 2}});
-  assert.match(a.avisos.at(-1), /recebido\(s\)/);
+  assert.match(a.avisos.at(-1), /recebidos pelo Motor/);
 });
 
 test('Motor só confirma pacote com identificador de envio válido', () => {
@@ -81,7 +81,7 @@ test('duas abas simuladas trocam candidatos e confirmação sem documentos', asy
   assert.match(avisos.at(-1), /Aguardando confirmação/);
   await new Promise(resolve => setImmediate(resolve));
   assert.deepEqual(recebido, candidatos);
-  assert.match(avisos.at(-1), /recebido\(s\)/);
+  assert.match(avisos.at(-1), /recebidos pelo Motor/);
   assert.equal(JSON.stringify(recebido).includes('cnpj'), false);
   emissor.encerrar();
 });
@@ -94,6 +94,15 @@ test('envia rubricas preliminares mesmo sem candidatos numéricos aceitos', () =
   assert.deepEqual(a.mensagens[0].rascunhos, rascunhos);
   assert.match(a.avisos.at(-1), /Aguardando confirmação/);
   a.canal.onmessage({data: {tipo: TIPO_CONFIRMACAO, envioId: 1}});
-  assert.match(a.avisos.at(-1), /0 valor\(es\) recebido\(s\)/);
+  assert.match(a.avisos.at(-1), /0 valor\(es\) e 1 rubrica\(s\) preliminar\(es\) recebidos pelo Motor/);
+  a.emissor.encerrar();
+});
+
+test('confirmação distingue quantidade de valores e rubricas sem aplicar ajustes', () => {
+  const a = ambiente();
+  a.emissor.enviar([{field: 'rbt12', value: 100}], [{campo: 'estoques', valor: 120}, {campo: 'clientes', valor: 200}]);
+  a.canal.onmessage({data: {tipo: TIPO_CONFIRMACAO, envioId: 1}});
+  assert.match(a.avisos.at(-1), /1 valor\(es\) e 2 rubrica\(s\) preliminar\(es\) recebidos pelo Motor/);
+  assert.equal(a.mensagens.length, 1);
   a.emissor.encerrar();
 });
