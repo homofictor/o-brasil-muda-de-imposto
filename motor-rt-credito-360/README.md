@@ -2648,3 +2648,11 @@ Bloqueios: testes Node diretamente na branch, teste ponta a ponta de importaçã
 - Node: 4/4 testes aprovados em reprodução isolada fiel da função. Teste de regressão do repositório atualizado, mas não executado no checkout original por falha DNS ao acessar github.com; suíte completa não validada.
 - Bloqueios: conciliação BP/DRE/balancete, validação integrada PDF/XLSX/CSV e retorno entre abas, premissas setoriais e ICSD, testes móveis e preview funcional.
 - Próxima ação: executar suíte Node original em checkout acessível e testar transferência sintética do importador v3.2, sem alimentar projeções com dados não conciliados.
+
+
+## 2026-11-03 | Alerta de margem operacional atípica
+- Código: `1504836a4da860a70d07aab7b69450a5aebf6faa`. Testes: `5b7aab3ddd53ef076a946416ed6b1fdf3ec726a1`.
+- Margem operacional declarada com módulo superior a 100% gera ressalva de unidade, sinal, receitas não recorrentes e reconciliação da DRE; não rejeita nem corrige automaticamente e não altera EBITDA ou projeções. Limite de 100% permanece aceito sem alerta adicional.
+- Node: 8/8 verificações da condição isolada aprovadas. A suíte original não foi executada: checkout Git indisponível por falha de resolução DNS de github.com. Os dois testes de regressão foram adicionados à branch, sem execução integrada comprovada.
+- Bloqueios: suíte completa, conciliação BP/DRE/balancete, fluxo PDF/XLSX/CSV e navegação mobile; nenhuma materialidade ou homologação comprovada.
+- Próxima ação: executar Node diretamente no checkout e validar o importador v3.2 com documentos sintéticos completos, sem aplicar rubricas não conciliadas.
