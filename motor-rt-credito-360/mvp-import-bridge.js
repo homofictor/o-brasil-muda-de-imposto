@@ -139,12 +139,13 @@ export function iniciarPonteImportacaoV3(doc = document, loc = location) {
     voltar.id = 'voltar-rt360';
     voltar.type = 'button';
     voltar.textContent = 'Voltar ao Motor RT Crédito 360';
-    voltar.disabled = true;
+    voltar.textContent = 'Voltar ao Motor sem importar';
     voltar.addEventListener('click', () => {
-      if (voltar.disabled) return;
       // A aba foi aberta pelo Motor. Fechá-la revela a aba original sem recarregar o Motor.
       window.close();
-      mensagem.textContent = 'Transferência confirmada. Se esta aba não fechar, selecione a aba anterior do Motor RT Crédito 360.';
+      mensagem.textContent = voltar.dataset.confirmado === '1'
+        ? 'Transferência confirmada. Se esta aba não fechar, selecione a aba anterior do Motor RT Crédito 360.'
+        : 'Nenhum recebimento confirmado. Se esta aba não fechar, selecione a aba anterior do Motor RT Crédito 360.';
     });
     bloco.append(botao, mensagem, voltar);
     botaoVoltar = voltar;
@@ -154,7 +155,9 @@ export function iniciarPonteImportacaoV3(doc = document, loc = location) {
     emissor = criarEmissorConfirmado({canal, avisar: texto => {
       mensagem.textContent = texto;
       // Habilitar o retorno apenas depois da confirmação de recebimento.
-      voltar.disabled = !/recebido\(s\) pelo Motor\./.test(texto);
+      const confirmado = /recebido\(s\) pelo Motor\./.test(texto);
+      voltar.dataset.confirmado = confirmado ? '1' : '0';
+      voltar.textContent = confirmado ? 'Voltar ao Motor RT Crédito 360' : 'Voltar ao Motor sem importar';
     }});
     botao.addEventListener('click', () => {
       const candidatos = extrairCandidatosRevisados(window.brmiImport?.candidates);
@@ -165,7 +168,8 @@ export function iniciarPonteImportacaoV3(doc = document, loc = location) {
       let rascunhos = [], aviso = '';
       try { rascunhos = extrairRascunhosRubricasV3(window.brmiImport?.files ?? []); }
       catch (_) { aviso = 'Rascunhos detalhados excederam os limites e não foram transferidos. Os candidatos aceitos continuam disponíveis.'; }
-      voltar.disabled = true;
+      voltar.dataset.confirmado = '0';
+      voltar.textContent = 'Voltar ao Motor sem importar';
       emissor.enviar(candidatos, rascunhos);
       if (aviso) mensagem.textContent += ' ' + aviso;
     });
