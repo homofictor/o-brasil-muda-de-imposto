@@ -2489,3 +2489,13 @@ na própria etapa 2, sem quarta etapa nem aprovação automática; somente
 encaminhar rubricas após validação institucional de revisão e conciliação.
 Verificar o preview Vercel antes de divulgar endereço. Sem merge na
 `main`, mudança de produção, gastos ou dados pessoais.
+
+## Guarda de integridade do relatório fictício (02/11/2026, execução seguinte)
+
+**Entrega única:** adicionado `mvp-integridade-relatorio-demo.js` e conectado ao botão já existente da etapa 3. Antes de desenhar a tabela, a guarda exige exatamente três cenários identificados, oito exercícios consecutivos de 2026 a 2033 por cenário (24 linhas), memória contábil sintética de 2026, caixa original e serviço da dívida idênticos entre cenários, ICSD compatível com caixa/serviço, variação de caixa e resumos aritmeticamente conciliados. Uma divergência bloqueia a exibição do relatório, em vez de apresentar tabela parcial ou falsa impressão de validação. Não cria quarta etapa, não altera o importador v3.2, o exemplo original nem a metodologia de projeção do economista.
+
+**Commits:** módulo `517b29e72ad73da5dc8b2bd4cb748a0447326f19`; testes `de430c4f7a97c6086ccdd02af6165ea538a2e60d`; ligação na interface `239c42b2db775bc780cb882652c143e4827a65b7`. Testes locais com Node 22.16.0: `node --test mvp-integridade-relatorio-demo.test.mjs`, **9 aprovados, 0 falhas** após corrigir um cenário do próprio teste que não produzia insuficiência. Os hashes Git dos dois arquivos testados foram conferidos com os blobs efetivamente publicados na branch: `f805e5c05f05aae80e8698518993dc7bddfab1d7` e `bf3dbf1bd8a60a1b020a12662a062a19194134b5`. Inspeção estática da página confirmou exatamente três seções e o botão fixo de relatório.
+
+**Bloqueios:** os testes são unitários e não substituem execução integrada em navegador, testes móveis ou a suíte completa do repositório. O relatório continua exclusivamente fictício, sem comprovação documental, revisão autenticada, FCADS contratual, créditos IBS/CBS homologados ou parecer validado. A guarda valida coerência de apresentação, não o mérito da reforma tributária. A conciliação das rubricas reais recebidas do leitor v3.2 continua bloqueada até classificação, competência, escala, critérios de materialidade e revisão aprovados.
+
+**Próxima ação:** executar teste integrado do exemplo fictício e do canal do leitor em navegador real; avançar na revisão compacta das exceções da etapa 2 sem liberar dados não conciliados para projeções. Manter todas as alterações na branch `feature/motor-rt-credito-360`, sem merge na main, gastos ou uso de dados pessoais.
