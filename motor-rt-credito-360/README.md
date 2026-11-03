@@ -2527,3 +2527,10 @@ Verificação: 5 asserções estáticas de regressão passaram sobre o arquivo l
 Entrega única: `abertura-importador.js` trata exceções de `window.open` sem perder o estado do Motor; a ponte exibe orientação quando a abertura falha. O retorno `null` de `window.open` com `noopener` não é interpretado incorretamente como bloqueio. Mantidos os três passos e o isolamento do importador v3.2.
 
 Commits: módulo `a74530d5`, teste `e174a75b`, integração `98762f83`. Testes Node: `node --experimental-default-type=module --test abertura-importador.test.mjs`, 3 testes aprovados no ambiente local sobre os arquivos preparados para commit. Limitação: suíte completa do repositório e navegação E2E não executadas porque a rede local não resolve github.com. Preview Vercel do commit de integração localizado inicialmente em INITIALIZING; aguardar READY e verificar conteúdo antes de divulgar link. Próxima ação: validar fluxo completo de abertura, importação, confirmação e retorno em navegador móvel e desktop.
+
+
+## 2026-11-03 | Confirmação explícita do retorno
+- Entrega pequena: `criarEmissorConfirmado` passa a emitir callback `aoConfirmar` apenas quando o ACK do Motor corresponde ao envio pendente. A aba do Simulador não interpreta mais texto de status para decidir se recebeu confirmação.
+- Testes: quatro cenários Node em cópia local do protocolo passaram; quatro testes de regressão adicionados ao repositório em `mvp-confirmacao-transferencia.test.js` (execução no checkout do repositório ainda pendente).
+- Bloqueios: teste real entre abas, comportamento móvel e preview Vercel ainda precisam de confirmação independente. Sem mudança em produção, main ou dados pessoais.
+- Próxima ação: validar a navegação ponta a ponta e executar a suíte diretamente sobre o checkout da branch.
