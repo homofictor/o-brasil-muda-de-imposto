@@ -64,3 +64,13 @@ test('período anual não recebe alerta de período parcial',()=>{
  assert.equal(r.excecoes.length,2);
  assert.equal(r.excecoes.some(x=>x.includes('período parcial')),false);
 });
+
+// Regressão: dados parciais não podem ser anualizados nem convertidos em parecer.
+test('tributo de consumo sem competência anual exige ressalva',()=>{
+ const resultado=triarExcecoesContabeis([{field:'currentConsumptionTaxAnnual',value:120,periodMonths:6}]);
+ assert.ok(resultado.excecoes.some(x=>x.includes('Não anualizar')));
+ assert.match(resultado.aviso,/Nenhum candidato alimenta automaticamente/);
+});
+test('período zero é rejeitado antes da triagem',()=>{
+ assert.throws(()=>triarExcecoesContabeis([{field:'rbt12',value:100,periodMonths:0}]));
+});
