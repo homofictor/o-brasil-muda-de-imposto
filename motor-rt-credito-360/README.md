@@ -2542,3 +2542,12 @@ Entrega isolada: o receptor do Motor ignora mensagens que não tenham o tipo exp
 
 Commit de código: `a461f1a886aaf4dd6c14bb7fb046f458cb323ef8`.
 Testes: `node --test` em harness local isolado reproduzindo o filtro e a validação de identificador, 4 aprovados, 0 falhas. **Não** foi executada a suíte Node diretamente sobre o módulo do repositório nem teste ponta a ponta em navegador. Bloqueios: QA real da transferência e retorno em abas, integração da conciliação documental e auditoria fiscal. Próxima ação: adicionar regressão integrada ao repositório e validar fluxo de importação em navegador desktop e móvel. Sem merge na main e sem alteração intencional de produção.
+
+
+## 03/11/2026: regressão de falha e reenvio na ponte de importação
+
+Entrega pequena: `mvp-confirmacao-timeout.test.js` acrescenta dois testes Node para (1) expiração sem confirmação, descarte de ACK tardio e reenvio com novo identificador; (2) falha no `postMessage`, ausência de confirmação falsa e recuperação na tentativa seguinte. Não altera a interface principal nem a lógica tributária. Commit do teste: `6e1170fda1bf0bad820d49a12108b620b1da3799`.
+
+Verificação: `node --test timeout.test.js` em cópia local fiel do módulo `mvp-confirmacao-transferencia.js` lido da branch, 2 testes aprovados e 0 falhas. A cópia local não substitui a execução da suíte integral no checkout Git, indisponível neste ambiente por falha de DNS ao acessar GitHub. Teste em navegador e em dispositivos móveis ainda pendente. Nenhum documento real, dado pessoal, merge ou alteração de produção.
+
+Bloqueios: não há teste ponta a ponta validado da transferência e retorno, nem conciliação documental completa. Próxima ação: executar os testes Node diretamente no checkout da branch e validar a troca entre abas, inclusive falha, timeout e reenvio, antes de conectar dados ao cálculo de crédito. Não considerar o Motor homologado.
