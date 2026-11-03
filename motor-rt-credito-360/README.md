@@ -2499,3 +2499,11 @@ Verificar o preview Vercel antes de divulgar endereço. Sem merge na
 **Bloqueios:** os testes são unitários e não substituem execução integrada em navegador, testes móveis ou a suíte completa do repositório. O relatório continua exclusivamente fictício, sem comprovação documental, revisão autenticada, FCADS contratual, créditos IBS/CBS homologados ou parecer validado. A guarda valida coerência de apresentação, não o mérito da reforma tributária. A conciliação das rubricas reais recebidas do leitor v3.2 continua bloqueada até classificação, competência, escala, critérios de materialidade e revisão aprovados.
 
 **Próxima ação:** executar teste integrado do exemplo fictício e do canal do leitor em navegador real; avançar na revisão compacta das exceções da etapa 2 sem liberar dados não conciliados para projeções. Manter todas as alterações na branch `feature/motor-rt-credito-360`, sem merge na main, gastos ou uso de dados pessoais.
+
+
+## 2026-11-02 | Retorno do importador ao Motor
+- Correção na branch de desenvolvimento: botão `Voltar ao Motor RT Crédito 360` na aba do importador v3.2.
+- O botão permanece desabilitado até a confirmação de recebimento pelo canal local. Ao clicar, tenta fechar a aba secundária, preservando o Motor original. Se o navegador impedir o fechamento, orienta retornar manualmente à aba anterior.
+- Nenhuma transferência automática de arquivos, CNPJ ou dados pessoais foi adicionada. Sem merge na main e sem publicação de produção.
+- Testes automatizados de integração e navegação móvel ainda pendentes; não alegar homologação.
+- Próxima ação: executar teste ponta a ponta em navegador com dois separadores e confirmar o comportamento de fechamento em Android e desktop.
