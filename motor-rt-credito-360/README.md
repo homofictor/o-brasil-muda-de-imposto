@@ -2632,3 +2632,11 @@ Bloqueios: testes Node diretamente na branch, teste ponta a ponta de importaçã
 - Testes Node: 3 casos aprovados em reprodução local isolada da regra; 3 testes de regressão adicionados ao arquivo original da branch, mas não executados diretamente no checkout, pois o acesso GitHub do ambiente local falhou (DNS).
 - Bloqueios: suíte completa no checkout, conciliação BP/DRE/balancete e integração PDF/XLSX/CSV, validação mobile e navegação de retorno.
 - Próxima ação: executar a suíte no checkout e validar a transferência de documentos sintéticos do importador v3.2 ao Motor, sem presumir materialidade ou conciliação.
+
+
+## 2026-11-03 | Triagem de despesas financeiras negativas
+- Código `8d85f1768ab5869a10c73bdf089a0521290be3d6`: despesas financeiras negativas agora exigem conferência de reversões, receitas financeiras, sinal e competência, sem bloquear valores legítimos ou alimentar ICSD automaticamente.
+- Testes adicionados `8001f31efa3d4519dc2a6457d5b551b7795194af`: casos negativo e zero no teste Node de triagem.
+- Execução Node: 4/4 testes aprovados em reprodução isolada da regra; os testes da branch não foram executados sobre os módulos originais porque o checkout Git local falhou por DNS (`Could not resolve host: github.com`). Não confundir reprodução com validação integrada.
+- Bloqueios: executar suíte original, conciliar BP/DRE/balancete, testar transferência de PDF/XLSX/CSV e retorno ao Motor em navegador móvel, confirmar preview funcional Vercel.
+- Próxima ação: executar suíte Node da branch diretamente e testar transferência com dados sintéticos, preservando conciliação anterior aos ajustes da reforma.
