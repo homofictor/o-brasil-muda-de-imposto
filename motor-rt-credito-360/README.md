@@ -2551,3 +2551,12 @@ Entrega pequena: `mvp-confirmacao-timeout.test.js` acrescenta dois testes Node p
 Verificação: `node --test timeout.test.js` em cópia local fiel do módulo `mvp-confirmacao-transferencia.js` lido da branch, 2 testes aprovados e 0 falhas. A cópia local não substitui a execução da suíte integral no checkout Git, indisponível neste ambiente por falha de DNS ao acessar GitHub. Teste em navegador e em dispositivos móveis ainda pendente. Nenhum documento real, dado pessoal, merge ou alteração de produção.
 
 Bloqueios: não há teste ponta a ponta validado da transferência e retorno, nem conciliação documental completa. Próxima ação: executar os testes Node diretamente no checkout da branch e validar a troca entre abas, inclusive falha, timeout e reenvio, antes de conectar dados ao cálculo de crédito. Não considerar o Motor homologado.
+
+
+## 03/11/2026 | Divergências documentais na importação
+
+Entrega pequena: a ponte do Simulador v3.2 para o Motor deixa de tolerar silenciosamente diferenças numéricas de até R$ 0,01 entre duas rubricas aceitas do mesmo campo e período. Agora valores diferentes, inclusive subcentavo, não são consolidados automaticamente. A decisão não fixa limiar de materialidade: exige conciliação antes de aplicar qualquer ajuste. Duplicatas exatamente iguais permanecem aceitas. Não altera as três etapas nem os cálculos de IBS/CBS, NCG e ICSD.
+
+Commits: código `2533772622b4685b3313c0ecbc7caf03ddf46dd5`; regressão `797623d105518f16aaa6c93fdcd026e8245e48b0`. Verificação: quatro testes nativos `node --test` aprovados em reprodução isolada da regra, incluindo duplicata, diferença de centavo, subcentavo e períodos distintos. A execução do arquivo de regressão diretamente sobre os módulos da branch e a suíte completa continuam pendentes. Preview Vercel não validado nesta entrega, portanto não divulgar URL como verificada.
+
+Bloqueios: a revisão de exceções materiais ainda não está integrada ao fluxo completo de BP/DRE/balancete; falta teste ponta a ponta do retorno entre abas, conciliação de DFC e FCADS e auditoria tributária. Próxima ação: executar o teste nativo diretamente na branch e validar a importação completa no navegador, inclusive no celular. Nenhum merge na main nem alteração deliberada de produção, gastos ou uso de dados pessoais.
