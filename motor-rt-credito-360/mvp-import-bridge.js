@@ -138,7 +138,6 @@ export function iniciarPonteImportacaoV3(doc = document, loc = location) {
     const voltar = doc.createElement('button');
     voltar.id = 'voltar-rt360';
     voltar.type = 'button';
-    voltar.textContent = 'Voltar ao Motor RT Crédito 360';
     voltar.textContent = 'Voltar ao Motor sem importar';
     voltar.addEventListener('click', () => {
       // A aba foi aberta pelo Motor. Fechá-la revela a aba original sem recarregar o Motor.
@@ -154,7 +153,7 @@ export function iniciarPonteImportacaoV3(doc = document, loc = location) {
     mensagemEnvio = mensagem;
     emissor = criarEmissorConfirmado({canal, avisar: texto => {
       mensagem.textContent = texto;
-      // Habilitar o retorno apenas depois da confirmação de recebimento.
+      // A confirmação vem do protocolo de recebimento, não do texto da interface.
       const confirmado = /recebido\(s\) pelo Motor\./.test(texto);
       voltar.dataset.confirmado = confirmado ? '1' : '0';
       voltar.textContent = confirmado ? 'Voltar ao Motor RT Crédito 360' : 'Voltar ao Motor sem importar';
