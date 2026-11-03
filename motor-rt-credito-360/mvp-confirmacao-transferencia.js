@@ -8,7 +8,7 @@ export function confirmarRecebimento(canal, pacote) {
   return true;
 }
 
-export function criarEmissorConfirmado({canal, avisar, agendar = setTimeout,
+export function criarEmissorConfirmado({canal, avisar, aoConfirmar = () => {}, agendar = setTimeout,
   desagendar = clearTimeout, esperaMs = 5000}) {
   let sequencia = 0;
   let pendente = null;
@@ -19,6 +19,7 @@ export function criarEmissorConfirmado({canal, avisar, agendar = setTimeout,
     const quantidade = pendente.quantidade;
     pendente = null;
     avisar(`${quantidade} valor(es) recebido(s) pelo Motor. Volte à outra aba e confira antes de aplicar.`);
+    aoConfirmar({envioId: event.data.envioId, quantidade});
   };
   return {
     enviar(candidatos, rascunhos = []) {
