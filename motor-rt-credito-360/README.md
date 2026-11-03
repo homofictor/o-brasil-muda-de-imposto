@@ -2608,3 +2608,11 @@ Bloqueios: testes Node diretamente na branch, teste ponta a ponta de importaçã
 - Node: `node --test /tmp/rt360-check/triagem.test.mjs`, 4/4 aprovados em reprodução isolada da regra alterada. A suíte original completa não foi executada, pois o checkout remoto não está acessível via DNS neste ambiente.
 - Bloqueios: execução nativa da suíte, importação PDF/XLSX/CSV e retorno entre abas, revisão de materialidade, conciliação e teste móvel.
 - Próxima ação: validar fluxo de importação v3.2 com dados sintéticos, mantendo três etapas e sem aplicar saldos não conciliados às projeções.
+
+
+## 2026-11-03 | Revisão de sinal de saldos circulantes
+- Código: `291fb648e56282377325045c7560935138bca1e9`. Testes: `63d28a7074a70ec3acf7210adfd0ab22ca7dc977`.
+- A triagem alerta sobre saldo negativo no ativo ou passivo circulante e exige confirmação do sinal e da natureza contábil antes da conciliação; saldo zero não é marcado como negativo. Não altera cálculos ou projeções.
+- Testes Node: 2 casos aprovados em reprodução local isolada da regra. A suíte integral do repositório e os testes sobre o checkout original permanecem pendentes porque a conexão GitHub do ambiente Node falhou por DNS.
+- Bloqueios: validação ponta a ponta de PDF/XLSX/CSV com leitor v3.2, revisão de materialidade e retorno entre abas em celular; não existe homologação tributária ou de crédito.
+- Próxima ação: executar a suíte Node sobre checkout real e validar o fluxo documental sintético e a conciliação antes dos cenários.
