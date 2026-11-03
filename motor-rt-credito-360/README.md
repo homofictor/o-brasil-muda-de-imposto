@@ -2640,3 +2640,11 @@ Bloqueios: testes Node diretamente na branch, teste ponta a ponta de importaçã
 - Execução Node: 4/4 testes aprovados em reprodução isolada da regra; os testes da branch não foram executados sobre os módulos originais porque o checkout Git local falhou por DNS (`Could not resolve host: github.com`). Não confundir reprodução com validação integrada.
 - Bloqueios: executar suíte original, conciliar BP/DRE/balancete, testar transferência de PDF/XLSX/CSV e retorno ao Motor em navegador móvel, confirmar preview funcional Vercel.
 - Próxima ação: executar suíte Node da branch diretamente e testar transferência com dados sintéticos, preservando conciliação anterior aos ajustes da reforma.
+
+
+## 2026-11-03 | Bloqueio de anualização automática de despesas financeiras
+- Código: `bea87736cd9a24833eb4e09179878abf7a9e55c2`. Teste atualizado: `f36e15eef521032a2e22091045f9310cacae0425`.
+- A função auxiliar `estimarJurosAnuais` não multiplica mais despesas financeiras de período parcial por 12/meses sem conciliação. Somente preserva o valor informado para competência comprovada de 12 meses, não negativo e finito. Não interpreta despesas financeiras como serviço da dívida ou ICSD.
+- Node: 4/4 testes aprovados em reprodução isolada fiel da função. Teste de regressão do repositório atualizado, mas não executado no checkout original por falha DNS ao acessar github.com; suíte completa não validada.
+- Bloqueios: conciliação BP/DRE/balancete, validação integrada PDF/XLSX/CSV e retorno entre abas, premissas setoriais e ICSD, testes móveis e preview funcional.
+- Próxima ação: executar suíte Node original em checkout acessível e testar transferência sintética do importador v3.2, sem alimentar projeções com dados não conciliados.
