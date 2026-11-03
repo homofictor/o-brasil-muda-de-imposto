@@ -2569,3 +2569,15 @@ Entrega: a ponte do Simulador v3.2 agora permite enviar rubricas preliminares me
 Teste Node: quatro casos aprovados em cópia local do protocolo (somente rubricas, pacote vazio, confirmação e regressão de valores aceitos). Arquivo de regressão `test-rascunhos-sem-candidatos.mjs` incluído na branch. Execução diretamente sobre o checkout do repositório e teste ponta a ponta no navegador pendentes.
 
 Bloqueios: validar o formato real das rubricas geradas pelo leitor PDF/XLSX/CSV e a reconciliação contábil antes de utilizá-las em cálculos; validar preview da Vercel. Próxima ação: testar o fluxo completo entre abas com documentos sintéticos e conferir se rubricas sem valores aceitos chegam à revisão de exceções materiais. Sem merge na main, sem publicação em produção.
+
+
+## Regressão do protocolo de rubricas sem candidatos (03/11/2026)
+
+Entrega única e restrita a `mvp-confirmacao-transferencia.test.mjs`: a expectativa de erro do teste antigo foi alinhada à mensagem atual `Não há valores ou rubricas para transferir`, e foi acrescentado teste para envio e confirmação de rubricas preliminares quando não há candidatos numéricos. Nenhuma regra tributária, fórmula, interface, permissão ou dado pessoal foi modificado.
+
+Commit do teste: `0fe80cbb85e87d1ddd70439d916897e83cb7a119`.
+Verificação: `node --test` executado em reprodução local isolada do protocolo com dois casos equivalentes, **2 aprovados, 0 falhas**. A cópia foi transcrita para o teste isolado, não obtida diretamente do checkout; portanto **não comprova** execução do arquivo completo da branch nem da suíte integral. O teste acrescentado foi registrado no GitHub, mas sua execução nativa na branch ainda precisa ser comprovada.
+
+Bloqueios: sem acesso de rede ao checkout GitHub neste ambiente; consulta do preview Vercel não retornou confirmação verificável. Não há URL de preview homologada. Persistem integração documental, conciliação contábil, revisão de exceções materiais e QA móvel.
+
+Próxima ação: executar `node --test motor-rt-credito-360/mvp-confirmacao-transferencia.test.mjs` em checkout íntegro, corrigir eventuais falhas e validar fluxo de duas abas com dados sintéticos. Nenhum merge na `main` nem alteração de produção.
