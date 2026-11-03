@@ -2664,3 +2664,11 @@ Bloqueios: testes Node diretamente na branch, teste ponta a ponta de importaçã
 - Node: 3/3 testes aprovados em reprodução isolada da regra (receita zero com margem, positiva com margem e zero sem margem). Testes adicionados à branch, mas a suíte original não foi executada diretamente no checkout; a reprodução não comprova integração.
 - Bloqueios: testes integrados da importação v3.2 PDF/XLSX/CSV, conciliação de BP/DRE/balancete, revisão de materialidade, preview funcional e validação móvel.
 - Próxima ação: executar a suíte original no checkout e validar a transferência e conciliação de documentos sintéticos antes de liberar dados para projeções.
+
+
+## 2026-11-03 | Receita zero e tributos de consumo não nulos
+- Código: `842c47df38e4fc5bb53b9b1f2f3598386df2e528`. Testes: `e2c663a4ff82072bd61b249711556c37bc79d10f`.
+- Triagem sinaliza RBT12 zero com tributos de consumo diferentes de zero, inclusive negativos; exige conciliação da base, créditos, ajustes e competência. Não calcula alíquota efetiva, IBS/CBS ou impacto no caixa com esses candidatos.
+- Node: 3/3 verificações isoladas da condição aprovadas; os três testes de regressão foram adicionados à branch, mas a suíte original não foi executada no checkout (falha DNS de github.com no ambiente local).
+- Bloqueios: conciliação documental BP/DRE/balancete, validação integrada PDF/XLSX/CSV, materialidade, testes mobile, preview funcional e homologação de metodologia.
+- Próxima ação: executar a suíte Node da branch em checkout acessível e validar importação sintética do leitor v3.2 com conciliação antes das projeções.
