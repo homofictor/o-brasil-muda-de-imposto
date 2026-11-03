@@ -28,6 +28,10 @@ export function triarExcecoesContabeis(candidatos) {
   if (candidatos.some(item => item.field === 'rbt12' && item.value === 0) &&
       candidatos.some(item => item.field === 'currentConsumptionTaxAnnual' && item.value !== 0))
     excecoes.push('Receita bruta/RBT12 igual a zero com tributos de consumo informados. Conferir base tributável, ajustes, créditos e competência; não inferir alíquota efetiva nem impacto IBS/CBS.');
+  const receita = candidatos.find(item => item.field === 'rbt12');
+  const tributos = candidatos.find(item => item.field === 'currentConsumptionTaxAnnual');
+  if (receita && tributos && receita.periodMonths !== tributos.periodMonths)
+    excecoes.push('Receita bruta/RBT12 e tributos de consumo apresentam competências distintas ou não comprovadas. Não calcular alíquota efetiva por divisão direta; reconciliar períodos e bases antes da comparação.');
   if (vistos.has('currentAssets') || vistos.has('currentLiabilities'))
     excecoes.push('Ativo e passivo circulantes não determinam NCG operacional. Separar contas cíclicas e comparar períodos.');
   if (vistos.has('currentAssets') !== vistos.has('currentLiabilities'))
