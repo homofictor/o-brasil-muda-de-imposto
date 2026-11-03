@@ -23,9 +23,9 @@ export function criarEmissorConfirmado({canal, avisar, aoConfirmar = () => {}, a
   };
   return {
     enviar(candidatos, rascunhos = []) {
-      if (!Array.isArray(candidatos) || !candidatos.length)
-        throw new Error('Não há candidatos para transferir');
-      if (!Array.isArray(rascunhos)) throw new Error('Rascunhos inválidos');
+      if (!Array.isArray(candidatos) || !Array.isArray(rascunhos) ||
+          (!candidatos.length && !rascunhos.length))
+        throw new Error('Não há valores ou rubricas para transferir');
       if (pendente) desagendar(pendente.timeout);
       const id = ++sequencia;
       const atual = {id, quantidade: candidatos.length, timeout: null};
