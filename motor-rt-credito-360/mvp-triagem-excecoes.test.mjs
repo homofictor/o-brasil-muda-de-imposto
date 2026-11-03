@@ -74,3 +74,13 @@ test('tributo de consumo sem competência anual exige ressalva',()=>{
 test('período zero é rejeitado antes da triagem',()=>{
  assert.throws(()=>triarExcecoesContabeis([{field:'rbt12',value:100,periodMonths:0}]));
 });
+
+test('par circulante incompleto não permite inferir capital circulante ou NCG',()=>{
+ for(const campo of ['currentAssets','currentLiabilities']){
+  const resultado=triarExcecoesContabeis([c(campo,100,null)]);
+  assert.ok(resultado.excecoes.some(x=>x.includes('Capital circulante incompleto')));
+  assert.ok(resultado.excecoes.some(x=>x.includes('NCG operacional')));
+ }
+ const completo=triarExcecoesContabeis([c('currentAssets',100,null),c('currentLiabilities',80,null)]);
+ assert.equal(completo.excecoes.some(x=>x.includes('Capital circulante incompleto')),false);
+});
