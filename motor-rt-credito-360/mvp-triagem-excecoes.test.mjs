@@ -140,3 +140,13 @@ test('margem negativa atípica é sinalizada e margem de 100% não é rejeitada'
  const limite=triarExcecoesContabeis([c('currentOperatingMarginPct',100,12)]);
  assert.equal(limite.excecoes.some(x=>x.includes('fora da faixa usual')),false);
 });
+
+test('receita zero com margem exige conferência de denominador sem inferir EBITDA',()=>{
+ const r=triarExcecoesContabeis([c('rbt12',0,12),c('currentOperatingMarginPct',15,12)]);
+ assert.ok(r.excecoes.some(x=>x.includes('igual a zero com margem operacional')));
+ assert.match(r.aviso,/Nenhum candidato alimenta automaticamente EBITDA/);
+});
+test('receita positiva com margem não gera alerta de denominador zero',()=>{
+ const r=triarExcecoesContabeis([c('rbt12',100,12),c('currentOperatingMarginPct',15,12)]);
+ assert.equal(r.excecoes.some(x=>x.includes('igual a zero com margem operacional')),false);
+});
