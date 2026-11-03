@@ -2679,3 +2679,16 @@ Bloqueios: testes Node diretamente na branch, teste ponta a ponta de importaçã
 - Node: 4/4 verificações isoladas da condição aprovadas; quatro testes de regressão adicionados à branch. A suíte original do checkout não foi executada nesta entrega, portanto não há comprovação de integração.
 - Bloqueios: reconciliação efetiva de bases e competências, testes de importação PDF/XLSX/CSV com arquivos sintéticos, revisão de materialidade, navegação móvel e validação funcional do preview.
 - Próxima ação: executar suíte Node diretamente no checkout e testar transferência entre leitor v3.2 e Motor com BP/DRE/balancete fictícios.
+
+
+## Leitor CSV: cabeçalho com BOM UTF-8 (03/11/2026)
+
+Entrega pequena na etapa 2: o leitor já existente em `simulador/v3/import.js` agora remove o marcador BOM UTF-8 inicial antes de interpretar o cabeçalho CSV. Isso evita que o primeiro nome de coluna contenha o caractere invisível e prejudique a classificação das rubricas. O leitor continua sendo o do Simulador RT v3.2; não foi criado parser paralelo na interface.
+
+Commits: código `e0c94503970152e13ae0608806e51d66c3f6e8d1`; regressão `3a9c215a5aba2cccaee3a7ce310ba982ffb93295`; correção de fixtures `3482cd971893f6c89302136b11aac00fbd6da8e9`.
+
+Testes: 2 verificações Node aprovadas em reprodução isolada da função (CSV com BOM e campo entre aspas contendo ponto e vírgula). O teste `csv-bom-import.test.mjs` foi incluído na branch, mas ainda não executado diretamente no checkout completo; a suíte integral, importação real PDF/XLSX/CSV e QA móvel seguem pendentes. Nenhuma homologação tributária ou de crédito foi realizada.
+
+Bloqueios: não há validação ponta a ponta de importação, classificação, conciliação e geração do relatório com documentos sintéticos completos; o preview da Vercel não foi verificado funcionalmente nesta entrega. Não houve merge ou alteração deliberada da produção.
+
+Próxima ação: executar `node --test motor-rt-credito-360/csv-bom-import.test.mjs` em checkout da branch e integrar fixture CSV sintética à etapa 2, verificando conciliação e exceções materiais antes de qualquer projeção.
