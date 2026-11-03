@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Motor RT Crédito 360 | Prévia em três etapas</title>
+<style>
+:root{font-family:system-ui,Arial,sans-serif;color:#172b42;background:#f3f6fa}*{box-sizing:border-box}
+body{margin:0}header{background:#10233d;color:white;padding:24px max(16px,calc((100vw - 950px)/2))}
+main{max-width:950px;margin:18px auto;padding:0 16px 100px}h1{margin:0;font-size:1.6rem}h2{font-size:1.17rem;margin-top:0}
+section{background:#fff;border:1px solid #dce4ee;border-radius:14px;padding:20px;margin:16px 0}
+button,input{font:inherit;padding:12px;border-radius:8px}button{border:0;background:#154c7d;color:white;cursor:pointer}button:disabled{opacity:.55;cursor:not-allowed}
+input{border:1px solid #a8b9ca;max-width:100%;width:270px}button:focus-visible,input:focus-visible{outline:3px solid #ec9e20;outline-offset:2px}
+.actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center}.secondary{background:#e7eef5;color:#183a5c}
+.alert{background:#fff3db;border-left:5px solid #b57616;padding:12px;border-radius:5px}.muted{color:#52647a;font-size:.92rem}
+.status{white-space:pre-wrap}.error{color:#9c2020}.ok{color:#12664c}.scroll{overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:720px}
+th,td{padding:9px;text-align:right;border-bottom:1px solid #e0e8ef}th:first-child,td:first-child{text-align:left}th{background:#eaf0f7}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin:14px 0}.card{border:1px solid #dce4ee;border-radius:9px;padding:12px}
+.card strong{display:block;font-size:1.2rem;margin-top:5px}.sticky{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #cbd7e5;padding:12px 16px;box-shadow:0 -3px 15px #10233d18;display:flex;justify-content:center;align-items:center;gap:16px;z-index:5}
+.sticky button{min-width:230px}.sticky span{font-size:.85rem;color:#52647a}@media(max-width:550px){section{padding:15px}.sticky{justify-content:space-between}.sticky button{min-width:0;flex:1}.sticky span{max-width:110px}input{width:100%}}
+@media print{.sticky,button,#etapa1,#etapa2{display:none!important}main{padding:0}section{border:0}body{background:white}}
+</style></head><body>
+<header><h1>Motor RT Crédito 360</h1><p>Fluxo de trabalho em três etapas. Prévia técnica, sem homologação para crédito.</p></header>
+<main>
+<p class="alert"><strong>Ambiente de demonstração.</strong> Não envie dados reais ou confidenciais. O relatório disponível nesta versão utiliza somente uma projeção fictícia e não representa apuração tributária nem parecer validado.</p>
+<section id="etapa1"><h2>1. Identificar a empresa</h2>
+<p class="muted">Consultar CNPJ, CNAE e atividade. A situação do Simples Nacional só será apresentada quando houver fonte verificável.</p>
+<div class="actions"><label for="cnpj">CNPJ <input id="cnpj" inputmode="numeric" maxlength="18" placeholder="00.000.000/0000-00"></label><button id="consultar" type="button">Consultar CNPJ</button><button id="demo" class="secondary" type="button">Usar exemplo fictício</button></div>
+<p id="cadastro" class="status" role="status" aria-live="polite">Nenhum CNPJ consultado. O exemplo fictício não representa empresa real.</p></section>
+<section id="etapa2"><h2>2. Enviar BP, DRE e balancete disponíveis</h2>
+<p>Reutilizamos o importador do Simulador RT v3.2 para PDF, XLSX, XLS e CSV, com aceitação de candidatos no próprio leitor. Não há outro parser nesta página.</p>
+<button type="button" id="importar">Abrir leitor existente e revisar candidatos</button>
+<p id="status-importacao" class="status muted" role="status" aria-live="polite">Nenhum documento revisado. O fluxo real ainda depende de conciliação contábil e revisão de exceções materiais.</p>
+<p id="excecoes-importacao" class="alert status" role="status" aria-live="polite" hidden></p>
+<p id="status-rubricas" class="muted" role="status" aria-live="polite"></p>
+<p class="muted">Os indicadores recebidos não são aplicados automaticamente à projeção do economista, ao serviço da dívida nem aos créditos de IBS/CBS.</p></section>
+<section id="etapa3"><h2>3. Gerar análise com três cenários e relatório sintético</h2>
+<p class="muted">O exemplo fictício preserva o caixa e o serviço da dívida da projeção original em 2026 a 2033. As três sensibilidades usam fatores matemáticos de 0,5x, 1x e 1,5x sobre ajustes hipotéticos. Não são parâmetros legais nem setoriais.</p>
+<p id="mensagem-relatorio" class="status" role="status" aria-live="polite">Selecione “Usar exemplo fictício” para habilitar o relatório demonstrativo.</p>
+<div id="relatorio" hidden><h3>Relatório sintético de capacidade de pagamento</h3><p class="alert"><strong>EXCLUSIVAMENTE FICTÍCIO.</strong> Nenhum valor deste relatório deriva do CNPJ ou de documentos enviados.</p>
+<h3>Memória contábil fictícia de 2026</h3><div id="memoria-contabil" class="cards"></div><p id="ressalva-memoria" class="muted"></p>
+<div id="resumos" class="cards"></div>
+<div class="scroll"><table><thead><tr><th>Cenário / ano</th><th>Δ EBITDA</th><th>Δ NCG</th><th>Δ IBS</th><th>Δ CBS</th><th>Caixa original</th><th>Caixa ajustado</th><th>Serviço dívida</th><th>ICSD</th></tr></thead><tbody id="linhas-relatorio"></tbody></table></div>
+<h3>Limitações e ressalvas</h3><div id="limitacoes"></div><button type="button" id="imprimir" class="secondary">Imprimir relatório fictício</button></div></section>
+</main>
+<div class="sticky"><span>Relatório sempre acessível</span><button id="gerar" type="button" disabled>Gerar relatório fictício</button></div>
+<script type="module">
+import {iniciarCadastro} from './fluxo-cadastral.js';
+import {iniciarPonteImportacaoMVP} from './mvp-import-bridge.js';
+import {resumirPendenciasEtapa2} from './mvp-etapa2-pendencias.js';
+import {triarExcecoesContabeis} from './mvp-triagem-excecoes.js';
+import {gerarTresCenariosSinteticos} from './mvp-tres-cenarios.js';
+import {conciliarExemploContabil} from './mvp-exemplo-contabil.js';
+import {gerarMemoriaContabilSintetica} from './mvp-memoria-relatorio.js';
+const el=id=>document.getElementById(id);
+const fmt=n=>n===null?'Indisponível':new Intl.NumberFormat('pt-BR',{maximumFractionDigits:2}).format(n);
+let demo=false;
+let cancelarImportacao=()=>{};
+function limparRelatorio(){el('relatorio').hidden=true;el('mensagem-relatorio').textContent='O relatório fictício não utiliza dados do cadastro nem do importador.';}
+el('demo').addEventListener('click',()=>{
+ try {
+  cancelarImportacao();
+  const r=conciliarExemploContabil();
+  demo=true;el('gerar').disabled=false;el('cnpj').value='';
+  el('cadastro').textContent='EXEMPLO FICTÍCIO. Empresa, CNAE e regime tributário não consultados. Simples Nacional: não verificado.';
+  el('status-importacao').textContent='EXEMPLO FICTÍCIO 2026. Balancete fictício: débitos '+fmt(r.balancete.debitos)+' = créditos '+fmt(r.balancete.creditos)+'. BP: ativo '+fmt(r.bp.ativo)+' = passivo '+fmt(r.bp.passivo)+' + PL '+fmt(r.bp.patrimonio)+'. DRE: receita líquida '+fmt(r.dre.receitaLiquida)+', custos '+fmt(r.dre.custos)+', despesas '+fmt(r.dre.despesas)+', EBITDA ilustrativo '+fmt(r.dre.ebitdaIlustrativo)+'. NCG operacional: '+fmt(r.ncg.anterior)+' para '+fmt(r.ncg.atual)+' (variação '+fmt(r.ncg.variacao)+'). '+r.limites;
+  limparRelatorio();
+ } catch(e) {
+  demo=false;el('gerar').disabled=true;limparRelatorio();
+  el('status-importacao').textContent='Falha na conciliação do exemplo fictício: '+e.message;
+ }
+});
+el('consultar').addEventListener('click',async()=>{
+ demo=false;el('gerar').disabled=true;cancelarImportacao();limparRelatorio();el('consultar').disabled=true;el('cadastro').textContent='Consultando cadastro...';
+ try{const p=await iniciarCadastro(el('cnpj').value);const c=p.cadastro;
+  el('cadastro').textContent=['Razão social: '+(c.razaoSocial??'não informada'),'CNAE: '+c.cnaePrincipal+' ('+(p.descricaoCNAEOficial?.descricao??c.descricaoPrincipal??'descrição não conferida')+')','Atividade: '+(p.classificacao.setores.join(', ')||'não classificada'),'Situação cadastral: '+(c.situacaoCadastral??'não informada'),'Simples Nacional: não verificado nesta integração; não inferir regime pelo CNAE.','Dados cadastrais sujeitos à conferência. Não inserir documentos reais no preview.'].join('\n');
+ }catch(e){el('cadastro').textContent='Consulta não concluída: '+(e.message||'falha na fonte');}
+ finally{el('consultar').disabled=false;}
+});
+cancelarImportacao=iniciarPonteImportacaoMVP({abrir:el('importar'),status:msg=>{el('status-importacao').textContent=msg;},
+ receberRascunhos:rubricas=>{
+  try {
+   const resumo=resumirPendenciasEtapa2(rubricas);
+   el('status-rubricas').textContent=resumo.total
+    ?resumo.pendentes+' linha(s) preliminar(es) pendente(s) de confirmação contábil. Nenhuma liberada para conciliação ou cálculo.'
+    :'Nenhuma rubrica detalhada elegível foi transferida. O leitor continua disponível para revisão.';
+  } catch {
+   el('status-rubricas').textContent='Lote de rubricas preliminares recusado. Revise a extração no leitor v3.2; nenhum dado foi aplicado.';
+  }
+ },
+ receber:candidatos=>{demo=false;el('gerar').disabled=true;limparRelatorio();
+  const triagem=triarExcecoesContabeis(candidatos);
+  el('status-importacao').textContent=triagem.recebidos+' candidato(s) numérico(s) aceito(s). Nenhum valor aplicado automaticamente à projeção.';
+  el('excecoes-importacao').hidden=triagem.excecoes.length===0;
+  el('excecoes-importacao').textContent=triagem.excecoes.join('\n')+(triagem.excecoes.length?'\n':'')+triagem.aviso;
+ },
+ limpar:()=>{el('status-importacao').textContent='Sessão de importação encerrada. Nenhum valor transferido para a projeção.';
+  el('excecoes-importacao').hidden=true;el('excecoes-importacao').textContent='';
+  el('status-rubricas').textContent='';}}) || (()=>{});
+function card(titulo,valor,nota,destino='resumos'){const d=document.createElement('div');d.className='card';const t=document.createElement('span'),v=document.createElement('strong'),n=document.createElement('small');t.textContent=titulo;v.textContent=valor;n.textContent=nota;d.append(t,v,n);el(destino).append(d);}
+el('gerar').addEventListener('click',()=>{
+ if(!demo)return;
+ try{const r=gerarTresCenariosSinteticos(),memoria=gerarMemoriaContabilSintetica();el('resumos').replaceChildren();el('memoria-contabil').replaceChildren();el('linhas-relatorio').replaceChildren();el('limitacoes').replaceChildren();
+ for(const i of memoria.indicadores)card(i.rotulo,fmt(i.valor),i.nota,'memoria-contabil');
+ el('ressalva-memoria').textContent=memoria.ressalva;
+ for(const c of r.cenarios){card(c.titulo,fmt(c.resumo.menorICSD)+'x','Δ caixa acumulado: '+fmt(c.resumo.deltaCaixaAcumulado)+' | Insuficiência: '+(c.resumo.anosInsuficiencia.join(', ')||'nenhuma'));
+  for(const p of c.exercicios){const tr=document.createElement('tr');for(const v of [c.titulo+' / '+p.ano,fmt(p.ebitdaIncremental),fmt(p.ncgIncremental),fmt(p.ibsIncremental),fmt(p.cbsIncremental),fmt(p.caixaOriginal),fmt(p.caixaAjustado),fmt(p.servicoDivida),fmt(p.icsdAjustado)+'x']){const td=document.createElement('td');td.textContent=v;tr.append(td);}el('linhas-relatorio').append(tr);}}
+ for(const aviso of r.limitacoes){const p=document.createElement('p');p.textContent=aviso;el('limitacoes').append(p);}
+ el('relatorio').hidden=false;el('mensagem-relatorio').textContent='Relatório sintético completo gerado, sem dados empresariais reais e sem homologação.';el('relatorio').scrollIntoView({behavior:'smooth'});
+ }catch(e){el('relatorio').hidden=true;el('mensagem-relatorio').textContent='Relatório não gerado: '+e.message;}
+});
+el('imprimir').addEventListener('click',()=>window.print());
+</script></body></html>
