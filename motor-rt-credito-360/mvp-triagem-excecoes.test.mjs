@@ -164,3 +164,21 @@ test('receita positiva com tributos não dispara ressalva de receita zero',()=>{
  const r=triarExcecoesContabeis([c('rbt12',100,12),c('currentConsumptionTaxAnnual',20,12)]);
  assert.equal(r.excecoes.some(x=>x.includes('igual a zero com tributos de consumo')),false);
 });
+
+test('competências divergentes impedem alíquota efetiva por divisão direta',()=>{
+ const r=triarExcecoesContabeis([c('rbt12',100,12),c('currentConsumptionTaxAnnual',10,6)]);
+ assert.ok(r.excecoes.some(x=>x.includes('competências distintas')));
+ assert.ok(r.excecoes.some(x=>x.includes('Não calcular alíquota efetiva')));
+});
+test('competências anuais iguais não geram alerta de divergência',()=>{
+ const r=triarExcecoesContabeis([c('rbt12',100,12),c('currentConsumptionTaxAnnual',10,12)]);
+ assert.equal(r.excecoes.some(x=>x.includes('competências distintas')),false);
+});
+test('competência desconhecida não equivale a doze meses',()=>{
+ const r=triarExcecoesContabeis([c('rbt12',100,null),c('currentConsumptionTaxAnnual',10,12)]);
+ assert.ok(r.excecoes.some(x=>x.includes('competências distintas')));
+});
+test('sem ambos os campos não infere divergência',()=>{
+ const r=triarExcecoesContabeis([c('rbt12',100,12)]);
+ assert.equal(r.excecoes.some(x=>x.includes('competências distintas')),false);
+});
