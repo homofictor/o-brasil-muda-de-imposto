@@ -2656,3 +2656,11 @@ Bloqueios: testes Node diretamente na branch, teste ponta a ponta de importaçã
 - Node: 8/8 verificações da condição isolada aprovadas. A suíte original não foi executada: checkout Git indisponível por falha de resolução DNS de github.com. Os dois testes de regressão foram adicionados à branch, sem execução integrada comprovada.
 - Bloqueios: suíte completa, conciliação BP/DRE/balancete, fluxo PDF/XLSX/CSV e navegação mobile; nenhuma materialidade ou homologação comprovada.
 - Próxima ação: executar Node diretamente no checkout e validar o importador v3.2 com documentos sintéticos completos, sem aplicar rubricas não conciliadas.
+
+
+## 2026-11-03 | Margem com receita zero
+- Código: `aa210505c0759fec98fce6dfc502ef82179e78bb`. Testes: `026562339b982e22fc4e6d6f7435506891598f4e`.
+- Receita bruta/RBT12 igual a zero, acompanhada de margem operacional, gera ressalva específica sobre denominador e competência. Não infere EBITDA monetário nem altera projeções.
+- Node: 3/3 testes aprovados em reprodução isolada da regra (receita zero com margem, positiva com margem e zero sem margem). Testes adicionados à branch, mas a suíte original não foi executada diretamente no checkout; a reprodução não comprova integração.
+- Bloqueios: testes integrados da importação v3.2 PDF/XLSX/CSV, conciliação de BP/DRE/balancete, revisão de materialidade, preview funcional e validação móvel.
+- Próxima ação: executar a suíte original no checkout e validar a transferência e conciliação de documentos sintéticos antes de liberar dados para projeções.
