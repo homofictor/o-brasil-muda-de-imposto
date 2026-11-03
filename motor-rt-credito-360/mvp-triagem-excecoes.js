@@ -34,6 +34,8 @@ export function triarExcecoesContabeis(candidatos) {
     excecoes.push('Receita bruta/RBT12 negativa. Conferir devoluções, estornos, sinal e competência antes de projetar receitas.');
   if (candidatos.some(item => item.field === 'currentConsumptionTaxAnnual' && item.value < 0))
     excecoes.push('Tributos atuais negativos. Conferir créditos, compensações, restituições e sinal antes de estimar carga tributária ou fluxo de caixa.');
+  if (candidatos.some(item => item.field === 'interestExpense' && item.value < 0))
+    excecoes.push('Despesas financeiras negativas. Conferir reversões, receitas financeiras, sinal e competência antes de estimar juros ou serviço da dívida.');
   if (vistos.has('interestExpense'))
     excecoes.push('Despesas financeiras não representam serviço da dívida. Confirmar juros, amortizações e metodologia do ICSD.');
   if (vistos.has('currentConsumptionTaxAnnual'))
