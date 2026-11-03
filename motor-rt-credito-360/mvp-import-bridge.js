@@ -1,3 +1,4 @@
+import {abrirImportadorSeguro} from './abertura-importador.js';
 import {criarEmissorConfirmado, confirmarRecebimento} from './mvp-confirmacao-transferencia.js';
 import {encerrarSessaoImportadorV3} from './mvp-encerramento-v3.js';
 import {extrairRascunhosRubricasV3, validarRascunhosRubricasV3} from './mvp-rascunhos-v3.js';
@@ -102,8 +103,13 @@ export function iniciarPonteImportacaoMVP({abrir, receber, receberRascunhos, sta
     };
     const url = new URL('../simulador/v3/index.html', location.href);
     url.searchParams.set('rt360', token);
-    window.open(url.href, '_blank', 'noopener,noreferrer');
-    status('No importador aberto em outra aba, aceite os candidatos e clique em Enviar ao Motor RT Crédito 360.');
+    const abertura = abrirImportadorSeguro(window.open.bind(window), url.href);
+    if (!abertura.solicitado) {
+      cancelar();
+      status('Não foi possível solicitar a abertura do importador. Permita novas abas neste navegador e tente novamente.');
+      return;
+    }
+    status('Abertura do importador solicitada. Na outra aba, aceite os valores e envie ao Motor. Se nenhuma aba aparecer, permita pop-ups e tente novamente.');
   });
   // Navegação e retorno pelo cache do navegador não devem preservar candidatos
   // de uma sessão cujo canal já foi encerrado.
