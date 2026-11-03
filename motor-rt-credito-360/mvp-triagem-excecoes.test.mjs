@@ -101,3 +101,18 @@ test('dois saldos circulantes negativos geram um alerta consolidado',()=>{
  assert.equal(r.excecoes.filter(x=>x.includes('Saldo circulante negativo')).length,1);
  assert.ok(r.excecoes.some(x=>x.includes('NCG operacional')));
 });
+
+test('receita bruta negativa exige conferência de estornos antes de projetar',()=>{
+ const r=triarExcecoesContabeis([c('rbt12',-200,12)]);
+ assert.ok(r.excecoes.some(x=>x.includes('RBT12 negativa')));
+ assert.equal(r.recebidos,1);
+});
+test('tributos negativos exigem conferência de créditos e compensações',()=>{
+ const r=triarExcecoesContabeis([c('currentConsumptionTaxAnnual',-50,12)]);
+ assert.ok(r.excecoes.some(x=>x.includes('Tributos atuais negativos')));
+ assert.equal(r.excecoes.some(x=>x.includes('período de 12 meses não comprovado')),false);
+});
+test('receita e tributos positivos não recebem alerta de sinal negativo',()=>{
+ const r=triarExcecoesContabeis([c('rbt12',200,12),c('currentConsumptionTaxAnnual',50,12)]);
+ assert.equal(r.excecoes.some(x=>x.includes('RBT12 negativa')||x.includes('Tributos atuais negativos')),false);
+});
