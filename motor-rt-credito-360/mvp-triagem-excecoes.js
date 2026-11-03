@@ -23,6 +23,8 @@ export function triarExcecoesContabeis(candidatos) {
     excecoes.push('Receita bruta/RBT12 não equivale à receita líquida da DRE. Exigir conciliação antes de calcular margem.');
   if (vistos.has('currentOperatingMarginPct'))
     excecoes.push('Margem EBITDA isolada não comprova EBITDA monetário, competência nem reconciliação com a DRE.');
+  if (candidatos.some(item => item.field === 'rbt12' && item.value === 0) && vistos.has('currentOperatingMarginPct'))
+    excecoes.push('Receita bruta/RBT12 igual a zero com margem operacional informada. Conferir denominador, origem e competência; não inferir EBITDA monetário.');
   if (vistos.has('currentAssets') || vistos.has('currentLiabilities'))
     excecoes.push('Ativo e passivo circulantes não determinam NCG operacional. Separar contas cíclicas e comparar períodos.');
   if (vistos.has('currentAssets') !== vistos.has('currentLiabilities'))
