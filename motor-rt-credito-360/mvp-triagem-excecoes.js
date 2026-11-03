@@ -36,6 +36,8 @@ export function triarExcecoesContabeis(candidatos) {
     excecoes.push('Tributos atuais negativos. Conferir créditos, compensações, restituições e sinal antes de estimar carga tributária ou fluxo de caixa.');
   if (candidatos.some(item => item.field === 'interestExpense' && item.value < 0))
     excecoes.push('Despesas financeiras negativas. Conferir reversões, receitas financeiras, sinal e competência antes de estimar juros ou serviço da dívida.');
+  if (candidatos.some(item => item.field === 'currentOperatingMarginPct' && Math.abs(item.value) > 100))
+    excecoes.push('Margem operacional fora da faixa usual de -100% a 100%. Conferir unidade percentual, sinal, receitas não recorrentes e reconciliação da DRE antes de projetar EBITDA. Não corrigir automaticamente.');
   if (vistos.has('interestExpense'))
     excecoes.push('Despesas financeiras não representam serviço da dívida. Confirmar juros, amortizações e metodologia do ICSD.');
   if (vistos.has('currentConsumptionTaxAnnual'))
