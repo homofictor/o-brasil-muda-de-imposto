@@ -1,0 +1,20 @@
+/* Padronização institucional e acessibilidade mobile */
+:root{color-scheme:light;--institutional-focus:#1769aa}
+:where(a,button,input,select,textarea,summary):focus-visible{outline:3px solid var(--institutional-focus);outline-offset:3px}
+@media(max-width:700px){
+  body{overflow-wrap:anywhere}
+  h1{font-size:clamp(1.9rem,8vw,2.65rem)!important;line-height:1.12!important}
+  :where(button,input,select,textarea){max-width:100%}
+  :where(button,a){touch-action:manipulation}
+  .top .wrap,.topbar .topinner{flex-wrap:wrap;gap:10px}
+  .top-actions{flex-wrap:wrap;gap:8px}
+  .news-hero{padding:36px 0 32px}
+  .news-hero p{font-size:1rem}
+  .news-toolbar{flex-wrap:wrap;align-items:start}
+  .news-updated{white-space:normal}
+  .news-controls{grid-template-columns:minmax(0,1fr)}
+  .news-filters{justify-content:flex-start}
+  .myth-card summary{flex-wrap:wrap;min-height:48px}
+  .guidedNav{overflow-x:auto;max-width:100%;-webkit-overflow-scrolling:touch}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto!important}*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
