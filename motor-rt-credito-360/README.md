@@ -2624,3 +2624,11 @@ Bloqueios: testes Node diretamente na branch, teste ponta a ponta de importaçã
 - Node: 3/3 testes de reprodução isolada da condição passaram. A regressão foi adicionada à suíte do repositório, mas não executada no checkout original: DNS de github.com indisponível no ambiente Node.
 - Bloqueios: suíte integral, PDF/XLSX/CSV, revisão material, fluxo de retorno entre abas e navegação móvel ainda sem verificação.
 - Próxima ação: executar a suíte diretamente no checkout e validar importação sintética ponta a ponta, com retorno ao Motor e conciliação antes das projeções.
+
+
+## 2026-11-03 | Triagem de sinais negativos em fluxos
+- Código: `239ba1a1c75174c5d5d9756a962cc98f9ebaedf2`. Testes: `8c7fd5624f33529cd07940b092feb411f0ab2230`.
+- A etapa 2 sinaliza RBT12 negativa (estornos/devoluções/sinal) e tributos atuais negativos (créditos/compensações/restituições/sinal), sem rejeitar automaticamente dados contábeis legítimos e sem alimentar projeções.
+- Testes Node: 3 casos aprovados em reprodução local isolada da regra; 3 testes de regressão adicionados ao arquivo original da branch, mas não executados diretamente no checkout, pois o acesso GitHub do ambiente local falhou (DNS).
+- Bloqueios: suíte completa no checkout, conciliação BP/DRE/balancete e integração PDF/XLSX/CSV, validação mobile e navegação de retorno.
+- Próxima ação: executar a suíte no checkout e validar a transferência de documentos sintéticos do importador v3.2 ao Motor, sem presumir materialidade ou conciliação.
