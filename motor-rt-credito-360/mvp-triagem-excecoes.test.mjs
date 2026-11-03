@@ -150,3 +150,17 @@ test('receita positiva com margem não gera alerta de denominador zero',()=>{
  const r=triarExcecoesContabeis([c('rbt12',100,12),c('currentOperatingMarginPct',15,12)]);
  assert.equal(r.excecoes.some(x=>x.includes('igual a zero com margem operacional')),false);
 });
+
+test('receita zero com tributos não permite inferir alíquota efetiva',()=>{
+ const r=triarExcecoesContabeis([c('rbt12',0,12),c('currentConsumptionTaxAnnual',20,12)]);
+ assert.ok(r.excecoes.some(x=>x.includes('igual a zero com tributos de consumo')));
+ assert.ok(r.excecoes.some(x=>x.includes('não inferir alíquota efetiva')));
+});
+test('receita zero e tributos zero não disparam ressalva de base inconsistente',()=>{
+ const r=triarExcecoesContabeis([c('rbt12',0,12),c('currentConsumptionTaxAnnual',0,12)]);
+ assert.equal(r.excecoes.some(x=>x.includes('igual a zero com tributos de consumo')),false);
+});
+test('receita positiva com tributos não dispara ressalva de receita zero',()=>{
+ const r=triarExcecoesContabeis([c('rbt12',100,12),c('currentConsumptionTaxAnnual',20,12)]);
+ assert.equal(r.excecoes.some(x=>x.includes('igual a zero com tributos de consumo')),false);
+});
