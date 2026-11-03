@@ -2600,3 +2600,11 @@ Bloqueios: testes Node diretamente na branch, teste ponta a ponta de importaçã
 - Verificação local: 8 testes de triagem executados com Node em cópia fiel do módulo, todos aprovados; a suíte completa da branch não foi executada no checkout do repositório devido à indisponibilidade de acesso Git via ambiente local.
 - Bloqueios: teste ponta a ponta da importação v3.2, conciliação real BP/DRE/balancete, validação setorial e financeira, revisão de materialidade e testes móveis.
 - Próxima ação: executar os testes diretamente no checkout e validar envio e retorno entre abas com dados sintéticos, sem liberar projeções com rubricas não conciliadas.
+
+
+## 2026-11-03 | Par circulante incompleto
+- Código `7f87e5e6f75c7affaabf905c306d482b88fe9059`; regressão `e74c7bffc6a4e7620b0ff5047e5ab2d0661fd6e1`.
+- A triagem da etapa 2 passa a indicar explicitamente a ausência de ativo ou passivo circulante correspondente, sem inferir capital circulante líquido ou NCG. Com ambos presentes, permanece a exigência de classificar contas operacionais e conciliar períodos.
+- Node: `node --test /tmp/rt360-check/triagem.test.mjs`, 4/4 aprovados em reprodução isolada da regra alterada. A suíte original completa não foi executada, pois o checkout remoto não está acessível via DNS neste ambiente.
+- Bloqueios: execução nativa da suíte, importação PDF/XLSX/CSV e retorno entre abas, revisão de materialidade, conciliação e teste móvel.
+- Próxima ação: validar fluxo de importação v3.2 com dados sintéticos, mantendo três etapas e sem aplicar saldos não conciliados às projeções.
