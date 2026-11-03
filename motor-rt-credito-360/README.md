@@ -2507,3 +2507,9 @@ Verificar o preview Vercel antes de divulgar endereço. Sem merge na
 - Nenhuma transferência automática de arquivos, CNPJ ou dados pessoais foi adicionada. Sem merge na main e sem publicação de produção.
 - Testes automatizados de integração e navegação móvel ainda pendentes; não alegar homologação.
 - Próxima ação: executar teste ponta a ponta em navegador com dois separadores e confirmar o comportamento de fechamento em Android e desktop.
+
+
+## 2026-11-02 | Saída do importador sem dados elegíveis
+Entrega pequena: o botão de retorno da aba auxiliar agora permanece disponível mesmo quando nenhum valor foi aceito, ou quando a transferência não foi confirmada. O rótulo distingue `Voltar ao Motor sem importar` de `Voltar ao Motor RT Crédito 360` após confirmação. A aba do Motor permanece aberta, sem reenvio de documentos ou recarregamento. Commit: `d3dc12e6b7793844a3e7ab7e4fe31963f2995b4c`.
+
+Verificação: 5 asserções estáticas de regressão passaram sobre o arquivo lido novamente da branch (rótulos, estado de confirmação, fechamento e protocolo). **Teste Node e teste de navegador não executados nesta entrega**: o ambiente local não conseguiu resolver o host do GitHub para obter a cópia do repositório. Não há validação de preview Vercel desta alteração, portanto nenhum novo link é divulgado. Bloqueios: validar Node, fechamento da aba em navegadores móveis e o percurso completo de importação. Próxima ação: executar testes Node e E2E do fluxo com e sem valores aceitos em preview isolado.
