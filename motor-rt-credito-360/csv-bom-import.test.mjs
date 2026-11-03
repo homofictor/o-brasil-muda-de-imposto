@@ -10,11 +10,11 @@ assert.ok(start>=0 && end>start,'Leitor CSV v3.2 deve existir');
 const csvRows=runInNewContext(source.slice(start,end)+'\ncsvRows;');
 
 test('CSV UTF-8 com BOM preserva cabeçalho e valores',()=>{
- const rows=csvRows('\\uFEFFConta;Valor\\nReceita;1.234,56\\n');
+ const rows=csvRows(String.fromCharCode(0xFEFF)+'Conta;Valor\nReceita;1.234,56\n');
  assert.deepEqual(JSON.parse(JSON.stringify(rows)),[['Conta','Valor'],['Receita','1.234,56']]);
 });
 
 test('CSV sem BOM e campos entre aspas continuam íntegros',()=>{
- const rows=csvRows('Conta;Descrição\\n1;"Receita; líquida"\\n');
+ const rows=csvRows('Conta;Descrição\n1;"Receita; líquida"\n');
  assert.deepEqual(JSON.parse(JSON.stringify(rows)),[['Conta','Descrição'],['1','Receita; líquida']]);
 });
