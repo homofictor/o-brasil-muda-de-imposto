@@ -16,10 +16,10 @@ export function criarEmissorConfirmado({canal, avisar, aoConfirmar = () => {}, a
     if (!pendente || event.data?.tipo !== TIPO_CONFIRMACAO ||
         event.data.envioId !== pendente.id) return;
     desagendar(pendente.timeout);
-    const quantidade = pendente.quantidade;
+    const {quantidade, rubricas} = pendente;
     pendente = null;
-    avisar(`${quantidade} valor(es) recebido(s) pelo Motor. Volte à outra aba e confira antes de aplicar.`);
-    aoConfirmar({envioId: event.data.envioId, quantidade});
+    avisar(`${quantidade} valor(es) e ${rubricas} rubrica(s) preliminar(es) recebidos pelo Motor. Volte à outra aba e confira antes de aplicar.`);
+    aoConfirmar({envioId: event.data.envioId, quantidade, rubricas});
   };
   return {
     enviar(candidatos, rascunhos = []) {
@@ -28,7 +28,7 @@ export function criarEmissorConfirmado({canal, avisar, aoConfirmar = () => {}, a
         throw new Error('Não há valores ou rubricas para transferir');
       if (pendente) desagendar(pendente.timeout);
       const id = ++sequencia;
-      const atual = {id, quantidade: candidatos.length, timeout: null};
+      const atual = {id, quantidade: candidatos.length, rubricas: rascunhos.length, timeout: null};
       pendente = atual;
       avisar('Transferência solicitada. Aguardando confirmação da aba do Motor...');
       atual.timeout = agendar(() => {
