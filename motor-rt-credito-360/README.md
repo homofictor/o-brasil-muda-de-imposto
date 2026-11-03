@@ -2672,3 +2672,10 @@ Bloqueios: testes Node diretamente na branch, teste ponta a ponta de importaçã
 - Node: 3/3 verificações isoladas da condição aprovadas; os três testes de regressão foram adicionados à branch, mas a suíte original não foi executada no checkout (falha DNS de github.com no ambiente local).
 - Bloqueios: conciliação documental BP/DRE/balancete, validação integrada PDF/XLSX/CSV, materialidade, testes mobile, preview funcional e homologação de metodologia.
 - Próxima ação: executar a suíte Node da branch em checkout acessível e validar importação sintética do leitor v3.2 com conciliação antes das projeções.
+
+## 2026-11-03 | Divergência de competência entre receita e tributos
+- Código: `40810ad8b794ea6fa2e78bda782a72e20a48f62b`. Testes: `dd516264fd1f754fa3bd9d1fca1b7285665733a9`.
+- A triagem da etapa 2 alerta quando RBT12 e tributos atuais possuem períodos distintos, inclusive período não informado, impedindo inferência de alíquota efetiva por divisão direta. Nenhuma projeção é modificada e não se presume materialidade.
+- Node: 4/4 verificações isoladas da condição aprovadas; quatro testes de regressão adicionados à branch. A suíte original do checkout não foi executada nesta entrega, portanto não há comprovação de integração.
+- Bloqueios: reconciliação efetiva de bases e competências, testes de importação PDF/XLSX/CSV com arquivos sintéticos, revisão de materialidade, navegação móvel e validação funcional do preview.
+- Próxima ação: executar suíte Node diretamente no checkout e testar transferência entre leitor v3.2 e Motor com BP/DRE/balancete fictícios.
