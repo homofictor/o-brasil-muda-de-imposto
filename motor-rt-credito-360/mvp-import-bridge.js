@@ -157,13 +157,13 @@ export function iniciarPonteImportacaoV3(doc = document, loc = location) {
     painel.append(bloco);
     botaoEnvio = botao;
     mensagemEnvio = mensagem;
-    emissor = criarEmissorConfirmado({canal, avisar: texto => {
-      mensagem.textContent = texto;
-      // A confirmação vem do protocolo de recebimento, não do texto da interface.
-      const confirmado = /recebido\(s\) pelo Motor\./.test(texto);
-      voltar.dataset.confirmado = confirmado ? '1' : '0';
-      voltar.textContent = confirmado ? 'Voltar ao Motor RT Crédito 360' : 'Voltar ao Motor sem importar';
-    }});
+    emissor = criarEmissorConfirmado({canal,
+      avisar: texto => { mensagem.textContent = texto; },
+      aoConfirmar: () => {
+        voltar.dataset.confirmado = '1';
+        voltar.textContent = 'Voltar ao Motor RT Crédito 360';
+      }
+    });
     botao.addEventListener('click', () => {
       const candidatos = extrairCandidatosRevisados(window.brmiImport?.candidates);
       if (!candidatos.length) {
