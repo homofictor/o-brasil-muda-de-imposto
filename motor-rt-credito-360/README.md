@@ -2513,3 +2513,11 @@ Verificar o preview Vercel antes de divulgar endereço. Sem merge na
 Entrega pequena: o botão de retorno da aba auxiliar agora permanece disponível mesmo quando nenhum valor foi aceito, ou quando a transferência não foi confirmada. O rótulo distingue `Voltar ao Motor sem importar` de `Voltar ao Motor RT Crédito 360` após confirmação. A aba do Motor permanece aberta, sem reenvio de documentos ou recarregamento. Commit: `d3dc12e6b7793844a3e7ab7e4fe31963f2995b4c`.
 
 Verificação: 5 asserções estáticas de regressão passaram sobre o arquivo lido novamente da branch (rótulos, estado de confirmação, fechamento e protocolo). **Teste Node e teste de navegador não executados nesta entrega**: o ambiente local não conseguiu resolver o host do GitHub para obter a cópia do repositório. Não há validação de preview Vercel desta alteração, portanto nenhum novo link é divulgado. Bloqueios: validar Node, fechamento da aba em navegadores móveis e o percurso completo de importação. Próxima ação: executar testes Node e E2E do fluxo com e sem valores aceitos em preview isolado.
+
+
+## 2026-11-02 | Ajuste pontual de texto do retorno
+- Entrega: eliminada atribuição duplicada de `textContent` no botão de retorno do importador v3.2. O rótulo inicial fica explicitamente `Voltar ao Motor sem importar`.
+- Commit: `396102384a6bf8ea5afbbaec4f38d9910b109b53`.
+- Verificação: conferência estática do trecho antes da gravação. Execução Node e testes de navegação NÃO concluídos: ambiente local sem resolução DNS para obter a versão da branch. Não declarar teste aprovado.
+- Bloqueio: preview Vercel não validado nesta execução. Nenhum link divulgado. Sem merge, produção ou dados pessoais.
+- Próxima ação: testar o protocolo de confirmação e retorno em navegador real, inclusive envio pendente e ausência de valores elegíveis, e executar suíte Node.
