@@ -63,7 +63,7 @@ test('erro de envio e fechamento não deixam confirmação pendente', () => {
   assert.equal(a.timers.size, 0);
   a.emissor.encerrar();
   assert.equal(a.canal.onmessage, null);
-  assert.throws(() => a.emissor.enviar([]), /Não há candidatos/);
+  assert.throws(() => a.emissor.enviar([]), /Não há valores ou rubricas/);
 });
 
 test('duas abas simuladas trocam candidatos e confirmação sem documentos', async () => {
@@ -84,4 +84,16 @@ test('duas abas simuladas trocam candidatos e confirmação sem documentos', asy
   assert.match(avisos.at(-1), /recebido\(s\)/);
   assert.equal(JSON.stringify(recebido).includes('cnpj'), false);
   emissor.encerrar();
+});
+
+test('envia rubricas preliminares mesmo sem candidatos numéricos aceitos', () => {
+  const a = ambiente();
+  const rascunhos = [{campo: 'estoques', valor: 120}];
+  a.emissor.enviar([], rascunhos);
+  assert.deepEqual(a.mensagens[0].candidatos, []);
+  assert.deepEqual(a.mensagens[0].rascunhos, rascunhos);
+  assert.match(a.avisos.at(-1), /Aguardando confirmação/);
+  a.canal.onmessage({data: {tipo: TIPO_CONFIRMACAO, envioId: 1}});
+  assert.match(a.avisos.at(-1), /0 valor\(es\) recebido\(s\)/);
+  a.emissor.encerrar();
 });
