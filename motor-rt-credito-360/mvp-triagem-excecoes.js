@@ -27,6 +27,10 @@ export function triarExcecoesContabeis(candidatos) {
     excecoes.push('Ativo e passivo circulantes não determinam NCG operacional. Separar contas cíclicas e comparar períodos.');
   if (vistos.has('currentAssets') !== vistos.has('currentLiabilities'))
     excecoes.push('Capital circulante incompleto: falta ativo ou passivo circulante correspondente. Não calcular capital circulante líquido nem inferir NCG.');
+  for (const item of candidatos) {
+    if ((item.field === 'currentAssets' || item.field === 'currentLiabilities') && item.value < 0)
+      excecoes.push('Saldo circulante negativo informado. Confirmar natureza devedora/credora, sinal e reclassificação antes de conciliar o BP ou estimar NCG.');
+  }
   if (vistos.has('interestExpense'))
     excecoes.push('Despesas financeiras não representam serviço da dívida. Confirmar juros, amortizações e metodologia do ICSD.');
   if (vistos.has('currentConsumptionTaxAnnual'))
