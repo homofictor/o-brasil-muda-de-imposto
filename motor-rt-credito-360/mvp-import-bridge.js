@@ -82,6 +82,8 @@ export function iniciarPonteImportacaoMVP({abrir, receber, receberRascunhos, sta
     let ultimoEnvioAceito = 0;
     canal.onmessage = event => {
       try {
+        // Confirmações pertencem ao emissor; não são pacotes de demonstrativos.
+        if (event.data?.tipo !== 'rt360-candidatos-revisados-v1') return;
         if (!Number.isSafeInteger(event.data?.envioId) || event.data.envioId < 1)
           throw new Error('Identificador de transferência inválido');
         if (event.data.envioId <= ultimoEnvioAceito) {
