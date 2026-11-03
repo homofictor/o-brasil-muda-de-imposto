@@ -2592,3 +2592,11 @@ Commits: código `625d6077df91a0b560c03315e4da02ce0d8c5f47`; testes `49224bbb2c0
 Testes: `node --test /tmp/rt360-confirmacao-check.mjs` em reprodução local mínima da formatação e correlação, 3 aprovados, 0 falhas. Não foi possível executar o arquivo original da branch: `git ls-remote` falhou por DNS (`Could not resolve host: github.com`). Portanto não declarar suíte nativa aprovada. Preview Vercel não validado: a ação `open_deployments` retornou `Tool open_deployments not found`; não divulgar URL como verificada.
 
 Bloqueios: testes Node diretamente na branch, teste ponta a ponta de importação entre abas e conciliação das rubricas ainda pendentes. Próxima ação: executar o teste original no checkout íntegro, validar confirmação de pacote com apenas rubricas no navegador e conferir comportamento móvel. Sem merge na main, publicação intencional em produção, gastos ou dados pessoais.
+
+
+## 2026-11-03 | Testes adicionais de triagem contábil
+- Commit de testes: `1888f3e03b5aaf0d709607c9bde37d7ba33ae941`.
+- Acrescentados dois casos ao arquivo `mvp-triagem-excecoes.test.mjs`: tributo de consumo em período parcial exige ressalva e competência zero deve ser recusada.
+- Verificação local: 8 testes de triagem executados com Node em cópia fiel do módulo, todos aprovados; a suíte completa da branch não foi executada no checkout do repositório devido à indisponibilidade de acesso Git via ambiente local.
+- Bloqueios: teste ponta a ponta da importação v3.2, conciliação real BP/DRE/balancete, validação setorial e financeira, revisão de materialidade e testes móveis.
+- Próxima ação: executar os testes diretamente no checkout e validar envio e retorno entre abas com dados sintéticos, sem liberar projeções com rubricas não conciliadas.
