@@ -2616,3 +2616,11 @@ Bloqueios: testes Node diretamente na branch, teste ponta a ponta de importaçã
 - Testes Node: 2 casos aprovados em reprodução local isolada da regra. A suíte integral do repositório e os testes sobre o checkout original permanecem pendentes porque a conexão GitHub do ambiente Node falhou por DNS.
 - Bloqueios: validação ponta a ponta de PDF/XLSX/CSV com leitor v3.2, revisão de materialidade e retorno entre abas em celular; não existe homologação tributária ou de crédito.
 - Próxima ação: executar a suíte Node sobre checkout real e validar o fluxo documental sintético e a conciliação antes dos cenários.
+
+
+## 2026-11-03 | Consolidação de alertas negativos
+- Código `8a74b53795451d877e7d3054bafd8c7a10160731`; teste `80488ad9c473e932c963acce1a86620d1e164ee7`.
+- Um lote com ativo e passivo circulantes negativos gera um único aviso de sinal, preservando a pendência independente de NCG. Não libera conciliação nem projeções.
+- Node: 3/3 testes de reprodução isolada da condição passaram. A regressão foi adicionada à suíte do repositório, mas não executada no checkout original: DNS de github.com indisponível no ambiente Node.
+- Bloqueios: suíte integral, PDF/XLSX/CSV, revisão material, fluxo de retorno entre abas e navegação móvel ainda sem verificação.
+- Próxima ação: executar a suíte diretamente no checkout e validar importação sintética ponta a ponta, com retorno ao Motor e conciliação antes das projeções.
