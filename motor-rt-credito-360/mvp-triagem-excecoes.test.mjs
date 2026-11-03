@@ -84,3 +84,14 @@ test('par circulante incompleto não permite inferir capital circulante ou NCG',
  const completo=triarExcecoesContabeis([c('currentAssets',100,null),c('currentLiabilities',80,null)]);
  assert.equal(completo.excecoes.some(x=>x.includes('Capital circulante incompleto')),false);
 });
+
+test('saldo circulante negativo requer revisão de sinal antes da conciliação',()=>{
+ const r=triarExcecoesContabeis([c('currentAssets',-25,null),c('currentLiabilities',80,null)]);
+ assert.ok(r.excecoes.some(x=>x.includes('Saldo circulante negativo')));
+ assert.ok(r.excecoes.some(x=>x.includes('NCG operacional')));
+ assert.equal(r.recebidos,2);
+});
+test('saldo circulante zero não é classificado como negativo',()=>{
+ const r=triarExcecoesContabeis([c('currentAssets',0,null),c('currentLiabilities',80,null)]);
+ assert.equal(r.excecoes.some(x=>x.includes('Saldo circulante negativo')),false);
+});
