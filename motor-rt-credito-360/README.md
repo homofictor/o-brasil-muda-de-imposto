@@ -2581,3 +2581,14 @@ Verificação: `node --test` executado em reprodução local isolada do protocol
 Bloqueios: sem acesso de rede ao checkout GitHub neste ambiente; consulta do preview Vercel não retornou confirmação verificável. Não há URL de preview homologada. Persistem integração documental, conciliação contábil, revisão de exceções materiais e QA móvel.
 
 Próxima ação: executar `node --test motor-rt-credito-360/mvp-confirmacao-transferencia.test.mjs` em checkout íntegro, corrigir eventuais falhas e validar fluxo de duas abas com dados sintéticos. Nenhum merge na `main` nem alteração de produção.
+
+
+## 03/11/2026: confirmação informa valores e rubricas separadamente
+
+Entrega pequena: mensagem de confirmação do importador agora discrimina quantidade de valores aceitos e quantidade de rubricas preliminares recebidas, evitando mensagem enganosa de `0 valor(es) recebido(s)` em transferências compostas somente de rubricas. A confirmação segue correlacionada ao envio e não representa classificação, conciliação ou aplicação de rubricas. Testes do protocolo atualizados para a nova mensagem e incluído caso misto (um valor e duas rubricas).
+
+Commits: código `625d6077df91a0b560c03315e4da02ce0d8c5f47`; testes `49224bbb2c0ee82fee1f4937089817418a7feb57`.
+
+Testes: `node --test /tmp/rt360-confirmacao-check.mjs` em reprodução local mínima da formatação e correlação, 3 aprovados, 0 falhas. Não foi possível executar o arquivo original da branch: `git ls-remote` falhou por DNS (`Could not resolve host: github.com`). Portanto não declarar suíte nativa aprovada. Preview Vercel não validado: a ação `open_deployments` retornou `Tool open_deployments not found`; não divulgar URL como verificada.
+
+Bloqueios: testes Node diretamente na branch, teste ponta a ponta de importação entre abas e conciliação das rubricas ainda pendentes. Próxima ação: executar o teste original no checkout íntegro, validar confirmação de pacote com apenas rubricas no navegador e conferir comportamento móvel. Sem merge na main, publicação intencional em produção, gastos ou dados pessoais.
