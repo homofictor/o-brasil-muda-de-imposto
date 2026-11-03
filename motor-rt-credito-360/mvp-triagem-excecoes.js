@@ -30,6 +30,10 @@ export function triarExcecoesContabeis(candidatos) {
   if (candidatos.some(item =>
     (item.field === 'currentAssets' || item.field === 'currentLiabilities') && item.value < 0))
     excecoes.push('Saldo circulante negativo informado. Confirmar natureza devedora/credora, sinal e reclassificação antes de conciliar o BP ou estimar NCG.');
+  if (candidatos.some(item => item.field === 'rbt12' && item.value < 0))
+    excecoes.push('Receita bruta/RBT12 negativa. Conferir devoluções, estornos, sinal e competência antes de projetar receitas.');
+  if (candidatos.some(item => item.field === 'currentConsumptionTaxAnnual' && item.value < 0))
+    excecoes.push('Tributos atuais negativos. Conferir créditos, compensações, restituições e sinal antes de estimar carga tributária ou fluxo de caixa.');
   if (vistos.has('interestExpense'))
     excecoes.push('Despesas financeiras não representam serviço da dívida. Confirmar juros, amortizações e metodologia do ICSD.');
   if (vistos.has('currentConsumptionTaxAnnual'))
