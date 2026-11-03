@@ -2534,3 +2534,11 @@ Commits: módulo `a74530d5`, teste `e174a75b`, integração `98762f83`. Testes N
 - Testes: quatro cenários Node em cópia local do protocolo passaram; quatro testes de regressão adicionados ao repositório em `mvp-confirmacao-transferencia.test.js` (execução no checkout do repositório ainda pendente).
 - Bloqueios: teste real entre abas, comportamento móvel e preview Vercel ainda precisam de confirmação independente. Sem mudança em produção, main ou dados pessoais.
 - Próxima ação: validar a navegação ponta a ponta e executar a suíte diretamente sobre o checkout da branch.
+
+
+## 03/11/2026: filtro de mensagens da ponte entre abas
+
+Entrega isolada: o receptor do Motor ignora mensagens que não tenham o tipo explícito `rt360-candidatos-revisados-v1`, antes de verificar o identificador. Isso evita tratar confirmações ou mensagens de outro tipo como documentos inválidos e sobrescrever o aviso de importação. Não altera os três passos, fórmulas, produção ou tratamento de dados.
+
+Commit de código: `a461f1a886aaf4dd6c14bb7fb046f458cb323ef8`.
+Testes: `node --test` em harness local isolado reproduzindo o filtro e a validação de identificador, 4 aprovados, 0 falhas. **Não** foi executada a suíte Node diretamente sobre o módulo do repositório nem teste ponta a ponta em navegador. Bloqueios: QA real da transferência e retorno em abas, integração da conciliação documental e auditoria fiscal. Próxima ação: adicionar regressão integrada ao repositório e validar fluxo de importação em navegador desktop e móvel. Sem merge na main e sem alteração intencional de produção.
