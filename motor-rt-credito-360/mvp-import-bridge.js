@@ -53,10 +53,11 @@ export function validarPacoteRevisado(pacote) {
 
 export function estimarJurosAnuais(candidatos) {
   const c = candidatos.find(item => item.field === 'interestExpense');
-  if (!c || !Number.isInteger(c.periodMonths) || c.periodMonths < 1 || c.periodMonths > 12 ||
-      c.value < 0) return null;
-  const anual = c.value * 12 / c.periodMonths;
-  return Number.isFinite(anual) && anual <= 1e15 ? anual : null;
+  // Despesa financeira parcial não comprova sazonalidade, competência ou serviço da dívida.
+  // Sem conciliação, não extrapolar automaticamente para doze meses.
+  if (!c || c.periodMonths !== 12 || typeof c.value !== 'number' ||
+      !Number.isFinite(c.value) || c.value < 0 || c.value > 1e15) return null;
+  return c.value;
 }
 
 export function iniciarPonteImportacaoMVP({abrir, receber, receberRascunhos, status, limpar}) {
