@@ -27,7 +27,7 @@ export function extrairCandidatosRevisados(candidates) {
     const periodo = Number.isInteger(c.periodMonths) && c.periodMonths >= 1 && c.periodMonths <= 12
       ? c.periodMonths : null;
     const anterior = aprovados.get(c.field);
-    if (anterior && (Math.abs(anterior.value - c.value) > 0.01 || anterior.periodMonths !== periodo)) {
+    if (anterior && (anterior.value !== c.value || anterior.periodMonths !== periodo)) {
       divergentes.add(c.field);
     } else if (!anterior) {
       aprovados.set(c.field, {field: c.field, value: c.value, periodMonths: periodo});
