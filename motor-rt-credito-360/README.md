@@ -2692,3 +2692,11 @@ Testes: 2 verificações Node aprovadas em reprodução isolada da função (CSV
 Bloqueios: não há validação ponta a ponta de importação, classificação, conciliação e geração do relatório com documentos sintéticos completos; o preview da Vercel não foi verificado funcionalmente nesta entrega. Não houve merge ou alteração deliberada da produção.
 
 Próxima ação: executar `node --test motor-rt-credito-360/csv-bom-import.test.mjs` em checkout da branch e integrar fixture CSV sintética à etapa 2, verificando conciliação e exceções materiais antes de qualquer projeção.
+
+## 2026-11-03 | CSV com delimitadores dentro de campos entre aspas
+
+- Entrega: ajuste pontual no leitor existente `simulador/v3/import.js`, para ignorar vírgulas e pontos e vírgulas contidos em campos entre aspas ao detectar o separador do CSV. Não foi criada quarta etapa nem novo leitor.
+- Código: `584c2f40004a81df47e7384ba7ea6390caa52e66`. Testes: `499a51620c13ba70014c8f921788c256fe13e991`.
+- Node: 2/2 verificações aprovadas em reprodução isolada da função. Teste de regressão incluído em `tests/import-csv-quoted-delimiter.test.cjs`, preparado para execução por `node --test tests/import-csv-quoted-delimiter.test.cjs` no checkout. **A suíte do repositório ainda não foi executada neste ambiente.**
+- Bloqueios: falta validar o teste diretamente no checkout, integração PDF/XLSX/CSV com BP/DRE/balancete sintéticos, reconciliação e materialidade; preview Vercel não verificado funcionalmente.
+- Próxima ação: executar Node no checkout e validar o fluxo completo de importação sintética, conciliação anterior às projeções e relatório de três cenários.
