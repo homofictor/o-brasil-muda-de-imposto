@@ -49,6 +49,7 @@ import {triarExcecoesContabeis} from './mvp-triagem-excecoes.js';
 import {gerarTresCenariosSinteticos} from './mvp-tres-cenarios.js';
 import {conciliarExemploContabil} from './mvp-exemplo-contabil.js';
 import {gerarMemoriaContabilSintetica} from './mvp-memoria-relatorio.js';
+import {verificarIntegridadeRelatorioFicticio} from './mvp-integridade-relatorio-demo.js';
 const el=id=>document.getElementById(id);
 const fmt=n=>n===null?'Indisponível':new Intl.NumberFormat('pt-BR',{maximumFractionDigits:2}).format(n);
 let demo=false;
@@ -97,7 +98,9 @@ cancelarImportacao=iniciarPonteImportacaoMVP({abrir:el('importar'),status:msg=>{
 function card(titulo,valor,nota,destino='resumos'){const d=document.createElement('div');d.className='card';const t=document.createElement('span'),v=document.createElement('strong'),n=document.createElement('small');t.textContent=titulo;v.textContent=valor;n.textContent=nota;d.append(t,v,n);el(destino).append(d);}
 el('gerar').addEventListener('click',()=>{
  if(!demo)return;
- try{const r=gerarTresCenariosSinteticos(),memoria=gerarMemoriaContabilSintetica();el('resumos').replaceChildren();el('memoria-contabil').replaceChildren();el('linhas-relatorio').replaceChildren();el('limitacoes').replaceChildren();
+ try{const r=gerarTresCenariosSinteticos(),memoria=gerarMemoriaContabilSintetica();
+ verificarIntegridadeRelatorioFicticio(r,memoria);
+ el('resumos').replaceChildren();el('memoria-contabil').replaceChildren();el('linhas-relatorio').replaceChildren();el('limitacoes').replaceChildren();
  for(const i of memoria.indicadores)card(i.rotulo,fmt(i.valor),i.nota,'memoria-contabil');
  el('ressalva-memoria').textContent=memoria.ressalva;
  for(const c of r.cenarios){card(c.titulo,fmt(c.resumo.menorICSD)+'x','Δ caixa acumulado: '+fmt(c.resumo.deltaCaixaAcumulado)+' | Insuficiência: '+(c.resumo.anosInsuficiencia.join(', ')||'nenhuma'));
