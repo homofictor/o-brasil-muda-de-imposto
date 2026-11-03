@@ -25,6 +25,8 @@ export function triarExcecoesContabeis(candidatos) {
     excecoes.push('Margem EBITDA isolada não comprova EBITDA monetário, competência nem reconciliação com a DRE.');
   if (vistos.has('currentAssets') || vistos.has('currentLiabilities'))
     excecoes.push('Ativo e passivo circulantes não determinam NCG operacional. Separar contas cíclicas e comparar períodos.');
+  if (vistos.has('currentAssets') !== vistos.has('currentLiabilities'))
+    excecoes.push('Capital circulante incompleto: falta ativo ou passivo circulante correspondente. Não calcular capital circulante líquido nem inferir NCG.');
   if (vistos.has('interestExpense'))
     excecoes.push('Despesas financeiras não representam serviço da dívida. Confirmar juros, amortizações e metodologia do ICSD.');
   if (vistos.has('currentConsumptionTaxAnnual'))
