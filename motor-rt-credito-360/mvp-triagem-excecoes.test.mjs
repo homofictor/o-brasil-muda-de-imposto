@@ -95,3 +95,9 @@ test('saldo circulante zero não é classificado como negativo',()=>{
  const r=triarExcecoesContabeis([c('currentAssets',0,null),c('currentLiabilities',80,null)]);
  assert.equal(r.excecoes.some(x=>x.includes('Saldo circulante negativo')),false);
 });
+
+test('dois saldos circulantes negativos geram um alerta consolidado',()=>{
+ const r=triarExcecoesContabeis([c('currentAssets',-10,null),c('currentLiabilities',-20,null)]);
+ assert.equal(r.excecoes.filter(x=>x.includes('Saldo circulante negativo')).length,1);
+ assert.ok(r.excecoes.some(x=>x.includes('NCG operacional')));
+});
