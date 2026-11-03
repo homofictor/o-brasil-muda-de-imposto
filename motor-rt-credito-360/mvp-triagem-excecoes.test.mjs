@@ -127,3 +127,16 @@ test('despesa financeira zero não gera alerta de sinal negativo',()=>{
  const r=triarExcecoesContabeis([c('interestExpense',0,12)]);
  assert.equal(r.excecoes.some(x=>x.includes('Despesas financeiras negativas')),false);
 });
+
+test('margem operacional atípica exige conferência sem recalcular',()=>{
+ const r=triarExcecoesContabeis([c('currentOperatingMarginPct',125,12)]);
+ assert.ok(r.excecoes.some(x=>x.includes('fora da faixa usual')));
+ assert.equal(r.recebidos,1);
+ assert.equal(JSON.stringify(r).includes('125'),false);
+});
+test('margem negativa atípica é sinalizada e margem de 100% não é rejeitada',()=>{
+ const negativa=triarExcecoesContabeis([c('currentOperatingMarginPct',-125,12)]);
+ assert.ok(negativa.excecoes.some(x=>x.includes('fora da faixa usual')));
+ const limite=triarExcecoesContabeis([c('currentOperatingMarginPct',100,12)]);
+ assert.equal(limite.excecoes.some(x=>x.includes('fora da faixa usual')),false);
+});
