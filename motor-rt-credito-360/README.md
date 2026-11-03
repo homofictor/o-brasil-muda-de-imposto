@@ -2560,3 +2560,12 @@ Entrega pequena: a ponte do Simulador v3.2 para o Motor deixa de tolerar silenci
 Commits: código `2533772622b4685b3313c0ecbc7caf03ddf46dd5`; regressão `797623d105518f16aaa6c93fdcd026e8245e48b0`. Verificação: quatro testes nativos `node --test` aprovados em reprodução isolada da regra, incluindo duplicata, diferença de centavo, subcentavo e períodos distintos. A execução do arquivo de regressão diretamente sobre os módulos da branch e a suíte completa continuam pendentes. Preview Vercel não validado nesta entrega, portanto não divulgar URL como verificada.
 
 Bloqueios: a revisão de exceções materiais ainda não está integrada ao fluxo completo de BP/DRE/balancete; falta teste ponta a ponta do retorno entre abas, conciliação de DFC e FCADS e auditoria tributária. Próxima ação: executar o teste nativo diretamente na branch e validar a importação completa no navegador, inclusive no celular. Nenhum merge na main nem alteração deliberada de produção, gastos ou uso de dados pessoais.
+
+
+## 03/11/2026: envio de rubricas sem valores aceitos
+
+Entrega: a ponte do Simulador v3.2 agora permite enviar rubricas preliminares mesmo quando nenhum valor numérico foi explicitamente aceito. Pacotes totalmente vazios continuam recusados. As rubricas permanecem preliminares, sem classificação ou conciliação automática, e não devem alimentar projeções antes de validação.
+
+Teste Node: quatro casos aprovados em cópia local do protocolo (somente rubricas, pacote vazio, confirmação e regressão de valores aceitos). Arquivo de regressão `test-rascunhos-sem-candidatos.mjs` incluído na branch. Execução diretamente sobre o checkout do repositório e teste ponta a ponta no navegador pendentes.
+
+Bloqueios: validar o formato real das rubricas geradas pelo leitor PDF/XLSX/CSV e a reconciliação contábil antes de utilizá-las em cálculos; validar preview da Vercel. Próxima ação: testar o fluxo completo entre abas com documentos sintéticos e conferir se rubricas sem valores aceitos chegam à revisão de exceções materiais. Sem merge na main, sem publicação em produção.
