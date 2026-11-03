@@ -2521,3 +2521,9 @@ Verificação: 5 asserções estáticas de regressão passaram sobre o arquivo l
 - Verificação: conferência estática do trecho antes da gravação. Execução Node e testes de navegação NÃO concluídos: ambiente local sem resolução DNS para obter a versão da branch. Não declarar teste aprovado.
 - Bloqueio: preview Vercel não validado nesta execução. Nenhum link divulgado. Sem merge, produção ou dados pessoais.
 - Próxima ação: testar o protocolo de confirmação e retorno em navegador real, inclusive envio pendente e ausência de valores elegíveis, e executar suíte Node.
+
+
+## 2026-11-03 | Abertura defensiva do importador
+Entrega única: `abertura-importador.js` trata exceções de `window.open` sem perder o estado do Motor; a ponte exibe orientação quando a abertura falha. O retorno `null` de `window.open` com `noopener` não é interpretado incorretamente como bloqueio. Mantidos os três passos e o isolamento do importador v3.2.
+
+Commits: módulo `a74530d5`, teste `e174a75b`, integração `98762f83`. Testes Node: `node --experimental-default-type=module --test abertura-importador.test.mjs`, 3 testes aprovados no ambiente local sobre os arquivos preparados para commit. Limitação: suíte completa do repositório e navegação E2E não executadas porque a rede local não resolve github.com. Preview Vercel do commit de integração localizado inicialmente em INITIALIZING; aguardar READY e verificar conteúdo antes de divulgar link. Próxima ação: validar fluxo completo de abertura, importação, confirmação e retorno em navegador móvel e desktop.
