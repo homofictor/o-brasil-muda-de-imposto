@@ -22,10 +22,13 @@ test('valida pacote recebido e bloqueia campos arbitrários, duplicações e per
   [{field:'rbt12',value:100,periodMonths:12},{field:'rbt12',value:200,periodMonths:12}]])
   assert.throws(()=>validarPacoteRevisado({tipo,candidatos}));
 });
-test('despesa financeira de período parcial é anualizada uma vez, somente com período válido',()=>{
- assert.equal(estimarJurosAnuais([{field:'interestExpense',value:24,periodMonths:6}]),48);
- assert.equal(estimarJurosAnuais([{field:'interestExpense',value:24,periodMonths:null}]),null);
+test('despesa financeira parcial não é anualizada sem conciliação',()=>{
+ for(const meses of [null,1,3,6,9,11,13])
+  assert.equal(estimarJurosAnuais([{field:'interestExpense',value:24,periodMonths:meses}]),null);
+ assert.equal(estimarJurosAnuais([{field:'interestExpense',value:24,periodMonths:12}]),24);
+ assert.equal(estimarJurosAnuais([{field:'interestExpense',value:0,periodMonths:12}]),0);
  assert.equal(estimarJurosAnuais([{field:'interestExpense',value:-24,periodMonths:12}]),null);
+ assert.equal(estimarJurosAnuais([{field:'interestExpense',value:Infinity,periodMonths:12}]),null);
 });
 test('não mapeia receita bruta, ativo ou passivo circulante como receita líquida ou NCG',()=>{
  const r=validarPacoteRevisado({tipo:'rt360-candidatos-revisados-v1',candidatos:[
