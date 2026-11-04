@@ -1,16 +1,23 @@
 'use strict';
 const { conciliarSaldos } = require('./reconciliacao.cjs');
 const { classificarExcecoes } = require('./excecoes-materiais.cjs');
+const { validarCompetencias } = require('./competencias.cjs');
 
-// Integração interna após classificação e normalização das contas, antes de projeções.
-function avaliarConciliacaoEtapa2({ bp, balancete, politicaMaterialidade } = {}) {
+// Só compara saldos quando as datas-base são iguais e válidas.
+// Balancete intermediário exige ponte temporal explícita, ainda não implementada.
+function avaliarConciliacaoEtapa2({ bp, balancete, dataBP, dataBalancete, politicaMaterialidade } = {}) {
+  const competencias = validarCompetencias({ dataBP, dataBalancete });
+  if (!competencias.comparavel) {
+    return { competencias, conciliacao: null, excecoes: null, revisaoPendente: true,
+      politicaPendente: !politicaMaterialidade, aptoParaProjetar: false, homologado: false };
+  }
   const conciliacao = conciliarSaldos(bp, balancete);
   if (!politicaMaterialidade) {
-    return { conciliacao, excecoes: null, revisaoPendente: conciliacao.divergencias.length > 0,
-      politicaPendente: true, aptoParaProjetar: conciliacao.conciliado, homologado: false };
+    return { competencias, conciliacao, excecoes: null, revisaoPendente: true,
+      politicaPendente: true, aptoParaProjetar: false, homologado: false };
   }
   const classificacao = classificarExcecoes(conciliacao, politicaMaterialidade);
-  return { conciliacao, excecoes: classificacao.excecoes,
+  return { competencias, conciliacao, excecoes: classificacao.excecoes,
     revisaoPendente: classificacao.revisaoPendente, politicaPendente: false,
     aptoParaProjetar: !classificacao.revisaoPendente, homologado: false };
 }
