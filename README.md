@@ -1,3 +1,7 @@
+## Motor RT Crédito 360 | execução 2026-11-04 07:56 BRT
+
+Entrega: validador de competências `motor-rt-credito-360/competencias.cjs` e teste `tests/motor-rt-competencias.test.cjs`. Exige datas ISO válidas e coincidentes para comparar saldos, sem presumir comparabilidade. Commits `4b8f238f05e4b38752c8cb800b67e1c08e130545` e `fee130120dd8478c924bd10245dd0fcc9f561d95`. Testes Node: 4/4 aprovados em cópia local; checkout integral não testado. Bloqueios: validador ainda não integrado à etapa 2, metadados de datas não conectados ao importador; PDF/XLSX, DRE, exemplo integral, mobile e preview Vercel pendentes. Próxima ação: integrar validação temporal ao orquestrador antes de projeções, com tratamento de balancetes intermediários. Sem merge, produção, gastos ou dados pessoais.
+
 ## Motor RT Crédito 360 | execução 2026-11-04 06:59 BRT
 
 Entrega única: criado `motor-rt-credito-360/etapa2-conciliacao.cjs`, orquestrador interno que chama `conciliarSaldos` e, quando há política documentada, `classificarExcecoes`. Não modifica a interface, os dados de entrada ou os cálculos tributários. Divergências sem política bloqueiam projeção; contas ausentes e duplicadas não são automaticamente ajustadas. Se não houver divergências, a ausência de política não impede o prosseguimento. O campo `homologado` permanece falso.
