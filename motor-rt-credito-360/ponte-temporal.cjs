@@ -23,8 +23,12 @@ function conciliarPonteTemporal({ dataAbertura, dataFechamento, contas } = {}) {
     const esperado = aberturaCentavos + movimentosCentavos;
     if (!Number.isSafeInteger(esperado))
       return { comparavel:false, motivo:'overflow', revisaoObrigatoria:true, divergencias:[] };
-    if (esperado !== fechamentoCentavos)
-      divergencias.push({ codigo:conta.codigo, diferencaCentavos:fechamentoCentavos - esperado });
+    if (esperado !== fechamentoCentavos) {
+      const diferencaCentavos = fechamentoCentavos - esperado;
+      if (!Number.isSafeInteger(diferencaCentavos))
+        return { comparavel:false, motivo:'overflow', revisaoObrigatoria:true, divergencias:[] };
+      divergencias.push({ codigo:conta.codigo, diferencaCentavos });
+    }
   }
   return { comparavel:divergencias.length === 0, motivo:divergencias.length ? 'movimentacao_nao_conciliada' : null,
     revisaoObrigatoria:divergencias.length > 0, divergencias, homologado:false };
