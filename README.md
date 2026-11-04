@@ -1,3 +1,11 @@
+## Motor RT Crédito 360 | execução 2026-11-04 01:01 BRT
+
+Entrega única: adicionado `tests/import-csv-celulas-vazias.test.cjs`, com três regressões sobre preservação de células vazias, descarte de linhas em branco e manutenção de saldos zero no leitor CSV existente do Simulador RT v3.2. Nenhuma alteração na interface, cálculos ou premissas.
+
+Commit do teste: `8ac82fd`. Testes Node: 3/3 aprovados em reprodução local da função `csvRows` copiada do arquivo consultado na branch; execução no checkout integral não confirmada porque o terminal não resolve github.com por DNS. Bloqueios: testes integrados PDF/XLSX/CSV, conciliação BP/DRE/balancete, exemplo fictício integral, navegação móvel e preview Vercel não verificados. Sem merge, sem produção e sem dados pessoais.
+
+Próxima ação: executar `node --test tests/import-csv-celulas-vazias.test.cjs` diretamente no checkout e integrar o resultado do importador à conciliação contábil antes de qualquer projeção.
+
 ## Motor RT Crédito 360 | execução 2026-11-03 23:56 BRT
 
 Entrega única: teste `tests/import-csv-fonte-real.test.cjs` executa `csvRows` diretamente a partir do código-fonte de `simulador/v3/import.js` em contexto isolado Node, evitando duplicar a função dentro do teste. Abrange BOM UTF-8, delimitadores, aspas escapadas, campos multilinha e rejeição de aspas abertas.
