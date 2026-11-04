@@ -1,3 +1,11 @@
+## Motor RT Crédito 360 | execução 2026-11-04 05:02 BRT
+
+Entrega única: criado o núcleo reutilizável `motor-rt-credito-360/reconciliacao.cjs` para comparar saldos já normalizados em centavos, sem arredondamentos ou ajustes automáticos, com sinalização de contas ausentes e duplicadas. Teste em `tests/motor-rt-conciliacao-nucleo.test.cjs`. Commits: código `ebce45df0abd4bf3210cc924b264513a67a52bdb`, testes `7937f754ca13c2eec7a9ae01f05e5d7906a38b75`.
+
+Testes Node 22: quatro casos aprovados em execução local de código equivalente, antes do envio ao repositório. Execução diretamente no checkout GitHub ainda não confirmada. O núcleo NÃO está conectado ao fluxo da etapa 2, não define materialidade e exige mapeamento contábil consistente entre períodos antes de comparar. Bloqueios: integração com o importador PDF/XLSX/CSV, conciliação DRE e BP completa, exemplo fictício integral, mobile e validação funcional do preview.
+
+Próxima ação: executar `node --test tests/motor-rt-conciliacao-nucleo.test.cjs` diretamente na branch e conectar a normalização de rubricas e centavos à etapa 2, mantendo revisão apenas de exceções materiais. Sem merge na main, alteração deliberada de produção, gastos ou dados pessoais.
+
 ## Motor RT Crédito 360 | execução 2026-11-04 04:01 BRT
 
 Entrega única: criado `tests/motor-rt-bp-balancete-divergencias.test.cjs`, que usa a função `csvRows` do importador existente para comparar contas fictícias de BP e balancete em centavos inteiros. Abrange conciliação exata, divergência de R$ 0,01 sem ajuste automático, conta ausente sem presumir saldo zero e rejeição de conta duplicada. Commit do teste: `c10de9a1ac79e8d754ff5c13c789f6643af69b6b`.
