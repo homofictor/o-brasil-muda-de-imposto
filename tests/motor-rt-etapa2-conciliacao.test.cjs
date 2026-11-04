@@ -4,9 +4,10 @@ const assert = require('node:assert/strict');
 const { avaliarConciliacaoEtapa2 } = require('../motor-rt-credito-360/etapa2-conciliacao.cjs');
 const bp = [{ codigo: '1', centavos: 10000 }];
 const politicaMaterialidade = { limiteCentavos: 100, fonte: 'critério de teste sintético, não institucional' };
-test('saldos conciliados permitem prosseguir sem política', () => {
+test('saldos conciliados não dispensam política documentada', () => {
   const r = avaliarConciliacaoEtapa2({ bp, balancete: bp });
-  assert.equal(r.aptoParaProjetar, true);
+  assert.equal(r.aptoParaProjetar, false);
+  assert.equal(r.revisaoPendente, true);
   assert.equal(r.politicaPendente, true);
 });
 test('divergência sem política não é liberada', () => {
