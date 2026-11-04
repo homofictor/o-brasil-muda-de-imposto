@@ -1,3 +1,11 @@
+## Motor RT Crédito 360 | execução 2026-11-04 06:02 BRT
+
+Entrega única: módulo isolado `motor-rt-credito-360/excecoes-materiais.cjs` classifica divergências previamente detectadas pelo núcleo de conciliação. Exige política de materialidade explícita, em centavos, com fonte documentada; não cria percentual padrão. Conta ausente exige revisão mesmo com saldo zero. Divergências acima do limite exigem revisão; valores abaixo do limite continuam registrados, sem correção automática. O resultado informa `homologado: false`. Código `bc9468c7c38b8f100cf87f4b8146dea157b45538`, regressão `83b6d603bcce738e138292f2a913809715f76a58`.
+
+Testes: cinco casos aprovados com `node --test` em diretório local isolado, com cópia fiel dos módulos, antes dos commits. O teste foi gravado em `tests/motor-rt-excecoes-materiais.test.cjs`; execução diretamente no checkout da branch não comprovada. Bloqueios: política de materialidade institucional não definida, módulo ainda não ligado à etapa 2, PDF/XLSX/CSV e relatório fictício integral não validados, QA móvel e preview Vercel não verificados. Não houve merge nem alteração deliberada de produção; sem dados pessoais ou gastos.
+
+Próxima ação: executar `node --test tests/motor-rt-excecoes-materiais.test.cjs` diretamente no checkout e integrar a classificação de exceções ao fluxo interno da etapa 2, após normalização e conciliação de contas, sem criar quarta etapa.
+
 ## Motor RT Crédito 360 | execução 2026-11-04 05:02 BRT
 
 Entrega única: criado o núcleo reutilizável `motor-rt-credito-360/reconciliacao.cjs` para comparar saldos já normalizados em centavos, sem arredondamentos ou ajustes automáticos, com sinalização de contas ausentes e duplicadas. Teste em `tests/motor-rt-conciliacao-nucleo.test.cjs`. Commits: código `ebce45df0abd4bf3210cc924b264513a67a52bdb`, testes `7937f754ca13c2eec7a9ae01f05e5d7906a38b75`.
