@@ -1,3 +1,11 @@
+## Motor RT Crédito 360 | execução 2026-11-04 04:01 BRT
+
+Entrega única: criado `tests/motor-rt-bp-balancete-divergencias.test.cjs`, que usa a função `csvRows` do importador existente para comparar contas fictícias de BP e balancete em centavos inteiros. Abrange conciliação exata, divergência de R$ 0,01 sem ajuste automático, conta ausente sem presumir saldo zero e rejeição de conta duplicada. Commit do teste: `c10de9a1ac79e8d754ff5c13c789f6643af69b6b`.
+
+Testes Node: quatro casos definidos, mas NÃO executados diretamente no checkout. Tentativa de `git ls-remote` falhou porque o terminal não resolveu github.com. Portanto, nenhum resultado de teste é declarado aprovado. Bloqueios: execução Node no checkout, integração efetiva ao Motor, conciliação material, PDF/XLSX, exemplo fictício completo, testes móveis e preview Vercel não verificado. A nova verificação é somente regressão, não motor de conciliação em produção.
+
+Próxima ação: executar `node --test tests/motor-rt-bp-balancete-divergencias.test.cjs` na branch e integrar a sinalização de divergências ao processamento interno da etapa 2, sem introduzir limiar arbitrário de materialidade. Sem merge na main, sem alteração deliberada de produção ou dados pessoais.
+
 ## Motor RT Crédito 360 | execução 2026-11-04 02:56 BRT
 
 Entrega única: teste `tests/motor-rt-conciliacao-csv-sintetica.test.cjs` com BP e DRE fictícios, lendo `csvRows` diretamente do importador compartilhado. Verifica identidade patrimonial, reconciliação do resultado operacional e detecção de divergência patrimonial de R$ 200, sem introduzir tolerância arbitrária. Commit: `5c6afa6ca6da6dbaf78992584b31b032c8460f5d`.
