@@ -14,9 +14,10 @@ function conciliarPonteTemporal({ dataAbertura, dataFechamento, contas } = {}) {
     return { comparavel:false, motivo:'movimentacoes_ausentes', revisaoObrigatoria:true, divergencias:[] };
   const vistas = new Set(), divergencias = [];
   for (const conta of contas) {
-    if (!conta || typeof conta.codigo !== 'string' || !conta.codigo.trim() || vistas.has(conta.codigo))
+    if (!conta || typeof conta.codigo !== 'string' || !conta.codigo.trim() || vistas.has(conta.codigo.trim()))
       return { comparavel:false, motivo:'conta_invalida_ou_duplicada', revisaoObrigatoria:true, divergencias:[] };
-    vistas.add(conta.codigo);
+    const codigo = conta.codigo.trim();
+    vistas.add(codigo);
     const { aberturaCentavos, movimentosCentavos, fechamentoCentavos } = conta;
     if (![aberturaCentavos, movimentosCentavos, fechamentoCentavos].every(Number.isSafeInteger))
       return { comparavel:false, motivo:'saldo_ou_movimento_ausente', revisaoObrigatoria:true, divergencias:[] };
@@ -27,7 +28,7 @@ function conciliarPonteTemporal({ dataAbertura, dataFechamento, contas } = {}) {
       const diferencaCentavos = fechamentoCentavos - esperado;
       if (!Number.isSafeInteger(diferencaCentavos))
         return { comparavel:false, motivo:'overflow', revisaoObrigatoria:true, divergencias:[] };
-      divergencias.push({ codigo:conta.codigo, diferencaCentavos });
+      divergencias.push({ codigo, diferencaCentavos });
     }
   }
   return { comparavel:divergencias.length === 0, motivo:divergencias.length ? 'movimentacao_nao_conciliada' : null,
