@@ -1,3 +1,13 @@
+## Motor RT Crédito 360 | execução 2026-11-04 06:59 BRT
+
+Entrega única: criado `motor-rt-credito-360/etapa2-conciliacao.cjs`, orquestrador interno que chama `conciliarSaldos` e, quando há política documentada, `classificarExcecoes`. Não modifica a interface, os dados de entrada ou os cálculos tributários. Divergências sem política bloqueiam projeção; contas ausentes e duplicadas não são automaticamente ajustadas. Se não houver divergências, a ausência de política não impede o prosseguimento. O campo `homologado` permanece falso.
+
+Commits: módulo `96f682f19341b8372d6102031dc53c52d2dfa0de`; testes `12f0f9c976b241e7ec7f38ba88718bb61747e741`. Testes Node 22: 5/5 aprovados em diretório isolado, usando cópias fiéis dos dois módulos existentes. Execução no checkout integral ainda não confirmada.
+
+Bloqueios: orquestrador ainda não ligado ao importador nem à interface da etapa 2; faltam mapeamento de rubricas, conciliação temporal BP/balancete, PDF/XLSX/CSV integrados, DRE, exemplo fictício completo, QA móvel e preview Vercel. A política institucional de materialidade não foi fornecida; o limite do teste é apenas dado sintético, não parâmetro do Motor.
+
+Próxima ação: executar `node --test tests/motor-rt-etapa2-conciliacao.test.cjs` no checkout da branch e ligar a normalização do importador existente ao orquestrador, respeitando a comparabilidade das datas. Sem merge na main, produção, gastos ou dados pessoais.
+
 ## Motor RT Crédito 360 | execução 2026-11-04 06:02 BRT
 
 Entrega única: módulo isolado `motor-rt-credito-360/excecoes-materiais.cjs` classifica divergências previamente detectadas pelo núcleo de conciliação. Exige política de materialidade explícita, em centavos, com fonte documentada; não cria percentual padrão. Conta ausente exige revisão mesmo com saldo zero. Divergências acima do limite exigem revisão; valores abaixo do limite continuam registrados, sem correção automática. O resultado informa `homologado: false`. Código `bc9468c7c38b8f100cf87f4b8146dea157b45538`, regressão `83b6d603bcce738e138292f2a913809715f76a58`.
