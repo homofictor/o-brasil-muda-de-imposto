@@ -1,3 +1,11 @@
+## Motor RT Crédito 360 | execução 2026-11-04 02:02 BRT
+
+Entrega única: criado `tests/import-csv-balancete-estrutura.test.cjs`, teste que extrai a função `csvRows` do importador compartilhado `simulador/v3/import.js` e verifica, com balancete inteiramente sintético, quatro colunas preservadas, saldos zero, células vazias, delimitador citado e rejeição de aspas não fechadas. Commit do teste: `5a574908bb2c44e16da324a9c3a8c095a323283b`.
+
+Testes Node 22: 3/3 aprovados em reprodução local com a função copiada do arquivo consultado na branch. Não foi possível executar no checkout completo: falha de DNS de github.com no terminal. Bloqueios: integração PDF/XLSX/CSV com BP/DRE/balancete, conciliação material, exemplo fictício integral, mobile e validação funcional de preview. Nenhuma alteração de interface, premissas ou produção; sem merge na main.
+
+Próxima ação: executar `node --test tests/import-csv-balancete-estrutura.test.cjs` no checkout completo e verificar conciliação de contas antes das projeções.
+
 ## Motor RT Crédito 360 | execução 2026-11-04 01:01 BRT
 
 Entrega única: adicionado `tests/import-csv-celulas-vazias.test.cjs`, com três regressões sobre preservação de células vazias, descarte de linhas em branco e manutenção de saldos zero no leitor CSV existente do Simulador RT v3.2. Nenhuma alteração na interface, cálculos ou premissas.
