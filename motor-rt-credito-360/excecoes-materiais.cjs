@@ -1,8 +1,12 @@
 'use strict';
 // Classifica divergências já conciliadas, sem alterar saldos nem presumir materialidade.
+function politicaMaterialidadeValida(politica) {
+  return !!(politica && Number.isSafeInteger(politica.limiteCentavos) &&
+    politica.limiteCentavos >= 0 && typeof politica.fonte === 'string' && politica.fonte.trim());
+}
 function classificarExcecoes(resultado, politica) {
   if (!resultado || !Array.isArray(resultado.divergencias)) throw new TypeError('Conciliação obrigatória');
-  if (!politica || !Number.isSafeInteger(politica.limiteCentavos) || politica.limiteCentavos < 0 || !politica.fonte || typeof politica.fonte !== 'string' || !politica.fonte.trim()) {
+  if (!politicaMaterialidadeValida(politica)) {
     throw new TypeError('Política explícita de materialidade com fonte obrigatória');
   }
   const excecoes = resultado.divergencias.map(d => {
@@ -15,4 +19,4 @@ function classificarExcecoes(resultado, politica) {
   });
   return { excecoes, revisaoPendente: excecoes.some(d => d.revisaoObrigatoria), politica: { limiteCentavos: politica.limiteCentavos, fonte: politica.fonte.trim() }, homologado: false };
 }
-module.exports = { classificarExcecoes };
+module.exports = { classificarExcecoes, politicaMaterialidadeValida };
