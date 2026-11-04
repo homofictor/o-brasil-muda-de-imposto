@@ -13,3 +13,13 @@ test('não presume movimento ausente',()=>assert.equal(
 test('rejeita datas invertidas',()=>assert.equal(conciliarPonteTemporal({...base,dataFechamento:'2025-01-01'}).motivo,'periodo_invalido'));
 test('rejeita duplicidade',()=>assert.equal(conciliarPonteTemporal({...base,contas:[base.contas[0],base.contas[0]]}).motivo,'conta_invalida_ou_duplicada'));
 test('rejeita overflow',()=>assert.equal(conciliarPonteTemporal({...base,contas:[{codigo:'1',aberturaCentavos:Number.MAX_SAFE_INTEGER,movimentosCentavos:1,fechamentoCentavos:0}]}).motivo,'overflow'));
+
+test('rejeita overflow na diferença entre fechamento e saldo esperado',()=>{
+  const resultado = conciliarPonteTemporal({...base,contas:[{
+    codigo:'1.1', aberturaCentavos:-Number.MAX_SAFE_INTEGER,
+    movimentosCentavos:0, fechamentoCentavos:Number.MAX_SAFE_INTEGER
+  }]});
+  assert.equal(resultado.comparavel,false);
+  assert.equal(resultado.motivo,'overflow');
+  assert.equal(resultado.revisaoObrigatoria,true);
+});
