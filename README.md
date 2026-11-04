@@ -1,3 +1,11 @@
+## Motor RT Crédito 360 | execução 2026-11-03 21:58 BRT
+
+Entrega única: acrescentado teste de regressão do leitor CSV compartilhado para descrições multilinha entre aspas, aspas escapadas, BOM UTF-8, CRLF e rejeição de aspas não fechadas. Nenhuma alteração de lógica, interface, projeções ou produção.
+
+Commit do teste: `c8b492e`. Testes Node: cinco casos aprovados em reprodução local isolada da função `csvRows` com Node 22. O teste foi registrado em `tests/import-csv-multilinha.test.cjs`; a execução no checkout integral do repositório ainda precisa ser confirmada. Bloqueios: importação integrada de PDF/XLSX/CSV, conciliação BP/DRE/balancete, relatório fictício integral e navegação móvel ainda não validados. Preview Vercel requer confirmação funcional antes de divulgar link.
+
+Próxima ação: executar `node tests/import-csv-multilinha.test.cjs` no checkout da branch e testar a passagem de CSV sintético pelo fluxo completo de importação e conciliação.
+
 # o-brasil-muda-de-imposto
 Reforma tributária Brasileira 
 site oficial do livro O Brasil muda de imposto
