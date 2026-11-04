@@ -1,3 +1,11 @@
+## Motor RT Crédito 360 | execução 2026-11-04 02:56 BRT
+
+Entrega única: teste `tests/motor-rt-conciliacao-csv-sintetica.test.cjs` com BP e DRE fictícios, lendo `csvRows` diretamente do importador compartilhado. Verifica identidade patrimonial, reconciliação do resultado operacional e detecção de divergência patrimonial de R$ 200, sem introduzir tolerância arbitrária. Commit: `5c6afa6ca6da6dbaf78992584b31b032c8460f5d`.
+
+Testes Node: arquivo registrado na branch; execução no checkout não confirmada porque o terminal não resolve github.com (git ls-remote falhou por DNS). Não considerar a validação integrada aprovada. Bloqueios: ainda falta conectar essas verificações ao fluxo real de importação e ao mecanismo de exceções materiais, validar PDF/XLSX, exemplo completo, interface móvel e preview Vercel. Nenhum dado pessoal, alteração de interface, merge ou mudança deliberada de produção.
+
+Próxima ação: executar `node --test tests/motor-rt-conciliacao-csv-sintetica.test.cjs` no checkout e integrar a reconciliação contábil ao processamento real antes de projeções.
+
 ## Motor RT Crédito 360 | execução 2026-11-04 02:02 BRT
 
 Entrega única: criado `tests/import-csv-balancete-estrutura.test.cjs`, teste que extrai a função `csvRows` do importador compartilhado `simulador/v3/import.js` e verifica, com balancete inteiramente sintético, quatro colunas preservadas, saldos zero, células vazias, delimitador citado e rejeição de aspas não fechadas. Commit do teste: `5a574908bb2c44e16da324a9c3a8c095a323283b`.
