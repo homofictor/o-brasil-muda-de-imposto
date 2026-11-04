@@ -1,17 +1,18 @@
 'use strict';
 const { conciliarSaldos } = require('./reconciliacao.cjs');
-const { classificarExcecoes } = require('./excecoes-materiais.cjs');
+const { classificarExcecoes, politicaMaterialidadeValida } = require('./excecoes-materiais.cjs');
 const { validarCompetencias } = require('./competencias.cjs');
 const { conciliarPonteTemporal } = require('./ponte-temporal.cjs');
 
 // Datas distintas exigem movimentações comprovadas para todas as contas.
 // Nunca compara diretamente saldos de períodos diferentes.
 function avaliarConciliacaoEtapa2({ bp, balancete, dataBP, dataBalancete, politicaMaterialidade, movimentos } = {}) {
+  const politicaValida = politicaMaterialidadeValida(politicaMaterialidade);
   const competencias = validarCompetencias({ dataBP, dataBalancete });
   if (!competencias.comparavel) {
     if (competencias.motivo !== 'competencias_distintas' || !Array.isArray(movimentos)) {
       return { competencias, conciliacao: null, excecoes: null, revisaoPendente: true,
-        politicaPendente: !politicaMaterialidade, aptoParaProjetar: false, homologado: false };
+        politicaPendente: !politicaValida, aptoParaProjetar: false, homologado: false };
     }
     // Valida a unicidade e os valores de ambas as bases antes de compor a ponte.
     conciliarSaldos(bp, balancete);
@@ -22,7 +23,7 @@ function avaliarConciliacaoEtapa2({ bp, balancete, dataBP, dataBalancete, politi
       if (!item || typeof item.codigo !== 'string' || !item.codigo.trim() ||
           movimentoPorConta.has(item.codigo.trim()) || !Number.isSafeInteger(item.movimentosCentavos)) {
         return { competencias, conciliacao: null, excecoes: null, revisaoPendente: true,
-          politicaPendente: !politicaMaterialidade, aptoParaProjetar: false, homologado: false,
+          politicaPendente: !politicaValida, aptoParaProjetar: false, homologado: false,
           motivo: 'movimentos_invalidos_ou_duplicados' };
       }
       movimentoPorConta.set(item.codigo.trim(), item.movimentosCentavos);
@@ -31,7 +32,7 @@ function avaliarConciliacaoEtapa2({ bp, balancete, dataBP, dataBalancete, politi
     if (codigos.size === 0 || codigos.size !== abertura.size || codigos.size !== fechamento.size ||
         codigos.size !== movimentoPorConta.size || [...codigos].some(c => !movimentoPorConta.has(c))) {
       return { competencias, conciliacao: null, excecoes: null, revisaoPendente: true,
-        politicaPendente: !politicaMaterialidade, aptoParaProjetar: false, homologado: false,
+        politicaPendente: !politicaValida, aptoParaProjetar: false, homologado: false,
         motivo: 'cobertura_incompleta_da_ponte' };
     }
     const ponte = conciliarPonteTemporal({
@@ -43,11 +44,11 @@ function avaliarConciliacaoEtapa2({ bp, balancete, dataBP, dataBalancete, politi
       }))
     });
     return { competencias, ponte, conciliacao: null, excecoes: null,
-      revisaoPendente: !ponte.comparavel || !politicaMaterialidade, politicaPendente: !politicaMaterialidade,
-      aptoParaProjetar: ponte.comparavel && !!politicaMaterialidade, homologado: false };
+      revisaoPendente: !ponte.comparavel || !politicaValida, politicaPendente: !politicaValida,
+      aptoParaProjetar: ponte.comparavel && !!politicaValida, homologado: false };
   }
   const conciliacao = conciliarSaldos(bp, balancete);
-  if (!politicaMaterialidade) {
+  if (!politicaValida) {
     return { competencias, conciliacao, excecoes: null, revisaoPendente: true,
       politicaPendente: true, aptoParaProjetar: false, homologado: false };
   }
