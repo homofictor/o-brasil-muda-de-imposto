@@ -3,6 +3,7 @@ const { conciliarSaldos } = require('./reconciliacao.cjs');
 const { classificarExcecoes, politicaMaterialidadeValida } = require('./excecoes-materiais.cjs');
 const { validarCompetencias } = require('./competencias.cjs');
 const { conciliarPonteTemporal } = require('./ponte-temporal.cjs');
+const { validarRastreabilidadeMovimentos } = require('./movimentos-rastreabilidade.cjs');
 
 // Datas distintas exigem movimentações comprovadas para todas as contas.
 // Nunca compara diretamente saldos de períodos diferentes.
@@ -18,6 +19,14 @@ function avaliarConciliacaoEtapa2({ bp, balancete, dataBP, dataBalancete, politi
     conciliarSaldos(bp, balancete);
     const abertura = new Map(bp.map(c => [c.codigo.trim(), c.centavos]));
     const fechamento = new Map(balancete.map(c => [c.codigo.trim(), c.centavos]));
+    // O intervalo documentado começa no dia seguinte ao BP e termina no balancete.
+    const inicio = new Date(Date.parse(dataBP + 'T00:00:00Z') + 86400000).toISOString().slice(0, 10);
+    const rastreabilidade = validarRastreabilidadeMovimentos(movimentos, { inicio, fim: dataBalancete });
+    if (!rastreabilidade.valido) {
+      return { competencias, conciliacao: null, excecoes: null, revisaoPendente: true,
+        politicaPendente: !politicaValida, aptoParaProjetar: false, homologado: false,
+        motivo: 'rastreabilidade_' + rastreabilidade.motivo };
+    }
     const movimentoPorConta = new Map();
     for (const item of movimentos) {
       if (!item || typeof item.codigo !== 'string' || !item.codigo.trim() ||
