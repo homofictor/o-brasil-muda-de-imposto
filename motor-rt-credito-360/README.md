@@ -2700,3 +2700,16 @@ Próxima ação: executar `node --test motor-rt-credito-360/csv-bom-import.test.
 - Node: 2/2 verificações aprovadas em reprodução isolada da função. Teste de regressão incluído em `tests/import-csv-quoted-delimiter.test.cjs`, preparado para execução por `node --test tests/import-csv-quoted-delimiter.test.cjs` no checkout. **A suíte do repositório ainda não foi executada neste ambiente.**
 - Bloqueios: falta validar o teste diretamente no checkout, integração PDF/XLSX/CSV com BP/DRE/balancete sintéticos, reconciliação e materialidade; preview Vercel não verificado funcionalmente.
 - Próxima ação: executar Node no checkout e validar o fluxo completo de importação sintética, conciliação anterior às projeções e relatório de três cenários.
+
+
+## Gate temporal integrado à etapa 2 (04/11/2026)
+
+Entrega: `etapa2-conciliacao.cjs` agora chama `validarCompetencias` antes da conciliação. Datas inválidas, ausentes ou distintas bloqueiam a projeção sem comparar saldos. A ausência de política explícita de materialidade também bloqueia, inclusive quando não há divergências. Sem alteração de interface, regras tributárias, dados ou produção.
+
+Commits: implementação `a0e89955965b530616fba40320ffbe5509c87c5f`; regressão `b76694ef487cde19134b488b9bd53ea80b7b65fe`.
+
+Testes: cinco verificações nativas Node 22 passaram em reprodução local isolada, com dependências reproduzidas para o teste; não foi executado o teste diretamente no checkout integral. Os casos cobrem datas iguais, diferentes, inválidas, ausência de política e divergência material. A suíte completa e o teste de integração real continuam pendentes.
+
+Bloqueios: balancete intermediário exige ponte temporal e conciliação de movimentações, não comparação direta de saldos de datas diferentes. Ainda falta ligar os dados extraídos pelo leitor compartilhado à etapa 2, executar os testes nativos com blobs integrais do repositório, validar o exemplo fictício integral e verificar o preview móvel. Nenhuma homologação tributária ou de crédito.
+
+Próxima ação: implementar uma ponte temporal explícita e auditável para balancetes intermediários, sem presumir equivalência entre competências, antes de conectar o importador.
