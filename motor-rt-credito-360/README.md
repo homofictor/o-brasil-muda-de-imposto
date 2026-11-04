@@ -2713,3 +2713,13 @@ Testes: cinco verificações nativas Node 22 passaram em reprodução local isol
 Bloqueios: balancete intermediário exige ponte temporal e conciliação de movimentações, não comparação direta de saldos de datas diferentes. Ainda falta ligar os dados extraídos pelo leitor compartilhado à etapa 2, executar os testes nativos com blobs integrais do repositório, validar o exemplo fictício integral e verificar o preview móvel. Nenhuma homologação tributária ou de crédito.
 
 Próxima ação: implementar uma ponte temporal explícita e auditável para balancetes intermediários, sem presumir equivalência entre competências, antes de conectar o importador.
+
+## Proteção da diferença na ponte temporal (04/11/2026)
+
+Corrigido cálculo da diferença entre saldo final e saldo esperado: dois saldos individualmente seguros podem gerar diferença fora do intervalo de inteiros seguros do JavaScript. O módulo passa a retornar `motivo: 'overflow'` e bloquear projeções, sem estimar valores ou ajustar saldos. Teste sintético acrescentado com extremos de sinais opostos.
+
+Commits: implementação `1d3ef076b6e240a0a219143cadf06af296d15331`; teste `7226bcdac805b677423ff30587c85afa4b132c0c`.
+
+Verificação: caso extremo executado em JavaScript V8 com resultado `overflow`. **Execução nativa Node pendente**: checkout bloqueado por falha de DNS para github.com; não declarar suíte aprovada. README atualizado nesta entrega. Preview Vercel não verificado, sem link. Não houve merge na main, deploy manual, gasto ou uso de dados pessoais.
+
+Bloqueios: testes nativos integrais, integração do leitor `simulador/v3/import.js`, exemplo fictício completo, conciliação da DRE e QA móvel. Próxima ação: executar `node --test tests/motor-rt-ponte-temporal.test.cjs` no checkout integral e conectar os movimentos extraídos à etapa 2 com evidência de origem.
