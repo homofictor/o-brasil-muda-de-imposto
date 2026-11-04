@@ -2723,3 +2723,11 @@ Commits: implementação `1d3ef076b6e240a0a219143cadf06af296d15331`; teste `7226
 Verificação: caso extremo executado em JavaScript V8 com resultado `overflow`. **Execução nativa Node pendente**: checkout bloqueado por falha de DNS para github.com; não declarar suíte aprovada. README atualizado nesta entrega. Preview Vercel não verificado, sem link. Não houve merge na main, deploy manual, gasto ou uso de dados pessoais.
 
 Bloqueios: testes nativos integrais, integração do leitor `simulador/v3/import.js`, exemplo fictício completo, conciliação da DRE e QA móvel. Próxima ação: executar `node --test tests/motor-rt-ponte-temporal.test.cjs` no checkout integral e conectar os movimentos extraídos à etapa 2 com evidência de origem.
+
+
+## Regressão do gate de materialidade (04/11/2026, 16h56 BRT)
+
+Entrega única: corrigida expectativa obsoleta em `tests/motor-rt-etapa2-conciliacao.test.cjs`. O teste anteriormente exigia `aptoParaProjetar: true` sem política, contradizendo a implementação restritiva atual. Agora exige `false`, `revisaoPendente: true` e `politicaPendente: true`. Nenhuma regra tributária, projeção ou interface foi alterada.
+
+Commit do teste: `a3295458276d3301b8a51bb2066bbdbed0edc2f9`.
+Testes Node: **não executados no checkout integral**. O ambiente local possui Node v22.16.0, mas `git ls-remote` falhou por DNS (`Could not resolve host: github.com`); não declarar aprovação. Bloqueio: obter checkout íntegro e executar `node --test tests/motor-rt-etapa2-conciliacao.test.cjs`, seguido da suíte completa. Próxima ação: conectar a extração real de movimentações do importador v3.2 à ponte temporal, com rastreabilidade por conta e competência. Preview Vercel: validação funcional pendente. Não houve merge na main, alteração de produção, gasto ou dados pessoais. Não homologado.
