@@ -43,8 +43,8 @@ function avaliarConciliacaoEtapa2({ bp, balancete, dataBP, dataBalancete, politi
       }))
     });
     return { competencias, ponte, conciliacao: null, excecoes: null,
-      revisaoPendente: !ponte.comparavel, politicaPendente: !politicaMaterialidade,
-      aptoParaProjetar: ponte.comparavel, homologado: false };
+      revisaoPendente: !ponte.comparavel || !politicaMaterialidade, politicaPendente: !politicaMaterialidade,
+      aptoParaProjetar: ponte.comparavel && !!politicaMaterialidade, homologado: false };
   }
   const conciliacao = conciliarSaldos(bp, balancete);
   if (!politicaMaterialidade) {
