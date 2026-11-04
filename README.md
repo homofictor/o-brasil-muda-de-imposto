@@ -1,3 +1,11 @@
+## Motor RT Crédito 360 | execução 2026-11-03 23:56 BRT
+
+Entrega única: teste `tests/import-csv-fonte-real.test.cjs` executa `csvRows` diretamente a partir do código-fonte de `simulador/v3/import.js` em contexto isolado Node, evitando duplicar a função dentro do teste. Abrange BOM UTF-8, delimitadores, aspas escapadas, campos multilinha e rejeição de aspas abertas.
+
+Commit do teste: `2a3a8616`. Testes Node: quatro verificações aprovadas localmente com cópia exata da função consultada no repositório; execução do teste no checkout integral ainda não confirmada. Bloqueios: validação ponta a ponta de PDF/XLSX/CSV e conciliação BP/DRE/balancete; exemplo fictício integral e mobile; preview Vercel não verificado. Sem alterações na interface, premissas ou produção.
+
+Próxima ação: executar `node --test tests/import-csv-fonte-real.test.cjs` diretamente na branch e integrar arquivos sintéticos à conciliação antes das projeções.
+
 ## Motor RT Crédito 360 | execução 2026-11-03 23:02 BRT
 
 Entrega única: adicionado teste de regressão `tests/import-csv-variantes-delimitador.test.cjs` para CSV separado por vírgulas com descrição entre aspas e CSV com terminador CR isolado. Nenhuma lógica do Motor, interface ou premissa foi modificada.
