@@ -27,3 +27,11 @@ test('rejeita tipo de demonstrativo ausente', () => {
     [{ name: 'bp.pdf' }], [{ file: 'bp.pdf' }]
   ), /documento_analisado_sem_origem/);
 });
+
+test('rejeita status de erro com espaços e caixa variável', () => {
+  for (const status of [' ERROR ', ' Failed ', ' FALHA ', ' ErRo ']) {
+    assert.throws(() => registrarDocumentosAnalisadosV32(
+      [{ name: 'bp.pdf' }], [{ file: 'bp.pdf', type: 'BP', status }]
+    ), /documento_com_falha_de_leitura/);
+  }
+});
