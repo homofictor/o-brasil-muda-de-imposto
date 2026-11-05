@@ -17,6 +17,8 @@ function diagnosticarLoteV32(arquivos, documentos) {
       doc.error != null || doc.ok === false || doc.success === false ||
       ['erro', 'falha', 'error', 'failed'].includes(status);
     if (falha) return { indice, estado: 'falha_leitura', requerRevisao: true };
+    if (['pending', 'processing', 'loading', 'queued', 'pendente', 'processando', 'em andamento'].includes(status))
+      return { indice, estado: 'leitura_pendente', requerRevisao: true };
     if (doc.file !== arquivo.name || typeof doc.type !== 'string' || !doc.type.trim())
       return { indice, estado: 'origem_inconsistente', requerRevisao: true };
     return { indice, estado: 'lido_nao_conciliado', requerRevisao: false };
