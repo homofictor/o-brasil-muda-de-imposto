@@ -10,9 +10,10 @@ function diagnosticarLoteV32(arquivos, documentos) {
     const doc = documentos[indice];
     if (!arquivo || typeof arquivo.name !== 'string' || !arquivo.name.trim())
       throw new TypeError('arquivo_sem_identidade');
+    const status = typeof doc?.status === 'string' ? doc.status.trim().toLowerCase() : '';
     const falha = !doc || typeof doc !== 'object' || Array.isArray(doc) ||
       doc.error != null || doc.ok === false || doc.success === false ||
-      ['erro', 'falha', 'error', 'failed'].includes(String(doc.status || '').toLowerCase());
+      ['erro', 'falha', 'error', 'failed'].includes(status);
     if (falha) return { indice, estado: 'falha_leitura', requerRevisao: true };
     if (doc.file !== arquivo.name || typeof doc.type !== 'string' || !doc.type.trim())
       return { indice, estado: 'origem_inconsistente', requerRevisao: true };
