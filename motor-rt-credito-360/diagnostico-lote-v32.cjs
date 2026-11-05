@@ -30,4 +30,34 @@ function diagnosticarLoteV32(arquivos, documentos) {
     aptoParaProjecao: false
   };
 }
-module.exports = { diagnosticarLoteV32 };
+
+/**
+ * Adapta o estado do importador v3.2, que pode omitir documentos ainda na fila.
+ * Nomes repetidos sao associados em ordem; nunca se reutiliza uma leitura.
+ * O resultado e somente diagnostico: nao libera projecoes.
+ */
+function diagnosticarEstadoImportacaoV32(estado) {
+  if (!estado || !Array.isArray(estado.files) || !Array.isArray(estado.docs))
+    throw new TypeError('estado_importacao_invalido');
+  const filas = new Map();
+  for (const doc of estado.docs) {
+    if (!doc || typeof doc.file !== 'string')
+      throw new TypeError('documento_sem_origem');
+    const fila = filas.get(doc.file) || [];
+    fila.push(doc);
+    filas.set(doc.file, fila);
+  }
+  const documentos = estado.files.map(arquivo => {
+    const fila = filas.get(arquivo?.name);
+    if (fila?.length) return fila.shift();
+    const erro = arquivo?.error;
+    if (erro != null) return { file: arquivo.name, type: 'Falha de leitura', status: 'erro', error: String(erro) };
+    return { file: arquivo?.name, type: 'Pendente', status: 'pending' };
+  });
+  // Leituras excedentes indicam lote inconsistente e nao podem ser ignoradas.
+  if ([...filas.values()].some(fila => fila.length))
+    throw new TypeError('documentos_sem_arquivo_correspondente');
+  return diagnosticarLoteV32(estado.files, documentos);
+}
+
+module.exports = { diagnosticarLoteV32, diagnosticarEstadoImportacaoV32 };
