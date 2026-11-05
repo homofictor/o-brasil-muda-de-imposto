@@ -151,3 +151,10 @@ Entrega única: o leitor CSV compartilhado (`simulador/v3/import.js`) rejeita ca
 Commits: código `34852f6b`, regressão `c87064c`. Testes: três verificações Node da regra reproduzida aprovadas localmente; teste de regressão adicionado em `tests/import-csv-aspas-incompletas.test.cjs`. Execução da suíte completa diretamente no checkout ainda pendente. Bloqueios: importação integrada de PDF/XLSX/CSV, conciliação BP/DRE/balancete e teste funcional móvel ainda não validados. Preview Vercel não confirmado funcionalmente, sem link divulgado.
 
 Próxima ação: executar `node tests/import-csv-aspas-incompletas.test.cjs` no checkout e testar importação com demonstrações sintéticas completas, conciliando antes das projeções.
+
+
+## Motor RT Crédito 360 | execução 2026-11-05 12:55 BRT
+
+Entrega única: a ponte `motor-rt-credito-360/ponte-documentos-analisados-v32.cjs` passou a rejeitar explicitamente indicadores alternativos de falha do importador (`status=error/failed`, inclusive maiúsculas, `ok=false` e `success=false`), além dos estados em português e do campo `error` já tratados. Isso evita que um resultado marcado como falho seja aceito apenas por divergência de convenção de status. Não transforma indicadores em movimentos nem libera projeções.
+
+Commits: implementação `fe0363113c95002b8e78f597281a09c0ee3ceed2`; regressão `f8107bfb095255a74eb2645022a2d1d36396c089`. Testes Node: seis casos registrados em `tests/motor-rt-ponte-falhas-alternativas.test.cjs`, mas **execução não confirmada** porque os ambientes locais de execução retornaram erro de infraestrutura; não declarar testes aprovados. Preview Vercel: não verificado, nenhum link fornecido. Bloqueios: executar os testes no checkout integral, conectar o leitor real ao fluxo de ingestão e conciliação, conciliar DRE, completar exemplo fictício e validar mobile. Próxima ação: executar `node --test tests/motor-rt-ponte-falhas-alternativas.test.cjs` na branch e integrar a ponte ao fluxo de importação preservando um resultado por arquivo. Sem merge na main, alteração deliberada em produção, gastos, dados pessoais ou homologação.
