@@ -2966,3 +2966,29 @@ gastos ou dados pessoais.
 Próxima ação: ligar o diagnóstico de lote à ponte operacional de ingestão,
 preservando falhas por arquivo e revisão apenas de exceções materiais.
 Motor não homologado para decisões de crédito.
+
+
+## Diagnóstico de extensões documentais (05/11/2026, 16h55 BRT)
+
+Entrega isolada: `diagnostico-lote-v32.cjs` agora sinaliza como
+`formato_nao_suportado` arquivos cuja extensão não seja PDF, CSV, XLS ou
+XLSX, sem perder o índice do lote. A verificação ocorre antes de aceitar
+metadados de leitura, sem presumir lançamentos ou conciliação. A interface
+principal não foi modificada.
+
+Commits: implementação `1496be0e6067afc36c36533d3a725ee6f8383144`;
+regressão `95f565c769cecb5e6177940aa0e4b2a2916124dd`.
+Teste Node nativo local: `node --test diagnostico-formato.test.cjs`,
+**2 aprovados, 0 falhas**, com cópia equivalente do módulo alterado e
+casos sintéticos. A suíte completa e o teste direto dos arquivos obtidos
+após os commits ainda não foram executados.
+
+Bloqueios: diagnóstico não conectado ao fluxo operacional de
+`simulador/v3/import.js`; conciliação BP/DRE/balancete, exemplo fictício
+integral, QA móvel e validação de preview Vercel pendentes. Sem
+homologação tributária nem parecer de crédito validado.
+
+Próxima ação: integrar o diagnóstico ao lote efetivo da etapa 2, com
+correspondência individual inclusive para arquivos que falharem, antes
+de permitir conciliação ou projeções. Sem merge na main ou ação de
+publicação em produção.
