@@ -2731,3 +2731,26 @@ Entrega única: corrigida expectativa obsoleta em `tests/motor-rt-etapa2-concili
 
 Commit do teste: `a3295458276d3301b8a51bb2066bbdbed0edc2f9`.
 Testes Node: **não executados no checkout integral**. O ambiente local possui Node v22.16.0, mas `git ls-remote` falhou por DNS (`Could not resolve host: github.com`); não declarar aprovação. Bloqueio: obter checkout íntegro e executar `node --test tests/motor-rt-etapa2-conciliacao.test.cjs`, seguido da suíte completa. Próxima ação: conectar a extração real de movimentações do importador v3.2 à ponte temporal, com rastreabilidade por conta e competência. Preview Vercel: validação funcional pendente. Não houve merge na main, alteração de produção, gasto ou dados pessoais. Não homologado.
+
+
+## Correção de datas civis com ano inferior a 0100 (04/11/2026)
+
+Entrega pequena e isolada: o validador de rastreabilidade agora usa
+`setUTCFullYear` para não interpretar os anos 0001 a 0099 como 1901 a 1999
+na checagem do último dia do mês. Nenhuma regra tributária, fórmula financeira,
+interface, dado de cliente ou configuração de produção foi alterada.
+
+Commits: correção `3703b9b7845a69afb9b394b7067967a4b09b2cc4`;
+regressão `a4961f4bee57fcbc2b8ec2ba6c1a296b6c20638b`.
+Teste nativo `node --test` em reprodução isolada da função alterada:
+4 aprovados, 0 falhas (ano 0004 bissexto, ano 0001 não bissexto,
+abril de 0099 e data de 2026). A suíte adicionada ao repositório
+**não foi executada no checkout integral**: o terminal não resolve
+o domínio GitHub. O teste isolado não substitui testes de integração.
+
+Bloqueios: integração efetiva do importador `simulador/v3/import.js`,
+conciliação da DRE, exemplo fictício integral, QA móvel, verificação
+funcional do preview e revisão institucional ainda pendentes.
+Próxima ação: executar os testes no checkout completo e conectar o
+importador existente à rastreabilidade da etapa 2, sem criar etapas
+adicionais na interface. Não houve merge na main nem publicação manual.
