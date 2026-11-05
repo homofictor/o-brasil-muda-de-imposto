@@ -2754,3 +2754,14 @@ funcional do preview e revisão institucional ainda pendentes.
 Próxima ação: executar os testes no checkout completo e conectar o
 importador existente à rastreabilidade da etapa 2, sem criar etapas
 adicionais na interface. Não houve merge na main nem publicação manual.
+
+
+## Adaptador restritivo do importador v3.2 (05/11/2026)
+
+Entrega: `importador-v32-adaptador.cjs`, commit `45e40461a1ea2ad84be46d158ec81b9e583889d7`, com quatro testes de regressão em `tests/motor-rt-importador-v32-adaptador.test.cjs`, commit `8a5683f61720025e4242ca6dca42e9b4077f2e2f`.
+
+Inspeção do código real de `simulador/v3/import.js`: `readImportFile` lê CSV, XLS/XLSX e PDF; `processImportFiles` armazena em `brmiImport.docs` os resultados de `analyseImportDoc` e as sugestões em `brmiImport.candidates`. Essas sugestões **não são** movimentos de razão contábil com códigos, competência e evidência de débito/crédito. O adaptador não converte indicadores em movimentos fictícios: só aceita `movimentosRevisados` explicitamente fornecidos e valida sua origem documental usando `prepararMovimentosImportados`. Sem movimentos, retorna bloqueio explícito.
+
+Testes: quatro casos Node adicionados, mas **não executados nesta sessão** porque o checkout integral falhou por DNS (`Could not resolve host: github.com`). Não afirmar aprovação nem integração operacional. Preview Vercel não verificado. Interface principal, produção e `main` não alteradas.
+
+Bloqueio: `analyseImportDoc` não fornece `movimentosRevisados`; o adaptador é um contrato seguro, não uma integração operacional PDF/XLSX/CSV. Próxima ação: mapear linhas de balancete estruturadas no leitor v3.2, com código, competência, origem e revisão material, antes de alimentar o adaptador; executar `node --test tests/motor-rt-importador-v32-adaptador.test.cjs` no checkout real e validar preview. Não há homologação tributária ou parecer de crédito validado.
