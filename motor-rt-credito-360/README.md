@@ -2868,3 +2868,14 @@ Verificação: `node --test identidade-ingestao.test.cjs` em Node.js 22.16.0, c�
 Bloqueios: o fluxo real `simulador/v3/import.js` ainda não chama `ingestao-v32.cjs`; extração estruturada de BP/DRE/balancete, conciliação completa, exemplo fictício integral e QA móvel permanecem pendentes. Não há homologação tributária nem parecer de crédito validado. Nenhuma alteração na `main`, merge, produção, gasto ou uso de dados pessoais.
 
 Próxima ação: integrar a atribuição de identidade ao ponto real de leitura do importador v3.2, preservando origem e competência antes da conciliação.
+
+
+## Ponte de metadados da leitura v3.2 (05/11/2026, 09h BRT)
+
+Entrega isolada: `ponte-leitura-v32.cjs` recebe arquivos e resultados de leitura do Simulador RT v3.2, exige correspondência de origem e formato PDF/CSV/XLS/XLSX e atribui identificadores documentais únicos pelo módulo existente. Não converte indicadores agregados em lançamentos, não envia arquivos e devolve `aptoParaProjecao: false` até conciliação efetiva. A interface de três etapas e o leitor original não foram alterados.
+
+Commits: módulo `07ccc016d433c320835b0e333da9160593760d1b`; testes `495f365fc03a069b569d8fc5629626649cfab8b9`. Teste local nativo Node.js 22: 3 aprovados, 0 falhas, usando cópia fiel do módulo de identidade da branch. Suíte integral e testes integrados não executados.
+
+Bloqueios: a ponte ainda não está ligada à execução de `simulador/v3/import.js`; não há extração estruturada de lançamentos nem conciliação completa BP/DRE/balancete. Preview Vercel não validado. Sem homologação tributária, parecer de crédito ou alterações na produção.
+
+Próxima ação: ligar o resultado de leitura do importador v3.2 à ponte na etapa 2, mantendo dados locais e bloqueio de projeções até conciliação documental.
