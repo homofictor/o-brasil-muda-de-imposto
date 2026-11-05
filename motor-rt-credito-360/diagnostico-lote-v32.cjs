@@ -14,7 +14,7 @@ function diagnosticarLoteV32(arquivos, documentos) {
       return { indice, estado: 'formato_nao_suportado', requerRevisao: true };
     const status = typeof doc?.status === 'string' ? doc.status.trim().toLowerCase() : '';
     const falha = !doc || typeof doc !== 'object' || Array.isArray(doc) ||
-      doc.error != null || doc.ok === false || doc.success === false ||
+      arquivo.error != null || doc.error != null || doc.ok === false || doc.success === false ||
       ['erro', 'falha', 'error', 'failed'].includes(status);
     if (falha) return { indice, estado: 'falha_leitura', requerRevisao: true };
     if (['pending', 'processing', 'loading', 'queued', 'pendente', 'processando', 'em andamento'].includes(status))
