@@ -4,7 +4,10 @@ function dataCivilValida(valor) {
   if (typeof valor !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(valor)) return false;
   const [ano, mes, dia] = valor.split('-').map(Number);
   if (ano < 1 || mes < 1 || mes > 12 || dia < 1) return false;
-  return dia <= new Date(Date.UTC(ano, mes, 0)).getUTCDate();
+  const ultimoDia = new Date(0);
+  ultimoDia.setUTCHours(0, 0, 0, 0);
+  ultimoDia.setUTCFullYear(ano, mes, 0);
+  return dia <= ultimoDia.getUTCDate();
 }
 function validarRastreabilidadeMovimentos(movimentos, periodoEsperado) {
   if (!Array.isArray(movimentos) || movimentos.length === 0)
