@@ -2992,3 +2992,30 @@ Próxima ação: integrar o diagnóstico ao lote efetivo da etapa 2, com
 correspondência individual inclusive para arquivos que falharem, antes
 de permitir conciliação ou projeções. Sem merge na main ou ação de
 publicação em produção.
+
+## Bloqueio de leituras ainda em andamento (05/11/2026, 17h59 BRT)
+
+Entrega isolada: `diagnostico-lote-v32.cjs` passa a classificar estados
+`pending`, `processing`, `loading`, `queued`, `pendente`,
+`processando` e `em andamento` como `leitura_pendente`, exigindo
+revisão ou nova tentativa. Antes, metadados de leitura ainda em curso
+podiam receber o estado `lido_nao_conciliado`. O índice original é
+preservado e `aptoParaProjecao` continua falso. Sem alteração da
+interface principal, das fórmulas ou da legislação simulada.
+
+Commits: implementação `f2a914f94085d4df0a8bbaa1567a9492829ebeb8`;
+regressão `85d427dd57e7df272dfc5962a62a0aa6e36d3236`.
+Verificação local: Node.js 22.16.0, `node --test diagnostico-pendente.test.cjs`,
+**8 aprovados, 0 falhas**, com reprodução local do módulo e casos
+sintéticos. A suíte integral e a execução direta dos arquivos
+recuperados após commit ainda não foram realizadas.
+
+Bloqueios: diagnóstico não conectado ao navegador, conciliação integral
+de BP/DRE/balancete incompleta, exemplo fictício integral e QA móvel
+pendentes. Preview Vercel não validado; não divulgar link. Nenhuma
+homologação tributária ou parecer validado. Sem merge na main, alteração
+deliberada em produção, gastos ou dados pessoais.
+
+Próxima ação: conectar o diagnóstico posicional ao fluxo real de importação
+da etapa 2 e tratar leituras pendentes sem perder a correspondência dos
+arquivos, antes de qualquer projeção.
