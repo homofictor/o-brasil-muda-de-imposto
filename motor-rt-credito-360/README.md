@@ -2831,3 +2831,28 @@ Verificacao: `node --test identidade-ingestao.test.cjs`, Node local, **5 aprovad
 Bloqueios: integracao operacional PDF/XLSX/CSV, conciliacao DRE/NCG/DFC, exemplo ficticio integral, QA mobile e validacao de preview Vercel. Nao homologado para credito. Nenhum merge, deploy, gasto ou uso de dados pessoais.
 
 Proxima acao: conectar a atribuicao de identidade ao ponto de ingestao do leitor v3.2, apos conferir o contrato de saida e sem alterar as tres etapas principais.
+
+## Encadeamento restritivo de identidade e adaptador (05/11/2026, 07h)
+
+Entrega: novo ponto de entrada isolado `ingestao-v32.cjs`, que encadeia
+`atribuirIdentidadesIngestao` e `importarMovimentosV32`. Documentos com
+nomes iguais recebem identidades diferentes; falhas de identidade e ausência
+de movimentos revisados são bloqueadas sem inventar valores. Somente quando
+a validação inteira passa são retornadas referências de documentos.
+Não há alteração da interface pública, do importador v3.2 ou de fórmulas.
+
+Commits: implementação `cf8e83d5e04b27ac9cb13a3b10f6761ee55df008`;
+regressão `86153f900b6ac19d46e7a92d24aa2784aa7648bf`.
+Verificação antes dos commits: `node --test ingestao-v32.test.cjs` em
+cópia isolada dos cinco módulos correspondentes, Node 22.16.0:
+**3 testes aprovados, 0 falhas**. Não foi executada a suíte integral nem
+o teste diretamente no checkout GitHub após os commits.
+
+Bloqueios: o ponto de entrada ainda não é chamado pelo leitor
+`simulador/v3/import.js`; o leitor ainda não fornece movimentos estruturados
+e revisados. O exemplo fictício integral, conciliação de DRE, QA móvel,
+controle de acesso e auditoria legal permanecem pendentes. Nenhuma
+homologação ou parecer validado. Não houve merge ou alteração de produção.
+
+Próxima ação: mapear a estrutura real de saída do leitor v3.2 e conectar
+a atribuição de identidade no momento da ingestão, sem presumir movimentos.
