@@ -2879,3 +2879,29 @@ Commits: módulo `07ccc016d433c320835b0e333da9160593760d1b`; testes `495f365fc03
 Bloqueios: a ponte ainda não está ligada à execução de `simulador/v3/import.js`; não há extração estruturada de lançamentos nem conciliação completa BP/DRE/balancete. Preview Vercel não validado. Sem homologação tributária, parecer de crédito ou alterações na produção.
 
 Próxima ação: ligar o resultado de leitura do importador v3.2 à ponte na etapa 2, mantendo dados locais e bloqueio de projeções até conciliação documental.
+
+
+## Ponte para metadados de analyseImportDoc (05/11/2026, 10h Brasília)
+
+Entrega isolada: `ponte-documentos-analisados-v32.cjs` recebe arquivos e os
+metadados efetivamente produzidos por `analyseImportDoc` do leitor v3.2,
+verifica correspondência posicional de nome e tipo, e encaminha os dados para
+`ponte-leitura-v32.cjs`. Não transfere indicadores para movimentações, não
+presume valores conciliados e mantém `aptoParaProjecao: false`.
+
+Commits: implementação `49422a0996e8a8b149ae2112cd942f8035ff7feb`;
+testes `7e213bf3017aec1446af145a05561b0c9cadff39`.
+Testes: `node --test ponte-documentos-analisados-v32.test.cjs`, 3/3 aprovados,
+0 falhas, em reprodução local dos três módulos envolvidos. A suíte integral
+do repositório não foi executada, pois o terminal não resolve github.com.
+
+Bloqueios: a função ainda não foi chamada pelo fluxo de importação do navegador;
+leituras com falha são omitidas de `brmiImport.docs`, exigindo associação
+explícita por arquivo para integração robusta; falta extrair movimentos
+estruturados, conciliar BP/DRE/balancete e concluir exemplo fictício integral.
+Preview Vercel não verificado. Nenhuma alteração de interface, main ou produção;
+nenhum dado pessoal ou gasto.
+
+Próxima ação: integrar o adaptador ao fluxo de leitura com correspondência
+explícita por índice inclusive para arquivos não lidos, sem liberar projeções
+antes da conciliação.
