@@ -2928,3 +2928,15 @@ modificação de produção, gasto ou uso de dados pessoais.
 
 Próxima ação: integrar diagnóstico posicional ao processamento local da etapa
 2, mantendo cada falha vinculada ao índice original e sem liberar projeções.
+
+
+## Normalização de status de leitura documental (05/11/2026, 14h56 BRT)
+
+Entrega pequena: o diagnóstico posicional `diagnostico-lote-v32.cjs` agora remove espaços externos e normaliza maiúsculas/minúsculas do campo textual `status` antes de reconhecer `erro`, `falha`, `error` e `failed`. Antes, valores como `" ERROR "` poderiam ser interpretados como documento lido, embora não conciliado. Não altera o leitor v3.2, a interface de três etapas ou cálculos tributários e financeiros. `aptoParaProjecao` continua sempre falso.
+
+Commits: correção `30758afe26a869b0096d4401ca507621c66053c1`; regressão `dfb66a9fe2a373f788c0d8ca9b0821d5c30d9162`.
+Testes: `node --test *.test.cjs` em Node.js 22.16.0, cópia local do módulo atualizado e dois testes novos: **2 aprovados, 0 falhas**. Suíte integral do repositório não executada. Preview Vercel ainda requer verificação específica do commit; não liberar link sem confirmação.
+
+Bloqueios: diagnóstico não integrado ao navegador, conciliação BP/DRE/balancete incompleta, exemplo fictício integral e QA móvel pendentes. Nenhuma homologação tributária ou parecer validado. Sem merge, mudança deliberada de produção, gastos ou dados pessoais.
+
+Próxima ação: conectar diagnóstico por índice à etapa 2 do fluxo real de importação, preservando falhas sem permitir projeção antes da conciliação.
