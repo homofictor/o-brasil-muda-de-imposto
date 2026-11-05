@@ -3019,3 +3019,29 @@ deliberada em produção, gastos ou dados pessoais.
 Próxima ação: conectar o diagnóstico posicional ao fluxo real de importação
 da etapa 2 e tratar leituras pendentes sem perder a correspondência dos
 arquivos, antes de qualquer projeção.
+
+
+## Diagnóstico do estado parcial do importador v3.2 (05/11/2026, 18h55 BRT)
+
+Entrega pequena: `diagnosticarEstadoImportacaoV32({files,docs})` foi adicionada a
+`diagnostico-lote-v32.cjs`. A função adapta o estado real do leitor v3.2,
+que pode conter menos documentos analisados que arquivos enviados, sem
+confundir posições. Associa leituras por nome e ordem de ocorrência, trata
+arquivos sem leitura como pendentes ou com falha explícita, rejeita leituras
+excedentes e nunca autoriza projeções. Não altera a interface, o importador,
+a metodologia financeira ou as regras tributárias.
+
+Commits: implementação `e70b818404971da000a5cc24aa84d95f9b2ee432`;
+testes `bf26e2f6d6bc4c954496a3551ed23a11be3947e3`.
+Verificação: `node --test diagnostico-estado-v32.test.cjs` em cópia local
+equivalente do módulo, Node 22.16.0: **5 aprovados, 0 falhas**.
+A suíte integral do repositório e a execução direta do arquivo remoto
+não foram realizadas.
+
+Bloqueios: a função ainda não foi ligada ao evento real de importação
+do navegador; faltam conciliação de BP/DRE/balancete, exemplo fictício
+completo, testes móveis e preview Vercel verificado. Não há homologação.
+
+Próxima ação: conectar a função ao processamento da etapa 2, expondo
+somente exceções materiais após conciliação, sem ampliar as três etapas
+da interface. Nenhuma alteração na main ou produção foi solicitada.
