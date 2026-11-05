@@ -2905,3 +2905,26 @@ nenhum dado pessoal ou gasto.
 Próxima ação: integrar o adaptador ao fluxo de leitura com correspondência
 explícita por índice inclusive para arquivos não lidos, sem liberar projeções
 antes da conciliação.
+
+
+## Diagnóstico posicional do lote v3.2 (05/11/2026, 13h54 BRT)
+
+Entrega isolada: `diagnostico-lote-v32.cjs` produz um resultado por arquivo,
+inclusive para leituras com erro ou origem divergente, sem devolver nomes,
+CNPJ ou valores contábeis. O resultado nunca autoriza projeção; documento
+lido não equivale a documento conciliado. Não altera o leitor nem a interface.
+
+Commits: módulo `71f9cc7243163fe2837aa59ed6ce41d54c066f8e`;
+testes `97a5af5c24a6b2b49b9160421b63693a20750572`.
+Verificação: `node --test` em Node 22.16.0, **4 testes aprovados,
+0 falhas**, em reprodução local do módulo e dos casos publicados. A rede
+local não resolveu github.com, portanto não foi possível executar diretamente
+os arquivos obtidos por git; a suíte integral segue pendente.
+
+Bloqueios: diagnóstico ainda não é chamado pelo navegador; conciliação de
+BP, DRE e balancete, exemplo fictício completo, QA móvel e auditoria legal
+pendentes. Não há homologação tributária ou parecer validado. Sem merge,
+modificação de produção, gasto ou uso de dados pessoais.
+
+Próxima ação: integrar diagnóstico posicional ao processamento local da etapa
+2, mantendo cada falha vinculada ao índice original e sem liberar projeções.
