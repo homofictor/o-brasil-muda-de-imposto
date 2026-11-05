@@ -2784,3 +2784,13 @@ Commits: implementação `205255354f1e3f9e866e1a174809a7fc863441d9`; testes `d03
 Validação: `node --test` em reprodução local isolada do adaptador, ponte e arquivo de regressão: **6 aprovados, 0 falhas**. Não equivale à suíte integral nem validação de preview.
 Bloqueios: integração efetiva com `simulador/v3/import.js`, conciliação da DRE, exemplo fictício integral, testes móveis e preview Vercel ainda não verificados. O nome de arquivo continua sendo identificador provisório, não prova de autenticidade.
 Próxima ação: adicionar identificador de origem inequívoco por documento e ligar a extração estruturada do balancete à etapa 2, mantendo revisão das exceções materiais.
+
+
+## Identidade documental explicita (05/11/2026, 04h)
+
+Entrega isolada: novo `identidade-documental.cjs` valida `idDocumento` explicito, unico no lote, com formato restrito; nomes de arquivo iguais sao permitidos quando os IDs sao distintos. Nao cria IDs, nao presume autenticidade, nao altera a interface, nao substitui a rastreabilidade contábil nem muda o adaptador operacional.
+
+Commits: modulo `add666b00e2cabb6d9c28702cdd9d687807ee985`; regressao `a6cd67c65c7fa33b3bd624b57c06e105e4972d27`.
+Testes: `node --test identidade-documental.test.cjs` executado em copia local equivalente: 5 aprovados, 0 falhas. Suíte integral do checkout nao executada. Preview Vercel nao verificado. Sem homologacao tributaria, sem alteracao de producao, sem merge na main e sem dados pessoais.
+
+Bloqueios: validador ainda nao integrado ao adaptador v3.2; IDs precisam ser emitidos na ingestao com persistencia e controle de colisao; a simples identificacao nao prova autenticidade. Proxima acao: integrar a identidade ao fluxo documental mantendo compatibilidade e sem contornar a conciliacao.
