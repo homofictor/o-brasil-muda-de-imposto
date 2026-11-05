@@ -18,3 +18,12 @@ test('bloqueia documento de origem divergente', () => {
 test('bloqueia competência divergente', () => {
   assert.equal(importarMovimentosV32([doc], { inicio: '2026-02-01', fim: periodo.fim }).valido, false);
 });
+
+test('bloqueia arquivos distintos com mesmo nome, sem identificador inequívoco', () => {
+  const segundo = { file: doc.file, movimentosRevisados: [{ ...doc.movimentosRevisados[0], codigo: '2.01' }] };
+  assert.equal(importarMovimentosV32([doc, segundo], periodo).motivo, 'origem_documental_duplicada');
+});
+test('permite nomes distintos e contas distintas', () => {
+  const segundo = { file: 'dre-ficticia.csv', movimentosRevisados: [{ ...doc.movimentosRevisados[0], codigo: '2.01' }] };
+  assert.equal(importarMovimentosV32([doc, segundo], periodo).valido, true);
+});
