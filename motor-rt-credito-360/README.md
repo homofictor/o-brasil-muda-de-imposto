@@ -2774,3 +2774,13 @@ Entrega: `importador-v32-adaptador.cjs` rejeita `documentoOrigem` de tipo não t
 Commits: correção `99072aa8a92a0ff7f7aad87d00329a75aff568fc`; regressão `72fc8d24e20d9832833f0ea9efc610a40f2624e3`.
 
 Testes: `node --test tests/motor-rt-v32-origem-tipos.test.cjs`, **3 aprovados, 0 falhas**, executados sobre reprodução local dos dois módulos e do teste, com conteúdo transcrito dos arquivos da branch. **Não** foi executado no checkout integral devido a falha DNS do GitHub no terminal. Bloqueios: conexão efetiva do leitor v3.2, conciliação DRE, exemplo fictício integral, suíte completa e QA móvel. Preview Vercel não verificado; não divulgar link. Próxima ação: extrair linhas estruturadas do balancete via leitor v3.2 sem inferir movimentos não evidenciados. Sem merge, deploy, gastos ou dados pessoais. Sem homologação tributária ou validação para crédito.
+
+
+## Colisão de origem documental na etapa 2 (05/11/2026)
+
+O adaptador `importador-v32-adaptador.cjs` agora rejeita dois documentos com o mesmo nome de arquivo, mesmo quando suas contas são distintas, retornando `origem_documental_duplicada`. Sem identificador documental inequívoco, nomes repetidos tornam a rastreabilidade ambígua. Não há inferência de lançamentos, alteração de cálculos, interface ou produção.
+
+Commits: implementação `205255354f1e3f9e866e1a174809a7fc863441d9`; testes `d03cef57437d29ea00f10fff0baa535d1f15d004`.
+Validação: `node --test` em reprodução local isolada do adaptador, ponte e arquivo de regressão: **6 aprovados, 0 falhas**. Não equivale à suíte integral nem validação de preview.
+Bloqueios: integração efetiva com `simulador/v3/import.js`, conciliação da DRE, exemplo fictício integral, testes móveis e preview Vercel ainda não verificados. O nome de arquivo continua sendo identificador provisório, não prova de autenticidade.
+Próxima ação: adicionar identificador de origem inequívoco por documento e ligar a extração estruturada do balancete à etapa 2, mantendo revisão das exceções materiais.
