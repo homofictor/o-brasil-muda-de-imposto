@@ -2856,3 +2856,15 @@ homologação ou parecer validado. Não houve merge ou alteração de produção
 
 Próxima ação: mapear a estrutura real de saída do leitor v3.2 e conectar
 a atribuição de identidade no momento da ingestão, sem presumir movimentos.
+
+
+## Identificadores explicitamente nulos na ingestão (05/11/2026, 08h)
+
+Entrega pequena: `identidade-ingestao.cjs` agora rejeita qualquer campo próprio `idDocumento` já presente, inclusive `null` e `undefined`. Antes, a comparação `!= null` permitia substituir silenciosamente esses valores por um novo identificador. A mudança preserva a exigência de identidade atribuída pelo fluxo e não altera a interface de três etapas, fórmulas financeiras ou tributárias.
+
+Commits: correção `f29ff9da9f5a8a7b8cafa8a3fa1d50b95812ae17`; regressão `f59b03e32716c4b912af091bab32a4cd3740ae15`.
+Verificação: `node --test identidade-ingestao.test.cjs` em Node.js 22.16.0, cópia local isolada do módulo e quatro testes equivalentes aos publicados: **4 aprovados, 0 falhas**. A suíte integral do repositório não foi executada, pois o terminal não resolveu `github.com` (falha DNS). Preview Vercel não verificado; nenhum link liberado.
+
+Bloqueios: o fluxo real `simulador/v3/import.js` ainda não chama `ingestao-v32.cjs`; extração estruturada de BP/DRE/balancete, conciliação completa, exemplo fictício integral e QA móvel permanecem pendentes. Não há homologação tributária nem parecer de crédito validado. Nenhuma alteração na `main`, merge, produção, gasto ou uso de dados pessoais.
+
+Próxima ação: integrar a atribuição de identidade ao ponto real de leitura do importador v3.2, preservando origem e competência antes da conciliação.
