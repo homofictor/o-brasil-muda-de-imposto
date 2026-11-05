@@ -2794,3 +2794,28 @@ Commits: modulo `add666b00e2cabb6d9c28702cdd9d687807ee985`; regressao `a6cd67c65
 Testes: `node --test identidade-documental.test.cjs` executado em copia local equivalente: 5 aprovados, 0 falhas. Suíte integral do checkout nao executada. Preview Vercel nao verificado. Sem homologacao tributaria, sem alteracao de producao, sem merge na main e sem dados pessoais.
 
 Bloqueios: validador ainda nao integrado ao adaptador v3.2; IDs precisam ser emitidos na ingestao com persistencia e controle de colisao; a simples identificacao nao prova autenticidade. Proxima acao: integrar a identidade ao fluxo documental mantendo compatibilidade e sem contornar a conciliacao.
+
+
+## Identidade documental integrada ao adaptador v3.2 (05/11/2026)
+
+Entrega isolada: `importador-v32-adaptador.cjs` passa a exigir `idDocumento`
+unico e valido em cada documento, usando o identificador, e nao o nome do
+arquivo, como `documentoOrigem` dos movimentos revisados. Arquivos com
+nomes iguais e IDs distintos deixam de colidir. Identificadores ausentes,
+duplicados ou origem declarada divergente bloqueiam o processamento.
+Esta mudanca e intencionalmente restritiva: chamadas antigas sem ID precisam
+ser adaptadas antes de usar a ponte. O identificador e declarativo e nao
+comprova autenticidade, hash de conteudo ou revisao institucional.
+
+Commits: codigo `3428a754549b64d4734c3c6cb96e518e22b826dc`;
+regressao `f60cc326c102f7569cbb1fef33f886984d01e6f3`.
+Testes: `node --test identidade-integracao.test.cjs`, com Node 22,
+4 aprovados e 0 falhas em copia local dos modulos correspondentes.
+Nao foi executada a suite integral do repositorio, nem o QA mobile.
+Bloqueios: o leitor `simulador/v3/import.js` ainda nao atribui IDs
+na ingestao; falta conectar o fluxo operacional e reconciliar DRE e
+balancete; exemplo ficticio completo e relatorio integral pendentes.
+Proxima acao: atribuir ID estavel por documento na ingestao real, sem
+inventar lancamentos, e executar testes integrados do importador.
+Preview Vercel ainda nao validado. Sem merge, deploy manual ou alteracao
+de producao. Sem dados pessoais ou gastos.
