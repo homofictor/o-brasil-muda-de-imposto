@@ -2819,3 +2819,15 @@ Proxima acao: atribuir ID estavel por documento na ingestao real, sem
 inventar lancamentos, e executar testes integrados do importador.
 Preview Vercel ainda nao validado. Sem merge, deploy manual ou alteracao
 de producao. Sem dados pessoais ou gastos.
+
+
+## Identidade atribuida na ingestao (05/11/2026, 06h BRT)
+
+Entrega isolada: `identidade-ingestao.cjs` atribui um identificador novo por documento, inclusive quando dois arquivos possuem o mesmo nome. Rejeita origem vazia, identificador preexistente, formato invalido e colisao. Preserva o objeto original e nao comprova autenticidade documental. Nenhuma modificacao na interface de tres etapas, no leitor v3.2, na tributacao ou nas projecoes.
+
+Commits: implementacao `1b38a22d2560f1fc68d787a9716cbc93b738be82`; testes `92fb24ceb28036cbfbc2b04f4fc7546ca8ddd212`.
+Verificacao: `node --test identidade-ingestao.test.cjs`, Node local, **5 aprovados, 0 falhas**, com copia local equivalente aos arquivos publicados. Suíte integral do repositorio nao executada. O modulo nao esta conectado ao leitor `simulador/v3/import.js` nem ao adaptador. Exige runtime com `globalThis.crypto.randomUUID` ou gerador injetado; nenhum identificador equivale a assinatura ou hash de conteudo.
+
+Bloqueios: integracao operacional PDF/XLSX/CSV, conciliacao DRE/NCG/DFC, exemplo ficticio integral, QA mobile e validacao de preview Vercel. Nao homologado para credito. Nenhum merge, deploy, gasto ou uso de dados pessoais.
+
+Proxima acao: conectar a atribuicao de identidade ao ponto de ingestao do leitor v3.2, apos conferir o contrato de saida e sem alterar as tres etapas principais.
