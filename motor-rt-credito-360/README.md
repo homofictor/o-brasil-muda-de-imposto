@@ -2765,3 +2765,12 @@ Inspeção do código real de `simulador/v3/import.js`: `readImportFile` lê CSV
 Testes: quatro casos Node adicionados, mas **não executados nesta sessão** porque o checkout integral falhou por DNS (`Could not resolve host: github.com`). Não afirmar aprovação nem integração operacional. Preview Vercel não verificado. Interface principal, produção e `main` não alteradas.
 
 Bloqueio: `analyseImportDoc` não fornece `movimentosRevisados`; o adaptador é um contrato seguro, não uma integração operacional PDF/XLSX/CSV. Próxima ação: mapear linhas de balancete estruturadas no leitor v3.2, com código, competência, origem e revisão material, antes de alimentar o adaptador; executar `node --test tests/motor-rt-importador-v32-adaptador.test.cjs` no checkout real e validar preview. Não há homologação tributária ou parecer de crédito validado.
+
+
+## Robustez da origem documental v3.2 (05/11/2026)
+
+Entrega: `importador-v32-adaptador.cjs` rejeita `documentoOrigem` de tipo não textual e registros de movimento não estruturados, retornando `origem_inconsistente` em vez de lançar exceção. Mantém a exigência de movimentos revisados, competência, valores em centavos e origem correspondente. Não altera a interface nem presume dados contábeis.
+
+Commits: correção `99072aa8a92a0ff7f7aad87d00329a75aff568fc`; regressão `72fc8d24e20d9832833f0ea9efc610a40f2624e3`.
+
+Testes: `node --test tests/motor-rt-v32-origem-tipos.test.cjs`, **3 aprovados, 0 falhas**, executados sobre reprodução local dos dois módulos e do teste, com conteúdo transcrito dos arquivos da branch. **Não** foi executado no checkout integral devido a falha DNS do GitHub no terminal. Bloqueios: conexão efetiva do leitor v3.2, conciliação DRE, exemplo fictício integral, suíte completa e QA móvel. Preview Vercel não verificado; não divulgar link. Próxima ação: extrair linhas estruturadas do balancete via leitor v3.2 sem inferir movimentos não evidenciados. Sem merge, deploy, gastos ou dados pessoais. Sem homologação tributária ou validação para crédito.
