@@ -5,7 +5,9 @@ function validarCompetencias({ dataBP, dataBalancete } = {}) {
   const dataValida = (s) => {
     if (typeof s !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
     const [ano, mes, dia] = s.split('-').map(Number);
-    const d = new Date(Date.UTC(ano, mes - 1, dia));
+    const d = new Date(0);
+    d.setUTCHours(0, 0, 0, 0);
+    d.setUTCFullYear(ano, mes - 1, dia);
     return d.getUTCFullYear() === ano && d.getUTCMonth() === mes - 1 && d.getUTCDate() === dia;
   };
   if (!dataValida(dataBP) || !dataValida(dataBalancete)) {
