@@ -3045,3 +3045,27 @@ completo, testes móveis e preview Vercel verificado. Não há homologação.
 Próxima ação: conectar a função ao processamento da etapa 2, expondo
 somente exceções materiais após conciliação, sem ampliar as três etapas
 da interface. Nenhuma alteração na main ou produção foi solicitada.
+
+
+## Prioridade de falha do arquivo no diagnóstico v3.2 (05/11/2026)
+
+Correção pequena e restritiva em `diagnostico-lote-v32.cjs`: quando o arquivo
+original contém `error`, o diagnóstico agora informa `falha_leitura` mesmo
+se houver documento associado com `status: success`. Antes, a leitura
+aparentemente válida podia ocultar erro do arquivo. Nenhum dado é projetado,
+nenhuma fórmula tributária é alterada e a interface de três etapas permanece
+inalterada.
+
+Commits: implementação `45700dae0e9d759135b622b17327b4f68af10107`;
+testes `40da02a2562eabda57df06fd3beb38fccf2b4ae9`.
+Verificação: `node --test erro-arquivo-prioridade.test.mjs` em reprodução
+local do módulo com a correção: **2 testes aprovados, 0 falhas**. A execução
+nativa dos arquivos recuperados da branch após o commit, a suíte integral,
+a integração de navegador e o preview Vercel permanecem pendentes.
+
+Bloqueios: diagnóstico ainda não ligado ao evento real de importação;
+conciliação de BP, DRE e balancete incompleta; exemplo fictício integral,
+QA móvel e validação institucional ainda não concluídos. Sem homologação.
+Próxima ação: integrar o diagnóstico ao evento real do importador v3.2,
+sem liberar projeções antes da conciliação. Não houve merge na main,
+implantação manual em produção ou uso de dados pessoais.
