@@ -8,6 +8,10 @@ function registrarDocumentosAnalisadosV32(arquivos, documentos, gerarId) {
       !arquivos.length || arquivos.length !== documentos.length)
     throw new TypeError('documentos_analisados_incompativeis');
   const leituras = documentos.map((doc, i) => {
+    // Falhas explícitas de leitura não podem ser tratadas como documentos válidos.
+    if (doc && typeof doc === 'object' && !Array.isArray(doc) &&
+        (doc.error != null || doc.status === 'erro' || doc.status === 'falha'))
+      throw new TypeError('documento_com_falha_de_leitura');
     if (!doc || typeof doc !== 'object' || Array.isArray(doc) ||
         doc.file !== arquivos[i]?.name || typeof doc.type !== 'string' ||
         !doc.type.trim())
