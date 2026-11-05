@@ -10,7 +10,8 @@ function registrarDocumentosAnalisadosV32(arquivos, documentos, gerarId) {
   const leituras = documentos.map((doc, i) => {
     // Falhas explícitas de leitura não podem ser tratadas como documentos válidos.
     if (doc && typeof doc === 'object' && !Array.isArray(doc) &&
-        (doc.error != null || doc.status === 'erro' || doc.status === 'falha'))
+        (doc.error != null || doc.ok === false || doc.success === false ||
+         ['erro', 'falha', 'error', 'failed'].includes(String(doc.status || '').toLowerCase())))
       throw new TypeError('documento_com_falha_de_leitura');
     if (!doc || typeof doc !== 'object' || Array.isArray(doc) ||
         doc.file !== arquivos[i]?.name || typeof doc.type !== 'string' ||
