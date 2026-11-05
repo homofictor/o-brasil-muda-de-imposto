@@ -14,7 +14,7 @@ function importarMovimentosV32(documentos, { inicio, fim } = {}) {
     if (!Array.isArray(doc.movimentosRevisados) || !doc.movimentosRevisados.length)
       return { valido: false, motivo: 'movimentos_revisados_ausentes', movimentos: [] };
     for (const m of doc.movimentosRevisados) {
-      if (!m || (m.documentoOrigem && m.documentoOrigem.trim() !== doc.file.trim()))
+      if (!m || typeof m !== 'object' || Array.isArray(m) || (m.documentoOrigem != null && (typeof m.documentoOrigem !== 'string' || m.documentoOrigem.trim() !== doc.file.trim())))
         return { valido: false, motivo: 'origem_inconsistente', movimentos: [] };
       registros.push({ ...m, documentoOrigem: doc.file.trim() });
     }
