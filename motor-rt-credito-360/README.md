@@ -2940,3 +2940,29 @@ Testes: `node --test *.test.cjs` em Node.js 22.16.0, cópia local do módulo atu
 Bloqueios: diagnóstico não integrado ao navegador, conciliação BP/DRE/balancete incompleta, exemplo fictício integral e QA móvel pendentes. Nenhuma homologação tributária ou parecer validado. Sem merge, mudança deliberada de produção, gastos ou dados pessoais.
 
 Próxima ação: conectar diagnóstico por índice à etapa 2 do fluxo real de importação, preservando falhas sem permitir projeção antes da conciliação.
+
+## Normalização de falhas na ponte documental (05/11/2026, 16h)
+
+Entrega única: `ponte-documentos-analisados-v32.cjs` agora normaliza espaços
+nas extremidades e caixa de `status` antes de reconhecer `ERROR`,
+`FAILED`, `ERRO` e `FALHA`. Impede que leituras com esses estados
+sejam aceitas como metadados válidos e mantém bloqueadas as projeções sem
+conciliação. Não modifica as três etapas da interface, fórmulas tributárias
+ou metodologia financeira.
+
+Commits: implementação `1d18c43111b6e9c916d36e4365fff87e7c2c5ca1`;
+regressão `ebb328c1520514015d88b409f248a6153e7136e4`.
+Teste Node 22.16.0 em cópia local equivalente dos quatro módulos envolvidos:
+**4 testes aprovados, 0 falhas**, incluindo novo teste parametrizado com
+quatro variações de status. Os testes foram executados antes dos commits;
+a suíte integral do repositório não foi executada.
+
+Bloqueios: ponte ainda não conectada ao processamento efetivo de
+`simulador/v3/import.js`; conciliação BP/DRE/balancete, exemplo fictício
+integral, QA móvel e validação do preview Vercel pendentes. Nenhum link
+de preview foi liberado. Sem merge na main, mudança deliberada de produção,
+gastos ou dados pessoais.
+
+Próxima ação: ligar o diagnóstico de lote à ponte operacional de ingestão,
+preservando falhas por arquivo e revisão apenas de exceções materiais.
+Motor não homologado para decisões de crédito.
