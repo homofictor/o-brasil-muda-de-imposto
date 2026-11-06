@@ -3069,3 +3069,12 @@ QA móvel e validação institucional ainda não concluídos. Sem homologação.
 Próxima ação: integrar o diagnóstico ao evento real do importador v3.2,
 sem liberar projeções antes da conciliação. Não houve merge na main,
 implantação manual em produção ou uso de dados pessoais.
+
+
+## Regressão do diagnóstico de importação (05/11/2026, 21h BRT)
+
+Entrega restrita a testes nativos Node para o adaptador `diagnosticarEstadoImportacaoV32`. Criado `diagnostico-lote-v32-regressao.test.cjs` (commit `9bb6b22939a47601bf9555504b0aed24b68677ea`). Os cinco casos verificam: ordem e pendências, erro do arquivo prevalecendo sobre leitura aparentemente válida, nomes repetidos sem reutilização, documentos órfãos e extensão não suportada. Em todos os casos o diagnóstico não autoriza projeções.
+
+Teste: `node --test diagnostico-lote-v32-regressao.test.cjs` com Node nativo em cópia local do módulo obtido da branch e teste equivalente ao publicado: **5 aprovados, 0 falhas**. Não foi executada a suíte integral do repositório nem o teste diretamente após checkout do commit remoto. Não houve mudança na interface ou nas fórmulas.
+
+Bloqueios: o adaptador ainda não é chamado pelo evento real de `simulador/v3/import.js`; conciliação integral de BP/DRE/balancete, exemplo fictício completo, QA mobile e preview Vercel seguem pendentes. Próxima ação: conectar o diagnóstico ao evento de importação sem enviar dados pessoais e sem liberar projeções antes da conciliação. Sem merge, deploy deliberado, custos ou homologação.
