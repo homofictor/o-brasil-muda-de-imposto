@@ -1,5 +1,5 @@
 const curated = require("../data/noticias-reforma.json");
-const {excerpt,likelySameEvent}=require("./rt-news-editorial.js");
+const {excerpt,likelySameEvent}=require("../lib/rt-news-editorial.js");
 
 function decodeXml(value=""){
   return String(value||"")
