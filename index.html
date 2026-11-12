@@ -579,8 +579,9 @@ body{background:#f4f6f8;line-height:1.55}
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"Book","name":"O Brasil muda de imposto","author":{"@type":"Person","name":"Wagner Rubim Rangel"},"publisher":{"@type":"Organization","name":"Homo Fictor Edições Independentes"},"datePublished":"2026","inLanguage":"pt-BR","isbn":"9786502327494","numberOfPages":191,"description":"A Reforma Tributária explicada para quem precisa entender, decidir e se preparar.","url":"https://www.obrasilmudadeimposto.com.br/","image":"https://raw.githubusercontent.com/homofictor/o-brasil-muda-de-imposto/simulador-v3-2/assets/book-mockup.webp"}
 </script>
+<link rel="stylesheet" href="/assets/editorial-2026.css?v=20261112">
 </head>
-<body>
+<body class="brmi-2026">
 <a class="skip" href="#conteudo">Pular para o conteúdo</a>
 
 <header class="site-header">
@@ -592,16 +593,13 @@ body{background:#f4f6f8;line-height:1.55}
     <button class="menu-btn" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="main-navigation"></button>
     <nav class="main-nav" id="main-navigation" aria-label="Navegação principal">
       <a href="#visao-geral">Visão geral</a>
-      <a href="#simulador">Simulador</a>
-
       <a href="#atualizacoes">Atualizações</a>
       <a href="#noticias">Notícias</a>
-      <a href="/mitos.html">Mitos e exageros</a>
-      <a href="/comunidade.html">Comunidade</a>
       <a href="#conteudo-gratuito">Biblioteca</a>
-      <a href="#autor">Autor</a>
-      <a href="/feedback.html?origem=site">Enviar comentários</a>
-      <a class="cta" href="/simulador/">Abrir simulador</a>
+      <a href="/mitos.html">Mitos</a>
+      <a href="/comunidade.html">Comunidade</a>
+      <a href="/quem-somos.html">Quem somos</a>
+      <a class="cta" href="/simulador/">Simulador</a>
     </nav>
   </div>
 </header>
@@ -623,9 +621,14 @@ body{background:#f4f6f8;line-height:1.55}
         <span>Horizonte de transição: 2026 a 2033</span>
       </div>
       <a class="update-chip" href="/atualizacoes-reforma.html"><span>Status editorial</span><strong>Radar legislativo revisado em 12/11/2026</strong></a>
+      <div class="daily-ledger" aria-live="polite"><span><span class="pulse"></span>Monitoramento diário de fontes oficiais</span><span id="monitoramentoEstado">Verificando disponibilidade das fontes oficiais...</span></div>
     </div>
 
     <aside class="status-panel" aria-label="Situação do acompanhamento da reforma">
+      <figure class="hero-image">
+        <img src="https://images.unsplash.com/photo-1769490315707-d77d16c5642c?auto=format&amp;fit=crop&amp;w=1000&amp;q=75" alt="Livros e material de estudo em uma mesa iluminada pela luz natural" width="1000" height="600" decoding="async">
+        <figcaption>Imagem ilustrativa: Declan Sun / Unsplash. <a href="https://unsplash.com/license" target="_blank" rel="noopener noreferrer">Licença gratuita</a>.</figcaption>
+      </figure>
       <div class="status-panel-head"><span>Referências editoriais</span><strong>Reforma Tributária do Consumo</strong></div>
       <dl>
         <div><dt>Última revisão editorial</dt><dd>12/11/2026</dd></div>
@@ -768,7 +771,7 @@ body{background:#f4f6f8;line-height:1.55}
       </div>
       <a class="news-home-more" href="/noticias-reforma.html">Ver todas as notícias →</a>
     </div>
-    <div class="news-home-grid" id="newsHomeGrid"><div class="news-home-empty">Carregando notícias...</div></div>
+    <div class="news-home-grid" id="newsHomeGrid"><div class="news-home-empty">Carregando notícias...</div></div><p id="newsHomeChecked" class="news-note-date" aria-live="polite">Informações jornalísticas selecionadas automaticamente. As datas das matérias são de publicação.</p>
     <p class="news-home-note"><strong>Notícia não é norma.</strong> Alterações legais, prazos e obrigações só são tratadas como regra vigente na seção de Atualizações quando confirmadas por fonte oficial.</p>
   </div>
 </section>
@@ -794,6 +797,7 @@ body{background:#f4f6f8;line-height:1.55}
       <p>Conteúdo organizado para consulta sobre fundamentos, transição, crédito, capital de giro e enquadramento tributário.</p>
     </div>
     <div class="learning-grid">
+      <a class="learning-card editorial-academico" href="/biblioteca-academica.html"><div class="label">Pesquisa científica · Acervo</div><h3>Biblioteca acadêmica da Reforma Tributária</h3><p>Artigos de revistas jurídicas e contábeis, com identificação de autores, periódico, DOI e fonte original.</p><span class="read">Consultar artigos ↗</span></a>
       <a class="learning-card" href="/reforma-tributaria-2026.html"><div class="label">Introdução · 8 min</div><h3>Reforma Tributária em 2026</h3><p>O que muda primeiro e como organizar documentos fiscais, sistemas, contratos e cadastros.</p><span class="read">Abrir guia →</span></a>
       <a class="learning-card" href="/ibs-cbs.html"><div class="label">Fundamentos · 10 min</div><h3>IBS e CBS: fundamentos e mecanismo de crédito</h3><p>Débito, crédito, custo líquido e a nova importância econômica dos fornecedores.</p><span class="read">Abrir guia →</span></a>
       <a class="learning-card" href="/split-payment-capital-de-giro.html"><div class="label">Caixa · 9 min</div><h3>Split payment e capital de giro</h3><p>Veja como a segregação do tributo pode alterar o dinheiro disponível na operação.</p><span class="read">Abrir guia →</span></a>
@@ -828,8 +832,9 @@ body{background:#f4f6f8;line-height:1.55}
     <div class="author-copy">
       <div class="eyebrow" style="font-size:10px;text-transform:uppercase;letter-spacing:.13em;font-weight:950;color:var(--blue)">Sobre o autor</div>
       <h2 class="display">Responsabilidade técnica e autoria.</h2>
-      <p><strong>Wagner Rubim Rangel</strong> é contador, possui MBA em Controladoria e Finanças pela Fucape e atua como analista-contador do Banco de Desenvolvimento do Espírito Santo. Esteve por seis anos à frente da área de Participações e Investimentos e foi professor por cerca de duas décadas em contabilidade, custos, finanças, avaliação de empresas e auditoria.</p>
-      <p>Também é autor de <em>Contabilidade na Nuvem, Estratégica e Digital</em>, publicado pela Editora Juruá em 2025.</p>
+      <p><strong>Wagner Rubim Rangel</strong> é contador, com MBA em Controladoria e Finanças pela Fucape Business School. Foi professor universitário por cerca de duas décadas, lecionando na graduação e na pós-graduação disciplinas de contabilidade, custos, finanças corporativas, auditoria e avaliação de empresas.</p>
+      <p>É autor de <em>Contabilidade na Nuvem, Estratégica e Digital</em> (Editora Juruá, 2025) e <em>O Brasil muda de imposto</em> (Homo Fictor, 2026). Sua experiência profissional reúne análise econômico-financeira e investimentos.</p>
+      <a class="author-link" href="/quem-somos.html">Conheça o projeto e o autor</a>
       <div class="credential-row">
         <div class="credential"><b>Contabilidade</b><span>Formação e atuação profissional.</span></div>
         <div class="credential"><b>Finanças</b><span>MBA pela Fucape e experiência com investimentos.</span></div>
@@ -885,10 +890,11 @@ body{background:#f4f6f8;line-height:1.55}
       <a href="/atualizacoes-reforma.html">Atualizações</a>
       <a href="/noticias-reforma.html">Notícias</a>
       <a href="/comunidade.html">Comunidade</a>
-      <a href="#conteudo-gratuito">Biblioteca técnica</a>
+      <a href="/biblioteca-academica.html">Acervo acadêmico</a>
     </div>
     <div>
       <h4>Livro e projeto</h4>
+      <a href="/quem-somos.html">Quem somos</a>
       <a href="https://www.amazon.com.br/dp/B0HGQPMV6Y" target="_blank" rel="noopener">Amazon</a>
       <a href="https://clubedeautores.com.br/livro/o-brasil-muda-de-imposto" target="_blank" rel="noopener">Clube dos Autores</a>
       <a href="/feedback.html?origem=site">Enviar feedback</a>
@@ -911,29 +917,8 @@ body{background:#f4f6f8;line-height:1.55}
 
 
 })();
-</script>\n<script>
-(async function(){
-  var grid=document.getElementById('newsHomeGrid');
-  if(!grid)return;
-  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]})}
-  try{
-    var r=await fetch('/api/noticias-reforma?limit=3',{cache:'no-store'});
-    if(!r.ok)throw new Error('Falha');
-    var data=await r.json();
-    var items=(data.items||[]).slice(0,3);
-    grid.innerHTML=items.map(function(n){
-      var d=new Date(n.date+'T12:00:00');
-      var date=d.toLocaleDateString('pt-BR');
-      return '<a class="news-home-card" href="'+esc(n.url)+'" target="_blank" rel="noopener">'+
-        '<div class="news-home-meta"><span class="news-home-pill">'+esc(n.type)+'</span><span class="news-home-pill">'+esc(n.region)+'</span></div>'+
-        '<h3>'+esc(n.title)+'</h3><p>'+esc(n.summary)+'</p>'+
-        '<div class="news-home-source"><span>'+esc(n.source)+'</span><span>'+date+' ↗</span></div></a>';
-    }).join('')||'<div class="news-home-empty">Nenhuma notícia selecionada no momento.</div>';
-  }catch(e){
-    grid.innerHTML='<div class="news-home-empty">Não foi possível carregar as notícias agora.</div>';
-  }
-})();
-</script>
+</script>\n<script defer src="/assets/radar-home-2026.js?v=20261112"></script>
+<script defer src="/assets/monitoramento-2026.js?v=20261112"></script>
 <script defer src="/assets/usage.js?v=20260922-metrics1"></script>
 </body>
 </html>
