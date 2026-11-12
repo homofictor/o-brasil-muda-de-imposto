@@ -13,3 +13,13 @@ body.brmi-2026 .news-main .rt-news-head h2{color:#15394a;font-size:28px;margin:0
 body.brmi-2026 .news-main .rt-news-head a{font-size:13px;font-weight:700}
 @media(max-width:740px){body.brmi-2026 .top .wrap{min-height:70px;flex-wrap:wrap;gap:10px;padding:10px 0}body.brmi-2026 .brmi-site-brand img{width:250px}body.brmi-2026 .brmi-header-links{gap:8px 16px}body.brmi-2026 .brmi-header-links a{font-size:12px}}
 @media(max-width:500px){body.brmi-2026 .brmi-site-brand img{width:215px}body.brmi-2026 .main-nav{max-width:100%}body.brmi-2026 .news-main .rt-news-head{display:block}}
+
+body.brmi-2026 .acervo-top .acervo-wrap,body.brmi-2026 .top2 .wrap2{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 22px;min-height:77px}
+body.brmi-2026 .acervo-top .acervo-wrap nav,body.brmi-2026 .top2 .wrap2 nav{font-size:12px;display:flex;align-items:center;flex-wrap:wrap;gap:7px}
+body.brmi-2026 .brmi-myth-head{padding:0 20px}
+body.brmi-2026 .brmi-myth-inner{max-width:1100px;margin:auto;min-height:80px;display:flex;align-items:center;gap:15px 26px;justify-content:space-between;flex-wrap:wrap;color:#e9f3f4}
+body.brmi-2026 .brmi-myth-inner span{font-size:13px;color:#c6dce2}
+body.brmi-2026 .brmi-myth-inner>a:last-child{font-size:12px;font-weight:700;color:#fff}
+body.brmi-2026 .top2 .wrap2 .brmi-site-brand img{width:260px}
+body.brmi-2026 .acervo-top .brmi-site-brand img{width:265px}
+@media(max-width:740px){body.brmi-2026 .brmi-myth-inner{padding:10px 0}body.brmi-2026 .brmi-myth-inner span{display:none}body.brmi-2026 .acervo-top .acervo-wrap,body.brmi-2026 .top2 .wrap2{padding:12px 16px}}
