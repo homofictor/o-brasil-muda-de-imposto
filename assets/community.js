@@ -126,7 +126,7 @@
     }catch(err){status.textContent=err.message||"Não foi possível responder."}
   }
   async function reportTopic(){
-    if(!session?.user){location.href="/360/login.html?next=/comunidade.html";return}
+    if(!session?.user){location.href="/cadastro.html?next=/comunidade.html";return}
     if(!currentTopic)return;
     const reason=prompt("Motivo do reporte (ex.: spam, informação enganosa, ofensa):");
     if(!reason||reason.trim().length<4)return;
@@ -140,7 +140,7 @@
   $("topicSearch").addEventListener("input",e=>{currentSearch=e.target.value||"";renderTopics()});
   $("topicSort").addEventListener("change",e=>{currentSort=e.target.value||"activity";renderTopics()});
   document.querySelectorAll("[data-topic-suggestion]").forEach(b=>b.addEventListener("click",()=>{
-    if(!session?.user){location.href="/360/login.html?next=/comunidade.html";return}
+    if(!session?.user){location.href="/cadastro.html?next=/comunidade.html";return}
     $("topicCategory").value=b.dataset.category||"geral";
     $("topicTitle").value=b.dataset.title||"";
     $("topicBody").focus();
@@ -150,8 +150,8 @@
   $("replyForm").addEventListener("submit",createReply);
   $("closeDialog").addEventListener("click",()=>$("topicDialog").close());
   $("reportTopic").addEventListener("click",reportTopic);
-  $("loginCommunity").addEventListener("click",()=>location.href="/360/login.html?next=/comunidade.html");
-  $("replyLogin").addEventListener("click",()=>location.href="/360/login.html?next=/comunidade.html");
+  $("loginCommunity").addEventListener("click",()=>location.href="/cadastro.html?next=/comunidade.html");
+  $("replyLogin").addEventListener("click",()=>location.href="/cadastro.html?next=/comunidade.html");
   $("logoutCommunity").addEventListener("click",async()=>{if(client)await client.auth.signOut();location.reload()});
   initClient();
 })();

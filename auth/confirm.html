@@ -18,7 +18,7 @@
 <div class="kicker">Acesso identificado</div>
 <h1>Confirmando seu acesso.</h1>
 <p id="status" class="status">Aguarde enquanto concluímos a autenticação.</p>
-<a id="back" class="back" href="/360/login.html" hidden>Voltar para a tela de acesso</a>
+<a id="back" class="back" href="/cadastro.html" hidden>Voltar para a tela de acesso</a>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -46,7 +46,7 @@
   }catch(err){
     status.textContent='Não foi possível concluir o acesso. Volte e use e-mail e senha enquanto o acesso social é revisado.';
     status.className='status error';
-    back.href='/360/login.html?next='+encodeURIComponent(next);
+    back.href='/cadastro.html?next='+encodeURIComponent(next);
     back.hidden=false;
   }
 })();
