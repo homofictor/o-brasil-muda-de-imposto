@@ -1,0 +1,58 @@
+
+:root{--rt-deep:#123146;--rt-blue:#174c69;--rt-teal:#0d6673;--rt-terracotta:#b5724e;--rt-moss:#2b7468;--rt-sand:#ede7da;--rt-text:#193242;--rt-sub:#526978;--rt-bg:#f4f7f8;--rt-stroke:#d9e4e9}
+body.brmi-2026{--navy:#123146;--navy-2:#174c69;--navy-3:#204b62;--blue:#0d6673;--gold:#b5724e;--gold-2:#d1a887;--paper:#f4f7f8;--paper-2:#edf3f5;--ink:#193242;--muted:#526978;--line:#d9e4e9;--radius:10px;background:var(--rt-bg);color:var(--rt-text);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:0;line-height:1.65}
+body.brmi-2026 .display,body.brmi-2026 h1,body.brmi-2026 h2{letter-spacing:-.028em}
+body.brmi-2026 .site-header,body.brmi-2026 .top{background:#123146!important;box-shadow:none!important;border-bottom:1px solid rgba(255,255,255,.12)!important}
+body.brmi-2026 .site-header .main-nav a{font-weight:600;font-size:12px}
+body.brmi-2026 .main-nav .cta,body.brmi-2026 .btn.primary{background:var(--rt-teal);border-color:var(--rt-teal);color:white}
+body.brmi-2026 .btn.gold{background:var(--rt-teal);color:white;border-color:var(--rt-teal)}
+body.brmi-2026 .btn,body.brmi-2026 .news-card,body.brmi-2026 .news-home-card,body.brmi-2026 .learning-card,body.brmi-2026 .update-card,body.brmi-2026 .value-card,body.brmi-2026 .press-card{box-shadow:none!important;transform:none!important;border-radius:10px}
+body.brmi-2026 .hero{background:linear-gradient(130deg,#112f43 0%,#19495d 61%,#195c64 100%);color:#fff}
+body.brmi-2026 .hero .lead{color:#e1eaf0}
+body.brmi-2026 .hero-copy .kicker{color:#dcebbd}
+body.brmi-2026 .hero .btn.secondary{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.24);color:#fff}
+body.brmi-2026 .status-panel{background:#fff!important;overflow:hidden;color:#193242;border:1px solid #d4e0e4;box-shadow:0 16px 42px rgba(10,25,38,.10)}
+body.brmi-2026 .status-panel-head strong,body.brmi-2026 .status-panel dt,body.brmi-2026 .status-panel dd{color:#193242}
+body.brmi-2026 .status-panel-head span{color:var(--rt-teal)}
+body.brmi-2026 .status-panel a{color:var(--rt-teal)}
+body.brmi-2026 .brand-mark{background:#e6ebe5;box-shadow:none;border-radius:7px}
+body.brmi-2026 .hero-image{margin:0 0 20px;border-radius:8px;overflow:hidden;position:relative;background:#dee8e9}
+body.brmi-2026 .hero-image img{width:100%;height:185px;object-fit:cover}
+body.brmi-2026 .hero-image figcaption{background:#edf3f4;color:#506876;padding:7px 10px;font-size:10px;line-height:1.5}
+body.brmi-2026 .daily-ledger{display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center;border-top:1px solid rgba(255,255,255,.16);margin-top:19px;padding-top:14px;font-size:12px;color:#d9ebec}
+body.brmi-2026 .daily-ledger .pulse{width:7px;height:7px;border-radius:50%;background:#a9d8be;display:inline-block;margin-right:7px}
+body.brmi-2026 .daily-ledger a{color:inherit;text-decoration:underline;text-underline-offset:3px}
+body.brmi-2026 .section-head h2,body.brmi-2026 .news-home-top h2{color:#17374b}
+body.brmi-2026 .section.soft{background:#ecf2f4}
+body.brmi-2026 .news-home-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+body.brmi-2026 .news-home-grid .news-home-card{display:flex;flex-direction:column;min-height:230px;background:#fff;border:1px solid var(--rt-stroke);padding:21px;color:var(--rt-text);text-decoration:none}
+body.brmi-2026 .news-home-grid .news-home-card.featured{grid-column:span 3;display:grid;grid-template-columns:minmax(240px,.8fr) minmax(0,1.2fr);min-height:255px;gap:26px;align-items:stretch;padding:0;overflow:hidden;border-left:5px solid var(--rt-teal)}
+body.brmi-2026 .news-feature-image{height:100%;min-height:246px;background:#e4ebe9;position:relative}
+body.brmi-2026 .news-feature-image img{width:100%;height:100%;object-fit:cover}
+body.brmi-2026 .news-feature-image small{position:absolute;bottom:0;left:0;right:0;padding:7px 10px;background:rgba(18,49,70,.87);color:white;font-size:10px}
+body.brmi-2026 .news-feature-copy{padding:21px 27px 22px 0;display:flex;flex-direction:column}
+body.brmi-2026 .news-feature-copy h3{font-size:clamp(21px,2.6vw,31px);line-height:1.23;margin:11px 0 13px}
+body.brmi-2026 .news-feature-copy p{font-size:14px;max-width:620px}
+body.brmi-2026 .news-home-source{margin-top:auto;padding-top:14px;color:var(--rt-teal)}
+body.brmi-2026 .news-home-pill{background:#e6f1f0;color:#0f5c63;border-radius:4px}
+body.brmi-2026 .news-note-date{font-size:12px;color:#56707d;margin-top:11px}
+body.brmi-2026 .news-card{border:1px solid var(--rt-stroke);background:#fff}
+body.brmi-2026 .news-card.official{border-left:4px solid var(--rt-teal)}
+body.brmi-2026 .news-hero{background:linear-gradient(110deg,#123146,#1d5a64)!important;padding:54px 0 52px}
+body.brmi-2026 .news-hero h1{font-size:clamp(2.1rem,4vw,3.5rem);line-height:1.14}
+body.brmi-2026 .news-filter.active{background:var(--rt-teal);border-color:var(--rt-teal)}
+body.brmi-2026 .news-card h3{font-size:19px}
+body.brmi-2026 .learning-card.editorial-academico{background:linear-gradient(145deg,#e6f1f0,#fcfdfd);border-left:4px solid var(--rt-teal)}
+body.brmi-2026 .author-copy p{line-height:1.7}
+body.brmi-2026 .author-copy .author-link{display:inline-flex;margin-top:12px;color:var(--rt-teal);font-weight:700}
+body.brmi-2026 .buy-panel{background:#edf2f4}
+body.brmi-2026 .buy-panel .btn.gold{background:var(--rt-teal)}
+body.brmi-2026 .footer{background:#113046}
+body.brmi-2026 .footer a{font-size:13px}
+body.brmi-2026 .topic-photo{margin:23px 0 24px;max-width:760px;overflow:hidden;border-radius:10px;background:#dae4e6}
+body.brmi-2026 .topic-photo img{width:100%;max-height:235px;object-fit:cover}
+body.brmi-2026 .topic-photo figcaption{padding:7px 11px;font-size:11px;color:#667784}
+body.brmi-2026 :where(a,button,input,select,textarea,summary):focus-visible{outline:3px solid #0d6673;outline-offset:3px}
+@media(max-width:1000px){body.brmi-2026 .header-row{min-height:66px}body.brmi-2026 .main-nav{gap:10px}}
+@media(max-width:760px){body.brmi-2026 .news-home-grid{grid-template-columns:1fr}body.brmi-2026 .news-home-grid .news-home-card.featured{grid-column:span 1;display:block}body.brmi-2026 .news-feature-image{height:195px;min-height:195px}body.brmi-2026 .news-feature-copy{padding:19px 21px 22px}body.brmi-2026 .hero-image img{height:150px}body.brmi-2026 .daily-ledger{font-size:11px}body.brmi-2026 .news-hero{padding:35px 0}body.brmi-2026 .site-header .main-nav a{font-size:14px}}
+@media(prefers-reduced-motion:reduce){body.brmi-2026 *{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
