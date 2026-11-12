@@ -1,4 +1,5 @@
 const curated = require("../data/noticias-reforma.json");
+const {excerpt,likelySameEvent}=require("./rt-news-editorial.js");
 
 function decodeXml(value=""){
   return String(value||"")
@@ -86,7 +87,7 @@ async function googleNews(query){
         type:isOfficialSource(source)?"Fonte oficial":"Imprensa",
         region:"Brasil",
         title,
-        summary:stripHtml(rawDescription).replace(title,"").trim().slice(0,360),
+        summary:excerpt(title,rawDescription),
         url,
         provider:"Google News RSS"
       };
@@ -121,7 +122,7 @@ module.exports=async function handler(req,res){
   const deduped=[];
   for(const item of all){
     const k=key(item);
-    if(!k||seen.has(k)) continue;
+    if(!k||seen.has(k)||deduped.some(other=>likelySameEvent(item,other))) continue;
     seen.add(k);
     deduped.push(item);
   }
