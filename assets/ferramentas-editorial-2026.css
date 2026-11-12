@@ -1,0 +1,8 @@
+/* Ajuste visual de baixo risco: não altera JS, layout funcional nem motor tributário */
+body.rt-tool-2026{--navy:#123146;--blue:#174c69;--blue2:#0d6673;--gold:#b5724e;--ink:#193242;--muted:#526978;--line:#d9e4e9;--paper:#f4f7f8;background:#f4f7f8;color:#193242;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+body.rt-tool-2026 .topbar,body.rt-tool-2026 .top{background:#123146!important;box-shadow:none!important}
+body.rt-tool-2026 .hero{background:linear-gradient(125deg,#123146 0%,#174c69 66%,#17636b 100%);border-radius:13px;box-shadow:none}
+body.rt-tool-2026 .homebtn{background:#0d6673;border-color:#0d6673;color:white}
+body.rt-tool-2026 .page,body.rt-tool-2026 .wrap{max-width:1280px}
+body.rt-tool-2026 :where(button,a,input,select,textarea):focus-visible{outline:3px solid #0d6673;outline-offset:3px}
+@media(prefers-reduced-motion:reduce){body.rt-tool-2026 *{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
