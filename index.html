@@ -642,7 +642,7 @@ body{background:#f4f6f8;line-height:1.55}
     <aside class="status-panel" aria-label="Situação do acompanhamento da reforma">
       <div class="status-panel-head"><span>Referências editoriais</span><strong>Reforma Tributária do Consumo</strong></div>
       <dl>
-        <div><dt>Última revisão editorial</dt><dd>16/10/2026</dd></div>
+        <div><dt>Última revisão editorial</dt><dd>12/11/2026</dd></div>
         <div><dt>Período de referência</dt><dd>Transição de 2026 a 2033</dd></div>
         <div><dt>Horizonte monitorado</dt><dd>2026 a 2033</dd></div>
         <div><dt>Critério de atualização</dt><dd>Fontes oficiais e atos confirmados</dd></div>
@@ -652,6 +652,7 @@ body{background:#f4f6f8;line-height:1.55}
   </div>
 </section>
 
+<aside aria-label="Boletim normativo" style="background:#eaf0f6;border-bottom:1px solid #cdd8e3"><div class="wrap" style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;padding:15px 0"><div style="flex:1;min-width:240px"><strong style="display:block;font-size:13px;color:#123154">Boletim normativo | 12/11/2026</strong><span style="display:block;font-size:13px;color:#42556b">Receita detalha conformidade 2027, APIs CBS e calendário técnico. Pedido de adiamento da reforma ainda não altera o cronograma legal.</span></div><a href="/atualizacoes-reforma.html" style="font-size:13px;font-weight:800;color:#123b63;white-space:nowrap">Consultar atualizações e fontes →</a></div></aside>
 <div class="signal">
   <div class="wrap signal-grid">
     <div class="signal-main"><b>Escopo analítico</b><span>Tributação sobre consumo e efeitos empresariais.</span></div>
@@ -883,27 +884,6 @@ body{background:#f4f6f8;line-height:1.55}
 </section>
 </main>
 
-<div class="rt-modal" id="rtUpdateModal" hidden>
-  <div class="rt-backdrop" data-rt-close></div>
-  <div class="rt-dialog" role="dialog" aria-modal="true" aria-labelledby="rtUpdateTitle">
-    <button class="rt-close" type="button" aria-label="Fechar atualização" data-rt-close>×</button>
-    <div class="rt-date">Atualização de 16/10/2026</div>
-    <h2 class="display" id="rtUpdateTitle">A Reforma Tributária foi adiada?</h2>
-    <p class="rt-intro"><strong>O prazo de ingresso ou retorno ao Simples Nacional para 2027 encerrou em 15/10.</strong> Ainda existem providências relevantes até 30/10. Veja o que continua aberto e o que mudou no cronograma.</p>
-    <ul class="rt-modal-list">
-      <li><strong>Documentos fiscais:</strong> a rejeição automática por ausência de campos de IBS e CBS foi adiada em determinadas situações, mas a obrigação de informar corretamente permanece.</li>
-      <li><strong>Simples 2027:</strong> o prazo para iniciar pedido de ingresso ou retorno encerrou em 15/10. Solicitações indeferidas ainda podem ter pendências regularizadas até 30/10. A opção pelo regime regular de IBS e CBS também permanece aberta até 30/10 para empresas do Simples.</li>
-      <li><strong>Split payment:</strong> 15/10 é o marco de início previsto no cronograma oficial para a etapa técnica de integração com prestadores de pagamento. Os testes ocorrem em ambiente controlado, sem transações definitivas nem impacto em consumidores.</li>
-      <li><strong>CBS 2027:</strong> cálculo do TCU até 30/10 e fixação pelo Senado até 15/12, conforme o cronograma legal aplicável em 2026.</li>
-      <li><strong>Imposto Seletivo:</strong> o site segue acompanhando a definição das alíquotas aplicáveis para 2027.</li>
-    </ul>
-    <div class="rt-dialog-actions">
-      <a class="btn" href="/atualizacoes-reforma.html">Ver detalhes e fontes oficiais</a>
-      <button class="btn" type="button" data-rt-close>Continuar no site</button>
-    </div>
-  </div>
-</div>
-
 <footer class="footer">
   <div class="wrap footer-grid">
     <div>
@@ -943,19 +923,7 @@ body{background:#f4f6f8;line-height:1.55}
     nav.querySelectorAll("a").forEach(function(a){a.addEventListener("click",function(){document.body.classList.remove("nav-open");menuBtn.setAttribute("aria-expanded","false");});});
   }
 
-  var version="2026-10-16";
-  var key="rt-update-seen";
-  var modal=document.getElementById("rtUpdateModal");
-  if(!modal) return;
-  function closeModal(){modal.hidden=true;document.body.style.overflow="";}
-  function openModal(){modal.hidden=false;document.body.style.overflow="hidden";var b=modal.querySelector("[data-rt-close]");if(b)b.focus();}
-  modal.querySelectorAll("[data-rt-close]").forEach(function(el){el.addEventListener("click",closeModal);});
-  document.addEventListener("keydown",function(e){if(e.key==="Escape"&&!modal.hidden)closeModal();});
-  try{
-    if(localStorage.getItem(key)!==version){
-      setTimeout(function(){openModal();localStorage.setItem(key,version);},850);
-    }
-  }catch(e){setTimeout(openModal,850);}
+
 })();
 </script>\n<script>
 (async function(){
