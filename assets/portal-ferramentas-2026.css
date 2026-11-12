@@ -1,0 +1,48 @@
+/* Ferramentas 2026: acabamento visual sem interferência nos IDs, formulários, dados e motores de cálculo. */
+body.rt-tool-2026{--navy:#123146;--blue:#174c69;--blue2:#0d6673;--gold:#b5724e;--gold2:#cfe8dc;--ink:#193242;--muted:#526978;--line:#d7e3e8;--paper:#f5f8f9;--soft:#eff4f5;background:#f5f8f9;color:#193242;font-family:Inter,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;line-height:1.58;-webkit-font-smoothing:antialiased}
+body.rt-tool-2026 :is(.topbar,.top,.erpTopbar){background:#123146!important;color:#f1f6f9;box-shadow:none!important;border-bottom:1px solid rgba(255,255,255,.13)}
+body.rt-tool-2026 :is(.topbar,.erpTopbar) .brand strong{color:#fff}
+body.rt-tool-2026 :is(.topbar,.erpTopbar) .brand span{color:#c8dade}
+body.rt-tool-2026 .topnav{display:flex;gap:8px 16px;flex-wrap:wrap}
+body.rt-tool-2026 .topnav a{color:#e5f0f2;font-size:13px;font-weight:650}
+body.rt-tool-2026 .hero{background:linear-gradient(120deg,#123146,#185163 70%,#18616a)!important;border-radius:12px;box-shadow:none!important;color:#fff!important}
+body.rt-tool-2026 .hero :is(h1,h2){color:#fff!important;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.18;letter-spacing:-.035em}
+body.rt-tool-2026 .hero h1{font-size:clamp(1.95rem,3.5vw,3rem);max-width:850px}
+body.rt-tool-2026 .hero h1 em{color:#cae9de!important;font-style:normal}
+body.rt-tool-2026 .hero p{color:#e0ebf0!important;line-height:1.65}
+body.rt-tool-2026 .hero .kicker,body.rt-tool-2026 .guidedHero .kicker{color:#bee2d4}
+body.rt-tool-2026 .heroStats div,body.rt-tool-2026 .guidedHeroStats div{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);border-radius:9px}
+body.rt-tool-2026 .heroStats b,body.rt-tool-2026 .guidedHeroStats b{color:#d2ebe0}
+body.rt-tool-2026 .guidedHero{background:linear-gradient(125deg,#123146,#1b5362)!important;border-radius:12px;box-shadow:none;color:#fff}
+body.rt-tool-2026 .guidedHero h1{color:#fff!important}
+body.rt-tool-2026 .guidedHero p{color:#e0edf0}
+body.rt-tool-2026 :is(.panel,.resultSection,.methodology,.toc,.content,.guidedNav){border-color:#d7e3e8;border-radius:12px;box-shadow:0 4px 14px rgba(14,41,57,.025)}
+body.rt-tool-2026 .panel{background:#fff}
+body.rt-tool-2026 .sectionTitle>div>span,body.rt-tool-2026 .panelhead .step{background:#0d6673;color:#fff;border-radius:7px}
+body.rt-tool-2026 .sectionTitle h2,body.rt-tool-2026 .panelhead h2{color:#19394b;letter-spacing:-.022em}
+body.rt-tool-2026 .field>span,body.rt-tool-2026 .field>label{color:#294a59}
+body.rt-tool-2026 .field :is(input,select,textarea){border-color:#c6d9df;border-radius:8px;background-color:#fff;color:#173747}
+body.rt-tool-2026 :is(.money,.suffix){border-color:#c6d9df;border-radius:8px}
+body.rt-tool-2026 :is(button,a,input,select,textarea,summary):focus-visible{outline:3px solid #208391;outline-offset:3px}
+body.rt-tool-2026 button.primary,body.rt-tool-2026 button.homebtn,body.rt-tool-2026 a.homebtn{background:#0d6673!important;color:#fff!important;border-color:#0d6673!important;border-radius:8px}
+body.rt-tool-2026 button.primary:hover,body.rt-tool-2026 a.homebtn:hover{background:#08535b!important}
+body.rt-tool-2026 :is(.linkbtn,.topactions a,.topactions button){border-radius:7px}
+body.rt-tool-2026 .reportTab.active,body.rt-tool-2026 .guidedNav button.active{background:#0d6673;color:#fff}
+body.rt-tool-2026 :is(.reportModal,.reportShell,.reportView){max-width:100%}
+body.rt-tool-2026 .mast{background:linear-gradient(120deg,#123146,#185363)!important;color:white}
+body.rt-tool-2026 .mast h1{color:#fff!important}
+body.rt-tool-2026 .mast .lede{color:#e2edf0!important}
+body.rt-tool-2026 .mast .eyebrow{color:#c5e7dc!important}
+body.rt-tool-2026 .top .brand{color:#fff}
+body.rt-tool-2026 .datebar{border-radius:8px;border-color:#d6e1e5}
+body.rt-tool-2026 header:not(.topbar):not(.top):not(.erpTopbar):not(.hero){background:#123146;color:#fff}
+body.rt-tool-2026 header:not(.topbar):not(.top):not(.erpTopbar):not(.hero) :is(h1,p){color:#fff}
+body.rt-tool-2026 .rt-tool-links{display:flex;flex-wrap:wrap;gap:12px 23px;padding:10px 20px;background:#e9f1f3;border-bottom:1px solid #cedde2}
+body.rt-tool-2026 .rt-tool-links a{font-size:13px;color:#0d5666;font-weight:700;text-decoration:none}
+body.rt-tool-2026 .rt-tool-links a:hover{text-decoration:underline}
+body.rt-tool-2026 footer{background:#112e41;color:#dbe9ee}
+body.rt-tool-2026 footer a{color:#c3e5e6}
+@media(max-width:940px){body.rt-tool-2026 .topinner{flex-wrap:wrap;gap:12px}body.rt-tool-2026 .hero{padding:26px;gap:16px}body.rt-tool-2026 .hero h1{font-size:clamp(1.8rem,5vw,2.65rem)}}
+@media(max-width:640px){body.rt-tool-2026 .hero{padding:20px;border-radius:9px}body.rt-tool-2026 .page{padding-left:14px;padding-right:14px}body.rt-tool-2026 .hero h1{font-size:1.9rem}body.rt-tool-2026 .panel{padding:17px}body.rt-tool-2026 .topnav a{min-height:40px;display:inline-flex;align-items:center}}
+@media print{body.rt-tool-2026 .rt-tool-links{display:none!important}body.rt-tool-2026{background:#fff}}
+@media(prefers-reduced-motion:reduce){body.rt-tool-2026 *,body.rt-tool-2026 *:before,body.rt-tool-2026 *:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
