@@ -48,6 +48,7 @@
   let items=[],active='todos';
 
   const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+  const safeUrl=s=>{try{const u=new URL(String(s||''));return ['https:','http:'].includes(u.protocol)?u.href:''}catch(_){return ''}};
   const topicLabel=t=>({
     'ibs-cbs':'IBS e CBS','simples':'Simples Nacional','split-payment':'Split payment',
     'imposto-seletivo':'Imposto Seletivo','documentos-fiscais':'Documentos fiscais',
@@ -66,13 +67,13 @@
   }
 
   function render(){
-    const visible=items.filter(matches);
+    const visible=items.filter(matches).filter(n=>safeUrl(n.url));
     count.textContent=visible.length+' matéria'+(visible.length===1?'':'s')+' exibida'+(visible.length===1?'':'s')+'.';
     grid.innerHTML=visible.map(n=>{
       const d=new Date((n.date||'')+'T12:00:00');
-      const date=Number.isNaN(d.getTime())?'':d.toLocaleDateString('pt-BR');
+      const date=Number.isNaN(d.getTime())?'Data não informada':d.toLocaleDateString('pt-BR');
       const cls=/oficial/i.test(n.type||'')?'news-card official':'news-card';
-      return '<a class="'+cls+'" href="'+esc(n.url)+'" target="_blank" rel="noopener">'+
+      return '<a class="'+cls+'" href="'+esc(safeUrl(n.url))+'" target="_blank" rel="noopener">'+
         '<div class="news-meta"><span class="news-pill">'+esc(n.type)+'</span><span class="news-pill">'+esc(n.region)+'</span></div>'+
         '<div class="news-topic">'+esc(topicLabel(n.topic))+'</div>'+
         '<h3>'+esc(n.title)+'</h3>'+(n.summary?'<p>'+esc(n.summary)+'</p>':'')+
@@ -88,7 +89,7 @@
     render();
     if(data.updated_at){
       const d=new Date(data.updated_at);
-      updated.textContent='Feed atualizado em '+d.toLocaleDateString('pt-BR')+' às '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+      updated.textContent='Feed consultado em '+d.toLocaleDateString('pt-BR')+' às '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
     }
   }catch(e){
     grid.innerHTML='<div class="news-empty">Não foi possível carregar as notícias agora. Tente novamente mais tarde.</div>';

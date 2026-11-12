@@ -26,6 +26,12 @@ function cleanTitle(title,source){
   if(s && t.endsWith(" - "+s)) t=t.slice(0,-(" - "+s).length).trim();
   return t;
 }
+function safeExternalUrl(value){
+  try{
+    const url=new URL(String(value||"").trim());
+    return url.protocol==="https:"||url.protocol==="http:"?url.href:"";
+  }catch(_){return "";}
+}
 function isRelevant(item){
   const n=normalize((item.title||"")+" "+(item.summary||""));
   return /(reforma tributaria|\bibs\b|\bcbs\b|imposto seletivo|split payment|simples nacional|iva dual|tributacao do consumo|documentos fiscais|nota fiscal|credito tributario)/.test(n);
@@ -71,10 +77,10 @@ async function googleNews(query){
       const title=cleanTitle(rawTitle,source);
       const rawDescription=tag(block,"description");
       const publishedAt=tag(block,"pubDate")||null;
-      const url=tag(block,"link");
+      const url=safeExternalUrl(tag(block,"link"));
       const item={
         id:"rss-"+normalize(title).replace(/\s+/g,"-").slice(0,110),
-        date: publishedAt && !Number.isNaN(Date.parse(publishedAt)) ? new Date(publishedAt).toISOString().slice(0,10) : new Date().toISOString().slice(0,10),
+        date: publishedAt && !Number.isNaN(Date.parse(publishedAt)) ? new Date(publishedAt).toISOString().slice(0,10) : null,
         publishedAt,
         source,
         type:isOfficialSource(source)?"Fonte oficial":"Imprensa",
@@ -94,7 +100,7 @@ async function googleNews(query){
 }
 function curatedItems(){
   return (curated.items||[]).map(x=>{
-    const base={...x,publishedAt:x.date?x.date+"T12:00:00-03:00":null,provider:"Curadoria editorial"};
+    const base={...x,url:safeExternalUrl(x.url),publishedAt:x.date?x.date+"T12:00:00-03:00":null,provider:"Curadoria editorial"};
     return {...base,region:x.region||regionFor(base),topic:x.topic||topicFor(base)};
   });
 }
@@ -110,7 +116,7 @@ module.exports=async function handler(req,res){
     '"reforma tributária" empresas municípios'
   ];
   const live=(await Promise.all(queries.map(q=>googleNews(q)))).flat();
-  const all=[...live,...curatedItems()];
+  const all=[...live,...curatedItems()].filter(x=>x.title&&x.url);
   const seen=new Set();
   const deduped=[];
   for(const item of all){

@@ -1,7 +1,7 @@
 import {createHash} from 'node:crypto';
 const sources=[
  {name:"Receita Federal",url:"https://www.gov.br/receitafederal/pt-br/acesso-a-informacao/acoes-e-programas/reforma-tributaria-do-consumo/ultimas-noticias",host:"www.gov.br"},
- {name:"Comitê Gestor do IBS",url:"https://www.cgibs.gov.br/inicial",host:"www.cgibs.gov.br"}
+ {name:"Comitê Gestor do IBS",url:"https://www.cgibs.gov.br/noticias",host:"www.cgibs.gov.br"}
 ];
 const token=process.env.GH_TOKEN, repo=process.env.GITHUB_REPOSITORY;
 if(!token||!repo)throw new Error("GitHub environment missing");
@@ -18,7 +18,7 @@ for(const source of sources){
   for(const [,href,raw] of links){
    const title=textOnly(raw);if(title.length<22||title.length>200)continue;
    if(!/reforma tribut.ria|\bIBS\b|\bCBS\b|imposto seletivo|split payment|\bDeRE\b|nota t.cnica/i.test(title))continue;
-   let url;try{url=new URL(href,source.url);if(url.hostname!==source.host||url.protocol!=="https:")continue}catch{continue}
+   let url;try{url=new URL(href,source.url);if(url.hostname.replace(/^www\./,'')!==source.host.replace(/^www\./,'')||url.protocol!=="https:")continue}catch{continue}
    if(!/noticias|\/noticia|\/inicial|\/comunicado/.test(url.pathname))continue;
    const key=createHash('sha256').update(url.href).digest('hex').slice(0,12);
    if(!results.some(x=>x.key===key))results.push({key,title,source:source.name,url:url.href});

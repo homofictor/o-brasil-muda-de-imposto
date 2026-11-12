@@ -1,6 +1,6 @@
 const SOURCES=[
  {name:"Receita Federal",url:"https://www.gov.br/receitafederal/pt-br/acesso-a-informacao/acoes-e-programas/reforma-tributaria-do-consumo/ultimas-noticias",check:/reforma tribut.ria|CBS|IBS/i},
- {name:"Comitê Gestor do IBS",url:"https://www.cgibs.gov.br/inicial",check:/IBS|Comitê Gestor/i}
+ {name:"Comitê Gestor do IBS",url:"https://www.cgibs.gov.br/noticias",check:/IBS|Comitê Gestor/i}
 ];
 module.exports=async function(req,res){
  if(req.method!=="GET"){res.setHeader("Allow","GET");return res.status(405).json({ok:false})}
