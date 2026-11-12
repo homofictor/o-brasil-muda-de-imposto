@@ -87,7 +87,7 @@
       if(result.data.session?.user){displayAccount(result.data.session.user);if(mode==='login'&&redirect.has('next'))location.assign(next)}
       else message('Confira sua caixa de entrada para as instruções de confirmação, quando aplicável.');
     }catch(e){message('Não foi possível concluir o acesso. Verifique seus dados ou tente novamente.',true)}
-    finally{button.disabled=false;if(!$('accountPanel').hidden){button.textContent='Entrar'}else setMode(mode)}
+    finally{button.disabled=false;button.textContent=mode==='signup'?'Criar cadastro':mode==='recover'?'Enviar instruções':'Entrar'}
   });
   $('googleBtn').addEventListener('click',async()=>{
     if(!client||!googleEnabled)return;
