@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#102f41">
+<meta name="description" content="Aplicativo do observatório O Brasil Muda de Imposto. Notícias, legislação, simulador tributário e biblioteca técnica.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Brasil Imposto">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/assets/brmi-icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/brmi-app-192.png">
+<link rel="stylesheet" href="/assets/noticias-editorial-2026.css">
+<link rel="stylesheet" href="/app/app.css">
+<title>Aplicativo | O Brasil Muda de Imposto</title>
+</head>
+<body class="brmi-2026">
+<a class="skip" href="#principal">Ir ao conteúdo</a>
+<header class="topbar">
+ <div class="shell headrow">
+  <a class="brand" href="/app/" aria-label="O Brasil Muda de Imposto, início"><img src="/assets/brmi-icon.svg" width="42" height="42" alt=""><span><strong>O Brasil Muda de Imposto</strong><small>Observatório da Reforma Tributária</small></span></a>
+  <a class="site-link" href="/" aria-label="Abrir o portal completo">Portal completo <span aria-hidden="true">↗</span></a>
+ </div>
+</header>
+<div id="connection" class="connection" role="status" hidden>Sem conexão. O aplicativo mostra somente os conteúdos já disponíveis neste aparelho.</div>
+<main id="principal" class="shell main">
+ <section class="welcome" aria-labelledby="welcomeTitle">
+  <div class="welcome-copy">
+   <span class="eyebrow">REFORMA TRIBUTÁRIA DO CONSUMO</span>
+   <h1 id="welcomeTitle">Informação técnica, sempre à mão.</h1>
+   <p>Acompanhe notícias e normas sobre IBS, CBS, Imposto Seletivo e Simples Nacional. Simule os impactos sobre empresas sem sair da plataforma.</p>
+   <div class="welcome-actions"><a class="primary" href="/simulador/v3/">Abrir simulador empresarial</a><a class="secondary" href="/atualizacoes-reforma.html">Ver atualizações</a></div>
+  </div>
+  <div class="welcome-art" aria-hidden="true"><img src="/assets/brmi-icon.svg" width="152" height="152" alt=""><span>2026 <b>→</b> 2033</span><small>Período de transição</small></div>
+ </section>
+ <section class="quick" aria-label="Acessos principais">
+  <a class="quicklink" href="/noticias-reforma.html"><span class="quickicon" aria-hidden="true">▤</span><span><strong>Notícias</strong><small>Radar e análises</small></span></a>
+  <a class="quicklink" href="/mitos.html"><span class="quickicon" aria-hidden="true">?</span><span><strong>Mitos</strong><small>Fatos e exageros</small></span></a>
+  <a class="quicklink" href="/biblioteca-academica.html"><span class="quickicon" aria-hidden="true">▣</span><span><strong>Biblioteca</strong><small>Guias e fontes</small></span></a>
+  <a class="quicklink" href="/cadastro.html"><span class="quickicon" aria-hidden="true">●</span><span><strong>Minha conta</strong><small>Entrar ou cadastrar</small></span></a>
+ </section>
+ <section class="feed" aria-labelledby="newsHeading">
+  <div class="sectiontitle"><div><span class="eyebrow ink">RADAR JORNALÍSTICO</span><h2 id="newsHeading">Últimas notícias</h2></div><a href="/noticias-reforma.html">Ver todas</a></div>
+  <div id="newsList" class="news-list" aria-live="polite"><p class="empty">Consultando notícias atualizadas...</p></div>
+  <p class="method">Notícia não é norma. Alterações legais e prazos devem ser confirmados em fontes oficiais e na seção de atualizações normativas.</p>
+ </section>
+ <section class="tools" aria-labelledby="toolsHeading">
+  <div class="sectiontitle"><div><span class="eyebrow ink">FERRAMENTAS E CONTEÚDO</span><h2 id="toolsHeading">Consultar e simular</h2></div></div>
+  <div class="tools-grid">
+   <a href="/simulador/v3/" class="tool"><span>01 · SIMULAÇÃO</span><h3>Impacto empresarial</h3><p>Comparação de regimes, créditos, preços, margens e capital de giro.</p><b>Acessar ferramenta</b></a>
+   <a href="/atualizacoes-reforma.html" class="tool"><span>02 · LEGISLAÇÃO</span><h3>Atualizações normativas</h3><p>Marcos de implementação, regras confirmadas e propostas em discussão.</p><b>Consultar atualizações</b></a>
+   <a href="/comunidade.html" class="tool"><span>03 · COMUNIDADE</span><h3>Discussão técnica</h3><p>Compartilhe dúvidas e experiências mediante identificação.</p><b>Acessar comunidade</b></a>
+   <a href="/biblioteca-academica.html" class="tool"><span>04 · REFERÊNCIAS</span><h3>Biblioteca acadêmica</h3><p>Fundamentos, documentação e referências de consulta.</p><b>Abrir biblioteca</b></a>
+  </div>
+ </section>
+ <section class="installation" aria-labelledby="installHeading">
+  <div><span class="eyebrow ink">ACESSO RÁPIDO</span><h2 id="installHeading">Instale no celular</h2><p>Adicione o aplicativo à tela inicial. As atualizações tributárias e simulações exigem conexão com a internet.</p></div>
+  <div class="install-controls"><button type="button" id="installButton">Como instalar</button><p id="installHelp" class="install-help" role="status" hidden></p></div>
+ </section>
+ <footer><strong>O Brasil Muda de Imposto</strong><p>Iniciativa editorial independente. Simulações são orientativas e não substituem avaliação contábil ou jurídica.</p><a href="/privacidade.html">Política de privacidade</a> · <a href="/feedback.html?origem=app">Enviar feedback</a></footer>
+</main>
+<nav class="bottom-nav" aria-label="Navegação do aplicativo">
+ <a aria-current="page" href="/app/"><span aria-hidden="true">⌂</span>Início</a>
+ <a href="/noticias-reforma.html"><span aria-hidden="true">▤</span>Notícias</a>
+ <a href="/simulador/v3/"><span aria-hidden="true">▦</span>Simular</a>
+ <a href="/atualizacoes-reforma.html"><span aria-hidden="true">◷</span>Normas</a>
+ <a href="/cadastro.html"><span aria-hidden="true">●</span>Conta</a>
+</nav>
+<script src="/assets/news-dialog-2026.js"></script>
+<script defer src="/assets/pwa-register.js"></script>
+<script defer src="/app/app.js"></script>
+</body>
+</html>

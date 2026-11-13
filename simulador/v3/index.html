@@ -27,7 +27,9 @@
 </style>
 <link rel="stylesheet" href="/simulador/v3/brand-overrides.css?v=20261002-redesign1">
 <link rel="stylesheet" href="/assets/ferramentas-editorial-2026.css?v=20261112">
-<link rel="stylesheet" href="/assets/portal-ferramentas-2026.css?v=20261112-b"></head>
+<link rel="stylesheet" href="/assets/portal-ferramentas-2026.css?v=20261112-b"><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/assets/brmi-app-192.png">
+</head>
 <body class="rt-tool-2026">
 <header class="topbar"><div class="topinner"><a class="brand" href="/"><img class="rt-tool-brand-icon" src="/assets/brmi-icon.svg" width="38" height="38" alt=""><div><strong>O Brasil muda de imposto</strong><span>Simulador Empresarial da Reforma Tributária · V3.2</span></div></a><a class="hfSignature" href="https://www.homofictor.com.br/" target="_blank" rel="noopener" aria-label="Homo Fictor Edições Independentes"><span class="hfMonogram">HF</span><span class="hfWordmark"><b>HOMO FICTOR</b><small>EDIÇÕES INDEPENDENTES</small></span></a><div class="topactions"><a class="linkbtn" href="/simulador/v3/manual.html" target="_blank" rel="noopener">Manual de uso</a><button class="linkbtn" id="printBtn" type="button">Imprimir relatório</button><button class="linkbtn clearAllBtn" id="clearAllBtn" type="button">Limpar dados</button><a class="linkbtn" href="/feedback.html?origem=simulador" target="_blank" rel="noopener">Dar feedback</a><a class="homebtn" href="/">Voltar ao site</a></div></div></header>
 <div class="deadline" id="deadlineBanner" hidden><div><strong>Prazo de ingresso no Simples encerrado em 15/10.</strong> Até 30/10, pedidos já apresentados e indeferidos podem ter pendências regularizadas; empresas do Simples ainda podem optar pelo regime regular de IBS/CBS, quando aplicável.</div><a href="https://www.gov.br/receitafederal/pt-br/assuntos/noticias/2026/outubro/a-receita-federal-divulga-a-atualizacao-dos-numeros-referentes-as-solicitacoes-de-opcao-pelo-simples-nacional-e-pelo-regime-regular-do-ibs-e-da-cbs" target="_blank" rel="noopener">Fonte oficial</a></div>
@@ -38,4 +40,5 @@
 (async()=>{const [a,b]=await Promise.all([fetch('/simulador/v3/partials/setup.html?v=20261030-correcao1').then(r=>r.text()),fetch('/simulador/v3/partials/results.html?v=20261030-correcao1').then(r=>r.text())]);document.getElementById('setupMount').innerHTML=a;document.getElementById('resultsMount').innerHTML=b;for(const name of ['data.js','money-format.js','import.js','field-state.js','cnpj.js','models.js','risk-cash.js','economic-impact.js','render.js','enhanced-results.js','diagnosis.js','audit-core.js','audit-render.js','profit-sensitivity.js','tax-bridge.js','diagnosis-explain.js','boot.js','report-ui.js','shareholder-report.js','lead-capture.js'])await new Promise((ok,fail)=>{const s=document.createElement('script');s.src='/simulador/v3/'+name+'?v=20261030-correcao1';s.onload=ok;s.onerror=fail;document.body.appendChild(s)});if(typeof initDocumentImport==='function')initDocumentImport()})().catch(err=>{console.error(err);document.getElementById('setupMount').innerHTML='<section class="panel"><h2>Não foi possível carregar o simulador.</h2><p>Atualize a página e tente novamente.</p></section>'});
 </script>
 <script defer src="/assets/usage.js?v=20260922-metrics1"></script>
+<script defer src="/assets/pwa-register.js"></script>
 </body></html>
