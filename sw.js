@@ -1,6 +1,6 @@
 /* Somente o shell público do aplicativo fica disponível offline.
    Dados de empresas, contas, APIs e simuladores não são armazenados pelo service worker. */
-const VERSION='brmi-pwa-20261113-v1';
+const VERSION='brmi-pwa-20261113-v2';
 const CORE=['/app/','/app/index.html','/app/app.css','/app/app.js','/app/offline.html','/manifest.webmanifest','/assets/brmi-icon.svg','/assets/brmi-app-192.png','/assets/brmi-app-512.png','/assets/news-dialog-2026.js','/assets/noticias-editorial-2026.css'];
 const CORE_PATHS=new Set(CORE);
 self.addEventListener('install',event=>{
