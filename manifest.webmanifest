@@ -1,0 +1,52 @@
+{
+  "id": "/",
+  "name": "O Brasil Muda de Imposto",
+  "short_name": "Brasil Imposto",
+  "description": "Reforma Tributária do Consumo: notícias, normas, biblioteca e simulação empresarial.",
+  "lang": "pt-BR",
+  "start_url": "/app/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f3f6f8",
+  "theme_color": "#102f41",
+  "orientation": "any",
+  "categories": [
+    "education",
+    "finance",
+    "news"
+  ],
+  "icons": [
+    {
+      "src": "/assets/brmi-app-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/brmi-app-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/brmi-icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Simulador empresarial",
+      "url": "/simulador/v3/"
+    },
+    {
+      "name": "Notícias da reforma",
+      "url": "/noticias-reforma.html"
+    },
+    {
+      "name": "Atualizações normativas",
+      "url": "/atualizacoes-reforma.html"
+    }
+  ]
+}
