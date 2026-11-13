@@ -1,0 +1,212 @@
+/* Correção específica do simulador guiado em celulares.
+   Carregada por último para impedir que estilos antigos revertam o layout móvel.
+   Sem alterações de elementos, dados ou lógica tributária. */
+body.guidedMode [hidden]{display:none!important}
+body.guidedMode .erpTopbar .erpAction[hidden],
+body.guidedMode .erpTopbar #printBtn[hidden]{display:none!important}
+
+@media (max-width:760px){
+  body.guidedMode{overflow-x:hidden}
+  body.guidedMode .erpTopbar{position:relative!important;top:auto!important;z-index:10}
+  body.guidedMode .erpTopbar .topinner{
+    display:flex!important;flex-wrap:nowrap!important;
+    align-items:center!important;justify-content:space-between!important;
+    box-sizing:border-box;width:100%;height:auto!important;min-height:62px;
+    padding:8px 12px!important;gap:10px!important
+  }
+  body.guidedMode .erpTopbar .erpBrand{
+    display:flex!important;flex:1 1 auto!important;min-width:0!important;
+    max-width:100%;align-items:center;gap:9px;overflow:hidden
+  }
+  body.guidedMode .erpBrandLogoFrame{
+    flex:0 0 36px!important;width:36px!important;height:36px!important;
+    min-width:36px;overflow:hidden;border-radius:7px
+  }
+  body.guidedMode .erpBrandLogo{
+    display:block!important;position:static!important;transform:none!important;
+    width:31px!important;height:31px!important;max-width:31px!important;
+    object-fit:contain!important;margin:auto!important;padding:0!important
+  }
+  body.guidedMode .erpBrandCopy{min-width:0!important;max-width:100%;overflow:hidden}
+  body.guidedMode .erpBrandCopy strong{
+    display:block;max-width:100%;font-size:13px!important;line-height:1.3;
+    white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important
+  }
+  body.guidedMode .erpBrandCopy small{display:none!important}
+  body.guidedMode .erpHeaderCenter,body.guidedMode .guidedHeaderTag{display:none!important}
+  body.guidedMode .erpTopbar .topactions{
+    display:flex!important;flex:0 0 auto!important;flex-wrap:nowrap!important;
+    align-items:center;justify-content:flex-end;
+    gap:6px!important;width:auto!important;min-width:0!important;max-width:fit-content
+  }
+  body.guidedMode .erpTopbar .topactions>.erpAction:first-child{display:none!important}
+  body.guidedMode .erpTopbar .erpAction:not([hidden]){
+    display:inline-flex!important;align-items:center!important;justify-content:center!important;
+    box-sizing:border-box!important;flex:0 0 40px!important;
+    width:40px!important;min-width:40px!important;max-width:40px!important;
+    height:42px!important;min-height:42px!important;
+    padding:7px!important;white-space:nowrap!important;
+    word-break:normal!important;overflow-wrap:normal!important;
+    font-size:0!important;line-height:1!important;border-radius:8px!important
+  }
+  body.guidedMode .erpTopbar .erpAction b{display:none!important}
+  body.guidedMode .erpTopbar .erpAction svg{
+    display:block!important;flex:0 0 auto!important;
+    width:20px!important;height:20px!important
+  }
+  body.guidedMode .erpTopbar .clearAllBtn::before,
+  body.guidedMode .erpTopbar .homebtn::before{content:none!important;display:none!important}
+  body.guidedMode .erpSubbar{height:auto!important;min-height:42px}
+  body.guidedMode .erpSubinner{
+    display:flex!important;flex-wrap:nowrap!important;
+    align-items:center;gap:8px;min-width:0;min-height:42px;
+    padding:5px 13px!important
+  }
+  body.guidedMode .erpBreadcrumb{flex:1 1 auto;min-width:0;overflow:hidden}
+  body.guidedMode .erpBreadcrumb>span:first-child,
+  body.guidedMode .erpBreadcrumb>i,
+  body.guidedMode .erpVersion{display:none!important}
+  body.guidedMode .erpBreadcrumb b{
+    font-size:12px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+  }
+  body.guidedMode .erpSession{flex:0 0 auto;gap:5px;white-space:nowrap}
+  body.guidedMode .erpSession>span{display:none!important}
+  body.guidedMode .erpSession small{
+    display:inline!important;font-size:11px!important;margin:0!important;
+    padding:0!important;border:0!important;white-space:nowrap
+  }
+  body.guidedMode .page{
+    box-sizing:border-box;max-width:100%;min-width:0;
+    padding:0 14px 35px!important
+  }
+  body.guidedMode .guidedHero{
+    display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+    min-width:0!important;max-width:100%;
+    gap:18px!important;align-items:stretch!important;
+    margin:14px 0 14px!important;
+    padding:22px 20px!important;border-radius:12px!important
+  }
+  body.guidedMode .guidedHeroCopy{min-width:0}
+  body.guidedMode .guidedHero h1{
+    font-size:clamp(27px,7.6vw,37px)!important;line-height:1.12!important;
+    overflow-wrap:break-word;word-break:normal!important;hyphens:none;
+    margin:9px 0 14px!important
+  }
+  body.guidedMode .guidedHero p{
+    font-size:clamp(14px,3.65vw,16px)!important;line-height:1.55!important;
+    max-width:100%
+  }
+  body.guidedMode .guidedHeroStats{
+    display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+    grid-auto-rows:auto!important;gap:8px!important;
+    width:100%!important;max-width:100%!important;min-width:0!important;
+    margin:0!important;align-self:stretch!important
+  }
+  body.guidedMode .guidedHeroStats>div{
+    display:grid!important;grid-template-columns:92px minmax(0,1fr)!important;
+    grid-template-rows:auto!important;align-items:center!important;
+    gap:8px!important;min-width:0!important;width:100%!important;
+    padding:12px 14px!important;box-sizing:border-box!important;
+    text-align:left!important;border-radius:9px!important
+  }
+  body.guidedMode .guidedHeroStats span{
+    display:block!important;margin:0!important;font-size:11px!important;
+    line-height:1.3!important;letter-spacing:.055em;white-space:nowrap!important
+  }
+  body.guidedMode .guidedHeroStats b{
+    display:block!important;min-width:0!important;
+    margin:0!important;font-size:18px!important;line-height:1.2!important;
+    text-align:left!important;overflow-wrap:normal!important;
+    word-break:normal!important;white-space:normal!important
+  }
+  body.guidedMode .guidedHeroStats small{display:none!important}
+  body.guidedMode .guidedNotice{
+    display:flex;align-items:flex-start!important;min-width:0;
+    gap:11px;padding:14px!important;margin:12px 0!important
+  }
+  body.guidedMode .guidedNotice>span{flex-shrink:0}
+  body.guidedMode .guidedNotice>div{min-width:0}
+  body.guidedMode .guidedNotice strong{font-size:13px!important;line-height:1.45}
+  body.guidedMode .guidedNotice small{font-size:12px!important;line-height:1.5}
+  body.guidedMode .guidedNav{
+    position:static!important;inset:auto!important;top:auto!important;
+    display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    width:100%;max-width:100%!important;min-width:0!important;overflow:visible!important;
+    gap:5px!important;padding:6px!important;margin:16px 0!important;
+    box-shadow:none!important;backdrop-filter:none!important;
+    border-radius:10px!important
+  }
+  body.guidedMode .guidedNav button{
+    box-sizing:border-box;display:flex!important;flex-direction:column!important;
+    justify-content:center!important;align-items:center!important;
+    min-width:0!important;min-height:74px!important;
+    padding:9px 4px!important;gap:5px!important;
+    white-space:normal!important;overflow-wrap:normal!important;
+    word-break:normal!important;hyphens:none!important;text-align:center!important
+  }
+  body.guidedMode .guidedNav button>span{
+    margin:0!important;flex:0 0 auto;
+    width:29px!important;height:29px!important
+  }
+  body.guidedMode .guidedNav b{
+    display:block!important;margin:0!important;
+    font-size:10px!important;line-height:1.25!important
+  }
+  body.guidedMode .guidedNav small{display:none!important}
+  body.guidedMode .guidedActions{
+    position:static!important;inset:auto!important;bottom:auto!important;
+    z-index:auto!important;display:flex!important;flex-wrap:nowrap!important;
+    align-items:stretch!important;gap:10px!important;
+    width:100%!important;max-width:100%!important;
+    box-sizing:border-box;padding:11px!important;
+    margin:18px 0 26px!important;
+    border-radius:11px!important;box-shadow:none!important
+  }
+  body.guidedMode .guidedActions>button:not([hidden]){
+    flex:0 0 auto!important;min-width:76px!important
+  }
+  body.guidedMode .guidedActions>div{
+    display:flex!important;align-items:stretch!important;
+    flex:1 1 0!important;min-width:0!important;gap:0!important
+  }
+  body.guidedMode .guidedActions div span{display:none!important}
+  body.guidedMode .guidedActions>button,
+  body.guidedMode .guidedActions div button{
+    box-sizing:border-box!important;min-height:48px!important;
+    padding:12px 11px!important;font-size:13px!important;
+    line-height:1.32!important;white-space:normal!important;
+    overflow-wrap:normal!important;word-break:normal!important
+  }
+  body.guidedMode .guidedActions div button{
+    width:100%!important;min-width:0!important;margin:0!important
+  }
+  body.guidedMode .guidedMode .panel,body.guidedMode .panel{max-width:100%}
+}
+@media(max-width:390px){
+  body.guidedMode .erpTopbar .topinner{padding-inline:9px!important;gap:6px!important}
+  body.guidedMode .erpTopbar .erpBrand{gap:6px!important}
+  body.guidedMode .erpBrandCopy strong{font-size:12px!important}
+  body.guidedMode .erpTopbar .topactions{gap:4px!important}
+  body.guidedMode .erpTopbar .erpAction:not([hidden]){
+    flex-basis:38px!important;width:38px!important;min-width:38px!important;
+    max-width:38px!important;height:40px!important;min-height:40px!important
+  }
+  body.guidedMode .page{padding-inline:11px!important}
+  body.guidedMode .guidedHero{padding:19px 16px!important}
+  body.guidedMode .guidedHeroStats>div{
+    grid-template-columns:82px minmax(0,1fr)!important;padding:11px 12px!important
+  }
+  body.guidedMode .guidedNav{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  body.guidedMode .guidedNav button{
+    min-height:62px!important;flex-direction:row!important;
+    justify-content:center!important;gap:8px!important
+  }
+  body.guidedMode .guidedNav b{font-size:12px!important}
+  body.guidedMode .guidedActions>button:not([hidden]){min-width:68px!important}
+  body.guidedMode .guidedActions>button,
+  body.guidedMode .guidedActions div button{font-size:12px!important;padding:10px 7px!important}
+}
+@media print{
+  body.guidedMode .erpTopbar,body.guidedMode .guidedNav,
+  body.guidedMode .guidedActions{display:none!important}
+}
